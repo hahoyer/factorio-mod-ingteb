@@ -11,15 +11,22 @@ function Technology(name, prototype, database)
     self.class_name = "Technology"
     self.SpriteType = "technology"
 
-    self:addCachedProperty(
-        "IsReady", function()
+    self.property.IsReady = {
+        get = function(self)
             return self.Prerequisites:All(function(technology) return technology.IsResearched end)
+        end,
+    }
+
+    self:addCachedProperty(
+        "NumberOnSprite", function()
+            if self.Prototype.level and self.Prototype.max_level > 1 then return self.Prototype.level end
         end
     )
 
     self.property.IsResearched = {
         get = function(self) return global.Current.Player.force.technologies[self.Name].researched end,
     }
+
 
     self.Enables = Array:new()
 
