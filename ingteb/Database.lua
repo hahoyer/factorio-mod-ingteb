@@ -95,6 +95,16 @@ function Database:Scan()
     Dictionary:new(game.fluid_prototypes) --
     :Select(function(value, key) self.Fluids[key] = Fluid(key, value, self) end)
 
+    Dictionary:new(game.resource_category_prototypes) --
+    :Select(function(value, key) self.WorkingEntities[key .. " mining"] = Array:new() 
+        self.WorkingEntities[key .. " fluid mining"] = Array:new() 
+    end)
+
+    Dictionary:new(game.recipe_category_prototypes) --
+    :Select(function(value, key) self.WorkingEntities[key .. " crafting"] = Array:new() end)
+
+    self.WorkingEntities["basic-solid mining"]:Append(self.Entities["character"])
+    
     Dictionary:new(game.recipe_prototypes) --
     :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
 
