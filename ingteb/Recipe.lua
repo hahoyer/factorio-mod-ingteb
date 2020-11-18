@@ -1,9 +1,7 @@
 local Constants = require("Constants")
-local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
 require("ingteb.Common")
 
 function Recipe(name, prototype, database)
@@ -16,10 +14,25 @@ function Recipe(name, prototype, database)
 
     self:addCachedProperty(
         "Technology", function()
-            --assert(self.Technologies:Count() <= 1)
+            -- assert(self.Technologies:Count() <= 1)
             return self.Technologies:Top()
         end
     )
+
+    self.property.IsResearched = {
+        get = function(self)
+            return --
+            not self.Technologies:Any() --
+            or self.Technologies:Any(function(technology) return technology.IsResearched end)
+        end,
+    }
+
+    self.property.NumberOnSprite = {
+        get = function(self)
+            if not self.HandCrafter then return end
+            return global.Current.Player.get_craftable_count(self.Name)
+        end,
+    }
 
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
@@ -41,11 +54,15 @@ function Recipe(name, prototype, database)
             end
         )
 
-        self.WorkingEntities --
-        = database.WorkingEntities[category]
-        self.WorkingEntities --
-        :Select(function(entity) entity.CraftingRecipes:Append(self) end)
+        self.WorkingEntities = database.WorkingEntities[category]
+        self.WorkingEntities:Select(function(entity) entity.CraftingRecipes:Append(self) end)
 
+        if self.Name ==("transport-belt")then
+            assert(true)
+        end
+        self.HandCrafter = self.WorkingEntities:Where(function(worker) 
+            return worker.Name == "character" 
+        end):Top()
     end
 
     return self

@@ -3,19 +3,13 @@ local Array = {}
 
 function Dictionary:Clone(predicate)
     local result = Dictionary:new{}
-    for key, value in pairs(self) do
-        if not predicate or predicate(value, key) then
-            result[key] = value
-        end
-    end
+    for key, value in pairs(self) do if not predicate or predicate(value, key) then result[key] = value end end
     return result
 end
 
 function Array:Clone(predicate)
     local result = Array:new{}
-    for index, value in ipairs(self) do
-        if predicate(value, index) then result:Append(value) end
-    end
+    for index, value in ipairs(self) do if predicate(value, index) then result:Append(value) end end
     return result
 end
 
@@ -26,9 +20,7 @@ function Array:Sort(order) table.sort(self, order) end
 
 function Dictionary:new(target)
     if not target then target = {} end
-    if getmetatable(target) == "private" then
-        target = Dictionary.Clone(target)
-    end
+    if getmetatable(target) == "private" then target = Dictionary.Clone(target) end
     setmetatable(target, self)
     self.__index = self
     return target
@@ -50,95 +42,75 @@ end
 
 function Array:Select(transformation)
     local result = Array:new{}
-    for key, value in ipairs(self) do
-        result:Append(transformation(value, key))
-    end
+    for key, value in ipairs(self) do result:Append(transformation(value, key)) end
     return result
 end
 
 function Dictionary:Sum(predicate)
     local result = 0
-    for key, value in pairs(self) do
-        if not predicate or predicate(value, key) then
-            result = result + value
-        end
-    end
+    for key, value in pairs(self) do if not predicate or predicate(value, key) then result = result + value end end
     return result
 end
 
 function Dictionary:Max()
     local result
-    for key, value in pairs(self) do
-        if not result or result < value then result = value end
-    end
+    for key, value in pairs(self) do if not result or result < value then result = value end end
     return result
 end
 
 function Dictionary:Min()
     local result
-    for key, value in pairs(self) do
-        if not result or result > value then result = value end
-    end
+    for key, value in pairs(self) do if not result or result > value then result = value end end
     return result
 end
 
 function Array:Sum(predicate)
     local result = 0
-    for key, value in ipairs(self) do
-        if not predicate or predicate(value, key) then
-            result = result + value
-        end
-    end
+    for key, value in ipairs(self) do if not predicate or predicate(value, key) then result = result + value end end
     return result
 end
 
 function Array:Max()
     local result
-    for key, value in ipairs(self) do
-        if not result or result < value then result = value end
-    end
+    for key, value in ipairs(self) do if not result or result < value then result = value end end
     return result
 end
 
 function Array:Min()
     local result
-    for key, value in ipairs(self) do
-        if not result or result > value then result = value end
-    end
+    for key, value in ipairs(self) do if not result or result > value then result = value end end
     return result
 end
 
 function Dictionary:Count(predicate)
     local result = 0
-    for key, value in pairs(self) do
-        if not predicate or predicate(value, key) then
-            result = result + 1
-        end
-    end
+    for key, value in pairs(self) do if not predicate or predicate(value, key) then result = result + 1 end end
     return result
 end
 
 function Array:Count(predicate)
     local result = 0
-    for key, value in ipairs(self) do
-        if not predicate or predicate(value, key) then
-            result = result + 1
-        end
-    end
+    for key, value in ipairs(self) do if not predicate or predicate(value, key) then result = result + 1 end end
     return result
 end
 
+function Dictionary:All(predicate)
+    for key, value in pairs(self) do if not predicate(value, key) then return false end end
+    return true
+end
+
+function Array:All(predicate)
+    for key, value in ipairs(self) do if not predicate(value, key) then return false end end
+    return true
+end
+
 function Dictionary:Any(predicate)
-    for key, value in pairs(self) do
-        if not predicate or predicate(value, key) then return true end
-    end
+    for key, value in pairs(self) do if not predicate or predicate(value, key) then return true end end
     return nil
 end
 
 function Array:Any(predicate)
-    for key, value in ipairs(self) do
-        if not predicate or predicate(value, key) then return true end
-    end
+    for key, value in ipairs(self) do if not predicate or predicate(value, key) then return true end end
     return nil
 end
 
@@ -192,32 +164,23 @@ end
 
 function Dictionary:ToArray(getItem)
     local result = Array:new{}
-    for key, value in pairs(self) do
-        result:Append(getItem and getItem(value, key) or value)
-    end
+    for key, value in pairs(self) do result:Append(getItem and getItem(value, key) or value) end
     return result
 end
 
 function Array:ToArray(getItem)
     local result = Array:new{}
-    for key, value in ipairs(self) do
-        result:Append(getItem and getItem(value, key) or value)
-    end
+    for key, value in ipairs(self) do result:Append(getItem and getItem(value, key) or value) end
     return result
 end
 
 function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
-        if allowEmpty == false or onEmpty then
-            error(onEmpty and onEmpty() or "Array contains no element.")
-        end
+        if allowEmpty == false or onEmpty then error(onEmpty and onEmpty() or "Array contains no element.") end
         return
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
-            error(
-                onMultiple and onMultiple(#self)
-                    or "Array contains more than one element (" .. #self .. ")."
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self .. ").")
         end
     end
     return self[1]
@@ -228,33 +191,23 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     for _, value in pairs(self) do
         if allowMultiple ~= false then return value end
         if result then
-            error(
-                onMultiple and onMultiple(#self)
-                    or "Array contains more than one element (" .. #self .. ")."
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self .. ").")
         end
         result = {value = value}
     end
 
     if result then return result.value end
 
-    if allowEmpty == false or onEmpty then
-        error(onEmpty and onEmpty() or "Array contains no element.")
-    end
+    if allowEmpty == false or onEmpty then error(onEmpty and onEmpty() or "Array contains no element.") end
 end
 
 function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
-        if allowEmpty == false or onEmpty then
-            error(onEmpty and onEmpty() or "Array contains no element.")
-        end
+        if allowEmpty == false or onEmpty then error(onEmpty and onEmpty() or "Array contains no element.") end
         return
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
-            error(
-                onMultiple and onMultiple(#self)
-                    or "Array contains more than one element (" .. #self .. ")."
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self .. ").")
         end
     end
     return self[#self]
@@ -272,9 +225,7 @@ end
 
 function Array:ConcatMany()
     local result = Array:new{}
-    for _, values in ipairs(self) do
-        for _, value in ipairs(values) do result:Append(value) end
-    end
+    for _, values in ipairs(self) do for _, value in ipairs(values) do result:Append(value) end end
     return result
 end
 
@@ -283,9 +234,7 @@ function Dictionary:Concat(other, combine)
     if not other:Any() then return self end
 
     local result = self:Clone()
-    for key, value in pairs(other) do
-        result[key] = result[key] and combine(result[key], value) or value
-    end
+    for key, value in pairs(other) do result[key] = result[key] and combine(result[key], value) or value end
     return result
 end
 
@@ -305,13 +254,9 @@ function Array:Skip(count)
 end
 
 function Array:Append(value) return table.insert(self, value) end
-function Array:AppendMany(values)
-    for _, value in ipairs(values) do table.insert(self, value) end
-end
+function Array:AppendMany(values) for _, value in ipairs(values) do table.insert(self, value) end end
 
-function Array:InsertAt(position, value)
-    return table.insert(self, position, value)
-end
+function Array:InsertAt(position, value) return table.insert(self, position, value) end
 
 local Result = {Array = Array, Dictionary = Dictionary}
 

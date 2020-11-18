@@ -53,9 +53,8 @@ local function GetTechnologyStyle(property)
 end
 
 local function GetRecipeStyle(property)
-    local data = property
-    if not data.enabled then return "red_slot_button" end
-    if data.category == "crafting" and property.amount then return Constants.GuiStyle.LightButton end
+    if not property.IsResearched then return "red_slot_button" end
+    if property.NumberOnSprite then return Constants.GuiStyle.LightButton end
 end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
@@ -69,7 +68,6 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     target.In:Select(function(item) return CreateSpriteAndRegister(inPanel, item) end)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
-
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
     CreateSpriteAndRegister(properties, target.Technology, GetTechnologyStyle(target.Technology))

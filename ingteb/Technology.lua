@@ -11,9 +11,28 @@ function Technology(name, prototype, database)
     self.class_name = "Technology"
     self.SpriteType = "technology"
 
+    self:addCachedProperty(
+        "IsReady", function()
+            return self.Prerequisites:All(function(technology) return technology.IsResearched end)
+        end
+    )
+
+    self.property.IsResearched = {
+        get = function(self) return global.Current.Player.force.technologies[self.Name].researched end,
+    }
+
+    self.Enables = Array:new()
+
     function self:Setup()
-        self.Prerequisites = Array:new(self.Prototype.prerequisites) --
-        :Select(function(technology) return assert() end)
+        self.Prerequisites = Dictionary:new(self.Prototype.prerequisites) --
+        :ToArray() --
+        :Select(
+            function(technology)
+                local result = self.Database.Technologies[technology.name]
+                result.Enables:Append(self)
+                return result
+            end
+        )
 
         self.In = Array:new(self.Prototype.research_unit_ingredients) --
         :Select(
@@ -38,6 +57,7 @@ function Technology(name, prototype, database)
             end
         ) --
         :Where(function(item) return item end)
+
     end
 
     return self

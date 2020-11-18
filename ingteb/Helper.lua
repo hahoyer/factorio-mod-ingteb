@@ -25,64 +25,7 @@ function result.FormatRichText(target)
     return "[" .. result.GetActualType(target) .. "=" .. target.name .. "]"
 end
 
-function result.GetFactorioData(type, name)
-    local function GetValue()
-        if type == "utility" then return end
-
-        if type == "technology" then
-            return {Force = global.Current.Player.force.technologies[name]}
-        end
-
-        if type == "recipe" then
-            return {Force = global.Current.Player.force.recipes[name]}
-        end
-
-        if type == "entity" then
-            return {Prototype = game.entity_prototypes[name]}
-        end
-
-        if type == "fluid" then
-            return {Prototype = game.fluid_prototypes[name]}
-        end
-
-        local result = game.item_prototypes[name]
-        if result then return {Prototype = result} end
-
-        local result = game.entity_prototypes[name]
-        if result then return {Prototype = result} end
-
-        assert()
-    end
-
-    local result = GetValue()
-    if not result or not result.Prototype and not result.Force then return end
-
-    if result.Force then result.Prototype = result.Force.prototype end
-
-    return result
-end
-
 function result.HasForce(type) return type == "technology" or type == "recipe" end
-
-function result.GetPrototype(type, name)
-    if type == "utility" then return end
-
-    if type == "technology" then return end
-
-    if type == "recipe" then return end
-
-    if type == "entity" then return game.entity_prototypes[name] end
-
-    if type == "fluid" then return game.fluid_prototypes[name] end
-
-    local result = game.item_prototypes[name]
-    if result then return result end
-
-    local result = game.entity_prototypes[name]
-    if result then return result end
-
-    assert()
-end
 
 function result.GetForce(type, name)
     if type == "technology" then
@@ -92,11 +35,6 @@ function result.GetForce(type, name)
     if type == "recipe" then return global.Current.Player.force.recipes[name] end
 
     assert()
-end
-
-function result.GetLocalizeName(target)
-    local item = result.GetFactorioData(target)
-    return item and item.localised_name
 end
 
 function result.ShowFrame(name, create)
