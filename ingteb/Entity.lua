@@ -11,24 +11,29 @@ function Entity(name, prototype, database)
     self.class_name = "Entity"
     self.SpriteType = "entity"
 
-    function self:IsMatchingItem(product)
-        return product.name == self.Name --
-        and product.type == "item" --
-        and product.amount == 1 --
-    end
+    self:addCachedProperty(
+        "Item", function()
+            local place = self.Prototype.items_to_place_this
+            if not place or #place == 0 then return end
+            assert(#place == 1)
+            return self.Database.Items[place[1].name]
+        end
+    )
+
+    self:addCachedProperty(
+        "IsResource", function()
+            local prototype = self.Prototype
+            if not prototype.mineable_properties --
+            or not prototype.mineable_properties.minable --
+            or not prototype.mineable_properties.products --
+            then return end
+            return not prototype.items_to_place_this
+        end
+    )
 
     function self:Collect(entities, domain, dictionary)
         if not entities then return end
         for key, _ in pairs(entities) do self:AppendForKey(key .. " " .. domain, dictionary) end
-    end
-
-    function self:IsMineable()
-        local p = self.Prototype
-        if not p.mineable_properties --
-        or not p.mineable_properties.minable --
-        or not p.mineable_properties.products --
-        then return end
-        return not p.items_to_place_this 
     end
 
     function self:Setup()
@@ -39,7 +44,7 @@ function Entity(name, prototype, database)
             local x = y
         end
 
-        if self:IsMineable() then self.Database:CreateMiningRecipe(self) end
+        if self.IsResource then self.Database:CreateMiningRecipe(self) end
 
         self:Collect(self.Prototype.resource_categories, "mining", self.Database.WorkingEntities)
         if #self.Prototype.fluidbox_prototypes > 0 then

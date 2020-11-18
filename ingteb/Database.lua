@@ -96,9 +96,12 @@ function Database:Scan()
     :Select(function(value, key) self.Fluids[key] = Fluid(key, value, self) end)
 
     Dictionary:new(game.resource_category_prototypes) --
-    :Select(function(value, key) self.WorkingEntities[key .. " mining"] = Array:new() 
-        self.WorkingEntities[key .. " fluid mining"] = Array:new() 
-    end)
+    :Select(
+        function(value, key)
+            self.WorkingEntities[key .. " mining"] = Array:new()
+            self.WorkingEntities[key .. " fluid mining"] = Array:new()
+        end
+    )
 
     Dictionary:new(game.recipe_category_prototypes) --
     :Select(function(value, key) self.WorkingEntities[key .. " crafting"] = Array:new() end)
@@ -106,7 +109,7 @@ function Database:Scan()
     self.WorkingEntities[" hand mining"] = Array:new(self.Entities["character"])
 
     self.WorkingEntities["basic-solid mining"]:Append(self.Entities["character"])
-    
+
     Dictionary:new(game.recipe_prototypes) --
     :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
 
@@ -151,7 +154,14 @@ function Database:FindTarget()
             return {type = cursor.type, name = cursor.name}
         end
         local cursor = global.Current.Player.selected
-        if cursor then return self.Entities[cursor.name] end
+        if cursor then
+            local result = self.Entities[cursor.name]
+            if result.IsResource then
+                return result
+            else
+                return result.Item
+            end
+        end
 
         local cursor = global.Current.Player.opened
         if cursor then
