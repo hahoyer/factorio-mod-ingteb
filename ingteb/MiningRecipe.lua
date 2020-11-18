@@ -16,7 +16,7 @@ function MiningRecipe(resource, database)
     function self:Setup()
         local configuration = self.Prototype.mineable_properties
         if not configuration or not configuration.minable then return end
-        local category = self.Prototype.resource_category --
+        local category = (self.Prototype.resource_category or " hand") --
         .. (configuration.required_fluid and " fluid" or "") --
         .. " mining"
 

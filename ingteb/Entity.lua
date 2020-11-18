@@ -19,9 +19,16 @@ function Entity(name, prototype, database)
 
     function self:Collect(entities, domain, dictionary)
         if not entities then return end
-        for key, _ in pairs(entities) do
-            self:AppendForKey(key .. " " .. domain, dictionary)
-        end
+        for key, _ in pairs(entities) do self:AppendForKey(key .. " " .. domain, dictionary) end
+    end
+
+    function self:IsMineable()
+        local p = self.Prototype
+        if not p.mineable_properties --
+        or not p.mineable_properties.minable --
+        or not p.mineable_properties.products --
+        then return end
+        return not p.items_to_place_this 
     end
 
     function self:Setup()
@@ -32,24 +39,13 @@ function Entity(name, prototype, database)
             local x = y
         end
 
-        if self.Prototype.type == "resource" then
-            self.Database:CreateMiningRecipe(self)
-        end
+        if self:IsMineable() then self.Database:CreateMiningRecipe(self) end
 
-        self:Collect(
-            self.Prototype.resource_categories, "mining",
-                self.Database.WorkingEntities
-        )
+        self:Collect(self.Prototype.resource_categories, "mining", self.Database.WorkingEntities)
         if #self.Prototype.fluidbox_prototypes > 0 then
-        self:Collect(
-            self.Prototype.resource_categories, "fluid mining",
-                self.Database.WorkingEntities
-        )
+            self:Collect(self.Prototype.resource_categories, "fluid mining", self.Database.WorkingEntities)
         end
-        self:Collect(
-            self.Prototype.crafting_categories, "crafting",
-                self.Database.WorkingEntities
-        )
+        self:Collect(self.Prototype.crafting_categories, "crafting", self.Database.WorkingEntities)
 
     end
 
