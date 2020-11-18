@@ -12,9 +12,11 @@ function Recipe(name, prototype, database)
     self.SpriteType = "recipe"
     self.Technologies = Array:new()
 
+    self.Time = self.Prototype.energy
+
     self:addCachedProperty(
         "Technology", function()
-            assert(self.Technologies:Count() <= 1)
+            --assert(self.Technologies:Count() <= 1)
             return self.Technologies:Top()
         end
     )
