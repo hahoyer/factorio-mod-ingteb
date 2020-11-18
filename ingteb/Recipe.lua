@@ -12,12 +12,19 @@ function Recipe(name, prototype, database)
 
     self.Time = self.Prototype.energy
 
-    self:addCachedProperty(
-        "Technology", function()
-            -- assert(self.Technologies:Count() <= 1)
+    self.property.Technology = {
+        get = function(self)
+            if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
+
+            local researched = self.Technologies:Where(function(technology) return technology.IsResearched end)
+            if researched:Count() > 0 then return researched:Top() end
+
+            local ready = self.Technologies:Where(function(technology) return technology.IsReady end)
+            if ready:Count() > 0 then return researched:Top() end
+
             return self.Technologies:Top()
-        end
-    )
+        end,
+    }
 
     self.property.IsResearched = {
         get = function(self)
@@ -33,6 +40,9 @@ function Recipe(name, prototype, database)
             return global.Current.Player.get_craftable_count(self.Name)
         end,
     }
+
+    self.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
+    self.property.SubOrder = {get = function(self) return self.Technology.IsReady and 1 or 0 end}
 
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
@@ -57,12 +67,27 @@ function Recipe(name, prototype, database)
         self.WorkingEntities = database.WorkingEntities[category]
         self.WorkingEntities:Select(function(entity) entity.CraftingRecipes:Append(self) end)
 
-        if self.Name ==("transport-belt")then
-            assert(true)
+        if self.Name == ("transport-belt") then assert(true) end
+        self.HandCrafter = self.WorkingEntities:Where(function(worker) return worker.Name == "character" end):Top()
+    end
+
+    function self:IsBefore(other)
+        if self == other then return false end
+
+        if (not self.Technology) ~= (not other.Technology) then return not self.Technology end
+        if self.IsResearched ~= other.IsResearched then return self.IsResearched end
+        if self.Technology then
+            if self.Technology.IsReady ~= other.Technology.IsReady then return self.Technology.IsReady end
         end
-        self.HandCrafter = self.WorkingEntities:Where(function(worker) 
-            return worker.Name == "character" 
-        end):Top()
+
+        if self.Prototype.group ~= other.Prototype.group then
+            return self.Prototype.group.order < other.Prototype.group.order
+        end
+        if self.Prototype.subgroup ~= other.Prototype.subgroup then
+            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
+        end
+
+        return self.Prototype.order < other.Prototype.order
     end
 
     return self
