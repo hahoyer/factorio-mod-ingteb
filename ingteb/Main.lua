@@ -25,7 +25,7 @@ local function OpenMainGui(target, setHistory)
     Helper.HideFrame()
     Gui.Main(target)
     StateHandler {mainPanel = true}
-    if setHistory ~= false then History:HairCut(target.target) end
+    if setHistory ~= false then History:HairCut(target) end
     return target
 end
 
@@ -72,7 +72,10 @@ local function MainForOpen(event)
     OpenMainGui(target)
 end
 
-local function OnLoad() History:Load(global.Current and global.Current.History) end
+local function OnLoad() 
+    History:RemoveAll()
+--    History:Load(global.Current and global.Current.History) 
+end
 
 local function OnInit() Database:OnLoad() end
 
