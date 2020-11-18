@@ -46,7 +46,7 @@ end
 local function GuiElementChangedForSelect(event)
     global.Current.Player = game.players[event.player_index]
     StateHandler {selectPanel = false}
-    OpenMainGui(event.element.elem_value)
+    OpenMainGui(Database:Get(event.element.elem_value))
 end
 
 local function GuiClose()

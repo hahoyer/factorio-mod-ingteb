@@ -22,24 +22,6 @@ function Database:addCachedProperty(name, getter)
     self.property[name] = {get = function(self) return self.cache[name].Value end}
 end
 
-function Database:raw_get(target) return Entity:new(target, self) end
-
-function Database:get(target)
-    local typeData = self.data[target.type]
-    if not typeData then
-        typeData = {}
-        self.data[target.type] = typeData
-    end
-
-    local result = typeData[target.name]
-    if not result then
-        result = {data = self:raw_get(target)}
-        typeData[target.name] = result
-    end
-
-    return result.data
-end
-
 function Database:CreateMiningRecipe(resource) self.Recipes[resource.Name] = MiningRecipe(resource, self) end
 
 function Database:GetItemSet(target)
@@ -165,6 +147,12 @@ function Database:FindTarget()
 
         local cursor = global.Current.Player.opened
         if cursor then
+
+            local t = global.Current.Player.opened_gui_type
+            if t == defines.gui_type.custom then return end
+            if t == defines.gui_type.entity then return self.Entities[cursor.name] end
+
+
             if global.Current.Links and global.Current.Links[cursor.index] then
                 local target = global.Current.Links[cursor.index]
                 return target
@@ -185,6 +173,11 @@ function Database:FindTarget()
 
     local result = get()
     return result
+end
+
+function Database:Get(target)
+    if target.type == "item" then return self.Items[target.name] end
+    -- assert()
 end
 
 return Database
