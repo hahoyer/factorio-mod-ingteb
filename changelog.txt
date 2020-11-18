@@ -1,0 +1,49 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2020-11-15
+  Bugfixes:
+    - amount value for probabilistic products
+  Changes:
+    - info about mining improved
+    - Button styles
+    - ordered recipes
+    - display level of technology
+---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2020-11-14
+  Bugfixes:
+    - military things
+    - positioning is not working
+    - esc on selector panel not working
+    - trees are not working
+    - history not working
+    - inhibit help for technologies or recipes (temporary)
+  Changes:
+    - refactor of file structure
+    - layout improvements
+    - event handling improved
+    - updating crafting options
+---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2020-11-11
+  Bugfixes:
+    - event protocol
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2020-11-11
+  Features:
+    - explicit selector 
+  Changes:
+    - event protocol
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2020-11-11
+  Bugfixes:
+    - localisation was missing
+  Changes:
+    - history class
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 2020-11-10
+  Features:
+    - inital release

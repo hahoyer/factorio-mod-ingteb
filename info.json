@@ -1,0 +1,9 @@
+{
+    "title": "ingteb",
+    "version": "0.2.3",
+    "name": "ingteb",
+    "author": "ixu",
+    "description": "Ingame technology browser",
+    "factorio_version": "1.0",
+    "dependencies": ["base >= 1.0.0", "flib >= 0.3.2"]
+}
