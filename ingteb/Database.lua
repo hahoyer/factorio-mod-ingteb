@@ -41,6 +41,15 @@ function Database:GetItemSet(target)
     return ItemSet(item, amounts, self)
 end
 
+function Measure(target)
+    local profiler = game.create_profiler()
+    profiler.reset()
+    target()
+    profiler.stop()
+    log(profiler)
+    return ""
+end
+
 function Database:Scan()
     if self.Entities then return end
 
@@ -49,11 +58,13 @@ function Database:Scan()
     self.Fluids = {}
     self.Recipes = {}
     self.Technologies = {}
-    self.Categories = Dictionary:new {}
+    self.Categories = Dictionary:new{}
     self.Bonuses = {}
 
-    Dictionary:new(game.entity_prototypes) --
-    :Select(function(value, key) self.Entities[key] = Entity(key, value, self) end)
+    log(Measure(function()
+            Dictionary:new(game.entity_prototypes) --
+            :Select(function(value, key) self.Entities[key] = Entity(key, value, self) end)
+    end))
 
     Dictionary:new(game.item_prototypes) --
     :Select(function(value, key) self.Items[key] = Item(key, value, self) end)
@@ -75,7 +86,9 @@ function Database:Scan()
         end
     )
 
-    self.Categories[" hand mining"] = Category("hand mining", game.technology_prototypes["steel-axe"], self)
+    self.Categories[" hand mining"] = Category(
+        "hand mining", game.technology_prototypes["steel-axe"], self
+    )
 
     self.Categories[" hand mining"].Workers:Append(self.Entities["character"])
     self.Categories["basic-solid mining"].Workers:Append(self.Entities["character"])
@@ -93,7 +106,6 @@ function Database:Scan()
     Dictionary:new(self.Recipes):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Technologies):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Categories):Select(function(entity) entity:Setup() end)
-
 end
 
 function Database:AddBonus(target, technology)
@@ -115,9 +127,8 @@ function Database:FindTarget()
             return self.Items[cursor.name]
         end
         local cursor = global.Current.Player.cursor_ghost
-        if cursor then --
-            return {type = cursor.type, name = cursor.name}
-        end
+        if cursor then return self.Items[cursor.name] end
+
         local cursor = global.Current.Player.selected
         if cursor then
             local result = self.Entities[cursor.name]
@@ -135,24 +146,11 @@ function Database:FindTarget()
             if t == defines.gui_type.custom then return end
             if t == defines.gui_type.entity then return self.Entities[cursor.name] end
 
-            if global.Current.Links and global.Current.Links[cursor.index] then
-                local target = global.Current.Links[cursor.index]
-                return target
-            end
-            if cursor.burner then
-                return {fuel_categories = cursor.burner.fuel_categories}
-            end
-            if cursor.type == "mining-drill" and cursor.mining_target then
-                return {type = cursor.mining_target.type, name = cursor.mining_target.name}
-            end
-
-            if cursor.type == "furnace" and cursor.previous_recipe then
-                return {type = "recipe", name = cursor.previous_recipe.name}
-            end
-            if cursor.type == "assembling-machine" and cursor.get_recipe() then
-                return {type = "recipe", name = cursor.get_recipe().name}
-            end
+            assert()
         end
+        --local cursor = global.Current.Player.entity_copy_source
+        --assert(not cursor)
+
     end
 
     local result = get()

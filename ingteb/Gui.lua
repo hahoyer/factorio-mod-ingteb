@@ -20,7 +20,7 @@ local function CreateSpriteAndRegister(frame, target, style)
         result = frame.add {type = "sprite-button", style = style or "slot_button"}
     end
 
-    global.Current.Links[result.index] = target and target.Item
+    global.Current.Links[result.index] = target
     return result
 end
 
