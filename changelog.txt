@@ -6,6 +6,7 @@ Date: 2020-11-19
     - don't show 0 crafting amount
   Changes:
     - show machines
+    - sorting improved
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2020-11-15
