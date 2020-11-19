@@ -55,6 +55,7 @@ function Recipe(name, prototype, database)
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
         if (not self.NumberOnSprite) ~= (not other.NumberOnSprite) then return self.NumberOnSprite end
+        if (not self.Technology) ~= (not other.Technology) then return not self.Technology end
         if self.Technology then
             if self.Technology.IsReady ~= other.Technology.IsReady then
                 return self.Technology.IsReady
