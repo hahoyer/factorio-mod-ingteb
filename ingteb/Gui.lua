@@ -7,6 +7,10 @@ local Dictionary = Table.Dictionary
 local function CreateSpriteAndRegister(frame, target, style)
     local result
 
+    if target and target.class_name == "Recipe" then 
+       local h = target.HelperText
+    end
+
     if target then
         result = frame.add {
             type = "sprite-button",

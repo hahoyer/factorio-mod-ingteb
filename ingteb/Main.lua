@@ -55,7 +55,7 @@ function GetHandCraftingOrder(event, target)
 end
 
 function GetResearchOrder(event, target)
-    if UI.IsMouseCode(event, "--- r") --
+    if UI.IsMouseCode(event, "-C- l") --
     and target and target.class_name == "Technology" and target.IsReady --
     then return {Technology = target.Prototype} end
 end

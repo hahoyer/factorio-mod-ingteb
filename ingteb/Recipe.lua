@@ -12,6 +12,28 @@ function Recipe(name, prototype, database)
 
     self.Time = self.Prototype.energy
 
+    self.HelperText = nil
+    self.property.HelperText = {
+        get = function(self) --
+            if self.IsResearched and self.NumberOnSprite then
+                return {
+                    "ingteb_utility.Lines2",
+                    self.LocalisedName,
+                    {
+                        "ingteb_utility.craft",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    },
+                }
+            else
+                return self.LocalisedName
+            end
+        end,
+    }
+
     self.property.Technology = {
         get = function(self)
             if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
