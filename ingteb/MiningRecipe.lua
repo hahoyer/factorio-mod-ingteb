@@ -21,7 +21,8 @@ function MiningRecipe(resource, database)
         .. " mining"
 
         self.Category = self.Database.Categories[category]
-        self.Category.Recipes:Append(self)
+
+        local isHidden = false
 
         self:AppendForKey(category, resource.In)
         self.In = Array:new{resource}
@@ -40,10 +41,16 @@ function MiningRecipe(resource, database)
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                self:AppendForKey(category, result.Item.Out)
+                if result then  self:AppendForKey(category, result.Item.Out) else isHidden = true end
                 return result
             end
         )
+
+        self.IsHidden = isHidden
+
+        if isHidden then return end
+
+        self.Category.Recipes:Append(self)
     end
 
     self.property.Order = {get = function(self) return 1 end}

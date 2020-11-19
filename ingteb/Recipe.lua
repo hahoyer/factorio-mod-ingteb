@@ -103,30 +103,35 @@ function Recipe(name, prototype, database)
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
         self.Category = self.Database.Categories[category]
-        self.Category.Recipes:Append(self)
+
+        local isHidden = false
 
         self.In = Array:new(self.Prototype.ingredients) --
         :Select(
             function(ingredient)
                 local result = database:GetItemSet(ingredient)
-                self:AppendForKey(category, result.Item.In)
+                if result then self:AppendForKey(category, result.Item.In) else isHidden = true end
                 return result
             end
-        )
+        ) --
+        :Where(function(value) return not (value.flags and value.flags.hidden) end) --
 
         self.Out = Array:new(self.Prototype.products) --
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                self:AppendForKey(
-                    category, result.Item.Out, function(entry, value)
-                        entry:Append(value)
-                    end
-                )
+                if result then self:AppendForKey(category, result.Item.Out) else isHidden = true end
                 return result
             end
-        )
+        ) --
+        :Where(function(value) return value end) --
 
+        self.IsHidden = isHidden
+
+        if isHidden then return end
+        
+        self.Category.Recipes:Append(self)
+        
         self.HandCrafter = self.Category.Workers:Where(
             function(worker) return worker.Name == "character" end
         ):Top()

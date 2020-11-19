@@ -37,8 +37,7 @@ function Database:GetItemSet(target)
     local item --
     = target.type == "item" and self.Items[target.name] --
     or target.type == "fluid" and self.Fluids[target.name] --
-    or assert()
-    return ItemSet(item, amounts, self)
+    if item then return ItemSet(item, amounts, self) end
 end
 
 function Measure(target)
@@ -61,14 +60,16 @@ function Database:Scan()
     self.Categories = Dictionary:new{}
     self.Bonuses = {}
 
-    log(Measure(function()
-            Dictionary:new(game.entity_prototypes) --
-            :Select(function(value, key) self.Entities[key] = Entity(key, value, self) end)
-    end))
+    Dictionary:new(game.entity_prototypes) --
+    :Where(function(value) return not (value.flags and value.flags.hidden) end) --
+    :Select(function(value, key) self.Entities[key] = Entity(key, value, self) end)
 
     Dictionary:new(game.item_prototypes) --
+    :Where(function(value) return not (value.flags and value.flags.hidden) end) --
     :Select(function(value, key) self.Items[key] = Item(key, value, self) end)
+
     Dictionary:new(game.fluid_prototypes) --
+    :Where(function(value) return not (value.hidden) end) --
     :Select(function(value, key) self.Fluids[key] = Fluid(key, value, self) end)
 
     Dictionary:new(game.resource_category_prototypes) --
@@ -93,13 +94,13 @@ function Database:Scan()
     self.Categories[" hand mining"].Workers:Append(self.Entities["character"])
     self.Categories["basic-solid mining"].Workers:Append(self.Entities["character"])
 
-    Dictionary:new(game.recipe_prototypes):Select(
-        function(value, key) self.Recipes[key] = Recipe(key, value, self) end
-    )
+    Dictionary:new(game.recipe_prototypes) --
+    :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
 
-    Dictionary:new(game.technology_prototypes):Select(
-        function(value, key) self.Technologies[key] = Technology(key, value, self) end
-    )
+    Dictionary:new(game.technology_prototypes) --
+    :Where(function(value) return not value.hidden end) --
+    :Select(function(value, key) self.Technologies[key] = Technology(key, value, self) end)
+    
     Dictionary:new(self.Entities):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
@@ -148,8 +149,8 @@ function Database:FindTarget()
 
             assert()
         end
-        --local cursor = global.Current.Player.entity_copy_source
-        --assert(not cursor)
+        -- local cursor = global.Current.Player.entity_copy_source
+        -- assert(not cursor)
 
     end
 
