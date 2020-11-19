@@ -54,12 +54,12 @@ function Recipe(name, prototype, database)
         if self.class_name ~= other.class_name then return false end
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
-        if (not self.NumberOnSprite) ~= (not other.NumberOnSprite) then return self.NumberOnSprite end
-        if (not self.Technology) ~= (not other.Technology) then return not self.Technology end
-        if self.Technology then
-            if self.Technology.IsReady ~= other.Technology.IsReady then
-                return self.Technology.IsReady
+        if self.IsResearched then
+            if (not self.NumberOnSprite) ~= (not other.NumberOnSprite) then
+                return self.NumberOnSprite
             end
+        elseif self.Technology.IsReady ~= other.Technology.IsReady then
+            return self.Technology.IsReady
         end
         if self.Prototype.group ~= other.Prototype.group then
             return self.Prototype.group.order < other.Prototype.group.order
