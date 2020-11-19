@@ -3,6 +3,7 @@ Version: 0.2.4
 Date: 2020-11-19
   Bugfixes:
     - event handling improved
+    - don't show 0 crafting amount
   Changes:
     - show machines
 ---------------------------------------------------------------------------------------------------

@@ -43,7 +43,8 @@ function Recipe(name, prototype, database)
     self.property.NumberOnSprite = {
         get = function(self)
             if not self.HandCrafter then return end
-            return global.Current.Player.get_craftable_count(self.Name)
+            local result =  global.Current.Player.get_craftable_count(self.Name)
+            if result > 0 then return result end
         end,
     }
 
