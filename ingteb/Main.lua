@@ -89,7 +89,7 @@ StateHandler = function(state)
     handlers[Constants.Key.Back] = (state.mainPanel and {BackNavigation, state.mainPanel}) or --
     {RefreshMain, "reopen current"}
 
-    handlers[Constants.Key.Main] = ((state.mainPanel or state.selectPane) and {MainForClose, "close mode"}) or --
+    handlers[Constants.Key.Main] = ((state.mainPanel or state.selectPanel) and {MainForClose, "close mode"}) or --
     {MainForOpen, "open mode"}
 
     handlers[defines.events.on_gui_click] = {GuiClickForMain, state.mainPanel}
