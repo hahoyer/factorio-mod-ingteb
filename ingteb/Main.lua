@@ -46,7 +46,7 @@ local function GuiClickForMain(event)
     then OpenMainGui(target.Item) end
 
     if not event.alt --
-    and (event.control or event.shift) --
+    and (event.alt or event.shift) --
     then --
         if target and target.class_name == "Recipe" and target.HandCrafter and target.NumberOnSprite then
             local amount = 0
