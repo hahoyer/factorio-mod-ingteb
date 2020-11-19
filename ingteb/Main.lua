@@ -7,6 +7,7 @@ local Helper = require("ingteb.Helper")
 local Gui = require("ingteb.Gui")
 local History = require("ingteb.History"):new()
 local Database = require("ingteb.Database"):new()
+local UI = require("core.UI")
 
 State = {}
 StateHandler = nil
@@ -34,36 +35,54 @@ function ForeNavigation() OpenMainGui(History:Fore(), false) end
 
 function BackNavigation() OpenMainGui(History:Back(), false) end
 
+function GetHandCraftingOrder(event, target)
+    if (UI.IsMouseCode(event, "A-- l") --
+    or UI.IsMouseCode(event, "A-- r") --
+    or UI.IsMouseCode(event, "--S l")) --
+    and target and target.class_name == "Recipe" and target.HandCrafter and target.NumberOnSprite then
+        local amount = 0
+        if event.shift then
+            amount = global.Current.Player.get_craftable_count(target.Prototype.name)
+        elseif event.button == defines.mouse_button_type.left then
+            amount = 1
+        elseif event.button == defines.mouse_button_type.right then
+            amount = 5
+        else
+            return
+        end
+        return {count = amount, recipe = target.Prototype.name}
+    end
+end
+
+function GetResearchOrder(event, target)
+    if UI.IsMouseCode(event, "--- r") --
+    and target and target.class_name == "Technology" and target.IsReady --
+    then return {Technology = target.Prototype} end
+end
+
 local function GuiClickForMain(event)
     global.Current.Player = game.players[event.player_index]
     local target = global.Current.Links and global.Current.Links[event.element.index]
 
-    if event.button == defines.mouse_button_type.left --
-    and not event.alt --
-    and not event.control --
-    and not event.shift --
-    and target and target.Item --
-    then OpenMainGui(target.Item) end
-
-    if not event.alt --
-    and (event.alt or event.shift) --
-    then --
-        if target and target.class_name == "Recipe" and target.HandCrafter and target.NumberOnSprite then
-            local amount = 0
-            if event.shift then
-                amount = global.Current.Player.get_craftable_count(target.Prototype.name)
-            elseif event.button == defines.mouse_button_type.left then
-                amount = 1
-            elseif event.button == defines.mouse_button_type.right then
-                amount = 5
-            else
-                return
-            end
-
-            global.Current.Player.begin_crafting{count=amount, recipe = target.Prototype.name}
-        end
---        assert()
+    if UI.IsMouseCode(event, "--- l") and target and target.Item --
+    then
+        OpenMainGui(target.Item)
+        return
     end
+
+    local order = GetHandCraftingOrder(event, target)
+    if order then
+        global.Current.Player.begin_crafting(order)
+        return
+    end
+
+    local order = GetResearchOrder(event, target)
+    if order then
+        global.Current.Player.force.add_research(order.Technology)
+        return
+    end
+
+    --        assert()
 
 end
 

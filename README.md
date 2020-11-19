@@ -11,7 +11,6 @@ todo:
 - Sort-performance
 - Load-performance resp. progress information
 - migration-awareness
-- initiate research
 - copy recipe 
 - provide information on recipe-combinations
 - restrict number of lines; provide expand-button

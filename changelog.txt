@@ -8,6 +8,7 @@ Date: 2020-11-19
     - show machines
     - sorting improved
     - initiate crafting
+    - initiate research
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2020-11-15
