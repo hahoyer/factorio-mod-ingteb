@@ -24,27 +24,6 @@ local function CreateSpriteAndRegister(frame, target, style)
     return result
 end
 
-local function GetPropertyStyle(property)
-    if property.type == "utility" and property.name == "clock" then return end
-    if property.type == "technology" then
-        local data = Helper.GetFactorioData(property)
-        if not data then return end
-
-        if data.researched then return end
-
-        if property.hasPrerequisites then return "red_slot_button" end
-
-        return Constants.GuiStyle.LightButton
-    end
-    if property.type == "recipe" then
-        local data = Helper.GetFactorioData(property)
-        if not data.enabled then return "red_slot_button" end
-        if data.category == "crafting" and property.amount then return Constants.GuiStyle.LightButton end
-    end
-
-    return
-end
-
 local function GetTechnologyStyle(property)
     if not property or property.IsResearched then return end
     if property.IsReady then return Constants.GuiStyle.LightButton end
@@ -84,12 +63,16 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     end
 end
 
-local function CreateCraftingGroupPane(frame, target, key, inCount, outCount)
+local function CreateCraftingGroupPanel(frame, target, key, inCount, outCount)
     frame.add {type = "line", direction = "horizontal"}
 
-    local workersPane = frame.add {type = "flow", style = Constants.GuiStyle.CenteredFlow, direction = "horizontal"}
+    local workersPane = frame.add {
+        type = "flow",
+        style = Constants.GuiStyle.CenteredFlow,
+        direction = "horizontal",
+    }
 
-    local workers = target[1].Database.WorkingEntities[key]
+    local workers = target[1].Database.Categories[key].Workers
     workers:Select(function(worker) return CreateSpriteAndRegister(workersPane, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
@@ -99,7 +82,7 @@ local function CreateCraftingGroupPane(frame, target, key, inCount, outCount)
     frame.add {type = "line", direction = "horizontal"}
 end
 
-local function CreateCraftingGroupsPane(frame, target, headerSprites)
+local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
 
     local targetArray = target:ToArray(function(value, key) return {value = value, key = key} end)
@@ -117,30 +100,45 @@ local function CreateCraftingGroupsPane(frame, target, headerSprites)
         end
     )
 
-    local subFrame = frame.add {type = "frame", horizontal_scroll_policy = "never", direction = "vertical"}
+    local subFrame = frame.add {
+        type = "frame",
+        horizontal_scroll_policy = "never",
+        direction = "vertical",
+    }
 
-    local labelFlow = subFrame.add {type = "flow", direction = "horizontal", style = Constants.GuiStyle.CenteredFlow}
+    local labelFlow = subFrame.add {
+        type = "flow",
+        direction = "horizontal",
+        style = Constants.GuiStyle.CenteredFlow,
+    }
 
     headerSprites:Select(function(sprite) labelFlow.add {type = "sprite", sprite = sprite} end)
 
     local inCount = target:Select(
-        function(group) return group:Select(function(recipe) return recipe.In:Count() end):Max() end
+        function(group)
+            return group:Select(function(recipe) return recipe.In:Count() end):Max()
+        end
     ):Max()
 
     local outCount = target:Select(
-        function(group) return group:Select(function(recipe) return recipe.Out:Count() end):Max() end
+        function(group)
+            return group:Select(function(recipe) return recipe.Out:Count() end):Max()
+        end
     ):Max()
 
     targetArray:Select(
         function(pair)
-            pair.value:Sort(function(a, b) return a.Database.IsBefore(a,b) end)
-            CreateCraftingGroupPane(subFrame, pair.value, pair.key, inCount, outCount)
+            pair.value:Sort(function(a, b) return a.Database.IsBefore(a, b) end)
+            CreateCraftingGroupPanel(subFrame, pair.value, pair.key, inCount, outCount)
         end
     )
 end
 
 local function CreateMainPanel(frame, target)
     frame.caption = target.LocalisedName
+
+    local item = target.Item
+    local entity = target.Entity
 
     local scrollframe = frame.add {
         type = "scroll-pane",
@@ -150,11 +148,13 @@ local function CreateMainPanel(frame, target)
     }
 
     local mainFrame = scrollframe
-    local columnCount = (target.CraftingRecipes:Any() and 1 or 0) + --
+    local columnCount = (target.RecipeList:Any() and 1 or 0) + --
     (target.In:Any() and 1 or 0) + --
     (target.Out:Any() and 1 or 0)
 
-    if columnCount > 1 then mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"} end
+    if columnCount > 1 then
+        mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
+    end
 
     if columnCount == 0 then
         local none = mainFrame.add {type = "frame", direction = "horizontal"}
@@ -173,14 +173,16 @@ local function CreateMainPanel(frame, target)
         return
     end
 
-    assert(not target.CraftingRecipes:Any())
+    CreateCraftingGroupsPanel(mainFrame, target.RecipeList, Array:new{target.SpriteName, "factorio"})
 
-    CreateCraftingGroupsPane(
-        mainFrame, target.In, Array:new{target.SpriteName, "utility/go_to_arrow", "utility/missing_icon"}
+    CreateCraftingGroupsPanel(
+        mainFrame, target.In,
+            Array:new{target.SpriteName, "utility/go_to_arrow", "utility/missing_icon"}
     )
 
-    CreateCraftingGroupsPane(
-        mainFrame, target.Out, Array:new{"utility/missing_icon", "utility/go_to_arrow", target.SpriteName}
+    CreateCraftingGroupsPanel(
+        mainFrame, target.Out,
+            Array:new{"utility/missing_icon", "utility/go_to_arrow", target.SpriteName}
     )
 
 end
@@ -196,6 +198,8 @@ function result.SelectTarget()
     )
 end
 
-function result.Main(data) return Helper.ShowFrame("Main", function(frame) return CreateMainPanel(frame, data) end) end
+function result.Main(data)
+    return Helper.ShowFrame("Main", function(frame) return CreateMainPanel(frame, data) end)
+end
 
 return result

@@ -11,14 +11,17 @@ function Item(name, prototype, database)
     self.class_name = "Item"
     self.SpriteType = "item"
 
+    self.property.RecipeList = {
+        get = function() return self.Entity and self.Entity.RecipeList or Array:new{} end,
+    }
+
     if self.Name:find("mini") then --
         local x = y
     end
 
     function self:Setup()
         if self.Prototype.place_result then
-            self.Entity = self.Database.Entities[self.Prototype.place_result
-                              .name]
+            self.Entity = self.Database.Entities[self.Prototype.place_result.name]
         end
     end
 

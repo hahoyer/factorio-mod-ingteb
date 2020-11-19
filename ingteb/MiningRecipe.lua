@@ -23,6 +23,9 @@ function MiningRecipe(resource, database)
         .. (configuration.required_fluid and " fluid" or "") --
         .. " mining"
 
+        self.Category = self.Database.Categories[category]
+        self.Category.Recipes:Append(self)
+
         self:AppendForKey(category, resource.In)
         self.In = Array:new{resource}
 
@@ -44,10 +47,6 @@ function MiningRecipe(resource, database)
                 return result
             end
         )
-
-        self.WorkingEntities = database.WorkingEntities[category]
-
-        self.WorkingEntities:Select(function(entity) entity.CraftingRecipes:Append(self) end)
     end
 
     return self

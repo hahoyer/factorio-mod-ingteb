@@ -8,6 +8,8 @@ local PropertyProvider = require("core.PropertyProvider")
 
 function Common(name, prototype, database)
     local self = PropertyProvider:new{Name = name, Prototype = prototype, Database = database, cache = {}}
+    self.In = Dictionary:new{}
+    self.Out = Dictionary:new{}
 
     function self:addCachedProperty(name, getter)
         self.cache[name] = ValueCache(getter)
@@ -34,9 +36,6 @@ function CommonThing(name, prototype, database)
     local self = Common(name, prototype, database)
 
     self.TechnologyIngredients = Array:new{}
-    self.In = Dictionary:new{}
-    self.Out = Dictionary:new{}
-    self.CraftingRecipes = Array:new{}
 
     return self
 end
