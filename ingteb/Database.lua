@@ -88,7 +88,7 @@ function Database:Scan()
     Dictionary:new(game.recipe_category_prototypes) --
     :Select(function(value, key) self.WorkingEntities[key .. " crafting"] = Array:new() end)
 
-    self.WorkingEntities[" hand mining"] = Array:new(self.Entities["character"])
+    self.WorkingEntities[" hand mining"] = Array:new{self.Entities["character"]}
 
     self.WorkingEntities["basic-solid mining"]:Append(self.Entities["character"])
 

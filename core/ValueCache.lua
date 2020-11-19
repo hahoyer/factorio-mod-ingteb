@@ -15,14 +15,10 @@ function ValueCacheRaw:get_Value()
     return self.value
 end
 
-function ValueCacheRaw:get_IsValid()
-    return self.isValid
-end
+function ValueCacheRaw:get_IsValid() return self.isValid end
 
 function ValueCacheRaw:set_IsValid(value)
-    if value == self:get_IsValid() then
-        return
-    end
+    if value == self:get_IsValid() then return end
     if value then
         self:Ensure()
     else
@@ -45,22 +41,14 @@ function ValueCacheRaw:Reset()
 end
 
 function ValueCache(getter)
-    local result = PropertyProvider:new {valueCache = ValueCacheRaw:new(getter)}
+    local result = PropertyProvider:new{valueCache = ValueCacheRaw:new(getter)}
 
     result.property.IsValid = {
-        get = function(self)
-            return self:get_IsValid()
-        end,
-        set = function(self, value)
-            self:set_IsValid(value)
-        end
+        get = function(self) return self.valueCache:get_IsValid() end,
+        set = function(self, value) self.valueCache:set_IsValid(value) end,
     }
 
-    result.property.Value = {
-        get = function(self)
-            return self.valueCache:get_Value()
-        end
-    }
+    result.property.Value = {get = function(self) return self.valueCache:get_Value() end}
     return result
 end
 
