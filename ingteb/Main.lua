@@ -3,7 +3,6 @@ local Constants = require("Constants")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Data = require("ingteb.Data")
 local Helper = require("ingteb.Helper")
 local Gui = require("ingteb.Gui")
 local History = require("ingteb.History"):new()

@@ -3,7 +3,6 @@ local Constants = require("Constants")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Data = require("ingteb.Data")
 local Helper = require("ingteb.Helper")
 local Gui = require("ingteb.Gui")
 local History = require("ingteb.History"):new()
@@ -12,15 +11,11 @@ local ValueCache = require("core.ValueCache")
 local PropertyProvider = require("core.PropertyProvider")
 
 function TestProperyProvider()
-    local x = PropertyProvider:new {data = false}
+    local x = PropertyProvider:new{data = false}
 
     x.property.TestValue = {
-        get = function(self)
-            return self.data
-        end,
-        set = function(self, value)
-            self.data = value
-        end
+        get = function(self) return self.data end,
+        set = function(self, value) self.data = value end,
     }
 
     assert(not x.TestValue)
@@ -38,8 +33,7 @@ end
 function TestValueCache()
     local count = 0
 
-    local p =
-        ValueCache(
+    local p = ValueCache(
         function()
             count = count + 1
             return count

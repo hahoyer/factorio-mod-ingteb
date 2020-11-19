@@ -8,6 +8,7 @@ Date: 2020-11-15
     - Button styles
     - ordered recipes
     - display level of technology
+    - rewrite with more object orientation
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2020-11-14
