@@ -100,6 +100,15 @@ function Recipe(name, prototype, database)
         end,
     }
 
+    self.IsDynamic = true
+
+    self.property.SpriteStyle = {
+        get = function(self)
+            if not self.IsResearched then return "red_slot_button" end
+            if self.NumberOnSprite then return Constants.GuiStyle.LightButton end
+        end,
+    }
+
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
         self.Category = self.Database.Categories[category]
@@ -110,7 +119,11 @@ function Recipe(name, prototype, database)
         :Select(
             function(ingredient)
                 local result = database:GetItemSet(ingredient)
-                if result then self:AppendForKey(category, result.Item.In) else isHidden = true end
+                if result then
+                    result.Item.In:AppendForKey(category, self)
+                else
+                    isHidden = true
+                end
                 return result
             end
         ) --
@@ -120,7 +133,11 @@ function Recipe(name, prototype, database)
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                if result then self:AppendForKey(category, result.Item.Out) else isHidden = true end
+                if result then
+                    result.Item.Out:AppendForKey(category, self)
+                else
+                    isHidden = true
+                end
                 return result
             end
         ) --
@@ -129,9 +146,9 @@ function Recipe(name, prototype, database)
         self.IsHidden = isHidden
 
         if isHidden then return end
-        
+
         self.Category.Recipes:Append(self)
-        
+
         self.HandCrafter = self.Category.Workers:Where(
             function(worker) return worker.Name == "character" end
         ):Top()

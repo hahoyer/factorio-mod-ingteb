@@ -7,9 +7,7 @@ local Dictionary = Table.Dictionary
 local function CreateSpriteAndRegister(frame, target, style)
     local result
 
-    if target and target.class_name == "Recipe" then 
-       local h = target.HelperText
-    end
+    if target and target.class_name == "Recipe" then local h = target.HelperText end
 
     if target then
         result = frame.add {
@@ -25,19 +23,8 @@ local function CreateSpriteAndRegister(frame, target, style)
     end
 
     global.Current.Links[result.index] = target
+    if target and target.IsDynamic then global.Current.Gui:AppendForKey(target, result) end
     return result
-end
-
-local function GetTechnologyStyle(property)
-    if not property or property.IsResearched then return end
-    if property.IsReady then return Constants.GuiStyle.LightButton end
-    return "red_slot_button"
-
-end
-
-local function GetRecipeStyle(property)
-    if not property.IsResearched then return "red_slot_button" end
-    if property.NumberOnSprite then return Constants.GuiStyle.LightButton end
 end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
@@ -53,8 +40,8 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
-    CreateSpriteAndRegister(properties, target.Technology, GetTechnologyStyle(target.Technology))
-    CreateSpriteAndRegister(properties, target, GetRecipeStyle(target))
+    CreateSpriteAndRegister(properties, target.Technology, target.Technology and target.Technology.SpriteStyle)
+    CreateSpriteAndRegister(properties, target, target.SpriteStyle)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
 
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
@@ -89,16 +76,16 @@ end
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
 
-    local targetArray = target:ToArray(function(value, key) return {value = value, key = key} end)
+    local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)
     targetArray:Sort(
         function(a, b)
             if a == b then return false end
-            local aOrder = a.value:Select(function(recipe) return recipe.Order end):Sum()
-            local bOrder = b.value:Select(function(recipe) return recipe.Order end):Sum()
+            local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
+            local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
             if aOrder ~= bOrder then return aOrder > bOrder end
 
-            local aSubOrder = a.value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            local bSubOrder = b.value:Select(function(recipe) return recipe.SubOrder end):Sum()
+            local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
+            local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
             return aSubOrder > bSubOrder
 
         end
@@ -132,8 +119,8 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     targetArray:Select(
         function(pair)
-            pair.value:Sort(function(a, b) return a:IsBefore(b) end)
-            CreateCraftingGroupPanel(subFrame, pair.value, pair.key, inCount, outCount)
+            pair.Value:Sort(function(a, b) return a:IsBefore(b) end)
+            CreateCraftingGroupPanel(subFrame, pair.Value, pair.Key, inCount, outCount)
         end
     )
 end

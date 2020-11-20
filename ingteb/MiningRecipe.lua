@@ -24,7 +24,7 @@ function MiningRecipe(resource, database)
 
         local isHidden = false
 
-        self:AppendForKey(category, resource.In)
+        resource.In:AppendForKey( category, self)
         self.In = Array:new{resource}
 
         if configuration.required_fluid then
@@ -33,7 +33,7 @@ function MiningRecipe(resource, database)
                 name = configuration.required_fluid,
                 amount = configuration.fluid_amount,
             }
-            self:AppendForKey(category, fluid.Item.In)
+            fluid.Item.In:AppendForKey(category, self)
             self.In:Append(fluid)
         end
 
@@ -41,7 +41,7 @@ function MiningRecipe(resource, database)
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                if result then  self:AppendForKey(category, result.Item.Out) else isHidden = true end
+                if result then  result.Item.Out:AppendForKey(category, self) else isHidden = true end
                 return result
             end
         )

@@ -16,14 +16,6 @@ function Common(name, prototype, database)
         self.property[name] = {get = function(self) return self.cache[name].Value end}
     end
 
-    function self:AppendForKey(key, dictionary)
-        if key then
-            local list = dictionary[key]
-            if not list then dictionary[key] = Array:new() end
-            dictionary[key]:Append(self)
-        end
-    end
-
     self.LocalisedName = self.Prototype.localised_name
     self.HelperText = self.Prototype.localised_name
 

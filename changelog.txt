@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.4
-Date: 2020-11-19
+Date: 2020-11-20
   Bugfixes:
     - event handling improved
     - don't show 0 crafting amount
@@ -9,6 +9,8 @@ Date: 2020-11-19
     - sorting improved
     - initiate crafting
     - initiate research
+    - hiding the hidden
+    - functional help on tooltips
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2020-11-15

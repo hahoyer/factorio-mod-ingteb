@@ -49,12 +49,21 @@ function Technology(name, prototype, database)
         end
     )
 
+    self.property.SpriteStyle = {
+        get = function(self)
+            if self.IsResearched then return end
+            if self.IsReady then return Constants.GuiStyle.LightButton end
+            return "red_slot_button"
+        end,
+    }
+
     self.property.IsResearched = {
         get = function(self)
             return global.Current.Player.force.technologies[self.Name].researched
         end,
     }
 
+    self.IsDynamic = true
     self.Enables = Array:new()
 
     function self:Setup()

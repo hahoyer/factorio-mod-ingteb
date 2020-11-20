@@ -17,6 +17,7 @@ local function EnsureGlobal()
     if not global.Current then global.Current = {} end
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
+    if not global.Current.Gui then global.Current.Gui = Dictionary:new{} end
 end
 
 local function OpenMainGui(target, setHistory)
@@ -27,6 +28,33 @@ local function OpenMainGui(target, setHistory)
     StateHandler {mainPanel = true}
     if setHistory ~= false then History:HairCut(target) end
     return target
+end
+
+local function UpdateGui(list, target)
+    local helperText = target.HelperText
+    local number = target.NumberOnSprite
+    local style = target.SpriteStyle or "slot_button"
+    list:Select(
+        function(guiElement)
+            guiElement.tooltip = helperText
+            guiElement.number = number
+            guiElement.style = style
+        end
+    )
+end
+
+local function RefreshMainInventoryChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.class_name == "Recipe" end) --
+    :Select(UpdateGui) --
+end
+
+local function RefreshStackChanged() end
+
+local function RefreshMainResearchChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.class_name == "Technology" end) --
+    :Select(UpdateGui) --
 end
 
 local function RefreshMain() OpenMainGui(History:GetCurrent(), false) end
@@ -141,9 +169,10 @@ StateHandler = function(state)
     handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
     handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
 
-    handlers[defines.events.on_player_main_inventory_changed] = {RefreshMain, state.mainPanel}
-    handlers[defines.events.on_player_cursor_stack_changed] = {RefreshMain, state.mainPanel}
-    handlers[defines.events.on_research_finished] = {RefreshMain, state.mainPanel}
+    handlers[defines.events.on_player_main_inventory_changed] =
+        {RefreshMainInventoryChanged, state.mainPanel}
+    handlers[defines.events.on_player_cursor_stack_changed] = {RefreshStackChanged, state.mainPanel}
+    handlers[defines.events.on_research_finished] = {RefreshMainResearchChanged, state.mainPanel}
 
     Helper.SetHandlers(handlers)
 

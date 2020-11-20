@@ -15,4 +15,4 @@ todo:
 - provide information on recipe-combinations
 - restrict number of lines; provide expand-button
 - providing descriptions
-- functional help on tooltips
+- tooltip-help and actual keys should be joined

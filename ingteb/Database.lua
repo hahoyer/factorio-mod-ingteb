@@ -102,11 +102,11 @@ function Database:Scan()
     :Select(function(value, key) self.Technologies[key] = Technology(key, value, self) end)
     
     Dictionary:new(self.Entities):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Recipes):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Technologies):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Categories):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
 end
 
 function Database:AddBonus(target, technology)
