@@ -17,7 +17,9 @@ local function EnsureGlobal()
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
     if not global.Current.Gui then global.Current.Gui = Dictionary:new{} end
-    if not global.Current.PendingTranslation then global.Current.PendingTranslation = {} end
+    if not global.Current.PendingTranslation then
+        global.Current.PendingTranslation = Dictionary:new{}
+    end
 end
 
 local function EnsureMainButton()
@@ -67,6 +69,35 @@ local function RefreshMainResearchChanged()
     global.Current.Gui --
     :Where(function(_, target) return target.class_name == "Technology" end) --
     :Select(UpdateGui) --
+end
+
+local function RefreshDescription(this)
+    global.Current.Gui --
+    :Where(function(_, target) return target == this end) --
+    :Select(UpdateGui) --
+end
+
+local function OnStringTranslated(event)
+    local target = event.localised_string
+    local pendingList = global.Current.PendingTranslation[target[1]]
+    Array:new(pendingList) --
+    :Select(
+        function(pending, index)
+            if Helper.DeepEqual(pending.Key, target) then
+                table.remove(pendingList, index)
+                if #pendingList == 0 then
+                    global.Current.PendingTranslation[target[1]] = nil
+                end
+
+                if event.translated then
+                    local thing = pending.Value
+                    thing.HasLocalisedDescriptionPending = false
+                    RefreshDescription(thing)
+                end
+                return
+            end
+        end
+    ) --
 end
 
 local function RefreshMain() OpenMainGui(History:GetCurrent(), false) end
@@ -226,4 +257,4 @@ Helper.SetHandler("on_load", OnLoad)
 Helper.SetHandler("on_init", OnInit)
 Helper.SetHandler(defines.events.on_tick, OnTick)
 Helper.SetHandler(Constants.Key.Main, OnMainKey)
-Helper.SetHandler(defines.events.on_string_translated, function(event) assert() end)
+Helper.SetHandler(defines.events.on_string_translated, OnStringTranslated)
