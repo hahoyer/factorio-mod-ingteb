@@ -69,6 +69,7 @@ function result.HideFrame()
 end
 
 function result.SetHandler(eventId, handler, register)
+    if not handler then register = false end
     if register == nil then register = true end
 
     local name = type(eventId) == "number" and EventDefinesByIndex[eventId]
