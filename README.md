@@ -20,8 +20,6 @@ todo:
 - provide workers-panel for lab to see research potions
 - provide information about modules
 - provide information about technologies, like in built-in technology view or find a way to use this
-- Activation-icon on top left corner
-- Don't sort by "IsCraftable"
 - multiplayer
 
 known issue: 
