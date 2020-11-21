@@ -7,7 +7,12 @@ local ValueCache = require("core.ValueCache")
 local PropertyProvider = require("core.PropertyProvider")
 
 function Common(name, prototype, database)
-    local self = PropertyProvider:new{Name = name, Prototype = prototype, Database = database, cache = {}}
+    local self = PropertyProvider:new{
+        Name = name,
+        Prototype = prototype,
+        Database = database,
+        cache = {},
+    }
     self.In = Dictionary:new{}
     self.Out = Dictionary:new{}
 
@@ -20,6 +25,16 @@ function Common(name, prototype, database)
     self.HelperText = self.Prototype.localised_name
 
     self:addCachedProperty("SpriteName", function() return self.SpriteType .. "/" .. self.Name end)
+
+    self:addCachedProperty(
+        "Description", function()
+            if self.Prototype and self.Prototype.localised_description then
+                global.Current.PendingTranslation[self.Prototype.localised_description] = self
+                global.Current.Player.request_translation(self.Prototype.localised_description)
+            end
+            return self.ActualDescription
+        end
+    )
 
     return self
 end

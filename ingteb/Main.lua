@@ -17,6 +17,7 @@ local function EnsureGlobal()
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
     if not global.Current.Gui then global.Current.Gui = Dictionary:new{} end
+    if not global.Current.PendingTranslation then global.Current.PendingTranslation = {} end
 end
 
 local function EnsureMainButton()
@@ -225,3 +226,4 @@ Helper.SetHandler("on_load", OnLoad)
 Helper.SetHandler("on_init", OnInit)
 Helper.SetHandler(defines.events.on_tick, OnTick)
 Helper.SetHandler(Constants.Key.Main, OnMainKey)
+Helper.SetHandler(defines.events.on_string_translated, function(event) assert() end)

@@ -76,7 +76,7 @@ function Recipe(name, prototype, database)
         if self.class_name ~= other.class_name then return false end
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
-        if self.Technology.IsReady ~= other.Technology.IsReady then
+        if not self.IsResearched and self.Technology.IsReady ~= other.Technology.IsReady then
             return self.Technology.IsReady
         end
         if self.Prototype.group ~= other.Prototype.group then
