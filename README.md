@@ -7,7 +7,7 @@ Unfortunately, the places where you can look up information about an item are no
 This release is only the first stage. I have more ideas for extensions. I am also open for suggestions. I am especially happy about further places where I can connect the help system.
 
 todo:
-- selection from multy-item-entities
+- selection from multi-item-entities
 - Sort-performance
 - Load-performance resp. progress information
 - migration-awareness
