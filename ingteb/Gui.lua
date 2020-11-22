@@ -125,9 +125,6 @@ end
 local function CreateMainPanel(frame, target)
     frame.caption = target.LocalisedName
 
-    local item = target.Item
-    local entity = target.Entity
-
     local scrollframe = frame.add {
         type = "scroll-pane",
         horizontal_scroll_policy = "never",

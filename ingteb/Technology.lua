@@ -14,13 +14,19 @@ function Technology(name, prototype, database)
 
     self.Time = self.Prototype.research_unit_energy
 
-    self.property.IsReady = {
-        get = function(self)
+    self:addCachedProperty(
+        "IsReady", function()
             return self.Prerequisites:All(
                 function(technology) return technology.IsResearched end
             )
-        end,
-    }
+        end
+    )
+
+    self:addCachedProperty(
+        "IsResearched", function()
+            return global.Current.Player.force.technologies[self.Name].researched == true
+        end
+    )
 
     self.property.FunctionHelp = {
         get = function(self) --
@@ -53,20 +59,16 @@ function Technology(name, prototype, database)
         end,
     }
 
-    self.property.IsResearched = {
-        get = function(self)
-            return global.Current.Player.force.technologies[self.Name].researched
-        end,
-    }
+    function self:Refresh()
+        self.cache.IsResearched.IsValid = false
+        self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
+    end
 
     self.Enables = Array:new()
     self.Effects = Array:new()
-    self.property.Output = {get = function(self) 
-        return self.Effects:Concat(self.Enables) 
-    end}
+    self.property.Output = {get = function(self) return self.Effects:Concat(self.Enables) end}
 
     self.IsDynamic = true
-    
 
     function self:IsBefore(other)
         if self == other then return false end
@@ -74,9 +76,7 @@ function Technology(name, prototype, database)
         if self.class_name ~= other.class_name then return self.Order < other.Order end
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
-        if self.IsReady ~= other.IsReady then
-            return self.IsReady
-        end
+        if self.IsReady ~= other.IsReady then return self.IsReady end
 
         return self.Prototype.order < other.Prototype.order
     end
@@ -102,7 +102,6 @@ function Technology(name, prototype, database)
             end
         ) --
         :Concat(self.Prerequisites)
-
 
         Array:new(self.Prototype.effects) --
         :Select(

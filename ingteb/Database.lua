@@ -113,7 +113,7 @@ function Database:Scan()
     Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
 
-    
+
 end
 
 function Database:EnsureCategory(domain, prototype)
@@ -177,6 +177,10 @@ function Database:Get(target)
     self:Scan()
     if target.type == "item" then return self.Items[target.name] end
     -- assert()
+end
+
+function Database:RefreshTechnology(target)
+    self.Technologies[target.name]:Refresh()
 end
 
 return Database

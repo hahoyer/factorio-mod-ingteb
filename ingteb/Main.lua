@@ -149,6 +149,11 @@ local function GuiClose()
     StateHandler {mainPanel = false}
 end
 
+local function OnResearchFinished(event)
+    Database:RefreshTechnology(event.research)
+    Helper.RefreshMainResearchChanged()
+end
+
 local function OnMainKey(event)
     global.Current.Player = game.players[event.player_index]
     Main()
@@ -190,7 +195,7 @@ StateHandler = function(state)
     handlers[defines.events.on_player_cursor_stack_changed] =
         {Helper.RefreshStackChanged, state.mainPanel}
     handlers[defines.events.on_research_finished] =
-        {Helper.RefreshMainResearchChanged, state.mainPanel}
+        {OnResearchFinished, state.mainPanel}
     handlers[defines.events.on_tick] = {}
 
     Helper.SetHandlers(handlers)
