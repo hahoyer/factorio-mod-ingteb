@@ -44,62 +44,6 @@ local function OpenMainGui(target, setHistory)
     return target
 end
 
-local function UpdateGui(list, target)
-    local helperText = target.HelperText
-    local number = target.NumberOnSprite
-    local style = target.SpriteStyle or "slot_button"
-    list:Select(
-        function(guiElement)
-            guiElement.tooltip = helperText
-            guiElement.number = number
-            guiElement.style = style
-        end
-    )
-end
-
-local function RefreshMainInventoryChanged()
-    global.Current.Gui --
-    :Where(function(_, target) return target.class_name == "Recipe" end) --
-    :Select(UpdateGui) --
-end
-
-local function RefreshStackChanged() end
-
-local function RefreshMainResearchChanged()
-    global.Current.Gui --
-    :Where(function(_, target) return target.class_name == "Technology" end) --
-    :Select(UpdateGui) --
-end
-
-local function RefreshDescription(this)
-    global.Current.Gui --
-    :Where(function(_, target) return target == this end) --
-    :Select(UpdateGui) --
-end
-
-local function OnStringTranslated(event)
-    local target = event.localised_string
-    local pendingList = global.Current.PendingTranslation[target[1]]
-    Array:new(pendingList) --
-    :Select(
-        function(pending, index)
-            if Helper.DeepEqual(pending.Key, target) then
-                table.remove(pendingList, index)
-                if #pendingList == 0 then
-                    global.Current.PendingTranslation[target[1]] = nil
-                end
-
-                if event.translated then
-                    local thing = pending.Value
-                    thing.HasLocalisedDescriptionPending = false
-                    RefreshDescription(thing)
-                end
-                return
-            end
-        end
-    ) --
-end
-
 local function RefreshMain() OpenMainGui(History:GetCurrent(), false) end
 
 function ForeNavigation() OpenMainGui(History:Fore(), false) end
@@ -242,9 +186,11 @@ StateHandler = function(state)
     handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
 
     handlers[defines.events.on_player_main_inventory_changed] =
-        {RefreshMainInventoryChanged, state.mainPanel}
-    handlers[defines.events.on_player_cursor_stack_changed] = {RefreshStackChanged, state.mainPanel}
-    handlers[defines.events.on_research_finished] = {RefreshMainResearchChanged, state.mainPanel}
+        {Helper.RefreshMainInventoryChanged, state.mainPanel}
+    handlers[defines.events.on_player_cursor_stack_changed] =
+        {Helper.RefreshStackChanged, state.mainPanel}
+    handlers[defines.events.on_research_finished] =
+        {Helper.RefreshMainResearchChanged, state.mainPanel}
     handlers[defines.events.on_tick] = {}
 
     Helper.SetHandlers(handlers)
@@ -257,4 +203,4 @@ Helper.SetHandler("on_load", OnLoad)
 Helper.SetHandler("on_init", OnInit)
 Helper.SetHandler(defines.events.on_tick, OnTick)
 Helper.SetHandler(Constants.Key.Main, OnMainKey)
-Helper.SetHandler(defines.events.on_string_translated, OnStringTranslated)
+Helper.SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)

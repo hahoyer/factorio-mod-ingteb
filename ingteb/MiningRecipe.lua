@@ -10,7 +10,9 @@ function MiningRecipe(resource, database)
     local self = Common(resource.Name, resource.Prototype, database)
     self.class_name = "MiningRecipe"
     self.SpriteType = "entity"
+    self.Order = 2
 
+    self.Resource = resource
     self.Time = self.Prototype.mineable_properties.mining_time
 
     function self:Setup()
@@ -24,8 +26,8 @@ function MiningRecipe(resource, database)
 
         local isHidden = false
 
-        resource.In:AppendForKey( category, self)
-        self.In = Array:new{resource}
+        self.Resource.UsedBy:AppendForKey( category, self)
+        self.Input = Array:new{self.Resource}
 
         if configuration.required_fluid then
             local fluid = self.Database:GetItemSet{
@@ -33,15 +35,15 @@ function MiningRecipe(resource, database)
                 name = configuration.required_fluid,
                 amount = configuration.fluid_amount,
             }
-            fluid.Item.In:AppendForKey(category, self)
-            self.In:Append(fluid)
+            fluid.Item.UsedBy:AppendForKey(category, self)
+            self.Input:Append(fluid)
         end
 
-        self.Out = Array:new(configuration.products) --
+        self.Output = Array:new(configuration.products) --
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                if result then  result.Item.Out:AppendForKey(category, self) else isHidden = true end
+                if result then  result.Item.CreatedBy:AppendForKey(category, self) else isHidden = true end
                 return result
             end
         )
@@ -58,7 +60,7 @@ function MiningRecipe(resource, database)
 
     function self:IsBefore(other)
         if self == other then return false end
-        if self.class_name ~= other.class_name then return true end
+        if self.class_name ~= other.class_name then return self.Order < other.Order end
         if self.Prototype.group ~= other.Prototype.group then
             return self.Prototype.group.order < other.Prototype.group.order
         end

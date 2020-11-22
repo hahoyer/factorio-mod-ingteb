@@ -7,42 +7,41 @@ local ValueCache = require("core.ValueCache")
 local PropertyProvider = require("core.PropertyProvider")
 
 function ItemSet(item, amounts, database)
-
-    local self = PropertyProvider:new{
-        class_name = "ItemSet",
-        SpriteType = item.SpriteType,
-        Item = item,
-        Name = item.Name,
-        Amounts = amounts,
-        Database = database,
-
-        cache = {},
-    }
+    local self = Common(item.Name, item.Prototype, database)
+    self.Item = item
+    self.Amounts = amounts
+    self.class_name = "ItemSet"
+    self.SpriteType = item.SpriteType
 
     assert(self.Item)
 
-    function self:addCachedProperty(name, getter)
-        self.cache[name] = ValueCache(getter)
-        self.property[name] = {get = function(self) return self.cache[name].Value end}
-    end
+    self.UsePercentage = self.Amounts.probability ~= nil
 
     self:addCachedProperty(
         "NumberOnSprite", function()
             local amounts = self.Amounts
             if not amounts then return end
-            if amounts.min and amounts.max and amounts.probability and not amounts.value then
-                return (amounts.max + amounts.min) / 2 * amounts.probability
+
+            local probability = (amounts.probability or 1)
+            local value = amounts.value
+
+            if not value then
+                if not amounts.min then
+                    value = amounts.max
+                elseif not amounts.max then
+                    value = amounts.min
+                else
+                    value = (amounts.max + amounts.min) / 2
+                end
+            elseif type(value) ~= "number" then
+                return
             end
-            if not amounts.min and not amounts.max and amounts.probability and amounts.value then
-                return amounts.value * amounts.probability
-            end
-            if amounts.min or amounts.max or amounts.probability then assert() end
-            return amounts.value
+
+            return value * probability
         end
     )
 
-    self:addCachedProperty("SpriteName", function() return self.SpriteType .."/".. self.Name end)
-    self:addCachedProperty("HelperText", function() return self.Item.LocalisedName end)
+    self:addCachedProperty("SpriteName", function() return self.Item.SpriteName end)
 
     return self
 end

@@ -7,19 +7,17 @@ local ValueCache = require("core.ValueCache")
 require("ingteb.Common")
 
 function Item(name, prototype, database)
-    local self = CommonThing(name, prototype, database)
+    local self = Common(name, prototype, database)
     self.class_name = "Item"
     self.SpriteType = "item"
+    self.UsedBy = Dictionary:new{}
+    self.CreatedBy = Dictionary:new{}
 
     self.property.RecipeList = {
         get = function() return self.Entity and self.Entity.RecipeList or Array:new{} end,
     }
 
-    if self.Name:find("mini") then --
-        local x = y
-    end
-
-    function Sort(target)
+    local function Sort(target)
         local targetArray = target:ToArray(
             function(value, key) return {Value = value, Key = key} end
         )
@@ -55,8 +53,8 @@ function Item(name, prototype, database)
             self.Entity = self.Database.Entities[self.Prototype.place_result.name]
         end
 
-        self.In = Sort(self.In)
-        self.Out = Sort(self.Out)
+        self.CreatedBy = Sort(self.CreatedBy)
+        self.UsedBy = Sort(self.UsedBy)
 
     end
 

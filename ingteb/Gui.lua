@@ -7,9 +7,13 @@ local Dictionary = Table.Dictionary
 local function CreateSpriteAndRegister(frame, target, style)
     local result
 
-    if target and target.class_name == "Recipe" then 
-        local h = target.HelperText 
+    if target and target.class_name and target.class_name:find("BonusSet") then --
+        local h = target --
     end
+    local tooltip = target and target.HelperText
+    local sprite = target and target.SpriteName
+    local number = target and target.NumberOnSprite
+    local show_percent_for_small_numbers = target and target.UsePercentage
 
     if target then
         result = frame.add {
@@ -17,7 +21,7 @@ local function CreateSpriteAndRegister(frame, target, style)
             tooltip = target.HelperText,
             sprite = target.SpriteName,
             number = target.NumberOnSprite,
-            show_percent_for_small_numbers = target.probability ~= nil,
+            show_percent_for_small_numbers = target and target.UsePercentage,
             style = style or "slot_button",
         }
     else
@@ -25,7 +29,12 @@ local function CreateSpriteAndRegister(frame, target, style)
     end
 
     global.Current.Links[result.index] = target
-    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then global.Current.Gui:AppendForKey(target, result) end
+    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
+        if target and target.class_name == "BonusSet" then --
+            local s = 2 --
+        end
+        global.Current.Gui:AppendForKey(target, result)
+    end
     return result
 end
 
@@ -33,25 +42,27 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame = frame.add {type = "flow", direction = "horizontal"}
     local inPanel = subFrame.add {name = "in", type = "flow", direction = "horizontal"}
 
-    for _ = target.In:Count() + 1, inCount do --
+    for _ = target.Input:Count() + 1, inCount do --
         inPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
     end
 
-    target.In:Select(function(item) return CreateSpriteAndRegister(inPanel, item) end)
+    target.Input:Select(function(item) return CreateSpriteAndRegister(inPanel, item) end)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
-    CreateSpriteAndRegister(properties, target.Technology, target.Technology and target.Technology.SpriteStyle)
+    CreateSpriteAndRegister(
+        properties, target.Technology, target.Technology and target.Technology.SpriteStyle
+    )
     CreateSpriteAndRegister(properties, target, target.SpriteStyle)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
 
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
     local outPanel = subFrame.add {name = "out", type = "flow", direction = "horizontal"}
 
-    target.Out:Select(function(item) return CreateSpriteAndRegister(outPanel, item) end)
+    target.Output:Select(function(item) return CreateSpriteAndRegister(outPanel, item) end)
 
-    for _ = target.Out:Count() + 1, outCount do --
+    for _ = target.Output:Count() + 1, outCount do --
         outPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
     end
 end
@@ -109,13 +120,13 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     local inCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.In:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Input:Count() end):Max()
         end
     ):Max()
 
     local outCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.Out:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Output:Count() end):Max()
         end
     ):Max()
 
@@ -142,8 +153,8 @@ local function CreateMainPanel(frame, target)
 
     local mainFrame = scrollframe
     local columnCount = (target.RecipeList:Any() and 1 or 0) + --
-    (target.In:Any() and 1 or 0) + --
-    (target.Out:Any() and 1 or 0)
+    (target.UsedBy:Any() and 1 or 0) + --
+    (target.CreatedBy:Any() and 1 or 0)
 
     if columnCount > 1 then
         mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
@@ -169,12 +180,12 @@ local function CreateMainPanel(frame, target)
     CreateCraftingGroupsPanel(mainFrame, target.RecipeList, Array:new{target.SpriteName, "factorio"})
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.In,
+        mainFrame, target.UsedBy,
             Array:new{target.SpriteName, "utility/go_to_arrow", "utility/missing_icon"}
     )
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.Out,
+        mainFrame, target.CreatedBy,
             Array:new{"utility/missing_icon", "utility/go_to_arrow", target.SpriteName}
     )
 

@@ -14,7 +14,6 @@ todo:
 - copy recipe 
 - provide information on recipe-combinations
 - restrict number of lines; provide expand-button
-- providing descriptions
 - tooltip-help and actual keys should be joined
 - provide summary for recipe like in tooltip from crafting menu
 - provide workers-panel for lab to see research potions
@@ -24,3 +23,4 @@ todo:
 
 known issue: 
 - it takes about a minute when using the first time
+- involve achievements

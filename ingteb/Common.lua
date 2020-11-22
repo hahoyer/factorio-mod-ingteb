@@ -13,17 +13,18 @@ function Common(name, prototype, database)
         Database = database,
         cache = {},
     }
-    self.In = Dictionary:new{}
-    self.Out = Dictionary:new{}
 
     function self:addCachedProperty(name, getter)
         self.cache[name] = ValueCache(getter)
         self.property[name] = {get = function(self) return self.cache[name].Value end}
     end
 
-    self:addCachedProperty("SpriteName", function() return self.SpriteType .. "/" .. self.Name end)
+    self:addCachedProperty(
+        "SpriteName", function() return self.SpriteType .. "/" .. self.Prototype.name end
+    )
     self.LocalisedName = self.Prototype.localised_name
     self.property.FunctionHelp = {get = function() return end}
+    self.LocalizedDescription = self.Prototype.localised_description
 
     self.property.HasLocalisedDescription = {
         get = function()
@@ -31,14 +32,17 @@ function Common(name, prototype, database)
                 return not self.HasLocalisedDescriptionPending
             end
 
-            global.Current.PendingTranslation:AppendForKey(
-                self.Prototype.localised_description[1],
-                    {Key = self.Prototype.localised_description, Value = self}
-            )
+            local key = self.LocalizedDescription[1]
 
-            global.Current.Player.request_translation(self.Prototype.localised_description)
-            self.HasLocalisedDescriptionPending = true
-
+            if key then
+                if key == "modifier-description.train-braking-force-bonus" then
+                    local x = 2
+                end
+                local start = not global.Current.PendingTranslation:Any()
+                global.Current.PendingTranslation[key] = self
+                self.HasLocalisedDescriptionPending = true
+                if start then Helper.InitiateTranslation() end
+            end
             return nil
 
         end,
@@ -47,7 +51,7 @@ function Common(name, prototype, database)
     self.property.HelperText = {
         get = function()
             local name = self.Prototype.localised_name
-            local description = self.Prototype.localised_description
+            local description = self.LocalizedDescription
             local help = self.FunctionHelp
 
             local result = name
@@ -58,14 +62,6 @@ function Common(name, prototype, database)
             return result
         end,
     }
-
-    return self
-end
-
-function CommonThing(name, prototype, database)
-    local self = Common(name, prototype, database)
-
-    self.TechnologyIngredients = Array:new{}
 
     return self
 end

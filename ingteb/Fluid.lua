@@ -7,12 +7,14 @@ local ValueCache = require("core.ValueCache")
 require("ingteb.Common")
 
 function Fluid(name, prototype, database)
-    local self = CommonThing(name, prototype, database)
+    local self = Common(name, prototype, database)
     self.class_name = "Fluid"
     self.SpriteType = "fluid"
+    self.UsedBy = Dictionary:new{}
+    self.CreatedBy = Dictionary:new{}
 
     self.RecipeList = Array:new{}
-    
+
     function self:Setup() end
 
     return self

@@ -7,6 +7,7 @@ require("ingteb.Common")
 function Recipe(name, prototype, database)
     local self = Common(name, prototype, database)
     self.class_name = "Recipe"
+    self.Order = 1
     self.SpriteType = "recipe"
     self.Technologies = Array:new()
 
@@ -66,7 +67,7 @@ function Recipe(name, prototype, database)
     function self:IsBefore(other)
         if self == other then return false end
 
-        if self.class_name ~= other.class_name then return false end
+        if self.class_name ~= other.class_name then return self.Order < other.Order end
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
         if not self.IsResearched and self.Technology.IsReady ~= other.Technology.IsReady then
@@ -104,12 +105,12 @@ function Recipe(name, prototype, database)
 
         local isHidden = false
 
-        self.In = Array:new(self.Prototype.ingredients) --
+        self.Input = Array:new(self.Prototype.ingredients) --
         :Select(
             function(ingredient)
                 local result = database:GetItemSet(ingredient)
                 if result then
-                    result.Item.In:AppendForKey(category, self)
+                    result.Item.UsedBy:AppendForKey(category, self)
                 else
                     isHidden = true
                 end
@@ -118,12 +119,12 @@ function Recipe(name, prototype, database)
         ) --
         :Where(function(value) return not (value.flags and value.flags.hidden) end) --
 
-        self.Out = Array:new(self.Prototype.products) --
+        self.Output = Array:new(self.Prototype.products) --
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
                 if result then
-                    result.Item.Out:AppendForKey(category, self)
+                    result.Item.CreatedBy:AppendForKey(category, self)
                 else
                     isHidden = true
                 end

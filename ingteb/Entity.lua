@@ -7,9 +7,11 @@ local ValueCache = require("core.ValueCache")
 require("ingteb.Common")
 
 function Entity(name, prototype, database)
-    local self = CommonThing(name, prototype, database)
+    local self = Common(name, prototype, database)
     self.class_name = "Entity"
     self.SpriteType = "entity"
+    self.UsedBy = Dictionary:new{}
+    self.CreatedBy = Dictionary:new{}
 
     self:addCachedProperty(
         "Item", function()
@@ -41,12 +43,6 @@ function Entity(name, prototype, database)
     )
 
     function self:Setup()
-        if self.Name:find("mini") then --
-            local x = y
-        end
-        if self.Name == "coal" then --
-            local x = y
-        end
 
         if self.IsResource then self.Database:CreateMiningRecipe(self) end
 
@@ -61,6 +57,8 @@ function Entity(name, prototype, database)
                     list = self.Prototype.crafting_categories
                 elseif domain == "hand mining" then
                     return
+                elseif domain == "researching" then
+                    return self.Prototype.lab_inputs 
                 else
                     assert()
                 end
@@ -73,7 +71,6 @@ function Entity(name, prototype, database)
                 return category
             end
         )
-
     end
 
     return self

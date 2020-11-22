@@ -13,6 +13,7 @@ require("ingteb.MiningRecipe")
 require("ingteb.Technology")
 require("ingteb.ItemSet")
 require("ingteb.Category")
+require("ingteb.Bonus")
 
 local Database = PropertyProvider:new{cache = {}}
 
@@ -58,7 +59,7 @@ function Database:Scan()
     self.Recipes = {}
     self.Technologies = {}
     self.Categories = Dictionary:new{}
-    self.Bonuses = {}
+    self.Bonusses = {}
 
     Dictionary:new(game.entity_prototypes) --
     :Where(function(value) return not (value.flags and value.flags.hidden) end) --
@@ -94,13 +95,17 @@ function Database:Scan()
     self.Categories[" hand mining"].Workers:Append(self.Entities["character"])
     self.Categories["basic-solid mining"].Workers:Append(self.Entities["character"])
 
+    self.Categories[" researching"] = Category(
+        "researching", game.achievement_prototypes["tech-maniac"], self
+    )
+
     Dictionary:new(game.recipe_prototypes) --
     :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
 
     Dictionary:new(game.technology_prototypes) --
     :Where(function(value) return not value.hidden end) --
     :Select(function(value, key) self.Technologies[key] = Technology(key, value, self) end)
-    
+
     Dictionary:new(self.Entities):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Recipes):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Technologies):Select(function(entity) entity:Setup() end)
@@ -109,14 +114,22 @@ function Database:Scan()
     Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
 end
 
-function Database:AddBonus(target, technology)
-    local bonus = self.Bonuses[target.type]
-    if not bonus then
-        bonus = Array:new()
-        self.Bonuses[target.type] = bonus
+function Database:EnsureCategory(domain, prototype)
+    local categoryName = prototype.name .. " " .. domain
+    if not self.Categories[categoryName] then
+        self.Categories[categoryName] = Category(domain, prototype, self)
     end
-    bonus:Append{Technology = technology, Modifier = target.modifier}
+end
 
+function Database:AddBonus(target, technology)
+    local result = self.Bonusses[target.type]
+    if not result then
+        result = Bonus(target.type, self)
+        self.Bonusses[target.type] = result
+    end
+    result.CreatedBy:Append{Technology = technology, Modifier = target.modifier}
+
+    return BonusSet(result, target.modifier, self)
 end
 
 function Database:OnLoad() self:Scan() end

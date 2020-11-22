@@ -106,4 +106,54 @@ function result.DeepEqual(a, b)
 
 end
 
+local function UpdateGui(list, target)
+    local helperText = target.HelperText
+    local number = target.NumberOnSprite
+    local style = target.SpriteStyle or "slot_button"
+    list:Select(
+        function(guiElement)
+            guiElement.tooltip = helperText
+            guiElement.number = number
+            guiElement.style = style
+        end
+    )
+end
+
+function result.RefreshMainInventoryChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.class_name == "Recipe" end) --
+    :Select(UpdateGui) --
+end
+
+function result.RefreshStackChanged() end
+
+function result.RefreshMainResearchChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.class_name == "Technology" end) --
+    :Select(UpdateGui) --
+end
+
+local function RefreshDescription(this)
+    global.Current.Gui --
+    :Where(function(_, target) return target == this end) --
+    :Select(UpdateGui) --
+end
+
+function result.InitiateTranslation()
+    local pending = global.Current.PendingTranslation:Top()
+    if pending then assert(global.Current.Player.request_translation {pending.Key}) end
+end
+
+function result.CompleteTranslation(event)
+    local complete = global.Current.PendingTranslation[event.localised_string]
+    global.Current.PendingTranslation[event.localised_string] = nil
+
+    if event.translated then
+        local thing = complete.Value
+        thing.HasLocalisedDescriptionPending = false
+        RefreshDescription(thing)
+    end
+    result.InitiateTranslation()
+end
+
 return result
