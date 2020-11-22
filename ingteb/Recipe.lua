@@ -64,23 +64,21 @@ function Recipe(name, prototype, database)
         end,
     }
 
+    self:addCachedProperty(
+        "OrderValue", function()
+            return  self.Order .. " "
+            .. (self.IsResearched and "R" or "r") .. " " 
+            ..  (not self.IsResearched and self.Technology.IsReady and "R" or "r").. " " 
+            ..  self.Prototype.group.order.. " " 
+            ..  self.Prototype.subgroup.order.. " " 
+            ..  self.Prototype.order
+        end
+    )
+
+    
     function self:IsBefore(other)
         if self == other then return false end
-
-        if self.class_name ~= other.class_name then return self.Order < other.Order end
-
-        if self.IsResearched ~= other.IsResearched then return self.IsResearched end
-        if not self.IsResearched and self.Technology.IsReady ~= other.Technology.IsReady then
-            return self.Technology.IsReady
-        end
-        if self.Prototype.group ~= other.Prototype.group then
-            return self.Prototype.group.order < other.Prototype.group.order
-        end
-        if self.Prototype.subgroup ~= other.Prototype.subgroup then
-            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
-        end
-
-        return self.Prototype.order < other.Prototype.order
+        return self.OrderValue < other.OrderValue 
     end
 
     self.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
@@ -89,6 +87,10 @@ function Recipe(name, prototype, database)
             return (not self.Technology or self.Technology.IsReady) and 1 or 0
         end,
     }
+
+    function self:Refresh()
+        self.cache.OrderValue.IsValid = false
+    end
 
     self.IsDynamic = true
 

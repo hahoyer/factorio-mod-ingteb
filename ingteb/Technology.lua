@@ -62,11 +62,18 @@ function Technology(name, prototype, database)
     function self:Refresh()
         self.cache.IsResearched.IsValid = false
         self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
+        self.EnabledRecipes:Select(function(recipes) recipes:Refresh() end)
     end
 
     self.Enables = Array:new()
+    self.EnabledRecipes = Array:new()
     self.Effects = Array:new()
-    self.property.Output = {get = function(self) return self.Effects:Concat(self.Enables) end}
+
+    self.property.Output = {
+        get = function(self)
+            return Array:new{self.Enables, self.EnabledRecipes, self.Effects}:ConcatMany()
+        end,
+    }
 
     self.IsDynamic = true
 
@@ -109,7 +116,7 @@ function Technology(name, prototype, database)
                 if effect.type == "unlock-recipe" then
                     local result = database.Recipes[effect.recipe]
                     result.Technologies:Append(self)
-                    self.Effects:Append(result)
+                    self.EnabledRecipes:Append(result)
                 else
                     self.Effects:Append(database:AddBonus(effect, self))
                 end

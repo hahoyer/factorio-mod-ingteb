@@ -38,33 +38,53 @@ local function CreateSpriteAndRegister(frame, target, style)
     return result
 end
 
-local function CreateRecipeLine(frame, target, inCount, outCount)
-    local subFrame = frame.add {type = "flow", direction = "horizontal"}
-    local inPanel = subFrame.add {name = "in", type = "flow", direction = "horizontal"}
+local maximalCount = 4
 
-    for _ = target.Input:Count() + 1, inCount do --
-        inPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
+local function CreateRecipeLinePart(frame, target, count, isInput)
+    local subPanel = frame.add {
+        type = "flow",
+        direction = "horizontal",
+        style = target:Count() > count and "ingteb-recipe-pane" or nil,
+    }
+
+    if target:Count() > count then
+        subPanel = subPanel.add {
+            type = "scroll-pane",
+            direction = "horizontal",
+            vertical_scroll_policy = "never",
+            -- style = "ingteb-recipe-part" or nil,
+        }
     end
 
-    target.Input:Select(function(item) return CreateSpriteAndRegister(inPanel, item) end)
+    if not isInput then
+        target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
+    end
+
+    for _ = target:Count() + 1, count do --
+        subPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
+    end
+
+    if isInput then
+        target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
+    end
+
+end
+
+local function CreateRecipeLine(frame, target, inCount, outCount)
+    local subFrame = frame.add {type = "flow", direction = "horizontal"}
+
+    CreateRecipeLinePart(subFrame, target.Input, math.min(inCount, maximalCount), true)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-
     CreateSpriteAndRegister(
         properties, target.Technology, target.Technology and target.Technology.SpriteStyle
     )
     CreateSpriteAndRegister(properties, target, target.SpriteStyle)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
-
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-    local outPanel = subFrame.add {name = "out", type = "flow", direction = "horizontal"}
 
-    target.Output:Select(function(item) return CreateSpriteAndRegister(outPanel, item) end)
-
-    for _ = target.Output:Count() + 1, outCount do --
-        outPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
-    end
+    CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
 end
 
 local function CreateCraftingGroupPanel(frame, target, key, inCount, outCount)
@@ -132,7 +152,7 @@ local function CreateMainPanel(frame, target)
         name = "frame",
     }
 
-    target:SortAll() 
+    target:SortAll()
 
     local mainFrame = scrollframe
     local columnCount = (target.RecipeList:Any() and 1 or 0) + --
@@ -177,6 +197,64 @@ end
 local result = {}
 
 function result.SelectTarget()
+    local frame = global.Current.Player.gui.screen.add {
+        type = "frame",
+        direction = "vertical",
+    }
+
+    frame.caption = "select"
+    local scroll = frame.add {
+        type = "scroll-pane",
+        direction = "horizontal",
+        horizontal_scroll_policy = "always",
+        vertical_scroll_policy = "never",
+        style = "ingteb-scroll-6x1",
+    }
+
+    local subsubFrame = scroll.add {
+        type = "flow",
+        direction = "horizontal",
+        style = "ingteb-flow-right",
+    }
+
+    local scroll2 = frame.add {
+        type = "scroll-pane",
+        direction = "horizontal",
+        horizontal_scroll_policy = "always",
+        vertical_scroll_policy = "never",
+        style = "ingteb-scroll-6x1",
+    }
+
+    local subsubFrame2 = scroll2.add {
+        type = "flow",
+        direction = "horizontal",
+        style = "ingteb-flow-right",
+    }
+
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+
+    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
+
+
+    frame.force_auto_center()
+    global.Current.Player.opened = frame
+    global.Current.Frame = frame
+    return frame
+
+end
+
+function result.SelectTarget1()
     return Helper.ShowFrame(
         "Selector", function(frame)
             frame.caption = "select"

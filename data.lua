@@ -20,7 +20,7 @@ data:extend(
         {
             type = "sprite",
             name = "ingteb",
-            filename = "__"..Constants.ModName.."__/thumbnail.png",
+            filename = "__" .. Constants.ModName .. "__/thumbnail.png",
             size = 64,
             scale = 0.5,
         },
@@ -36,6 +36,20 @@ data.raw["gui-style"].default[Constants.GuiStyle.CenteredFlow] =
         top_padding = "0",
         bottom_padding = "0",
         horizontal_align = "center",
+    }
+
+data.raw["gui-style"].default["ingteb-scroll-6x1"] =
+    {
+        type = "scroll_pane_style", --
+        parent = "scroll_pane",
+        width = 42 * 6,
+    }
+
+data.raw["gui-style"].default["ingteb-flow-right"] =
+    { --
+        type = "horizontal_flow_style", --
+        horizontally_stretchable = "on",
+        horizontal_align = "right",
     }
 
 local default_glow_color = {225, 177, 106, 255}
