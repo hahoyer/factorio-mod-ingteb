@@ -38,34 +38,31 @@ local function CreateSpriteAndRegister(frame, target, style)
     return result
 end
 
-local maximalCount = 4
+local maximalCount = 6
 
 local function CreateRecipeLinePart(frame, target, count, isInput)
-    local subPanel = frame.add {
-        type = "flow",
-        direction = "horizontal",
-        style = target:Count() > count and "ingteb-recipe-pane" or nil,
-    }
-
+    local scrollFrame = frame
     if target:Count() > count then
-        subPanel = subPanel.add {
+        scrollFrame = frame.add {
             type = "scroll-pane",
             direction = "horizontal",
             vertical_scroll_policy = "never",
-            -- style = "ingteb-recipe-part" or nil,
+            style = "ingteb-scroll-6x1",
         }
     end
 
-    if not isInput then
-        target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
-    end
+    local subPanel = scrollFrame.add {
+        type = "flow",
+        direction = "horizontal",
+        style = isInput and "ingteb-flow-right" or nil,
+    }
+
+    target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
+    
+    if isInput then return end
 
     for _ = target:Count() + 1, count do --
         subPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
-    end
-
-    if isInput then
-        target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
     end
 
 end
@@ -197,64 +194,6 @@ end
 local result = {}
 
 function result.SelectTarget()
-    local frame = global.Current.Player.gui.screen.add {
-        type = "frame",
-        direction = "vertical",
-    }
-
-    frame.caption = "select"
-    local scroll = frame.add {
-        type = "scroll-pane",
-        direction = "horizontal",
-        horizontal_scroll_policy = "always",
-        vertical_scroll_policy = "never",
-        style = "ingteb-scroll-6x1",
-    }
-
-    local subsubFrame = scroll.add {
-        type = "flow",
-        direction = "horizontal",
-        style = "ingteb-flow-right",
-    }
-
-    local scroll2 = frame.add {
-        type = "scroll-pane",
-        direction = "horizontal",
-        horizontal_scroll_policy = "always",
-        vertical_scroll_policy = "never",
-        style = "ingteb-scroll-6x1",
-    }
-
-    local subsubFrame2 = scroll2.add {
-        type = "flow",
-        direction = "horizontal",
-        style = "ingteb-flow-right",
-    }
-
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-
-    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-    subsubFrame2.add {type = "sprite-button", sprite = "utility/go_to_arrow"}
-
-
-    frame.force_auto_center()
-    global.Current.Player.opened = frame
-    global.Current.Frame = frame
-    return frame
-
-end
-
-function result.SelectTarget1()
     return Helper.ShowFrame(
         "Selector", function(frame)
             frame.caption = "select"

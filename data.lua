@@ -42,7 +42,7 @@ data.raw["gui-style"].default["ingteb-scroll-6x1"] =
     {
         type = "scroll_pane_style", --
         parent = "scroll_pane",
-        width = 42 * 6,
+        width = 43 * 6,
     }
 
 data.raw["gui-style"].default["ingteb-flow-right"] =

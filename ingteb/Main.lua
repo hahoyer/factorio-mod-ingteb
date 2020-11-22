@@ -93,7 +93,7 @@ end
 
 local function MainForOpen()
     EnsureGlobal()
---    Database:OnLoad()
+    Database:OnLoad()
     OpenMainGuiForNewItem()
 end
 
