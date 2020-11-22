@@ -48,13 +48,17 @@ function Item(name, prototype, database)
 
     end
 
+    function self:SortAll()
+        self.CreatedBy = Sort(self.CreatedBy)
+        self.UsedBy = Sort(self.UsedBy)
+    end
+
     function self:Setup()
         if self.Prototype.place_result then
             self.Entity = self.Database.Entities[self.Prototype.place_result.name]
         end
 
-        self.CreatedBy = Sort(self.CreatedBy)
-        self.UsedBy = Sort(self.UsedBy)
+        self:SortAll()
 
     end
 

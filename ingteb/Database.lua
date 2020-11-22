@@ -112,6 +112,8 @@ function Database:Scan()
     Dictionary:new(self.Categories):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
     Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
+
+    
 end
 
 function Database:EnsureCategory(domain, prototype)

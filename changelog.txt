@@ -5,7 +5,7 @@ Date: 2020-11-22
   Changes:
     - Activation-icon on top left corner
     - Don't sort by "IsCraftable"
-    - providing descriptions
+    - providing descriptions (not working very good)
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2020-11-20

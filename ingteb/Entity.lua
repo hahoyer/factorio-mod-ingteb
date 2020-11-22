@@ -71,6 +71,8 @@ function Entity(name, prototype, database)
                 return category
             end
         )
+
+        
     end
 
     return self

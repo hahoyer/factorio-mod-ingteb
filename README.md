@@ -16,11 +16,9 @@ todo:
 - restrict number of lines; provide expand-button
 - tooltip-help and actual keys should be joined
 - provide summary for recipe like in tooltip from crafting menu
-- provide workers-panel for lab to see research potions
 - provide information about modules
-- provide information about technologies, like in built-in technology view or find a way to use this
 - multiplayer
+- involve achievements
 
 known issue: 
 - it takes about a minute when using the first time
-- involve achievements

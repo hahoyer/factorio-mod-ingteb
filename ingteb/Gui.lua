@@ -89,21 +89,6 @@ end
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
 
-    local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)
-    targetArray:Sort(
-        function(a, b)
-            if a == b then return false end
-            local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
-            local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
-            if aOrder ~= bOrder then return aOrder > bOrder end
-
-            local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            return aSubOrder > bSubOrder
-
-        end
-    )
-
     local subFrame = frame.add {
         type = "frame",
         horizontal_scroll_policy = "never",
@@ -130,10 +115,9 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
         end
     ):Max()
 
-    targetArray:Select(
-        function(pair)
-            pair.Value:Sort(function(a, b) return a:IsBefore(b) end)
-            CreateCraftingGroupPanel(subFrame, pair.Value, pair.Key, inCount, outCount)
+    target:Select(
+        function(value, key)
+            CreateCraftingGroupPanel(subFrame, value, key, inCount, outCount)
         end
     )
 end
@@ -150,6 +134,8 @@ local function CreateMainPanel(frame, target)
         direction = "vertical",
         name = "frame",
     }
+
+    target:SortAll() 
 
     local mainFrame = scrollframe
     local columnCount = (target.RecipeList:Any() and 1 or 0) + --
