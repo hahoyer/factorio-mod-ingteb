@@ -1,11 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.5
-Date: 2020-11-22
+Date: 2020-11-23
   Bugfixes:
   Changes:
     - Activation-icon on top left corner
     - Don't sort by "IsCraftable"
     - providing descriptions (not working very good)
+    - Horizontal scrolling for recipes with lots of items involved
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2020-11-20

@@ -13,6 +13,7 @@ function Entity(name, prototype, database)
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
 
+    
     self:addCachedProperty(
         "Item", function()
             local place = self.Prototype.items_to_place_this
@@ -41,6 +42,11 @@ function Entity(name, prototype, database)
 
         end
     )
+
+    self.NumberOnSprite --
+    = self.Prototype.mining_speed --
+    or self.Prototype.crafting_speed-- 
+    or self.Prototype.researching_speed-- 
 
     function self:Setup()
 
