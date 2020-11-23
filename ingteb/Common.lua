@@ -3,21 +3,15 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-local PropertyProvider = require("core.PropertyProvider")
+local ValueCacheContainer = require("core.ValueCacheContainer")
 
 function Common(name, prototype, database)
-    local self = PropertyProvider:new{
+    local self = ValueCacheContainer:new{
         Name = name,
         Prototype = prototype,
         Database = database,
         cache = {},
     }
-
-    function self:addCachedProperty(name, getter)
-        self.cache[name] = ValueCache(getter)
-        self.property[name] = {get = function(self) return self.cache[name].Value end}
-    end
 
     self:addCachedProperty(
         "SpriteName", function() return self.SpriteType .. "/" .. self.Prototype.name end

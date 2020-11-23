@@ -75,7 +75,10 @@ function Recipe(name, prototype, database)
         end
     )
 
-    
+
+    function self:SortAll()
+    end
+
     function self:IsBefore(other)
         if self == other then return false end
         return self.OrderValue < other.OrderValue 
@@ -97,7 +100,7 @@ function Recipe(name, prototype, database)
     self.property.SpriteStyle = {
         get = function(self)
             if not self.IsResearched then return "red_slot_button" end
-            if self.NumberOnSprite then return Constants.GuiStyle.LightButton end
+            if self.NumberOnSprite then return "ingteb-light-button" end
         end,
     }
 
@@ -144,6 +147,14 @@ function Recipe(name, prototype, database)
         self.HandCrafter = self.Category.Workers:Where(
             function(worker) return worker.Name == "character" end
         ):Top()
+
+        self.CraftingGroup = Dictionary:new{[self.Category.Name]= self}
+    
+        self.UsedBy = Dictionary:new{}
+        self.CreatedBy = Dictionary:new{}
+        self.RecipeList = Array:new{self.CraftingGroup}
+    
+    
     end
 
     return self

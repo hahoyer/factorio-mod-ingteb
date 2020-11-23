@@ -13,7 +13,6 @@ function Entity(name, prototype, database)
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
 
-    
     self:addCachedProperty(
         "Item", function()
             local place = self.Prototype.items_to_place_this
@@ -45,8 +44,10 @@ function Entity(name, prototype, database)
 
     self.NumberOnSprite --
     = self.Prototype.mining_speed --
-    or self.Prototype.crafting_speed-- 
-    or self.Prototype.researching_speed-- 
+    or self.Prototype.crafting_speed -- 
+    or self.Prototype.researching_speed -- 
+
+    function self:SortAll() end
 
     function self:Setup()
 
@@ -64,7 +65,7 @@ function Entity(name, prototype, database)
                 elseif domain == "hand mining" then
                     return
                 elseif domain == "researching" then
-                    return self.Prototype.lab_inputs 
+                    return self.Prototype.lab_inputs
                 else
                     assert()
                 end
@@ -78,7 +79,6 @@ function Entity(name, prototype, database)
             end
         )
 
-        
     end
 
     return self

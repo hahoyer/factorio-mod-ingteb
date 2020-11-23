@@ -3,8 +3,7 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-local PropertyProvider = require("core.PropertyProvider")
+local ValueCacheContainer = require("core.ValueCacheContainer")
 require("ingteb.Entity")
 require("ingteb.Item")
 require("ingteb.Fluid")
@@ -15,14 +14,9 @@ require("ingteb.ItemSet")
 require("ingteb.Category")
 require("ingteb.Bonus")
 
-local Database = PropertyProvider:new{cache = {}}
-
+local Database = ValueCacheContainer:new{}
+Database.class_name = "Database"
 function Database:new() return Database end
-
-function Database:addCachedProperty(name, getter)
-    self.cache[name] = ValueCache(getter)
-    self.property[name] = {get = function(self) return self.cache[name].Value end}
-end
 
 function Database:CreateMiningRecipe(resource)
     self.Recipes[resource.Name] = MiningRecipe(resource, self)
@@ -137,6 +131,7 @@ end
 function Database:OnLoad() self:Scan() end
 
 function Database:FindTarget()
+    self:Scan()
     local function get()
         local cursor = global.Current.Player.cursor_stack
         if cursor and cursor.valid and cursor.valid_for_read then

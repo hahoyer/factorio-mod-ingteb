@@ -18,6 +18,10 @@ function PropertyProvider:__newindex(index, value)
     return value
 end
 
+function PropertyProvider:addProperty(name, getter, setter)
+    self.property[name] = {get = getter, set = setter}
+end
+
 function PropertyProvider:new(result)
     if not result then
         result = {}

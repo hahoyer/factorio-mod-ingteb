@@ -62,7 +62,7 @@ local function CreateRecipeLinePart(frame, target, count, isInput)
     if isInput then return end
 
     for _ = target:Count() + 1, count do --
-        subPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
+        subPanel.add {type = "sprite", style = "ingteb-un-button"}
     end
 
 end
@@ -84,16 +84,16 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
 end
 
-local function CreateCraftingGroupPanel(frame, target, key, inCount, outCount)
+local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
     frame.add {type = "line", direction = "horizontal"}
 
     local workersPane = frame.add {
         type = "flow",
-        style = Constants.GuiStyle.CenteredFlow,
+        style = "ingteb-flow-centered",
         direction = "horizontal",
     }
 
-    local workers = target[1].Database.Categories[key].Workers
+    local workers = target[1].Database.Categories[category].Workers
     workers:Select(function(worker) return CreateSpriteAndRegister(workersPane, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
@@ -115,7 +115,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     local labelFlow = subFrame.add {
         type = "flow",
         direction = "horizontal",
-        style = Constants.GuiStyle.CenteredFlow,
+        style = "ingteb-flow-centered",
     }
 
     headerSprites:Select(function(sprite) labelFlow.add {type = "sprite", sprite = sprite} end)
@@ -158,7 +158,7 @@ local function CreateMainPanel(frame, target)
 
     if columnCount > 1 then
         mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
-    end
+    end 
 
     if columnCount == 0 then
         local none = mainFrame.add {type = "frame", direction = "horizontal"}

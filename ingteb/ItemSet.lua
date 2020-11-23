@@ -3,8 +3,7 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-local PropertyProvider = require("core.PropertyProvider")
+require("Common")
 
 function ItemSet(item, amounts, database)
     local self = Common(item.Name, item.Prototype, database)
