@@ -7,6 +7,7 @@ Date: 2020-11-23
     - Don't sort by "IsCraftable"
     - providing descriptions (not working very good)
     - Horizontal scrolling for recipes with lots of items involved
+    - Numbers on machines
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2020-11-20

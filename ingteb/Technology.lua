@@ -54,7 +54,7 @@ function Technology(name, prototype, database)
     self.property.SpriteStyle = {
         get = function(self)
             if self.IsResearched then return end
-            if self.IsReady then return Constants.GuiStyle.LightButton end
+            if self.IsReady then return "ingteb-light-button" end
             return "red_slot_button"
         end,
     }

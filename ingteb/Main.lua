@@ -93,7 +93,7 @@ end
 
 local function MainForOpen()
     EnsureGlobal()
---    Database:OnLoad()
+    --    Database:OnLoad()
     OpenMainGuiForNewItem()
 end
 
@@ -117,10 +117,16 @@ local function GuiClickForMain(event)
     global.Current.Player = game.players[event.player_index]
     local target = global.Current.Links and global.Current.Links[event.element.index]
 
-    if UI.IsMouseCode(event, "--- l") and target and target.Item --
-    then
-        OpenMainGui(target.Item)
-        return
+    if target and UI.IsMouseCode(event, "--- l") then
+        if target.Item then
+            OpenMainGui(target.Item)
+            return
+        end
+        if target.class_name == "Recipe" or target.class_name == "Technology" then
+            OpenMainGui(target)
+            return
+        end
+        local d = s
     end
 
     local order = GetHandCraftingOrder(event, target)
@@ -194,8 +200,7 @@ StateHandler = function(state)
         {Helper.RefreshMainInventoryChanged, state.mainPanel}
     handlers[defines.events.on_player_cursor_stack_changed] =
         {Helper.RefreshStackChanged, state.mainPanel}
-    handlers[defines.events.on_research_finished] =
-        {OnResearchFinished, state.mainPanel}
+    handlers[defines.events.on_research_finished] = {OnResearchFinished, state.mainPanel}
     handlers[defines.events.on_tick] = {}
 
     Helper.SetHandlers(handlers)
