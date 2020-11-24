@@ -1,10 +1,8 @@
-local PropertyProvider = {class_name = "PropertyProvider"}
+local PropertyProvider = {object_name = "PropertyProvider"}
 
 function PropertyProvider:__index(index)
     local functions = self.property[index]
-    if functions then
-        return functions.get(self)
-    end
+    if functions then return functions.get(self) end
     return rawget(self, index)
 end
 
@@ -23,9 +21,7 @@ function PropertyProvider:addProperty(name, getter, setter)
 end
 
 function PropertyProvider:new(result)
-    if not result then
-        result = {}
-    end
+    if not result then result = {} end
     result.property = {}
 
     setmetatable(result, self)

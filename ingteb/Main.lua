@@ -6,7 +6,7 @@ local Dictionary = Table.Dictionary
 local Helper = require("ingteb.Helper")
 local Gui = require("ingteb.Gui")
 local History = require("ingteb.History"):new()
-local Database = require("ingteb.Database"):new()
+local Database = require("ingteb.Database")
 local UI = require("core.UI")
 
 State = {}
@@ -54,7 +54,7 @@ function GetHandCraftingOrder(event, target)
     if (UI.IsMouseCode(event, "A-- l") --
     or UI.IsMouseCode(event, "A-- r") --
     or UI.IsMouseCode(event, "--S l")) --
-    and target and target.class_name == "Recipe" and target.HandCrafter and target.NumberOnSprite then
+    and target and target.object_name == "Recipe" and target.HandCrafter and target.NumberOnSprite then
         local amount = 0
         if event.shift then
             amount = global.Current.Player.get_craftable_count(target.Prototype.name)
@@ -71,7 +71,7 @@ end
 
 function GetResearchOrder(event, target)
     if UI.IsMouseCode(event, "-C- l") --
-    and target and target.class_name == "Technology" and target.IsReady --
+    and target and target.object_name == "Technology" and target.IsReady --
     then return {Technology = target.Prototype} end
 end
 
@@ -118,11 +118,12 @@ local function GuiClickForMain(event)
     local target = global.Current.Links and global.Current.Links[event.element.index]
 
     if target and UI.IsMouseCode(event, "--- l") then
-        if target.Item then
-            OpenMainGui(target.Item)
+        if target.object_name == "LuaItemPrototype" then
+            OpenMainGui(target)
             return
         end
-        if target.class_name == "Recipe" or target.class_name == "Technology" then
+        if target.object_name == "LuaRecipePrototype" or target.object_name
+            == "LuaTechnologyPrototype" then
             OpenMainGui(target)
             return
         end

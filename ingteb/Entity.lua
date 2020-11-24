@@ -8,7 +8,7 @@ require("ingteb.Common")
 
 function Entity(name, prototype, database)
     local self = Common(name, prototype, database)
-    self.class_name = "Entity"
+    self.object_name = "Entity"
     self.SpriteType = "entity"
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}

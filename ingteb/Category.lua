@@ -8,7 +8,7 @@ require("ingteb.Common")
 
 function Category(domainName, prototype, database)
     local self = Common(prototype.name, prototype, database)
-    self.class_name = "Category"
+    self.object_name = "Category"
     self.DomainName = domainName
     self.Workers = Array:new()
     self.Recipes = Array:new()

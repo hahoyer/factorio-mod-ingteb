@@ -121,7 +121,7 @@ end
 
 function result.RefreshMainInventoryChanged()
     global.Current.Gui --
-    :Where(function(_, target) return target.class_name == "Recipe" end) --
+    :Where(function(_, target) return target.object_name == "Recipe" end) --
     :Select(UpdateGui) --
 end
 
@@ -129,7 +129,7 @@ function result.RefreshStackChanged() end
 
 function result.RefreshMainResearchChanged()
     global.Current.Gui --
-    :Where(function(_, target) return target.class_name == "Technology" end) --
+    :Where(function(_, target) return target.object_name == "Technology" end) --
     :Select(UpdateGui) --
 end
 

@@ -14,7 +14,7 @@ function Bonus(name, database)
         localised_description = {"modifier-description." .. name},
     }
     local self = Common(name, prototype, database)
-    self.class_name = "Bonus"
+    self.object_name = "Bonus"
     self.SpriteType = "utility"
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Array:new{}
@@ -26,7 +26,7 @@ end
 
 function BonusSet(bonus, amounts, database)
     local self = ItemSet(bonus, {value = amounts, probability = 1}, database)
-    self.class_name = "BonusSet"
+    self.object_name = "BonusSet"
     return self
 end
 

@@ -8,7 +8,7 @@ require("ingteb.Common")
 
 function Fluid(name, prototype, database)
     local self = Common(name, prototype, database)
-    self.class_name = "Fluid"
+    self.object_name = "Fluid"
     self.SpriteType = "fluid"
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}

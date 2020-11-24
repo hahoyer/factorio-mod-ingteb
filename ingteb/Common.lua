@@ -4,8 +4,9 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
+local Class = require("core.Class")
 
-function Common(name, prototype, database)
+function OldCommon(name, prototype, database)
     local self = ValueCacheContainer:new{
         Name = name,
         Prototype = prototype,
@@ -13,10 +14,6 @@ function Common(name, prototype, database)
         cache = {},
     }
 
-    self:addCachedProperty(
-        "SpriteName", function() return self.SpriteType .. "/" .. self.Prototype.name end
-    )
-    self.LocalisedName = self.Prototype.localised_name
     self.property.FunctionHelp = {get = function() return end}
     self.LocalizedDescription = self.Prototype.localised_description
 
@@ -42,20 +39,46 @@ function Common(name, prototype, database)
         end,
     }
 
-    self.property.HelperText = {
-        get = function()
-            local name = self.Prototype.localised_name
-            local description = self.LocalizedDescription
-            local help = self.FunctionHelp
-
-            local result = name
-            if self.HasLocalisedDescription then
-                result = {"ingteb_utility.Lines2", result, description}
-            end
-            if help then result = {"ingteb_utility.Lines2", result, help} end
-            return result
-        end,
-    }
-
     return self
 end
+
+local Common = Class:new{object_name = "Common"}
+
+function Common:class(name)
+    return Class:new{object_name = name}
+end
+
+function Common:new(prototype, database)
+    assert(prototype)
+    assert(database)
+
+    local self = Class:new{Prototype = prototype, Database = database}
+    self.object_name = Common.object_name
+    self.Name = self.Prototype.name
+    self.LocalisedName = self.Prototype.localised_name
+
+    self:properties{
+        HelperText = {
+            get = function()
+                local name = self.Prototype.localised_name
+                local description = self.LocalizedDescription
+                local help = self.FunctionHelp
+
+                local result = name
+                if self.HasLocalisedDescription then
+                    result = {"ingteb_utility.Lines2", result, description}
+                end
+                if help then result = {"ingteb_utility.Lines2", result, help} end
+                return result
+            end,
+        },
+        SpriteName = {
+            chache = true,
+            get = function() return self.SpriteType .. "/" .. self.Prototype.name end,
+        },
+    }
+    return self
+
+end
+
+return Common

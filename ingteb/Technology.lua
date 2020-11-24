@@ -3,32 +3,32 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
 require("ingteb.Common")
+local Common = require("ingteb.Common")
 
-function Technology(name, prototype, database)
-    local self = Common(name, prototype, database)
-    self.class_name = "Technology"
-    self.Order = 3
-    self.SpriteType = "technology"
+function OldTechnology(name, prototype, database)
+    local result = Common(name, prototype, database)
+    result.object_name = "Technology"
+    result.Order = 3
+    result.SpriteType = "technology"
 
-    self.Time = self.Prototype.research_unit_energy
+    result.Time = result.Prototype.research_unit_energy
 
-    self:addCachedProperty(
+    result:addCachedProperty(
         "IsReady", function()
-            return self.Prerequisites:All(
+            return result.Prerequisites:All(
                 function(technology) return technology.IsResearched end
             )
         end
     )
 
-    self:addCachedProperty(
+    result:addCachedProperty(
         "IsResearched", function()
-            return global.Current.Player.force.technologies[self.Name].researched == true
+            return global.Current.Player.force.technologies[result.Name].researched == true
         end
     )
 
-    self.property.FunctionHelp = {
+    result.property.FunctionHelp = {
         get = function(self) --
             if not self.IsResearched and self.IsReady then
                 return {
@@ -43,15 +43,15 @@ function Technology(name, prototype, database)
         end,
     }
 
-    self:addCachedProperty(
+    result:addCachedProperty(
         "NumberOnSprite", function()
-            if self.Prototype.level and self.Prototype.max_level > 1 then
-                return self.Prototype.level
+            if result.Prototype.level and result.Prototype.max_level > 1 then
+                return result.Prototype.level
             end
         end
     )
 
-    self.property.SpriteStyle = {
+    result.property.SpriteStyle = {
         get = function(self)
             if self.IsResearched then return end
             if self.IsReady then return "ingteb-light-button" end
@@ -59,28 +59,28 @@ function Technology(name, prototype, database)
         end,
     }
 
-    function self:Refresh()
+    function result:Refresh()
         self.cache.IsResearched.IsValid = false
         self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
         self.EnabledRecipes:Select(function(recipes) recipes:Refresh() end)
     end
 
-    self.Enables = Array:new()
-    self.EnabledRecipes = Array:new()
-    self.Effects = Array:new()
+    result.Enables = Array:new()
+    result.EnabledRecipes = Array:new()
+    result.Effects = Array:new()
 
-    self.property.Output = {
+    result.property.Output = {
         get = function(self)
             return Array:new{self.Enables, self.EnabledRecipes, self.Effects}:ConcatMany()
         end,
     }
 
-    self.IsDynamic = true
+    result.IsDynamic = true
 
-    function self:IsBefore(other)
+    function result:IsBefore(other)
         if self == other then return false end
 
-        if self.class_name ~= other.class_name then return self.Order < other.Order end
+        if self.object_name ~= other.object_name then return self.Order < other.Order end
 
         if self.IsResearched ~= other.IsResearched then return self.IsResearched end
         if self.IsReady ~= other.IsReady then return self.IsReady end
@@ -88,7 +88,7 @@ function Technology(name, prototype, database)
         return self.Prototype.order < other.Prototype.order
     end
 
-    function self:Setup()
+    function result:Setup()
         self.Prerequisites = Dictionary:new(self.Prototype.prerequisites) --
         :ToArray() --
         :Select(
@@ -125,6 +125,23 @@ function Technology(name, prototype, database)
 
     end
 
-    return self
+    return result
 end
 
+local Technology = Common:class("Technology")
+
+function Technology:new(name, prototype, database)
+
+    local self = Common:new(prototype or game.technology_prototypes[name], database)
+    self.object_name = Technology.object_name
+    self.TypeOrder = 3
+    self.SpriteType = "technology"
+    self.Technologies = Array:new()
+
+    assert(self.Prototype.object_name == "LuaTechnologyPrototype")
+    self:properties{}
+    return self
+
+end
+
+return Technology

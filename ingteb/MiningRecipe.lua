@@ -8,7 +8,7 @@ require("ingteb.Common")
 
 function MiningRecipe(resource, database)
     local self = Common(resource.Name, resource.Prototype, database)
-    self.class_name = "MiningRecipe"
+    self.object_name = "MiningRecipe"
     self.SpriteType = "entity"
     self.Order = 2
 
@@ -26,7 +26,7 @@ function MiningRecipe(resource, database)
 
         local isHidden = false
 
-        self.Resource.UsedBy:AppendForKey( category, self)
+        self.Resource.UsedBy:AppendForKey(category, self)
         self.Input = Array:new{self.Resource}
 
         if configuration.required_fluid then
@@ -43,7 +43,11 @@ function MiningRecipe(resource, database)
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                if result then  result.Item.CreatedBy:AppendForKey(category, self) else isHidden = true end
+                if result then
+                    result.Item.CreatedBy:AppendForKey(category, self)
+                else
+                    isHidden = true
+                end
                 return result
             end
         )
@@ -60,7 +64,7 @@ function MiningRecipe(resource, database)
 
     function self:IsBefore(other)
         if self == other then return false end
-        if self.class_name ~= other.class_name then return self.Order < other.Order end
+        if self.object_name ~= other.object_name then return self.Order < other.Order end
         if self.Prototype.group ~= other.Prototype.group then
             return self.Prototype.group.order < other.Prototype.group.order
         end

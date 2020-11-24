@@ -1,47 +1,51 @@
 local Constants = require("Constants")
-local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
-require("Common")
+local Common = require("Common")
 
-function ItemSet(item, amounts, database)
-    local self = Common(item.Name, item.Prototype, database)
+local ItemSet = Common:class("ItemSet")
+
+function ItemSet:new(item, amounts, database)
+    assert(item)
+    local self = Common:new(item.Prototype, database)
+    self.object_name = ItemSet.object_name
+    assert(self.Prototype.object_name == "LuaItemPrototype")
+
     self.Item = item
     self.Amounts = amounts
-    self.class_name = "ItemSet"
     self.SpriteType = item.SpriteType
-
-    assert(self.Item)
-
     self.UsePercentage = self.Amounts.probability ~= nil
 
-    self:addCachedProperty(
-        "NumberOnSprite", function()
-            local amounts = self.Amounts
-            if not amounts then return end
+    self:properties{
+        NumberOnSprite = {
+            cache = true,
+            get = function()
+                local amounts = self.Amounts
+                if not amounts then return end
 
-            local probability = (amounts.probability or 1)
-            local value = amounts.value
+                local probability = (amounts.probability or 1)
+                local value = amounts.value
 
-            if not value then
-                if not amounts.min then
-                    value = amounts.max
-                elseif not amounts.max then
-                    value = amounts.min
-                else
-                    value = (amounts.max + amounts.min) / 2
+                if not value then
+                    if not amounts.min then
+                        value = amounts.max
+                    elseif not amounts.max then
+                        value = amounts.min
+                    else
+                        value = (amounts.max + amounts.min) / 2
+                    end
+                elseif type(value) ~= "number" then
+                    return
                 end
-            elseif type(value) ~= "number" then
-                return
-            end
 
-            return value * probability
-        end
-    )
+                return value * probability
+            end,
+        },
+        
+        SpriteName = {get = function() return self.Item.SpriteName end},
 
-    self:addCachedProperty("SpriteName", function() return self.Item.SpriteName end)
+    }
 
     return self
+
 end
 
+return ItemSet

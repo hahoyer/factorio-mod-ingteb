@@ -1,7 +1,7 @@
 local PropertyProvider = require("core.PropertyProvider")
 local ValueCache = require("core.ValueCache")
 
-local ValueCacheContainer = {class_name = "ValueCacheContainer"}
+local ValueCacheContainer = {object_name = "ValueCacheContainer"}
 
 function ValueCacheContainer:new(target)
     local result = PropertyProvider:new(target)

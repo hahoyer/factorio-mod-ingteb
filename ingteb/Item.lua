@@ -4,17 +4,90 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
+local Common = require("ingteb.Common")
 
-function Item(name, prototype, database)
+function OldItem(name, prototype, database)
     local self = Common(name, prototype, database)
-    self.class_name = "Item"
-    self.SpriteType = "item"
-    self.UsedBy = Dictionary:new{}
-    self.CreatedBy = Dictionary:new{}
 
-    self.property.RecipeList = {
-        get = function() return self.Entity and self.Entity.RecipeList or Array:new{} end,
+    function self:Setup()
+        if self.Prototype.place_result then
+            self.Entity = self.Database.Entities[self.Prototype.place_result.name]
+        end
+
+        self:SortAll()
+
+    end
+
+    return self
+end
+
+local Item = Common:class("Item")
+
+function Item:new(name, prototype, database)
+    local self = Common:new(prototype or game.item_prototypes[name], database)
+    self.object_name = Item.object_name
+    self.SpriteType = "item"
+
+    assert(self.Prototype.object_name == "LuaItemPrototype")
+
+    self:properties{
+        RecipeList = {
+            cache = true,
+            get = function()
+                local entity = game.entity_prototypes[self.Prototype.name]
+
+                return Dictionary:new(entity and entity.crafting_categories or {}) --
+                :Concat(Dictionary:new(entity and entity.resource_categories or {})) --
+                :Select(
+                    function(_, category)
+                        return self.Database.RecipesForCategory[category]
+                    end
+                )
+
+                --    return self.Entity and self.Entity.RecipeList or Array:new{} 
+            end,
+        },
+
+        OriginalUsedBy = {
+            get = function()
+                local names = self.Database:GetItemUsedBy(self.Prototype.name)
+                if not names then return Dictionary:new{} end
+
+                return names --
+                :Select(
+                    function(value, key)
+                        assert(key == "crafting")
+                        return value --
+                        :Select(
+                            function(value)
+                                return self.Database:GetRecipe(value)
+                            end
+                        )
+                    end
+                )
+            end,
+        },
+
+        OriginalCreatedBy = {
+            get = function()
+                local names = self.Database:GetItemCreatedBy(self.Prototype.name)
+                if not names then return Dictionary:new{} end
+
+                return names --
+                :Select(
+                    function(value, key)
+                        assert(key == "crafting")
+                        return value --
+                        :Select(
+                            function(value)
+                                return self.Database:GetRecipe(value)
+                            end
+                        )
+                    end
+                )
+
+            end,
+        },
     }
 
     local function Sort(target)
@@ -49,19 +122,14 @@ function Item(name, prototype, database)
     end
 
     function self:SortAll()
+        if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
+        if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
         self.CreatedBy = Sort(self.CreatedBy)
         self.UsedBy = Sort(self.UsedBy)
     end
 
-    function self:Setup()
-        if self.Prototype.place_result then
-            self.Entity = self.Database.Entities[self.Prototype.place_result.name]
-        end
-
-        self:SortAll()
-
-    end
-
     return self
+
 end
 
+return Item

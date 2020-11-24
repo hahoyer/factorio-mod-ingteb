@@ -3,34 +3,36 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
+local Database = require("ingteb.Database")
 
-local function CreateSpriteAndRegister(frame, target, style)
+local function CreateSpriteAndRegister(frame, target)
     local result
 
-    if target and target.class_name and target.class_name:find("BonusSet") then --
-        local h = target --
-    end
     local tooltip = target and target.HelperText
     local sprite = target and target.SpriteName
     local number = target and target.NumberOnSprite
     local show_percent_for_small_numbers = target and target.UsePercentage
+    local spriteStyleCode = target and target.SpriteStyle
+    local style = spriteStyleCode == true and "ingteb-light-button" --
+    or spriteStyleCode == false and "red_slot_button" --
+    or "slot_button"
 
     if target then
         result = frame.add {
             type = "sprite-button",
-            tooltip = target.HelperText,
-            sprite = target.SpriteName,
-            number = target.NumberOnSprite,
-            show_percent_for_small_numbers = target and target.UsePercentage,
-            style = style or "slot_button",
+            tooltip = tooltip,
+            sprite = sprite,
+            number = number,
+            show_percent_for_small_numbers = show_percent_for_small_numbers,
+            style = style,
         }
     else
-        result = frame.add {type = "sprite-button", style = style or "slot_button"}
+        result = frame.add {type = "sprite-button", style = style}
     end
 
-    global.Current.Links[result.index] = target
+    global.Current.Links[result.index] = target and target.MainObject
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
-        if target and target.class_name == "BonusSet" then --
+        if target and target.object_name == "BonusSet" then --
             local s = 2 --
         end
         global.Current.Gui:AppendForKey(target, result)
@@ -57,8 +59,12 @@ local function CreateRecipeLinePart(frame, target, count, isInput)
         style = isInput and "ingteb-flow-right" or nil,
     }
 
-    target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
-    
+    target:Select(
+        function(item)
+            return CreateSpriteAndRegister(subPanel, item)
+        end
+    )
+
     if isInput then return end
 
     for _ = target:Count() + 1, count do --
@@ -74,11 +80,11 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
+    CreateSpriteAndRegister(properties, target.Technology)
+    CreateSpriteAndRegister(properties, target)
     CreateSpriteAndRegister(
-        properties, target.Technology, target.Technology and target.Technology.SpriteStyle
+        properties, {SpriteName = "utility/clock", NumberOnSprite = target.energy}
     )
-    CreateSpriteAndRegister(properties, target, target.SpriteStyle)
-    CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
     CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
@@ -93,7 +99,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
         direction = "horizontal",
     }
 
-    local workers = target[1].Database.Categories[category].Workers
+    local workers = Database:GetWorkerSpritesForCategory(category)
     workers:Select(function(worker) return CreateSpriteAndRegister(workersPane, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
@@ -158,7 +164,7 @@ local function CreateMainPanel(frame, target)
 
     if columnCount > 1 then
         mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
-    end 
+    end
 
     if columnCount == 0 then
         local none = mainFrame.add {type = "frame", direction = "horizontal"}
@@ -202,8 +208,13 @@ function result.SelectTarget()
     )
 end
 
-function result.Main(data)
-    return Helper.ShowFrame("Main", function(frame) return CreateMainPanel(frame, data) end)
+function result.Main(target)
+    return Helper.ShowFrame(
+        "Main", function(frame)
+            assert(target.object_name == "LuaItemPrototype")
+            return CreateMainPanel(frame, Database:GetItem(nil, target))
+        end
+    )
 end
 
 return result
