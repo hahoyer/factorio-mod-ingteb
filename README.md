@@ -22,3 +22,5 @@ todo:
 
 known issue: 
 - it takes about a minute when using the first time
+- when selecting a machine it is added to list of machines ones more.
+

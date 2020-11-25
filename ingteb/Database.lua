@@ -23,20 +23,11 @@ function Database:new()
     self.RecipesForItems = {}
     self.RecipesForCategory = {}
     self.WorkersForCategory = {}
+    self.EnabledTechnologiesForTechnology = {}
 
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
-
-    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype)
-    end
-
-    for _, prototype in pairs(game.technology_prototypes) do
-
-        for key, value in pairs(prototype.effects or {}) do
-            if value.type == "unlock-recipe" then
-                self:GetRecipe(value.recipe).TechnologyPrototypes:Append(prototype)
-            end
-        end
-    end
+    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
+    for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
 
     return self
 end
@@ -69,7 +60,7 @@ function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 
 function Database:AddWorkerForCategory(domain, category, prototype)
-    self:GetCategory(domain.."."..category).Workers:Append(self:GetEntity(nil, prototype))
+    self:GetCategory(domain .. "." .. category).Workers:Append(self:GetEntity(nil, prototype))
 end
 
 function EnsureKey(data, key, value)
@@ -84,7 +75,7 @@ end
 function EnsureRecipeCategory(result, side, name, category)
     local itemData = EnsureKey(result, name)
     local sideData = EnsureKey(itemData, side, Dictionary:new())
-    local categoryData = EnsureKey(sideData, "crafting." ..category, Array:new())
+    local categoryData = EnsureKey(sideData, "crafting." .. category, Array:new())
     return categoryData
 end
 
@@ -95,6 +86,18 @@ function Database:ScanEntity(prototype)
     for category, _ in pairs(prototype.resource_categories or {}) do
         self:AddWorkerForCategory("mining", category, prototype)
     end
+end
+
+function Database:ScanTechnology(prototype)
+    for key, value in pairs(prototype.effects or {}) do
+        if value.type == "unlock-recipe" then
+            self:GetRecipe(value.recipe).TechnologyPrototypes:Append(prototype)
+        end
+    end
+    for key, value in pairs(prototype.prerequisites or {}) do
+        EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()): Append(prototype)
+    end
+
 end
 
 function Database:ScanRecipe(prototype)
@@ -111,7 +114,9 @@ function Database:ScanRecipe(prototype)
         :Append(prototype.name)
     end
 
-    EnsureKey(self.RecipesForCategory, "crafting."..prototype.category, Array:new()):Append(prototype.name)
+    EnsureKey(self.RecipesForCategory, "crafting." .. prototype.category, Array:new()):Append(
+        prototype.name
+    )
 
 end
 

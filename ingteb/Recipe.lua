@@ -8,8 +8,6 @@ local function OldRecipe(name, prototype, database)
     local result = Common(name, prototype, database)
     result.object_name = "Recipe"
 
-    result.Time = result.Prototype.energy
-
     result.property.FunctionHelp = {
         get = function(self) --
             if self.IsResearched and self.NumberOnSprite then
@@ -25,38 +23,10 @@ local function OldRecipe(name, prototype, database)
         end,
     }
 
-    function result:SortAll() end
-
-    result.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
-    result.property.SubOrder = {
-        get = function(self)
-            return (not self.Technology or self.Technology.IsReady) and 1 or 0
-        end,
-    }
-
+    
     function result:Refresh() self.cache.OrderValue.IsValid = false end
 
     result.IsDynamic = true
-
-    function result:Setup()
-        local category = self.Prototype.category .. " crafting"
-        self.Category = self.Database.Categories[category]
-
-        if self.IsHidden then return end
-
-        self.Category.Recipes:Append(self)
-
-        self.HandCrafter = self.Category.Workers:Where(
-            function(worker) return worker.Name == "character" end
-        ):Top()
-
-        self.CraftingGroup = Dictionary:new{[self.Category.Name] = self}
-
-        self.UsedBy = Dictionary:new{}
-        self.CreatedBy = Dictionary:new{}
-        self.RecipeList = Array:new{self.CraftingGroup}
-
-    end
 
     return result
 end
@@ -74,6 +44,8 @@ function Recipe:new(name, prototype, database)
     self.IsHidden = false
 
     assert(self.Prototype.object_name == "LuaRecipePrototype")
+
+    self.Time = self.Prototype.energy
 
     self:properties{
 
@@ -143,7 +115,7 @@ function Recipe:new(name, prototype, database)
 
         HandCrafter = {
             get = function()
-                self.Category.Workers:Where(
+                return self.Category.Workers:Where(
                     function(worker) return worker.Name == "character" end
                 ):Top()
             end,

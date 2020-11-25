@@ -7,28 +7,13 @@ require("ingteb.Common")
 local Common = require("ingteb.Common")
 
 function OldTechnology(name, prototype, database)
-    local result = Common(name, prototype, database)
-    result.object_name = "Technology"
-    result.Order = 3
-    result.SpriteType = "technology"
+    local self = Common(name, prototype, database)
+    self.object_name = "Technology"
+    self.SpriteType = "technology"
 
-    result.Time = result.Prototype.research_unit_energy
+    self.Time = self.Prototype.research_unit_energy
 
-    result:addCachedProperty(
-        "IsReady", function()
-            return result.Prerequisites:All(
-                function(technology) return technology.IsResearched end
-            )
-        end
-    )
-
-    result:addCachedProperty(
-        "IsResearched", function()
-            return global.Current.Player.force.technologies[result.Name].researched == true
-        end
-    )
-
-    result.property.FunctionHelp = {
+    self.property.FunctionHelp = {
         get = function(self) --
             if not self.IsResearched and self.IsReady then
                 return {
@@ -43,41 +28,33 @@ function OldTechnology(name, prototype, database)
         end,
     }
 
-    result:addCachedProperty(
+    self:addCachedProperty(
         "NumberOnSprite", function()
-            if result.Prototype.level and result.Prototype.max_level > 1 then
-                return result.Prototype.level
+            if self.Prototype.level and self.Prototype.max_level > 1 then
+                return self.Prototype.level
             end
         end
     )
 
-    result.property.SpriteStyle = {
-        get = function(self)
-            if self.IsResearched then return end
-            if self.IsReady then return "ingteb-light-button" end
-            return "red_slot_button"
-        end,
-    }
-
-    function result:Refresh()
+    function self:Refresh()
         self.cache.IsResearched.IsValid = false
         self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
         self.EnabledRecipes:Select(function(recipes) recipes:Refresh() end)
     end
 
-    result.Enables = Array:new()
-    result.EnabledRecipes = Array:new()
-    result.Effects = Array:new()
+    self.Enables = Array:new()
+    self.EnabledRecipes = Array:new()
+    self.Effects = Array:new()
 
-    result.property.Output = {
+    self.property.Output = {
         get = function(self)
             return Array:new{self.Enables, self.EnabledRecipes, self.Effects}:ConcatMany()
         end,
     }
 
-    result.IsDynamic = true
+    self.IsDynamic = true
 
-    function result:IsBefore(other)
+    function self:IsBefore(other)
         if self == other then return false end
 
         if self.object_name ~= other.object_name then return self.Order < other.Order end
@@ -88,18 +65,8 @@ function OldTechnology(name, prototype, database)
         return self.Prototype.order < other.Prototype.order
     end
 
-    function result:Setup()
-        self.Prerequisites = Dictionary:new(self.Prototype.prerequisites) --
-        :ToArray() --
-        :Select(
-            function(technology)
-                local result = self.Database.Technologies[technology.name]
-                result.Enables:Append(self)
-                return result
-            end
-        )
-
-        self.Input = Array:new(self.Prototype.research_unit_ingredients) --
+    function self:Setup()
+                self.Input = Array:new(self.Prototype.research_unit_ingredients) --
         :Select(
             function(tag)
                 tag.amount = tag.amount * self.Prototype.research_unit_count
@@ -125,7 +92,7 @@ function OldTechnology(name, prototype, database)
 
     end
 
-    return result
+    return self
 end
 
 local Technology = Common:class("Technology")
@@ -139,7 +106,39 @@ function Technology:new(name, prototype, database)
     self.Technologies = Array:new()
 
     assert(self.Prototype.object_name == "LuaTechnologyPrototype")
-    self:properties{}
+
+    self:properties{
+        SpriteStyle = {
+            get = function(self)
+                if self.IsResearched then return end
+                return self.IsReady 
+            end,
+        },
+        IsResearched = {
+            get = function(self)
+                return global.Current.Player.force.technologies[self.Name].researched == true
+            end,
+        },
+        IsReady = {
+            get = function(self)
+                return self.Prerequisites:All(
+                    function(technology) return technology.IsResearched end
+                )
+                end,
+        },
+
+        Prerequisites = {
+            get = function(self)
+                return Dictionary:new(self.Prototype.prerequisites) --
+                :ToArray() --
+                :Select(
+                    function(technology)
+                        return self.Database:GetTechnology(nil, technology)
+                    end
+                )
+                end,
+        },
+    }
     return self
 
 end
