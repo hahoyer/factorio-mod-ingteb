@@ -120,12 +120,7 @@ local function GuiClickForMain(event)
     local target = global.Current.Links and global.Current.Links[event.element.index]
 
     if target and UI.IsMouseCode(event, "--- l") then
-        if target.object_name == "LuaItemPrototype" then
-            OpenMainGui(target)
-            return
-        end
-        if target.object_name == "LuaRecipePrototype" or target.object_name
-            == "LuaTechnologyPrototype" then
+        if target.Prototype then
             OpenMainGui(target)
             return
         end

@@ -163,7 +163,7 @@ function Recipe:new(name, prototype, database)
                 return Array:new(self.Prototype.products) --
                 :Select(
                     function(product)
-                        local result = database:GetItemSet(product)
+                        local result = database:GetStackOfGoods(product)
                         if not result then self.IsHidden = true end
                         return result
                     end
@@ -178,7 +178,7 @@ function Recipe:new(name, prototype, database)
                 return Array:new(self.Prototype.ingredients) --
                 :Select(
                     function(ingredient)
-                        local result = database:GetItemSet(ingredient)
+                        local result = database:GetStackOfGoods(ingredient)
                         if not result then self.IsHidden = true end
                         return result
                     end

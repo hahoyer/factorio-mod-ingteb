@@ -103,7 +103,7 @@ function OldTechnology(name, prototype, database)
         :Select(
             function(tag)
                 tag.amount = tag.amount * self.Prototype.research_unit_count
-                local result = database:GetItemSet(tag)
+                local result = database:GetStackOfGoods(tag)
                 result.Item.UsedBy:AppendForKey(" researching", self)
                 return result
             end

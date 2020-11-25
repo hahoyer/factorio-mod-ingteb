@@ -5,22 +5,9 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 
-function OldCategory(domainName, prototype, database)
-    local self = Common(prototype.name, prototype, database)
-    self.object_name = "Category"
-    self.DomainName = domainName
-    self.Workers = Array:new()
-    self.Recipes = Array:new()
-
-    function self:Setup() end
-
-    return self
-end
-
 local Category = Common:class("Category")
 
-local function GetPrototype(name)
-    local _, _, domain, category = name:find("^(.+)%.(.+)$")
+local function GetPrototype(domain, category)
     if domain == "crafting" then
         return game.recipe_category_prototypes[category]
     elseif domain == "mining" then
@@ -31,8 +18,13 @@ local function GetPrototype(name)
 end
 
 function Category:new(name, prototype, database)
-    local self = Common:new(prototype or GetPrototype(name), database)
+    assert(name)
+
+    local _, _, domain, category = name:find("^(.+)%.(.+)$")
+
+    local self = Common:new(prototype or GetPrototype(domain, category), database)
     self.object_name = Category.object_name
+    self.Domain = domain
 
     assert(
         self.Prototype.object_name == "LuaResourceCategoryPrototype" --
@@ -40,9 +32,18 @@ function Category:new(name, prototype, database)
     )
 
     self.Workers = Array:new()
-    self.Recipes = Array:new()
 
-    self:properties{}
+    self:properties{
+        Recipes = {
+            get = function()
+                local recipes =  self.Database.RecipesForCategory[self.Domain .. "." .. self.Name] --
+                if not recipes then return Array:new{} end
+                return recipes:Select(function (recipeName)
+                    return self.Database:GetRecipe(recipeName)
+                end)
+            end,
+        },
+    }
 
     return self
 

@@ -1,18 +1,22 @@
 local Constants = require("Constants")
 local Common = require("Common")
 
-local ItemSet = Common:class("ItemSet")
+local StackOfGoods = Common:class("StackOfGoods")
 
-function ItemSet:new(item, amounts, database)
-    assert(item)
-    local self = Common:new(item.Prototype, database)
-    self.object_name = ItemSet.object_name
-    assert(self.Prototype.object_name == "LuaItemPrototype")
+function StackOfGoods:new(goods, amounts, database)
+    assert(goods)
+    local self = Common:new(goods.Prototype, database)
+    self.object_name = StackOfGoods.object_name
+    assert(
+        self.Prototype.object_name == "LuaItemPrototype" or self.Prototype.object_name
+            == "LuaFluidPrototype"
+    )
 
-    self.Item = item
+    self.Goods = goods
     self.Amounts = amounts
-    self.SpriteType = item.SpriteType
+    self.SpriteType = goods.SpriteType
     self.UsePercentage = self.Amounts.probability ~= nil
+    self.ClickHandler = self.Goods
 
     self:properties{
         NumberOnSprite = {
@@ -39,12 +43,12 @@ function ItemSet:new(item, amounts, database)
                 return value * probability
             end,
         },
-        
-        SpriteName = {get = function() return self.Item.SpriteName end},
+
+        SpriteName = {get = function() return self.Goods.SpriteName end},
     }
 
     return self
 
 end
 
-return ItemSet
+return StackOfGoods

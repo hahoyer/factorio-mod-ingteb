@@ -30,7 +30,7 @@ function MiningRecipe(resource, database)
         self.Input = Array:new{self.Resource}
 
         if configuration.required_fluid then
-            local fluid = self.Database:GetItemSet{
+            local fluid = self.Database:GetStackOfGoods{
                 type = "fluid",
                 name = configuration.required_fluid,
                 amount = configuration.fluid_amount,
@@ -42,7 +42,7 @@ function MiningRecipe(resource, database)
         self.Output = Array:new(configuration.products) --
         :Select(
             function(product)
-                local result = database:GetItemSet(product)
+                local result = database:GetStackOfGoods(product)
                 if result then
                     result.Item.CreatedBy:AppendForKey(category, self)
                 else

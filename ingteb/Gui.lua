@@ -30,7 +30,7 @@ local function CreateSpriteAndRegister(frame, target)
         result = frame.add {type = "sprite-button", style = style}
     end
 
-    global.Current.Links[result.index] = target and target.MainObject
+    global.Current.Links[result.index] = target and target.ClickHandler
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
         if target and target.object_name == "BonusSet" then --
             local s = 2 --
