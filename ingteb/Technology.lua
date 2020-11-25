@@ -13,21 +13,6 @@ function OldTechnology(name, prototype, database)
 
     self.Time = self.Prototype.research_unit_energy
 
-    self.property.FunctionHelp = {
-        get = function(self) --
-            if not self.IsResearched and self.IsReady then
-                return {
-                    "ingteb_utility.research",
-                    {"control-keys.alt"},
-                    {"control-keys.control"},
-                    {"control-keys.shift"},
-                    {"control-keys.mouse-button-1-alt-1"},
-                    {"control-keys.mouse-button-2-alt-1"},
-                }
-            end
-        end,
-    }
-
     self:addCachedProperty(
         "NumberOnSprite", function()
             if self.Prototype.level and self.Prototype.max_level > 1 then
@@ -66,7 +51,7 @@ function OldTechnology(name, prototype, database)
     end
 
     function self:Setup()
-                self.Input = Array:new(self.Prototype.research_unit_ingredients) --
+        self.Input = Array:new(self.Prototype.research_unit_ingredients) --
         :Select(
             function(tag)
                 tag.amount = tag.amount * self.Prototype.research_unit_count
@@ -104,14 +89,30 @@ function Technology:new(name, prototype, database)
     self.TypeOrder = 3
     self.SpriteType = "technology"
     self.Technologies = Array:new()
+    self.ClickHandler = self
 
     assert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
     self:properties{
+        FunctionHelp = {
+            get = function(self) --
+                if not self.IsResearched and self.IsReady then
+                    return {
+                        "ingteb_utility.research",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    }
+                end
+            end,
+        },
+
         SpriteStyle = {
             get = function(self)
                 if self.IsResearched then return end
-                return self.IsReady 
+                return self.IsReady
             end,
         },
         IsResearched = {
@@ -124,7 +125,7 @@ function Technology:new(name, prototype, database)
                 return self.Prerequisites:All(
                     function(technology) return technology.IsResearched end
                 )
-                end,
+            end,
         },
 
         Prerequisites = {
@@ -136,7 +137,7 @@ function Technology:new(name, prototype, database)
                         return self.Database:GetTechnology(nil, technology)
                     end
                 )
-                end,
+            end,
         },
     }
     return self

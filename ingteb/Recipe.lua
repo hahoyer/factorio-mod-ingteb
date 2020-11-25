@@ -8,22 +8,6 @@ local function OldRecipe(name, prototype, database)
     local result = Common(name, prototype, database)
     result.object_name = "Recipe"
 
-    result.property.FunctionHelp = {
-        get = function(self) --
-            if self.IsResearched and self.NumberOnSprite then
-                return {
-                    "ingteb_utility.craft",
-                    {"control-keys.alt"},
-                    {"control-keys.control"},
-                    {"control-keys.shift"},
-                    {"control-keys.mouse-button-1-alt-1"},
-                    {"control-keys.mouse-button-2-alt-1"},
-                }
-            end
-        end,
-    }
-
-    
     function result:Refresh() self.cache.OrderValue.IsValid = false end
 
     result.IsDynamic = true
@@ -42,12 +26,28 @@ function Recipe:new(name, prototype, database)
     self.SpriteType = "recipe"
     self.TechnologyPrototypes = Array:new()
     self.IsHidden = false
+    self.ClickHandler = self
 
     assert(self.Prototype.object_name == "LuaRecipePrototype")
 
     self.Time = self.Prototype.energy
 
     self:properties{
+
+        FunctionHelp = {
+            get = function(self) --
+                if self.IsResearched and self.NumberOnSprite then
+                    return {
+                        "ingteb_utility.craft",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    }
+                end
+            end,
+        },
 
         Technologies = {
             cache = true,
