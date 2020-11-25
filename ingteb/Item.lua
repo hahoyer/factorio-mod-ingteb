@@ -1,25 +1,8 @@
 local Constants = require("Constants")
-local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
-
-function OldItem(name, prototype, database)
-    local self = Common(name, prototype, database)
-
-    function self:Setup()
-        if self.Prototype.place_result then
-            self.Entity = self.Database.Entities[self.Prototype.place_result.name]
-        end
-
-        self:SortAll()
-
-    end
-
-    return self
-end
 
 local Item = Common:class("Item")
 
@@ -31,6 +14,15 @@ function Item:new(name, prototype, database)
     assert(self.Prototype.object_name == "LuaItemPrototype")
 
     self:properties{
+        Entity = {
+            cache = true,
+            get = function()
+                if self.Prototype.place_result then
+                    return self.Database.GetEntity(self.Prototype.place_result.name)
+                end
+            end,
+        },
+
         RecipeList = {
             cache = true,
             get = function()
@@ -56,7 +48,7 @@ function Item:new(name, prototype, database)
                 return names --
                 :Select(
                     function(value, key)
-                        assert(key == "crafting")
+                        assert(key == "crafting.crafting")
                         return value --
                         :Select(
                             function(value)
@@ -76,7 +68,7 @@ function Item:new(name, prototype, database)
                 return names --
                 :Select(
                     function(value, key)
-                        assert(key == "crafting")
+                        assert(key == "crafting.crafting")
                         return value --
                         :Select(
                             function(value)

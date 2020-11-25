@@ -36,6 +36,8 @@ end
 
 local function OpenMainGui(target, setHistory)
     if not target then return end
+    assert(target.Prototype)
+    assert(type(setHistory or false) == "boolean")
 
     Helper.HideFrame()
     Gui.Main(target)

@@ -1,6 +1,6 @@
 local PropertyProvider = require("core.PropertyProvider")
 
-local ValueCacheRaw = {object_name = "ValueCacheRaw"}
+local ValueCacheRaw = {class_name = "ValueCacheRaw"}
 
 function ValueCacheRaw:new(getValueFunction)
     local result = {getValueFunction = getValueFunction}
@@ -10,25 +10,25 @@ function ValueCacheRaw:new(getValueFunction)
     return result
 end
 
-function ValueCacheRaw:get_Value(client)
-    self:Ensure(client)
+function ValueCacheRaw:get_Value()
+    self:Ensure()
     return self.value
 end
 
 function ValueCacheRaw:get_IsValid() return self.isValid end
 
-function ValueCacheRaw:set_IsValid(client, value)
+function ValueCacheRaw:set_IsValid(value)
     if value == self:get_IsValid() then return end
     if value then
-        self:Ensure(client)
+        self:Ensure()
     else
         self:Reset()
     end
 end
 
-function ValueCacheRaw:Ensure(client)
+function ValueCacheRaw:Ensure()
     if not self.isValid then
-        self.value = self.getValueFunction(client)
+        self.value = self:getValueFunction()
         self.isValid = true
     end
 end
@@ -42,14 +42,14 @@ end
 
 function ValueCache(getter)
     local result = PropertyProvider:new{valueCache = ValueCacheRaw:new(getter)}
-    result.object_name = "ValueCache"
+    result.class_name = "ValueCache"
 
     result.property.IsValid = {
         get = function(self) return self.valueCache:get_IsValid() end,
-        set = function(self, value) self.valueCache:set_IsValid(result, value) end,
+        set = function(self, value) self.valueCache:set_IsValid(value) end,
     }
 
-    result.property.Value = {get = function(self) return self.valueCache:get_Value(result) end}
+    result.property.Value = {get = function(self) return self.valueCache:get_Value() end}
 
     return result
 end

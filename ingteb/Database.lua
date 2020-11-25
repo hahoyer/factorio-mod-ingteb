@@ -4,16 +4,15 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
-local FunctionCache = require("core.FunctionCache")
-require("ingteb.Entity")
-local Item = require("ingteb.Item")
-require("ingteb.Fluid")
-local Recipe = require("ingteb.Recipe")
-require("ingteb.MiningRecipe")
-local Technology = require("ingteb.Technology")
+local Proxy = {
+    Item = require("ingteb.Item"),
+    Entity = require("ingteb.Entity"),
+    Recipe = require("ingteb.Recipe"),
+    Technology = require("ingteb.Technology"),
+    ItemSet = require("ingteb.ItemSet"),
+    Category = require("ingteb.Category"),
+}
 local ItemSet = require("ingteb.ItemSet")
-require("ingteb.Category")
-require("ingteb.Bonus")
 
 function EnsureKey(data, key, value)
     local result = data[key]
@@ -27,7 +26,7 @@ end
 function EnsureRecipeCategory(result, side, name, category)
     local itemData = EnsureKey(result, name)
     local sideData = EnsureKey(itemData, side, Dictionary:new())
-    local categoryData = EnsureKey(sideData, category, Array:new())
+    local categoryData = EnsureKey(sideData, "crafting." ..category, Array:new())
     return categoryData
 end
 
@@ -35,37 +34,27 @@ local Database = ValueCacheContainer:new{}
 Database.object_name = "Database"
 
 function Database:new()
-    if self.RecipesForCategory then return self end
-
-    self.Categories = {}
-    self.Entities = {}
-    self.Items = {}
-    self.Recipes = {}
-    self.RecipesForCategory = {}
+    if self.Proxies then return self end
+    self.Proxies = {}
     self.RecipesForItems = {}
-    self.Technologies = {}
+    self.RecipesForCategory = {}
 
     for _, recipe in pairs(game.recipe_prototypes) do self:ScanRecipe(recipe) end
 
-    self.WorkersForCategory = {}
     for _, prototype in pairs(game.entity_prototypes) do
-
         for category, _ in pairs(prototype.crafting_categories or {}) do
-            self:AddWorkerForCategory(category, prototype.name)
+            self:AddWorkerForCategory("crafting." .. category, prototype)
         end
         for category, _ in pairs(prototype.resource_categories or {}) do
-            self:AddWorkerForCategory(category, prototype.name)
+            self:AddWorkerForCategory("mining." .. category, prototype)
         end
     end
 
     for _, prototype in pairs(game.technology_prototypes) do
 
-        local technology = Technology:new(nil, prototype, self)
-        self.Technologies[prototype.name] = technology
-
         for key, value in pairs(prototype.effects or {}) do
             if value.type == "unlock-recipe" then
-                self:GetRecipe(value.recipe).Technologies:Append(technology)
+                self:GetRecipe(value.recipe).TechnologyPrototypes:Append(prototype)
             end
         end
     end
@@ -73,19 +62,34 @@ function Database:new()
     return self
 end
 
-function Database:GetRecipe(name, prototype)
+function Database:GetProxy(className, name, prototype)
     self = self:new()
-    return EnsureKey(self.Recipes, name or prototype.name, Recipe:new(name, prototype, self))
+
+    local data = self.Proxies[className]
+    if not data then
+        data = {}
+        self.Proxies[className] = data
+    end
+
+    local key = name or prototype.name
+
+    local result = data[key]
+    if not result then
+        result = Proxy[className]:new(name, prototype, self)
+        data[key] = result
+    end
+
+    return result
 end
 
-function Database:GetItem(name, prototype)
-    self = self:new()
-    return EnsureKey(self.Items, name or prototype.name, Item:new(name, prototype, self))
-end
+function Database:GetItem(name, prototype) return self:GetProxy("Item", name, prototype) end
+function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
+function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
+function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
+function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 
-function Database:AddWorkerForCategory(category, entity)
-    local target = EnsureKey(self.Categories, category, {Workers = Array:new{}})
-    target.Workers:Append(entity.name)
+function Database:AddWorkerForCategory(category, prototype)
+    self:GetCategory(category).Workers:Append(self:GetEntity(nil, prototype))
 end
 
 function Database:ScanRecipe(prototype)
@@ -284,7 +288,6 @@ function Database:GetDataForItemOld(prototype)
     }
 end
 
-------------------------------------------------------------------------
 function Database:GetItemSet(target)
     local amounts = {
         value = target.amount,
@@ -296,51 +299,6 @@ function Database:GetItemSet(target)
     = target.type == "item" and self:GetItem(target.name) --
     or target.type == "fluid" and self:GetFluid(target.name) --
     if item then return ItemSet:new(item, amounts, self) end
-end
-
-function Database:Scan()
-    if "" then return end
-
-    Dictionary:new(game.resource_category_prototypes) --
-    :Select(
-        function(value, key)
-            self.Categories[key .. " mining"] = Category("mining", value, self)
-            self.Categories[key .. " fluid mining"] = Category("fluid mining", value, self)
-        end
-    )
-
-    Dictionary:new(game.recipe_category_prototypes) --
-    :Select(
-        function(value, key)
-            self.Categories[key .. " crafting"] = Category("crafting", value, self)
-        end
-    )
-
-    self.Categories[" hand mining"] = Category(
-        "hand mining", game.technology_prototypes["steel-axe"], self
-    )
-
-    self.Categories[" hand mining"].Workers:Append(self.Entities["character"])
-    self.Categories["basic-solid mining"].Workers:Append(self.Entities["character"])
-
-    self.Categories[" researching"] = Category(
-        "researching", game.achievement_prototypes["tech-maniac"], self
-    )
-
-    Dictionary:new(game.recipe_prototypes) --
-    :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
-
-    Dictionary:new(game.technology_prototypes) --
-    :Where(function(value) return not value.hidden end) --
-    :Select(function(value, key) self.Technologies[key] = Technology(key, value, self) end)
-
-    Dictionary:new(self.Entities):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Recipes):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Technologies):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Categories):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
-    Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
-
 end
 
 function Database:EnsureCategory(domain, prototype)
@@ -364,7 +322,6 @@ end
 function Database:OnLoad() self = self:new() end
 
 function Database:FindTarget()
-    self:Scan()
     local function get()
         local cursor = global.Current.Player.cursor_stack
         if cursor and cursor.valid and cursor.valid_for_read then
@@ -402,8 +359,7 @@ function Database:FindTarget()
 end
 
 function Database:Get(target)
-    self:Scan()
-    if target.type == "item" then return game.item_prototypes[target.name] end
+    if target.type == "item" then return self:GetItem(target.name) end
     -- assert()
 end
 

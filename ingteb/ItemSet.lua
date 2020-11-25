@@ -41,7 +41,6 @@ function ItemSet:new(item, amounts, database)
         },
         
         SpriteName = {get = function() return self.Item.SpriteName end},
-
     }
 
     return self

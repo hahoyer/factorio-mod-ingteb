@@ -6,47 +6,10 @@ local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
 local Class = require("core.Class")
 
-function OldCommon(name, prototype, database)
-    local self = ValueCacheContainer:new{
-        Name = name,
-        Prototype = prototype,
-        Database = database,
-        cache = {},
-    }
-
-    self.property.FunctionHelp = {get = function() return end}
-    self.LocalizedDescription = self.Prototype.localised_description
-
-    self.property.HasLocalisedDescription = {
-        get = function()
-            if self.HasLocalisedDescriptionPending ~= nil then
-                return not self.HasLocalisedDescriptionPending
-            end
-
-            local key = self.LocalizedDescription[1]
-
-            if key then
-                if key == "modifier-description.train-braking-force-bonus" then
-                    local x = 2
-                end
-                local start = not global.Current.PendingTranslation:Any()
-                global.Current.PendingTranslation[key] = self
-                self.HasLocalisedDescriptionPending = true
-                if start then Helper.InitiateTranslation() end
-            end
-            return nil
-
-        end,
-    }
-
-    return self
-end
 
 local Common = Class:new{object_name = "Common"}
 
-function Common:class(name)
-    return Class:new{object_name = name}
-end
+function Common:class(name) return Class:new{object_name = name} end
 
 function Common:new(prototype, database)
     assert(prototype)
@@ -56,8 +19,33 @@ function Common:new(prototype, database)
     self.object_name = Common.object_name
     self.Name = self.Prototype.name
     self.LocalisedName = self.Prototype.localised_name
+    self.LocalizedDescription = self.Prototype.localised_description
 
     self:properties{
+        FunctionHelp = {get = function() return end},
+
+        HasLocalisedDescription = {
+            get = function()
+                if self.HasLocalisedDescriptionPending ~= nil then
+                    return not self.HasLocalisedDescriptionPending
+                end
+
+                local key = self.LocalizedDescription[1]
+
+                if key then
+                    if key == "modifier-description.train-braking-force-bonus" then
+                        local x = 2
+                    end
+                    local start = not global.Current.PendingTranslation:Any()
+                    global.Current.PendingTranslation[key] = self
+                    self.HasLocalisedDescriptionPending = true
+                    if start then Helper.InitiateTranslation() end
+                end
+                return nil
+
+            end,
+        },
+
         HelperText = {
             get = function()
                 local name = self.Prototype.localised_name
@@ -65,7 +53,7 @@ function Common:new(prototype, database)
                 local help = self.FunctionHelp
 
                 local result = name
-                if self.HasLocalisedDescription then
+                if false and self.HasLocalisedDescription then
                     result = {"ingteb_utility.Lines2", result, description}
                 end
                 if help then result = {"ingteb_utility.Lines2", result, help} end

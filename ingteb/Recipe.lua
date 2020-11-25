@@ -70,12 +70,24 @@ function Recipe:new(name, prototype, database)
     self.object_name = Recipe.object_name
     self.TypeOrder = 1
     self.SpriteType = "recipe"
-    self.Technologies = Array:new()
+    self.TechnologyPrototypes = Array:new()
     self.IsHidden = false
 
     assert(self.Prototype.object_name == "LuaRecipePrototype")
 
     self:properties{
+
+        Technologies = {
+            cache = true,
+            get = function()
+                return self.TechnologyPrototypes:Select(
+                    function(prototype)
+                        return self.Database:GetTechnology(nil, prototype)
+                    end
+                )
+            end,
+        },
+
         IsResearched = {
             get = function()
                 return --
@@ -124,7 +136,9 @@ function Recipe:new(name, prototype, database)
 
         Category = {
             cache = true,
-            get = function() return self.Database.Categories[self.Prototype.category] end,
+            get = function()
+                return self.Database.Proxies.Category["crafting." .. self.Prototype.category]
+            end,
         },
 
         HandCrafter = {

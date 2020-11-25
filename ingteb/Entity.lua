@@ -3,13 +3,27 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
+local Common =require("ingteb.Common")
 
-function Entity(name, prototype, database)
+local Entity = Common:class("Entity")
+
+function Entity:new(name, prototype, database)
+    local self = Common:new(prototype or game.entity_prototypes[name], database)
+    self.object_name = Entity.object_name
+    self.SpriteType = "entity"
+
+    assert(self.Prototype.object_name == "LuaEntityPrototype")
+
+    return self
+
+end
+
+
+
+
+function OldEntity(name, prototype, database)
     local self = Common(name, prototype, database)
     self.object_name = "Entity"
-    self.SpriteType = "entity"
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
 
@@ -84,3 +98,4 @@ function Entity(name, prototype, database)
     return self
 end
 
+return Entity

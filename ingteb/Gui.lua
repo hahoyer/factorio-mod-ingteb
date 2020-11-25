@@ -93,14 +93,14 @@ end
 local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
     frame.add {type = "line", direction = "horizontal"}
 
-    local workersPane = frame.add {
+    local workersPanel = frame.add {
         type = "flow",
         style = "ingteb-flow-centered",
         direction = "horizontal",
     }
 
-    local workers = Database:GetWorkerSpritesForCategory(category)
-    workers:Select(function(worker) return CreateSpriteAndRegister(workersPane, worker) end)
+    local workers = target[1].Database.Proxies.Category[category].Workers
+    workers:Select(function(worker) return CreateSpriteAndRegister(workersPanel, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
 
@@ -139,8 +139,8 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     ):Max()
 
     target:Select(
-        function(value, key)
-            CreateCraftingGroupPanel(subFrame, value, key, inCount, outCount)
+        function(recipes, category)
+            CreateCraftingGroupPanel(subFrame, recipes, category, inCount, outCount)
         end
     )
 end
@@ -209,10 +209,11 @@ function result.SelectTarget()
 end
 
 function result.Main(target)
+    assert(target.Prototype)
     return Helper.ShowFrame(
         "Main", function(frame)
-            assert(target.object_name == "LuaItemPrototype")
-            return CreateMainPanel(frame, Database:GetItem(nil, target))
+            assert(target.object_name == "Item")
+            return CreateMainPanel(frame, target)
         end
     )
 end
