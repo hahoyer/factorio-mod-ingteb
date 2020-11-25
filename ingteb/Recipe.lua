@@ -123,8 +123,8 @@ function Recipe:new(name, prototype, database)
 
         SpriteStyle = {
             get = function()
-                if not self.IsResearched then return "red_slot_button" end
-                if self.NumberOnSprite then return "ingteb-light-button" end
+                if not self.IsResearched then return false end
+                if self.NumberOnSprite then return true end
             end,
         },
 
