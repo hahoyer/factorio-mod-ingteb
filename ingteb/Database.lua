@@ -63,7 +63,7 @@ function Database:AddWorkerForCategory(domain, category, prototype)
     self:GetCategory(domain .. "." .. category).Workers:Append(self:GetEntity(nil, prototype))
 end
 
-function EnsureKey(data, key, value)
+local function EnsureKey(data, key, value)
     local result = data[key]
     if not result then
         result = value or {}
@@ -72,7 +72,7 @@ function EnsureKey(data, key, value)
     return result
 end
 
-function EnsureRecipeCategory(result, side, name, category)
+local function EnsureRecipeCategory(result, side, name, category)
     local itemData = EnsureKey(result, name)
     local sideData = EnsureKey(itemData, side, Dictionary:new())
     local categoryData = EnsureKey(sideData, "crafting." .. category, Array:new())
@@ -188,6 +188,6 @@ function Database:Get(target)
     -- assert()
 end
 
-function Database:RefreshTechnology(target) self.Technologies[target.name]:Refresh() end
+function Database:RefreshTechnology(target) self.Proxies.Technology[target.name]:Refresh() end
 
 return Database

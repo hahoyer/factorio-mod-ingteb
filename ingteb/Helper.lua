@@ -50,19 +50,6 @@ function result.ShowFrame(name, create)
     return frame
 end
 
-function result.HideFrame()
-    if global.Current.Frame then
-        global.Current.Location[global.Current.Frame.name] = global.Current.Frame.location
-        global.Current.Frame.destroy()
-        game.tick_paused = false
-        global.Current.Frame = nil
-        global.Current.Links = {}
-        global.Current.Gui = Dictionary:new{}
-
-        global.Current.Player.opened = nil
-    end
-end
-
 function result.SetHandler(eventId, handler, register)
     if not handler then register = false end
     if register == nil then register = true end
@@ -106,10 +93,17 @@ function result.DeepEqual(a, b)
 
 end
 
+function result.SpriteStyleFromCode(code)
+    return  code == true and "ingteb-light-button" --
+    or code == false and "red_slot_button" --
+    or "slot_button"
+end
+
 local function UpdateGui(list, target)
     local helperText = target.HelperText
     local number = target.NumberOnSprite
-    local style = target.SpriteStyle or "slot_button"
+    local style = result.SpriteStyleFromCode(target.SpriteStyle)
+
     list:Select(
         function(guiElement)
             guiElement.tooltip = helperText

@@ -84,7 +84,7 @@ function Entity:new(name, prototype, database)
 
 end
 
-function OldEntity(name, prototype, database)
+local function OldEntity(name, prototype, database)
     local self = Common(name, prototype, database)
     self.object_name = "Entity"
     self.UsedBy = Dictionary:new{}

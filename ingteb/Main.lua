@@ -10,13 +10,14 @@ local Database = require("ingteb.Database")
 local UI = require("core.UI")
 
 State = {}
-StateHandler = nil
 
 local function EnsureGlobal()
     if not global.Current then global.Current = {} end
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
-    if not global.Current.Gui then global.Current.Gui = Dictionary:new{} end
+    if not global.Current.Gui or not global.Current.Gui.AppendForKey then
+        global.Current.Gui = Dictionary:new{}
+    end
     if not global.Current.PendingTranslation then
         global.Current.PendingTranslation = Dictionary:new{}
     end
@@ -34,25 +35,55 @@ local function EnsureMainButton()
     end
 end
 
+local function HideGuiAndResetData()
+    if global.Current.Frame then
+        log("\n>>>>--- HideGuiAndResetData")
+        global.Current.Location[global.Current.Frame.name] = global.Current.Frame.location
+        global.Current.Frame.destroy()
+        game.tick_paused = false
+        global.Current.Frame = nil
+        global.Current.Links = {}
+        log("!!!!--- Links dropped")
+        global.Current.Gui = Dictionary:new{}
+        global.Current.Player.opened = nil
+        log("<<<<------ HideGuiAndResetData\n")
+    end
+end
+
 local function OpenMainGui(target, setHistory)
     if not target then return end
+    log("\n>>>>--- OpenMainGui setHistory = " .. tostring(setHistory))
     assert(target.Prototype)
     assert(type(setHistory or false) == "boolean")
 
-    Helper.HideFrame()
+    log(">>>>--- Link collection")
     Gui.Main(target)
-    StateHandler {mainPanel = true}
+    log("<<<<--- Link collection")
+    ConfigureMainPanelOpenState()
     if setHistory ~= false then History:HairCut(target) end
+    log("<<<<------ OpenMainGui\n")
     return target
 end
 
-local function RefreshMain() OpenMainGui(History:GetCurrent(), false) end
+local function RefreshMain()
+    log("\n>>>>--- RefreshMain")
+    OpenMainGui(History:GetCurrent(), false)
+    log("<<<<------ RefreshMain\n")
+end
 
-function ForeNavigation() OpenMainGui(History:Fore(), false) end
+local function ForeNavigation()
+    log("\n>>>>--- ForeNavigation")
+    OpenMainGui(History:Fore(), false)
+    log("<<<<------ ForeNavigation\n")
+end
 
-function BackNavigation() OpenMainGui(History:Back(), false) end
+local function BackNavigation()
+    log("\n>>>>--- BackNavigation")
+    OpenMainGui(History:Back(), false)
+    log("<<<<------ BackNavigation\n")
+end
 
-function GetHandCraftingOrder(event, target)
+local function GetHandCraftingOrder(event, target)
     if (UI.IsMouseCode(event, "A-- l") --
     or UI.IsMouseCode(event, "A-- r") --
     or UI.IsMouseCode(event, "--S l")) --
@@ -71,144 +102,199 @@ function GetHandCraftingOrder(event, target)
     end
 end
 
-function GetResearchOrder(event, target)
+local function GetResearchOrder(event, target)
     if UI.IsMouseCode(event, "-C- l") --
     and target and target.object_name == "Technology" and target.IsReady --
     then return {Technology = target.Prototype} end
 end
 
-local function OpenMainGuiForNewItem()
-    local target = Database:FindTarget()
-    if not target then
-        Gui.SelectTarget()
-        StateHandler {selectPanel = true}
-        return
-    end
-
-    OpenMainGui(target)
-end
-
-local function MainForClose()
-    Helper.HideFrame()
-    StateHandler {mainPanel = false, selectPanel = false}
-end
-
-local function MainForOpen()
-    EnsureGlobal()
-    --    Database:OnLoad()
-    OpenMainGuiForNewItem()
-end
-
-local function Main()
+local function OpenOrCloseMainGui()
     if global.Current.Frame then
-        MainForClose()
+        HideGuiAndResetData()
+        ConfigureNoneOpenState()
     else
-        MainForOpen()
+        EnsureGlobal()
+        local target = Database:FindTarget()
+        if not target then
+            Gui.SelectTarget()
+            ConfigureSelectionPanelOpenState()
+            return
+        end
+
+        OpenMainGui(target)
     end
 end
 
-local function GuiClick(event)
-    global.Current.Player = game.players[event.player_index]
-    if global.Current.MainButtonIndex == event.element.index then return Main() end
-
-    --        assert()
-
+local function CheckForOpenOrClose(event)
+    if global.Current.MainButtonIndex == event.element.index then
+        OpenOrCloseMainGui()
+        return true
+    end
 end
 
-local function GuiClickForMain(event)
+local function OnGuiClick(event)
+    log("\n>>>>--- OnGuiClick " .. serpent.block(event))
+    global.Current.Player = game.players[event.player_index]
+    if (CheckForOpenOrClose(event)) then return end
+    assert()
+    log("<<<<--- OnGuiClick\n")
+end
+
+local function OnGuiClickForSelect(event)
+    log("\n>>>>--- OnGuiClickForSelect")
+    global.Current.Player = game.players[event.player_index]
+    log("<<<<--- OnGuiClickForSelect\n")
+end
+
+local function OnGuiClickForMain(event)
+    log("\n>>>>--- OnGuiClickForMain")
     global.Current.Player = game.players[event.player_index]
     local target = global.Current.Links and global.Current.Links[event.element.index]
+
+    if (CheckForOpenOrClose(event)) then return end
 
     if target and UI.IsMouseCode(event, "--- l") then
         if target.Prototype then
             OpenMainGui(target)
+            log("<<<<--- OnGuiClickForMain IsMouseCode\n")
             return
         end
-        local d = s
+        __DebugAdapter.breakpoint()
     end
 
     local order = GetHandCraftingOrder(event, target)
     if order then
         global.Current.Player.begin_crafting(order)
+        log("<<<<--- OnGuiClickForMain GetHandCraftingOrder\n")
         return
     end
 
     local order = GetResearchOrder(event, target)
     if order then
         global.Current.Player.force.add_research(order.Technology)
+        log("<<<<--- OnGuiClickForMain GetResearchOrder\n")
         return
     end
 
-    GuiClick(event)
+    log("<<<<--- OnGuiClickForMain\n")
 end
 
-local function GuiElementChangedForSelect(event)
+local function debugElementDump(element) return element and element.name or element end
+
+local function OnGuiElementChangedForSelect(event)
+    log("\n>>>>--- OnGuiElementChangedForSelect " .. debugElementDump(event.element))
     global.Current.Player = game.players[event.player_index]
-    StateHandler {selectPanel = false}
     OpenMainGui(Database:Get(event.element.elem_value))
+    log("<<<<--- OnGuiElementChangedForSelect\n")
 end
 
-local function GuiClose()
-    Helper.HideFrame()
-    StateHandler {mainPanel = false}
+local function OnGuiClose(event)
+    log("\n>>>>--- OnGuiClose " .. debugElementDump(event.element))
+    if event.element then
+        if event.element == global.Current.Frame then
+            log("!!!--- OnGuiClose: element match")
+            HideGuiAndResetData()
+            ConfigureNoneOpenState()
+        end
+    end
+    log("<<<<--- OnGuiClose\n")
 end
 
 local function OnResearchFinished(event)
+    log("\n>>>>--- OnResearchFinished " .. debugElementDump(event.element))
     Database:RefreshTechnology(event.research)
     Helper.RefreshMainResearchChanged()
+    log("<<<<--- OnResearchFinished\n")
 end
 
 local function OnMainKey(event)
+    log("\n>>>>--- OnMainKey")
     global.Current.Player = game.players[event.player_index]
-    Main()
+    OpenOrCloseMainGui()
+    log("<<<<--- OnMainKey\n")
 end
 
 local function OnLoad()
+    log("\n>>>>--- OnLoad")
     History:RemoveAll()
     --    History:Load(global.Current and global.Current.History) 
+    log("<<<<--- OnLoad\n")
 end
 
-local function OnInit() Database:OnLoad() end
+local function OnInit()
+    log("\n>>>>--- OnInit")
+    Database:OnLoad()
+    log("<<<<--- OnInit\n")
+end
 
 local function OnTick()
+    log("\n>>>>--- OnTick")
     EnsureMainButton()
-    StateHandler {mainButton = true}
+    ConfigureMainPanelOpenState()
+    log("<<<<--- OnTick\n")
 end
 
-StateHandler = function(state)
-    state.mainPanel = state.mainPanel == true
-    state.selectPanel = state.selectPanel == true
-    state.mainButton = state.mainButton == true
-
+ConfigureNoneOpenState = function()
+    log("!!!!--- ConfigureNoneOpenState")
     local handlers = Dictionary:new{}
-
-    handlers[Constants.Key.Fore] = {ForeNavigation, state.mainPanel}
-
-    handlers[Constants.Key.Back] = (state.mainPanel and {BackNavigation, state.mainPanel}) or --
-    {RefreshMain, "reopen current"}
-
-    handlers[defines.events.on_gui_click] = --
-    (state.mainPanel and {GuiClickForMain, state.mainPanel}) or --
-    {GuiClick, "outside"}
-
-    handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
-    handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
-
-    handlers[defines.events.on_player_main_inventory_changed] =
-        {Helper.RefreshMainInventoryChanged, state.mainPanel}
-    handlers[defines.events.on_player_cursor_stack_changed] =
-        {Helper.RefreshStackChanged, state.mainPanel}
-    handlers[defines.events.on_research_finished] = {OnResearchFinished, state.mainPanel}
+    handlers[Constants.Key.Fore] = {RefreshMain}
+    handlers[Constants.Key.Back] = {RefreshMain}
+    handlers[defines.events.on_gui_click] = {OnGuiClick}
+    handlers[defines.events.on_gui_elem_changed] = {}
+    handlers[defines.events.on_gui_closed] = {}
+    handlers[defines.events.on_player_main_inventory_changed] = {}
+    handlers[defines.events.on_player_cursor_stack_changed] = {}
+    handlers[defines.events.on_research_finished] = {}
     handlers[defines.events.on_tick] = {}
 
     Helper.SetHandlers(handlers)
 
     global.Current.History = History:Save()
+    -- log("State = " .. serpent.block(State))
 end
 
-Helper.SetHandler(Constants.Key.Main, MainForOpen, "open mode")
+ConfigureSelectionPanelOpenState = function()
+    log("!!!!--- ConfigureSelectionPanelOpenState")
+    local handlers = Dictionary:new{}
+    handlers[Constants.Key.Fore] = {RefreshMain}
+    handlers[Constants.Key.Back] = {RefreshMain}
+    handlers[defines.events.on_gui_click] = {OnGuiClickForSelect}
+    handlers[defines.events.on_gui_elem_changed] = {OnGuiElementChangedForSelect}
+    handlers[defines.events.on_gui_closed] = {OnGuiClose}
+    handlers[defines.events.on_player_main_inventory_changed] = {}
+    handlers[defines.events.on_player_cursor_stack_changed] = {}
+    handlers[defines.events.on_research_finished] = {}
+    handlers[defines.events.on_tick] = {}
+
+    Helper.SetHandlers(handlers)
+
+    global.Current.History = History:Save()
+    --    log("State = " .. serpent.block(State))
+end
+
+ConfigureMainPanelOpenState = function()
+    log("!!!!--- ConfigureMainPanelOpenState")
+    local handlers = Dictionary:new{}
+    handlers[Constants.Key.Fore] = {ForeNavigation}
+    handlers[Constants.Key.Back] = {BackNavigation}
+    handlers[defines.events.on_gui_click] = {OnGuiClickForMain}
+    handlers[defines.events.on_gui_elem_changed] = {}
+    handlers[defines.events.on_gui_closed] = {OnGuiClose}
+    handlers[defines.events.on_player_main_inventory_changed] = {Helper.RefreshMainInventoryChanged}
+    handlers[defines.events.on_player_cursor_stack_changed] = {Helper.RefreshStackChanged}
+    handlers[defines.events.on_research_finished] = {OnResearchFinished}
+    handlers[defines.events.on_tick] = {}
+
+    Helper.SetHandlers(handlers)
+
+    global.Current.History = History:Save()
+    -- log("State = " .. serpent.block(State))
+end
+
 Helper.SetHandler("on_load", OnLoad)
 Helper.SetHandler("on_init", OnInit)
 Helper.SetHandler(defines.events.on_tick, OnTick)
 Helper.SetHandler(Constants.Key.Main, OnMainKey)
 Helper.SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
+
+-- __DebugAdapter.breakpoint(mesg:LocalisedString)

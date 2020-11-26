@@ -4,32 +4,20 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 
-local function OldRecipe(name, prototype, database)
-    local result = Common(name, prototype, database)
-    result.object_name = "Recipe"
-
-    function result:Refresh() self.cache.OrderValue.IsValid = false end
-
-    result.IsDynamic = true
-
-    return result
-end
-
-local x = OldRecipe
-
 local Recipe = Common:class("Recipe")
 
 function Recipe:new(name, prototype, database)
     local self = Common:new(prototype or game.recipe_prototypes[name], database)
     self.object_name = Recipe.object_name
+
+    assert(self.Prototype.object_name == "LuaRecipePrototype")
+
     self.TypeOrder = 1
     self.SpriteType = "recipe"
     self.TechnologyPrototypes = Array:new()
     self.IsHidden = false
     self.ClickHandler = self
-
-    assert(self.Prototype.object_name == "LuaRecipePrototype")
-
+    self.IsDynamic = true
     self.Time = self.Prototype.energy
 
     self:properties{
@@ -169,6 +157,11 @@ function Recipe:new(name, prototype, database)
         if self == other then return false end
         return self.OrderValue < other.OrderValue
     end
+
+    function self:Refresh() self.cache.OrderValue.IsValid = false end
+
+    function self:SortAll() end
+
     return self
 
 end

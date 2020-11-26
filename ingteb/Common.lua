@@ -6,7 +6,6 @@ local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
 local Class = require("core.Class")
 
-
 local Common = Class:new{object_name = "Common"}
 
 function Common:class(name) return Class:new{object_name = name} end
@@ -18,10 +17,19 @@ function Common:new(prototype, database)
     local self = Class:new{Prototype = prototype, Database = database}
     self.object_name = Common.object_name
     self.Name = self.Prototype.name
-    self.LocalisedName = self.Prototype.localised_name
     self.LocalizedDescription = self.Prototype.localised_description
 
     self:properties{
+        LocalisedName = {
+            get = function()
+                return {
+                    "gui-text-tags.following-text-"
+                        .. (self.TypeForLocalisation or self.SpriteType),
+                    self.Prototype.localised_name,
+                }
+            end,
+        },
+
         FunctionHelp = {get = function() return end},
 
         HasLocalisedDescription = {

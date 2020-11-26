@@ -12,10 +12,7 @@ local function CreateSpriteAndRegister(frame, target)
     local sprite = target and target.SpriteName
     local number = target and target.NumberOnSprite
     local show_percent_for_small_numbers = target and target.UsePercentage
-    local spriteStyleCode = target and target.SpriteStyle
-    local style = spriteStyleCode == true and "ingteb-light-button" --
-    or spriteStyleCode == false and "red_slot_button" --
-    or "slot_button"
+    local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
     if target then
         result = frame.add {
@@ -158,9 +155,9 @@ local function CreateMainPanel(frame, target)
     target:SortAll()
 
     local mainFrame = scrollframe
-    local columnCount = (target.RecipeList:Any() and 1 or 0) + --
-    (target.UsedBy:Any() and 1 or 0) + --
-    (target.CreatedBy:Any() and 1 or 0)
+    local columnCount = (target.RecipeList and target.RecipeList:Any() and 1 or 0) + --
+    (target.UsedBy and target.UsedBy:Any() and 1 or 0) + --
+    (target.CreatedBy and target.CreatedBy:Any() and 1 or 0)
 
     if columnCount > 1 then
         mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
@@ -212,7 +209,6 @@ function result.Main(target)
     assert(target.Prototype)
     return Helper.ShowFrame(
         "Main", function(frame)
-            assert(target.object_name == "Item")
             return CreateMainPanel(frame, target)
         end
     )
