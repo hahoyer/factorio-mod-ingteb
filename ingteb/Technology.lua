@@ -4,6 +4,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
+local UI = require("core.UI")
 
 local Technology = Common:class("Technology")
 
@@ -147,6 +148,13 @@ function Technology:new(name, prototype, database)
     end
 
     function self:SortAll() end
+
+    function self:GetResearchOrder(event)
+        if UI.IsMouseCode(event, "-C- l") --
+        and self.IsReady --
+        then return {Technology = self.Prototype} end
+    end
+    
 
     return self
 

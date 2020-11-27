@@ -209,10 +209,10 @@ function Gui:FindTarget(player)
     local function get()
         local cursor = player.cursor_stack
         if cursor and cursor.valid and cursor.valid_for_read then
-            return self.Items[cursor.name]
+            return Database:GetItem(cursor.name)
         end
         local cursor = player.cursor_ghost
-        if cursor then return self.Items[cursor.name] end
+        if cursor then return Database:GetItem(cursor.name) end
 
         local cursor = player.selected
         if cursor then
@@ -332,13 +332,13 @@ function Gui:OnGuiClickForPresentator(player, event)
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
-        local order = target:GetHandCraftingOrder(player, event)
+        local order = target:GetHandCraftingOrder( event)
         if order then
             player.begin_crafting(order)
             return
         end
 
-        local order = target:GetResearchOrder(player.force, event)
+        local order = target:GetResearchOrder(event)
         if order then
             player.force.add_research(order.Technology)
             return

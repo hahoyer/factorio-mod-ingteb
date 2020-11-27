@@ -3,6 +3,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
+local UI = require("core.UI")
 
 local Recipe = Common:class("Recipe")
 
@@ -161,6 +162,25 @@ function Recipe:new(name, prototype, database)
     function self:Refresh() self.cache.OrderValue.IsValid = false end
 
     function self:SortAll() end
+
+    function self:GetHandCraftingOrder(event)
+        if (UI.IsMouseCode(event, "A-- l") --
+        or UI.IsMouseCode(event, "A-- r") --
+        or UI.IsMouseCode(event, "--S l")) --
+        and self.HandCrafter and self.NumberOnSprite then
+            local amount = 0
+            if event.shift then
+                amount = game.players[event.player_index].get_craftable_count(self.Name)
+            elseif event.button == defines.mouse_button_type.left then
+                amount = 1
+            elseif event.button == defines.mouse_button_type.right then
+                amount = 5
+            else
+                return
+            end
+            return {count = amount, recipe = self.Name}
+        end
+    end
 
     return self
 

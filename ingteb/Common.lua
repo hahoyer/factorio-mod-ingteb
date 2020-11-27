@@ -82,6 +82,9 @@ function Common:new(prototype, database)
             get = function() return self.SpriteType .. "/" .. self.Prototype.name end,
         },
     }
+    function self:GetHandCraftingOrder(event) end
+    function self:GetResearchOrder(event) end
+
     return self
 
 end
