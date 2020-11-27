@@ -84,6 +84,8 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 end
 
 local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
+    assert(type(category) == "string")
+
     frame.add {type = "line", direction = "horizontal"}
 
     local workersPanel = frame.add {
@@ -92,7 +94,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
         direction = "horizontal",
     }
 
-    local workers = target[1].Database.Proxies.Category[category].Workers
+    local workers = target[1].Database:GetCategory(category).Workers
     workers:Select(function(worker) return CreateSpriteAndRegister(workersPanel, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
@@ -104,6 +106,7 @@ end
 
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
+    assert(type(next(target)) == "string")
 
     local subFrame = frame.add {
         type = "frame",
@@ -119,6 +122,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     headerSprites:Select(function(sprite) labelFlow.add {type = "sprite", sprite = sprite} end)
 
+
     local inCount = target:Select(
         function(group)
             return group:Select(function(recipe) return recipe.Input:Count() end):Max()
@@ -133,6 +137,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     target:Select(
         function(recipes, category)
+            assert(type(category) == "string")
             CreateCraftingGroupPanel(subFrame, recipes, category, inCount, outCount)
         end
     )
@@ -149,6 +154,9 @@ local function CreateMainPanel(frame, target)
     }
 
     target:SortAll()
+    assert(not next(target.RecipeList) or type(next(target.RecipeList)) == "string")
+    assert(not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
+    assert(not next(target.CreatedBy) or type(next(target.CreatedBy)) == "string")
 
     local mainFrame = scrollframe
     local columnCount = (target.RecipeList and target.RecipeList:Any() and 1 or 0) + --
@@ -208,7 +216,7 @@ function Gui:FindTarget(player)
 
         local cursor = player.selected
         if cursor then
-            local result = self.Entities[cursor.name]
+            local result = Database:GetEntity(cursor.name)
             if result.IsResource then
                 return result
             else
@@ -280,7 +288,7 @@ function Gui:OnMainButtonPressed(player)
     else
         local target = self:FindTarget(player)
         if target then
-            assert(todo)
+            return self:PresentTarget(player, target)
         else
             self:SelectTarget(player)
         end
@@ -304,7 +312,7 @@ end
 function Gui:OnGuiClick(player, event)
     local element = event.element
     if element == Gui.Active.ingteb then
-       return  self:OnMainButtonPressed(player)
+        return self:OnMainButtonPressed(player)
     elseif element == Gui.Active.Selector then
         return
     elseif element == Gui.Active.Presentator then
@@ -313,7 +321,7 @@ function Gui:OnGuiClick(player, event)
 
     if self.Active.Presentator then
         return self:OnGuiClickForPresentator(player, event)
-    elseif self.Active.Selector and element.type == "choose-elem-button"then
+    elseif self.Active.Selector and element.type == "choose-elem-button" then
     else
         assert(todo)
     end
@@ -322,7 +330,7 @@ end
 function Gui:OnGuiClickForPresentator(player, event)
     local target = global.Current.Links[event.element.index]
     if target and target.Prototype then
-        if  UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
+        if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
         local order = target:GetHandCraftingOrder(player, event)
         if order then

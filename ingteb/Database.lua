@@ -9,6 +9,7 @@ local Proxy = {
     Fluid = require("ingteb.Fluid"),
     Entity = require("ingteb.Entity"),
     Recipe = require("ingteb.Recipe"),
+    MiningRecipe = require("ingteb.MiningRecipe"),
     Technology = require("ingteb.Technology"),
     Category = require("ingteb.Category"),
 }
@@ -56,6 +57,9 @@ function Database:GetItem(name, prototype) return self:GetProxy("Item", name, pr
 function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
+function Database:GetMiningRecipe(name, prototype)
+    return self:GetProxy("MiningRecipe", name, prototype)
+end
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 
 function Database:AddWorkerForCategory(domain, category, prototype)
@@ -83,8 +87,18 @@ function Database:ScanEntity(prototype)
         self:AddWorkerForCategory("crafting", category, prototype)
     end
     for category, _ in pairs(prototype.resource_categories or {}) do
-        self:AddWorkerForCategory("mining", category, prototype)
+        if prototype.mineable_properties.required_fluid then
+            self:AddWorkerForCategory("fluid-mining", category, prototype)
+        else
+            self:AddWorkerForCategory("mining", category, prototype)
+        end
     end
+
+    if prototype.mineable_properties --
+    and prototype.mineable_properties.minable --
+    and prototype.mineable_properties.products --
+    and not prototype.items_to_place_this --
+    then self:GetMiningRecipe(nil, prototype) end
 end
 
 function Database:ScanTechnology(prototype)
@@ -94,7 +108,7 @@ function Database:ScanTechnology(prototype)
         end
     end
     for key, value in pairs(prototype.prerequisites or {}) do
-        EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()): Append(prototype)
+        EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()):Append(prototype)
     end
 
 end
@@ -143,14 +157,12 @@ function Database:AddBonus(target, technology)
     return BonusSet(result, target.modifier, self)
 end
 
-function Database:OnLoad() 
-    self = self:new() 
-end
+function Database:OnLoad() self = self:new() end
 
 function Database:Get(target)
     assert(target.type)
     assert(target.name)
-    
+
     if target.type == "item" then return self:GetItem(target.name) end
     -- assert()
 end

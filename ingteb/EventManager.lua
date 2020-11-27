@@ -132,7 +132,8 @@ function EventManager:OnInit() Database:OnLoad() end
 
 function EventManager:OnMainKey(event)
     self.Player = event.player_index
-    Gui:OnMainButtonPressed(self.Player)
+    local target = Gui:OnMainButtonPressed(self.Player)
+    if target then History:AdvanceWith(target) end
     self:ConfigureEvents()
 end
 

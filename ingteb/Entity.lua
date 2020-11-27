@@ -19,6 +19,9 @@ function Entity:new(name, prototype, database)
     or self.Prototype.crafting_speed -- 
     or self.Prototype.researching_speed -- 
 
+    self.UsedBy = Dictionary:new{}
+    self.CreatedBy = Dictionary:new{}
+
     self:properties{
         ClickHandler = {get = function() return self.Item end},
         Item = {
@@ -44,16 +47,16 @@ function Entity:new(name, prototype, database)
         Categories = {
             cache = true,
             get = function()
-                return self.Database.Proxies.Category -- 
+                local xreturn= self.Database.Proxies.Category -- 
                 :Where(
                     function(category)
-                        local domain = category.Domain
+                         local domain = category.Domain
                         local list
-                        if domain == "mining" or domain == "fluid mining" then
-                            list = self.Prototype.resource_categories
+                        if domain == "mining" or domain == "fluid-mining" then
+                            list = self.Prototype.resource_category
                         elseif domain == "crafting" then
                             list = self.Prototype.crafting_categories
-                        elseif domain == "hand mining" then
+                        elseif domain == "hand-mining" then
                             return
                         elseif domain == "researching" then
                             return self.Prototype.lab_inputs
@@ -69,8 +72,10 @@ function Entity:new(name, prototype, database)
                         return category
                     end
                 )
+                return xreturn
             end,
         },
+     
         RecipeList = {
             cache = true,
             get = function()
@@ -80,51 +85,11 @@ function Entity:new(name, prototype, database)
             end,
         },
     }
-    return self
-
-end
-
-local function OldEntity(name, prototype, database)
-    local self = Common(name, prototype, database)
-    self.object_name = "Entity"
-    self.UsedBy = Dictionary:new{}
-    self.CreatedBy = Dictionary:new{}
 
     function self:SortAll() end
 
-    function self:Setup()
-
-        if self.IsResource then self.Database:CreateMiningRecipe(self) end
-
-        self.Categories = self.Database.Categories -- 
-        :Where(
-            function(category)
-                local domain = category.DomainName
-                local list
-                if domain == "mining" or domain == "fluid mining" then
-                    list = self.Prototype.resource_categories
-                elseif domain == "crafting" then
-                    list = self.Prototype.crafting_categories
-                elseif domain == "hand mining" then
-                    return
-                elseif domain == "researching" then
-                    return self.Prototype.lab_inputs
-                else
-                    assert()
-                end
-                return list and list[category.Name]
-            end
-        ) --
-        :Select(
-            function(category)
-                category.Workers:Append(self)
-                return category
-            end
-        )
-
-    end
-
     return self
+
 end
 
 return Entity

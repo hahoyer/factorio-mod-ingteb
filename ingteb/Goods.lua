@@ -11,15 +11,6 @@ function Goods:new(prototype, database)
     self.object_name = Goods.object_name
 
     self:properties{
-        Entity = {
-            cache = true,
-            get = function()
-                if self.Prototype.place_result then
-                    return self.Database:GetEntity(self.Prototype.place_result.name)
-                end
-            end,
-        },
-
         OriginalRecipeList = {
             get = function()
                 return self.Entity and self.Entity.RecipeList or Array:new{} 
@@ -106,6 +97,8 @@ function Goods:new(prototype, database)
         self.CreatedBy = Sort(self.CreatedBy)
         self.UsedBy = Sort(self.UsedBy)
     end
+
+    self:SortAll()
 
     return self
 

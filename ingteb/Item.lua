@@ -14,7 +14,16 @@ function Item:new(name, prototype, database)
 
     assert(self.Prototype.object_name == "LuaItemPrototype")
 
-    self:properties{}
+    self:properties{
+        Entity = {
+            cache = true,
+            get = function()
+                if self.Prototype.place_result then
+                    return self.Database:GetEntity(self.Prototype.place_result.name)
+                end
+            end,
+        },
+    }
 
     return self
 

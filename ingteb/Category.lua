@@ -10,25 +10,29 @@ local Category = Common:class("Category")
 local function GetPrototype(domain, category)
     if domain == "crafting" then
         return game.recipe_category_prototypes[category]
-    elseif domain == "mining" then
+    elseif domain == "mining" or domain == "fluid-mining" then
         return game.resource_category_prototypes[category]
+    elseif domain == "hand-mining" and category == "steel-axe" then
+        return game.technology_prototypes["steel-axe"]
     else
-        assert()
+        assert(todo)
     end
 end
 
 function Category:new(name, prototype, database)
     assert(name)
 
-    local _, _, domain, category = name:find("^(.+)%.(.+)$")
+    local _, _, domain, category = name:find("^(.+)%.(.*)$")
 
     local self = Common:new(prototype or GetPrototype(domain, category), database)
     self.object_name = Category.object_name
     self.Domain = domain
+    self.Key = self.Domain .. "." .. self.Name
 
     assert(
         self.Prototype.object_name == "LuaResourceCategoryPrototype" --
-        or self.Prototype.object_name == "LuaRecipeCategoryPrototype"
+        or self.Prototype.object_name == "LuaRecipeCategoryPrototype" --
+        or self.Prototype.object_name == "LuaTechnologyPrototype" --
     )
 
     self.Workers = Array:new()
@@ -36,11 +40,13 @@ function Category:new(name, prototype, database)
     self:properties{
         Recipes = {
             get = function()
-                local recipes =  self.Database.RecipesForCategory[self.Domain .. "." .. self.Name] --
+                local recipes = self.Database.RecipesForCategory[self.Domain .. "." .. self.Name] --
                 if not recipes then return Array:new{} end
-                return recipes:Select(function (recipeName)
-                    return self.Database:GetRecipe(recipeName)
-                end)
+                return recipes:Select(
+                    function(recipeName)
+                        return self.Database:GetRecipe(recipeName)
+                    end
+                )
             end,
         },
     }
