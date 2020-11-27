@@ -30,18 +30,19 @@ end
 function EventManager:ConfigureEvents()
     assert(Gui.Active.ingteb)
     if Gui.Active.Selector then
+
         self:SetHandler(
-            Constants.Key.Fore,
-                History.IsForePossible and self.OnSelectorForeOrBackClick or self.DoNothing
+            Constants.Key.Fore, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
         )
         self:SetHandler(
-            Constants.Key.Back,
-                History.IsBackPossible and self.OnSelectorForeOrBackClick or self.DoNothing
+            Constants.Key.Back, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
         )
         self:SetHandler(defines.events.on_gui_elem_changed, self.OnSelectorElementChanged)
         self:SetHandler(defines.events.on_gui_closed, self.OnSelectorClose)
         self:SetHandler(defines.events.on_tick)
+
     elseif Gui.Active.Presentator then
+
         self:SetHandler(
             Constants.Key.Fore,
                 History.IsForePossible and self.OnPresentatorForeClick or self.DoNothing
@@ -53,25 +54,47 @@ function EventManager:ConfigureEvents()
         self:SetHandler(defines.events.on_gui_elem_changed)
         self:SetHandler(defines.events.on_gui_closed, self.OnPresentatorClose)
         self:SetHandler(defines.events.on_tick)
+
     else
-        self:SetHandler(Constants.Key.Fore, self.DoNothing)
-        self:SetHandler(Constants.Key.Back, self.DoNothing)
+
+        self:SetHandler(
+            Constants.Key.Fore, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
+        )
+        self:SetHandler(
+            Constants.Key.Back, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
+        )
         self:SetHandler(defines.events.on_gui_closed, self.DoNothing)
 
     end
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
 end
 
-function EventManager:OnSelectorForeOrBackClick() assert() end
+function EventManager:OnSelectorForeOrBackClick(event)
+    self.Player = event.player_index
+    Gui:PresentTarget(self.Player, History.Current)
+    self:ConfigureEvents()
+end
+
+function EventManager:OnPresentatorForeClick(event)
+    self.Player = event.player_index
+    History:Fore()
+    Gui:PresentTarget(self.Player, History.Current)
+    self:ConfigureEvents()
+end
+
+function EventManager:OnPresentatorBackClick(event)
+    self.Player = event.player_index
+    History:Back()
+    Gui:PresentTarget(self.Player, History.Current)
+    self:ConfigureEvents()
+end
 
 function EventManager:OnSelectorElementChanged(event)
     self.Player = event.player_index
     local target = Database:Get(event.element.elem_value)
     Gui:CloseSelector(self.Player)
     Gui:PresentTarget(self.Player, target)
-    History:Reset()
-    History.CurrentTarget = target
-
+    History:ResetTo(target)
     self:ConfigureEvents()
 end
 
@@ -87,18 +110,15 @@ function EventManager:OnPresentatorClose(event)
     self:ConfigureEvents()
 end
 
-function EventManager:DoNothing(event) 
-    self.Player = event.player_index 
+function EventManager:DoNothing(event)
+    self.Player = event.player_index
     self:ConfigureEvents()
 end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
     local target = Gui:OnGuiClick(self.Player, event)
-    if target  then     
-        History:Advance()
-        History.CurrentTarget = target
-     end
+    if target then History:AdvanceWith(target) end
     self:ConfigureEvents()
 end
 
@@ -117,8 +137,8 @@ function EventManager:OnMainKey(event)
 end
 
 function EventManager:OnLoad()
-    History:Reset()
-    --    History:Load(global.Current and global.Current.History) 
+    History = History:new()
+    --    History = History:new(global.Current and global.Current.History) 
 end
 
 function EventManager:new(instance)

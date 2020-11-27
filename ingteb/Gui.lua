@@ -304,10 +304,11 @@ end
 function Gui:OnGuiClick(player, event)
     local element = event.element
     if element == Gui.Active.ingteb then
-        self:OnMainButtonPressed(player)
+       return  self:OnMainButtonPressed(player)
     elseif element == Gui.Active.Selector then
+        return
     elseif element == Gui.Active.Presentator then
-        assert(todo)
+        return
     end
 
     if self.Active.Presentator then
