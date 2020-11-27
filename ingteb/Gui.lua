@@ -4,6 +4,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Database = require("ingteb.Database")
+local UI = require("core.UI")
 
 local function CreateSpriteAndRegister(frame, target)
     local result
@@ -233,19 +234,19 @@ function Gui:FindTarget(player)
     return result
 end
 
-function Gui:ScanSelector(player) 
+function Gui:ScanSelector(player)
     self.Active.ingteb = global.Current.Player.gui.top.ingteb
     self.Active.Selector = player.gui.screen.Selector
     self.Active.Presentator = player.gui.screen.Presentator
 end
 
-function Gui:CloseSelector(player) 
-    player.gui.screen.Selector.destroy() 
+function Gui:CloseSelector(player)
+    player.gui.screen.Selector.destroy()
     self.Active.Selector = nil
 end
 
-function Gui:ClosePresentator(player) 
-    player.gui.screen.Presentator.destroy() 
+function Gui:ClosePresentator(player)
+    player.gui.screen.Presentator.destroy()
     self.Active.Presentator = nil
 end
 
@@ -261,8 +262,11 @@ end
 
 function Gui:PresentTarget(player, target)
     assert(target.Prototype)
-    Helper.ShowFrame(player, "Presentator", function(frame) return CreateMainPanel(frame, target) end)
+    Helper.ShowFrame(
+        player, "Presentator", function(frame) return CreateMainPanel(frame, target) end
+    )
     self:ScanSelector(player)
+    return target
 end
 
 function Gui:OnMainButtonPressed(player)
@@ -295,6 +299,44 @@ function Gui:EnsureMainButton()
         }
     end
     self:ScanSelector(player)
+end
+
+function Gui:OnGuiClick(player, event)
+    local element = event.element
+    if element == Gui.Active.ingteb then
+        self:OnMainButtonPressed(player)
+    elseif element == Gui.Active.Selector then
+    elseif element == Gui.Active.Presentator then
+        assert(todo)
+    end
+
+    if self.Active.Presentator then
+        return self:OnGuiClickForPresentator(player, event)
+    elseif self.Active.Selector and element.type == "choose-elem-button"then
+    else
+        assert(todo)
+    end
+end
+
+function Gui:OnGuiClickForPresentator(player, event)
+    local target = global.Current.Links[event.element.index]
+    if target and target.Prototype then
+        if  UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
+
+        local order = target:GetHandCraftingOrder(player, event)
+        if order then
+            player.begin_crafting(order)
+            return
+        end
+
+        local order = target:GetResearchOrder(player.force, event)
+        if order then
+            player.force.add_research(order.Technology)
+            return
+        end
+    else
+        assert(todo)
+    end
 end
 
 return Gui

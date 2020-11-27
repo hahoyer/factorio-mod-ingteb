@@ -27,6 +27,41 @@ function EventManager:EnsureGlobal()
     end
 end
 
+function EventManager:ConfigureEvents()
+    assert(Gui.Active.ingteb)
+    if Gui.Active.Selector then
+        self:SetHandler(
+            Constants.Key.Fore,
+                History.IsForePossible and self.OnSelectorForeOrBackClick or self.DoNothing
+        )
+        self:SetHandler(
+            Constants.Key.Back,
+                History.IsBackPossible and self.OnSelectorForeOrBackClick or self.DoNothing
+        )
+        self:SetHandler(defines.events.on_gui_elem_changed, self.OnSelectorElementChanged)
+        self:SetHandler(defines.events.on_gui_closed, self.OnSelectorClose)
+        self:SetHandler(defines.events.on_tick)
+    elseif Gui.Active.Presentator then
+        self:SetHandler(
+            Constants.Key.Fore,
+                History.IsForePossible and self.OnPresentatorForeClick or self.DoNothing
+        )
+        self:SetHandler(
+            Constants.Key.Back,
+                History.IsBackPossible and self.OnPresentatorBackClick or self.DoNothing
+        )
+        self:SetHandler(defines.events.on_gui_elem_changed)
+        self:SetHandler(defines.events.on_gui_closed, self.OnPresentatorClose)
+        self:SetHandler(defines.events.on_tick)
+    else
+        self:SetHandler(Constants.Key.Fore, self.DoNothing)
+        self:SetHandler(Constants.Key.Back, self.DoNothing)
+        self:SetHandler(defines.events.on_gui_closed, self.DoNothing)
+
+    end
+    self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
+end
+
 function EventManager:OnSelectorForeOrBackClick() assert() end
 
 function EventManager:OnSelectorElementChanged(event)
@@ -34,50 +69,36 @@ function EventManager:OnSelectorElementChanged(event)
     local target = Database:Get(event.element.elem_value)
     Gui:CloseSelector(self.Player)
     Gui:PresentTarget(self.Player, target)
+    History:Reset()
+    History.CurrentTarget = target
+
     self:ConfigureEvents()
 end
 
 function EventManager:OnSelectorClose(event)
     self.Player = event.player_index
     Gui:CloseSelector(self.Player)
+    self:ConfigureEvents()
 end
 
 function EventManager:OnPresentatorClose(event)
     self.Player = event.player_index
     Gui:ClosePresentator(self.Player)
+    self:ConfigureEvents()
 end
 
-function EventManager:ConfigureEvents()
-    assert(Gui.Active.ingteb)
-    if Gui.Active.Selector then
-        self:SetHandler(
-            Constants.Key.Fore, History.IsForePossible and self.OnSelectorForeOrBackClick
-        )
-        self:SetHandler(
-            Constants.Key.Back, History.IsBackPossible and self.OnSelectorForeOrBackClick
-        )
-        self:SetHandler(defines.events.on_gui_elem_changed, self.OnSelectorElementChanged)
-        self:SetHandler(defines.events.on_gui_closed, self.OnSelectorClose)
-        self:SetHandler(defines.events.on_tick)
-    elseif Gui.Active.Presentator then
-        self:SetHandler(Constants.Key.Fore, History.IsForePossible and self.OnPresentatorForeClick)
-        self:SetHandler(Constants.Key.Back, History.IsBackPossible and self.OnPresentatorBackClick)
-        self:SetHandler(defines.events.on_gui_elem_changed)
-        self:SetHandler(defines.events.on_gui_closed, self.OnPresentatorClose)
-        self:SetHandler(defines.events.on_tick)
-    end
-    self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
+function EventManager:DoNothing(event) 
+    self.Player = event.player_index 
+    self:ConfigureEvents()
 end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    if event.element == Gui.Active.ingteb then
-        Gui:OnMainButtonPressed(self.Player)
-    elseif event.element == Gui.Active.Selector then
-    elseif event.element == Gui.Active.Presentator then
-        assert(todo)
-    end
-
+    local target = Gui:OnGuiClick(self.Player, event)
+    if target  then     
+        History:Advance()
+        History.CurrentTarget = target
+     end
     self:ConfigureEvents()
 end
 
@@ -85,7 +106,6 @@ function EventManager:OnTickInitial()
     self:EnsureGlobal()
     Gui:EnsureMainButton()
     self:ConfigureEvents()
-
 end
 
 function EventManager:OnInit() Database:OnLoad() end
@@ -97,7 +117,7 @@ function EventManager:OnMainKey(event)
 end
 
 function EventManager:OnLoad()
-    History:RemoveAll()
+    History:Reset()
     --    History:Load(global.Current and global.Current.History) 
 end
 
