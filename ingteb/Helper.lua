@@ -4,9 +4,6 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local result = {}
-local EventDefinesByIndex = Dictionary:new(defines.events):ToDictionary(
-    function(value, key) return {Key = value, Value = key} end
-):ToArray()
 
 function result.GetActualType(type)
     if type == "item" or type == "fluid" or type == "technology" or type == "entity" or type
@@ -33,45 +30,22 @@ function result.GetForce(type, name)
     assert()
 end
 
-function result.ShowFrame(name, create)
-    local frame = global.Current.Player.gui.screen.add {
-        type = "frame",
-        name = name,
-        direction = "vertical",
-    }
-    create(frame)
-    global.Current.Player.opened = frame
-    global.Current.Frame = frame
+function result.ShowFrame(player, name, create)
+    local frame = player.gui.screen
+    local main = frame[name]
+    if main then
+        main.clear()
+    else
+        main = frame.add {type = "frame", name = name, direction = "vertical"}
+    end
+    create(main)
+    player.opened = main
     if global.Current.Location[name] then
-        frame.location = global.Current.Location[name]
+        main.location = global.Current.Location[name]
     else
-        frame.force_auto_center()
+        main.force_auto_center()
     end
-    return frame
-end
-
-function result.SetHandler(eventId, handler, register)
-    if not handler then register = false end
-    if register == nil then register = true end
-
-    local name = type(eventId) == "number" and EventDefinesByIndex[eventId] or eventId
-
-    State[name] = "activating..." .. tostring(register)
-
-    if register == false then handler = nil end
-
-    local eventRegistrar = event[eventId]
-    if eventRegistrar then
-        eventRegistrar(handler)
-    else
-        event.register(eventId, handler)
-    end
-
-    State[name] = register
-end
-
-function result.SetHandlers(list)
-    list:Select(function(command, key) result.SetHandler(key, command[1], command[2]) end)
+    return main
 end
 
 function result.DeepEqual(a, b)
@@ -94,7 +68,7 @@ function result.DeepEqual(a, b)
 end
 
 function result.SpriteStyleFromCode(code)
-    return  code == true and "ingteb-light-button" --
+    return code == true and "ingteb-light-button" --
     or code == false and "red_slot_button" --
     or "slot_button"
 end

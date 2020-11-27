@@ -33,8 +33,7 @@ function Database:new()
 end
 
 function Database:GetProxy(className, name, prototype)
-    self = self:new()
-
+    self:OnLoad()
     local data = self.Proxies[className]
     if not data then
         data = Dictionary:new{}
@@ -144,46 +143,14 @@ function Database:AddBonus(target, technology)
     return BonusSet(result, target.modifier, self)
 end
 
-function Database:OnLoad() self = self:new() end
-
-function Database:FindTarget()
-    local function get()
-        local cursor = global.Current.Player.cursor_stack
-        if cursor and cursor.valid and cursor.valid_for_read then
-            return self.Items[cursor.name]
-        end
-        local cursor = global.Current.Player.cursor_ghost
-        if cursor then return self.Items[cursor.name] end
-
-        local cursor = global.Current.Player.selected
-        if cursor then
-            local result = self.Entities[cursor.name]
-            if result.IsResource then
-                return result
-            else
-                return result.Item
-            end
-        end
-
-        local cursor = global.Current.Player.opened
-        if cursor then
-
-            local t = global.Current.Player.opened_gui_type
-            if t == defines.gui_type.custom then return end
-            if t == defines.gui_type.entity then return self.Entities[cursor.name] end
-
-            assert()
-        end
-        -- local cursor = global.Current.Player.entity_copy_source
-        -- assert(not cursor)
-
-    end
-
-    local result = get()
-    return result
+function Database:OnLoad() 
+    self = self:new() 
 end
 
 function Database:Get(target)
+    assert(target.type)
+    assert(target.name)
+    
     if target.type == "item" then return self:GetItem(target.name) end
     -- assert()
 end

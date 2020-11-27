@@ -27,6 +27,7 @@ local function CreateSpriteAndRegister(frame, target)
         result = frame.add {type = "sprite-button", style = style}
     end
 
+    if (not next(global.Current.Links)) then log("!!!!--- Links started") end
     global.Current.Links[result.index] = target and target.ClickHandler
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
         if target and target.object_name == "BonusSet" then --
@@ -56,11 +57,7 @@ local function CreateRecipeLinePart(frame, target, count, isInput)
         style = isInput and "ingteb-flow-right" or nil,
     }
 
-    target:Select(
-        function(item)
-            return CreateSpriteAndRegister(subPanel, item)
-        end
-    )
+    target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
 
     if isInput then return end
 
@@ -79,9 +76,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
     CreateSpriteAndRegister(properties, target.Technology)
     CreateSpriteAndRegister(properties, target)
-    CreateSpriteAndRegister(
-        properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time}
-    )
+    CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
     CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
@@ -194,24 +189,112 @@ local function CreateMainPanel(frame, target)
 
 end
 
-local result = {}
+local Gui = {Active = {}}
 
-function result.SelectTarget()
-    return Helper.ShowFrame(
-        "Selector", function(frame)
+function Gui:FindTarget(player)
+    assert(player)
+    assert(self.Active.ingteb)
+    assert(not self.Active.Selector)
+    assert(not self.Active.Presentator)
+
+    local function get()
+        local cursor = player.cursor_stack
+        if cursor and cursor.valid and cursor.valid_for_read then
+            return self.Items[cursor.name]
+        end
+        local cursor = player.cursor_ghost
+        if cursor then return self.Items[cursor.name] end
+
+        local cursor = player.selected
+        if cursor then
+            local result = self.Entities[cursor.name]
+            if result.IsResource then
+                return result
+            else
+                return result.Item
+            end
+        end
+
+        local cursor = player.opened
+        if cursor then
+
+            local t = player.opened_gui_type
+            if t == defines.gui_type.custom then return end
+            if t == defines.gui_type.entity then return self.Entities[cursor.name] end
+
+            assert()
+        end
+        -- local cursor = global.Current.Player.entity_copy_source
+        -- assert(not cursor)
+
+    end
+
+    local result = get()
+    return result
+end
+
+function Gui:ScanSelector(player) 
+    self.Active.ingteb = global.Current.Player.gui.top.ingteb
+    self.Active.Selector = player.gui.screen.Selector
+    self.Active.Presentator = player.gui.screen.Presentator
+end
+
+function Gui:CloseSelector(player) 
+    player.gui.screen.Selector.destroy() 
+    self.Active.Selector = nil
+end
+
+function Gui:ClosePresentator(player) 
+    player.gui.screen.Presentator.destroy() 
+    self.Active.Presentator = nil
+end
+
+function Gui:SelectTarget(player)
+    Helper.ShowFrame(
+        player, "Selector", function(frame)
             frame.caption = "select"
             frame.add {type = "choose-elem-button", elem_type = "signal"}
         end
     )
+    self:ScanSelector(player)
 end
 
-function result.Main(target)
+function Gui:PresentTarget(player, target)
     assert(target.Prototype)
-    return Helper.ShowFrame(
-        "Main", function(frame)
-            return CreateMainPanel(frame, target)
-        end
-    )
+    Helper.ShowFrame(player, "Presentator", function(frame) return CreateMainPanel(frame, target) end)
+    self:ScanSelector(player)
 end
 
-return result
+function Gui:OnMainButtonPressed(player)
+    assert(self.Active.ingteb)
+    assert(not self.Active.Selector or not self.Active.Presentator)
+
+    if self.Active.Selector then
+        self:CloseSelector(player)
+    elseif self.Active.Presentator then
+        self:ClosePresentator(player)
+    else
+        local target = self:FindTarget(player)
+        if target then
+            assert(todo)
+        else
+            self:SelectTarget(player)
+        end
+    end
+end
+
+function Gui:EnsureMainButton()
+    local player = global.Current.Player -- todo: multiplayer
+    if player.gui.top.ingteb == nil then
+        assert(not self.Active.ingteb)
+
+        global.Current.Player.gui.top.add {
+            type = "sprite-button",
+            name = "ingteb",
+            sprite = "ingteb",
+        }
+    end
+    self:ScanSelector(player)
+end
+
+return Gui

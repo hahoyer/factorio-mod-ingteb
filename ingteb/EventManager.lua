@@ -1,0 +1,133 @@
+local event = require("__flib__.event")
+local Constants = require("Constants")
+local Table = require("core.Table")
+local Array = Table.Array
+local Dictionary = Table.Dictionary
+local Helper = require("ingteb.Helper")
+local Gui = require("ingteb.Gui")
+local History = require("ingteb.History"):new()
+local Database = require("ingteb.Database")
+local UI = require("core.UI")
+local class = require("core.class")
+local core = {EventManager = require("core.EventManager")}
+
+-- __DebugAdapter.breakpoint(mesg:LocalisedString)
+-----------------------------------------------------------------------
+EventManager = class:new("EventManager", core.EventManager)
+
+function EventManager:EnsureGlobal()
+    if not global.Current then global.Current = {} end
+    if not global.Current.Links then global.Current.Links = {} end
+    if not global.Current.Location then global.Current.Location = {} end
+    if not global.Current.Gui or not global.Current.Gui.AppendForKey then
+        global.Current.Gui = Dictionary:new{}
+    end
+    if not global.Current.PendingTranslation then
+        global.Current.PendingTranslation = Dictionary:new{}
+    end
+end
+
+function EventManager:OnSelectorForeOrBackClick() assert() end
+
+function EventManager:OnSelectorElementChanged(event)
+    self.Player = event.player_index
+    local target = Database:Get(event.element.elem_value)
+    Gui:CloseSelector(self.Player)
+    Gui:PresentTarget(self.Player, target)
+    self:ConfigureEvents()
+end
+
+function EventManager:OnSelectorClose(event)
+    self.Player = event.player_index
+    Gui:CloseSelector(self.Player)
+end
+
+function EventManager:OnPresentatorClose(event)
+    self.Player = event.player_index
+    Gui:ClosePresentator(self.Player)
+end
+
+function EventManager:ConfigureEvents()
+    assert(Gui.Active.ingteb)
+    if Gui.Active.Selector then
+        self:SetHandler(
+            Constants.Key.Fore, History.IsForePossible and self.OnSelectorForeOrBackClick
+        )
+        self:SetHandler(
+            Constants.Key.Back, History.IsBackPossible and self.OnSelectorForeOrBackClick
+        )
+        self:SetHandler(defines.events.on_gui_elem_changed, self.OnSelectorElementChanged)
+        self:SetHandler(defines.events.on_gui_closed, self.OnSelectorClose)
+        self:SetHandler(defines.events.on_tick)
+    elseif Gui.Active.Presentator then
+        self:SetHandler(Constants.Key.Fore, History.IsForePossible and self.OnPresentatorForeClick)
+        self:SetHandler(Constants.Key.Back, History.IsBackPossible and self.OnPresentatorBackClick)
+        self:SetHandler(defines.events.on_gui_elem_changed)
+        self:SetHandler(defines.events.on_gui_closed, self.OnPresentatorClose)
+        self:SetHandler(defines.events.on_tick)
+    end
+    self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
+end
+
+function EventManager:OnGuiClick(event)
+    self.Player = event.player_index
+    if event.element == Gui.Active.ingteb then
+        Gui:OnMainButtonPressed(self.Player)
+    elseif event.element == Gui.Active.Selector then
+    elseif event.element == Gui.Active.Presentator then
+        assert(todo)
+    end
+
+    self:ConfigureEvents()
+end
+
+function EventManager:OnTickInitial()
+    self:EnsureGlobal()
+    Gui:EnsureMainButton()
+    self:ConfigureEvents()
+
+end
+
+function EventManager:OnInit() Database:OnLoad() end
+
+function EventManager:OnMainKey(event)
+    self.Player = event.player_index
+    Gui:OnMainButtonPressed(self.Player)
+    self:ConfigureEvents()
+end
+
+function EventManager:OnLoad()
+    History:RemoveAll()
+    --    History:Load(global.Current and global.Current.History) 
+end
+
+function EventManager:new(instance)
+    if not instance then instance = {} end
+    self:adopt(instance)
+
+    self:properties{
+        Player = {
+            get = function() return global.Current.Player end,
+            set = function(_, value)
+                if value then
+                    global.Current.Player --
+                    = type(value) == "number" and game.players[value] --
+                    or type(value) == "table" and value.object_name == "LuaPlayer" and value --
+                          or assert()
+                else
+                    global.Current.Player = nil
+                end
+            end,
+        },
+    }
+
+    instance:SetHandler("on_load", self.OnLoad)
+    instance:SetHandler("on_init", self.OnInit)
+    instance:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
+    instance:SetHandler(Constants.Key.Main, self.OnMainKey)
+    instance:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
+    return instance
+end
+
+return EventManager
+

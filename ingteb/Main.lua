@@ -8,8 +8,61 @@ local Gui = require("ingteb.Gui")
 local History = require("ingteb.History"):new()
 local Database = require("ingteb.Database")
 local UI = require("core.UI")
+local class = require("core.class")
 
-State = {}
+State = {
+    EventDefinesByIndex = Dictionary:new(defines.events):ToDictionary(
+        function(value, key) return {Key = value, Value = key} end
+    ):ToArray(),
+
+}
+
+function State:Watch(handler, eventId)
+    return function(...)
+        self:Enter(eventId)
+        local result = handler(...)
+        self:Leave(eventId)
+        return result
+    end
+end
+
+function State:SetHandler(eventId, handler, register)
+    if not handler then register = false end
+    if register == nil then register = true end
+
+    local name = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
+
+    State[name] = "activating..." .. tostring(register)
+
+    if register == false then handler = nil end
+    local watchedEvent = handler and self:Watch(handler, name) or nil
+
+    local eventRegistrar = event[eventId]
+    if eventRegistrar then
+        eventRegistrar(watchedEvent)
+    else
+        event.register(eventId, watchedEvent)
+    end
+
+    State[name] = register
+end
+
+function State:SetHandlers(list)
+    list:Select(function(command, key) self:SetHandler(key, command[1], command[2]) end)
+end
+
+function State:Enter(name)
+    assert(
+        not self.Active --
+        or name == "on_gui_closed" --
+    )
+    self.Active = {name, self.Active}
+end
+
+function State:Leave(name)
+    assert(self.Active[1] == name)
+    self.Active = self.Active[2]
+end
 
 local function EnsureGlobal()
     if not global.Current then global.Current = {} end
@@ -52,9 +105,14 @@ end
 
 local function OpenMainGui(target, setHistory)
     if not target then return end
-    log("\n>>>>--- OpenMainGui setHistory = " .. tostring(setHistory))
+    log(
+        "\n>>>>--- OpenMainGui target = " .. target.object_name .. ":" .. target.Name
+            .. " setHistory = " .. tostring(setHistory)
+    )
     assert(target.Prototype)
     assert(type(setHistory or false) == "boolean")
+
+    ConfigureEmptyCloseEventState()
 
     log(">>>>--- Link collection")
     Gui.Main(target)
@@ -179,12 +237,20 @@ local function OnGuiClickForMain(event)
     log("<<<<--- OnGuiClickForMain\n")
 end
 
+local function sCloseSelectionGui()
+    log("\n>>>>--- CloseSelectionGui")
+    ConfigureNoneOpenState()
+    global.Current.Player.opened = nil
+    log("<<<<--- CloseSelectionGui\n")
+end
+
 local function debugElementDump(element) return element and element.name or element end
 
 local function OnGuiElementChangedForSelect(event)
     log("\n>>>>--- OnGuiElementChangedForSelect " .. debugElementDump(event.element))
     global.Current.Player = game.players[event.player_index]
-    OpenMainGui(Database:Get(event.element.elem_value))
+    local target = event.element.elem_value
+    OpenMainGui(Database:Get(target))
     log("<<<<--- OnGuiElementChangedForSelect\n")
 end
 
@@ -198,6 +264,12 @@ local function OnGuiClose(event)
         end
     end
     log("<<<<--- OnGuiClose\n")
+end
+
+local function DoDestroyIt(event)
+    log("\n>>>>--- DoDestroyIt " .. debugElementDump(event.element))
+    event.element.destroy()
+    log("<<<<--- DoDestroyIt\n")
 end
 
 local function OnResearchFinished(event)
@@ -229,9 +301,22 @@ end
 
 local function OnTick()
     log("\n>>>>--- OnTick")
+
     EnsureMainButton()
     ConfigureMainPanelOpenState()
     log("<<<<--- OnTick\n")
+end
+
+function ConfigureEmptyCloseEventState()
+    log("!!!!--- ConfigureNoCloseEventState")
+    local handlers = Dictionary:new{}
+
+    handlers[defines.events.on_gui_closed] = {DoDestroyIt}
+
+    State:SetHandlers(handlers)
+
+    global.Current.History = History:Save()
+    -- log("State = " .. serpent.block(State))
 end
 
 ConfigureNoneOpenState = function()
@@ -247,7 +332,7 @@ ConfigureNoneOpenState = function()
     handlers[defines.events.on_research_finished] = {}
     handlers[defines.events.on_tick] = {}
 
-    Helper.SetHandlers(handlers)
+    State:SetHandlers(handlers)
 
     global.Current.History = History:Save()
     -- log("State = " .. serpent.block(State))
@@ -266,7 +351,7 @@ ConfigureSelectionPanelOpenState = function()
     handlers[defines.events.on_research_finished] = {}
     handlers[defines.events.on_tick] = {}
 
-    Helper.SetHandlers(handlers)
+    State:SetHandlers(handlers)
 
     global.Current.History = History:Save()
     --    log("State = " .. serpent.block(State))
@@ -285,16 +370,16 @@ ConfigureMainPanelOpenState = function()
     handlers[defines.events.on_research_finished] = {OnResearchFinished}
     handlers[defines.events.on_tick] = {}
 
-    Helper.SetHandlers(handlers)
+    State:SetHandlers(handlers)
 
     global.Current.History = History:Save()
     -- log("State = " .. serpent.block(State))
 end
 
-Helper.SetHandler("on_load", OnLoad)
-Helper.SetHandler("on_init", OnInit)
-Helper.SetHandler(defines.events.on_tick, OnTick)
-Helper.SetHandler(Constants.Key.Main, OnMainKey)
-Helper.SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
+State:SetHandler("on_load", OnLoad)
+State:SetHandler("on_init", OnInit)
+State:SetHandler(defines.events.on_tick, OnTick)
+State:SetHandler(Constants.Key.Main, OnMainKey)
+State:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
