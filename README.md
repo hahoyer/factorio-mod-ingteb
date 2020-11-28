@@ -16,11 +16,19 @@ todo:
 - restrict number of lines; provide expand-button
 - tooltip-help and actual keys should be joined
 - provide summary for recipe like in tooltip from crafting menu
-- provide information about modules
+- help on about modules
+- help on fuel consumption
+- help on recipes
+- help on technologies
 - multiplayer
 - involve achievements
+- "machine-column" for character
+- machine-column for labs
 
 known issue: 
-- it takes about a minute when using the first time
-- when selecting a machine it is added to list of machines ones more.
+- it takes seconds when presenting first help page
+- it takes seconds when presenting large help pages the first time
+- it takes second when presenting large help pages (especially machine-columns)
+- Water -> steam is missing
+
 

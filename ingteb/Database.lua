@@ -165,7 +165,8 @@ function Database:Get(target)
     assert(target.name)
 
     if target.type == "item" then return self:GetItem(target.name) end
-    -- assert()
+    if target.type == "fluid" then return self:GetFluid(target.name) end
+    assert(todo)
 end
 
 function Database:RefreshTechnology(target) self.Proxies.Technology[target.name]:Refresh() end

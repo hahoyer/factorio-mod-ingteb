@@ -153,9 +153,9 @@ local function CreateMainPanel(frame, target)
     }
 
     target:SortAll()
-    assert(not next(target.RecipeList) or type(next(target.RecipeList)) == "string")
-    assert(not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
-    assert(not next(target.CreatedBy) or type(next(target.CreatedBy)) == "string")
+    assert(not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList)) == "string")
+    assert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
+    assert(not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy)) == "string")
 
     local mainFrame = scrollframe
     local columnCount = (target.RecipeList and target.RecipeList:Any() and 1 or 0) + --
