@@ -72,12 +72,6 @@ function Entity:new(name, prototype, database)
                         return list and list[category.Name]
                     end
                 ) --
-                :Select(
-                    function(category)
-                        category.Workers:Append(self)
-                        return category
-                    end
-                )
                 return xreturn
             end,
         },

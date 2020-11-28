@@ -85,6 +85,11 @@ function Common:new(prototype, database)
     function self:GetHandCraftingOrder(event) end
     function self:GetResearchOrder(event) end
 
+    function self:SealUp()
+        self:SortAll()
+        return self
+    end
+
     return self
 
 end

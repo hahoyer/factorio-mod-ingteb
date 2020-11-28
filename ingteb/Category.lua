@@ -56,6 +56,9 @@ function Category:new(name, prototype, database)
             self.Database:GetEntity("(hand-miner)", game.entity_prototypes["character"])
         )
     end
+
+    function self:SortAll() end
+
     return self
 
 end

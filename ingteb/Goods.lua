@@ -98,8 +98,6 @@ function Goods:new(prototype, database)
         self.UsedBy = Sort(self.UsedBy)
     end
 
-    self:SortAll()
-
     return self
 
 end

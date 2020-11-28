@@ -45,7 +45,7 @@ function Database:GetProxy(className, name, prototype)
 
     local result = data[key]
     if not result then
-        result = Proxy[className]:new(name, prototype, self)
+        result = Proxy[className]:new(name, prototype, self):SealUp()
         data[key] = result
     end
 
@@ -89,6 +89,7 @@ function Database:ScanEntity(prototype)
     for category, _ in pairs(prototype.resource_categories or {}) do
         if prototype.mineable_properties.required_fluid then
             self:AddWorkerForCategory("fluid-mining", category, prototype)
+
         else
             self:AddWorkerForCategory("mining", category, prototype)
         end

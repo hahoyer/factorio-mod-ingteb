@@ -28,7 +28,6 @@ local function CreateSpriteAndRegister(frame, target)
         result = frame.add {type = "sprite-button", style = style}
     end
 
-    if (not next(global.Current.Links)) then log("!!!!--- Links started") end
     global.Current.Links[result.index] = target and target.ClickHandler
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
         if target and target.object_name == "BonusSet" then --
@@ -343,8 +342,6 @@ function Gui:OnGuiClickForPresentator(player, event)
             player.force.add_research(order.Technology)
             return
         end
-    else
-        assert(todo)
     end
 end
 
