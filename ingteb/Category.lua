@@ -51,6 +51,11 @@ function Category:new(name, prototype, database)
         },
     }
 
+    if self.Domain == "mining" or self.Domain == "hand-mining" then
+        self.Workers:Append(
+            self.Database:GetEntity("(hand-miner)", game.entity_prototypes["character"])
+        )
+    end
     return self
 
 end

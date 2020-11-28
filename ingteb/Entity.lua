@@ -14,6 +14,12 @@ function Entity:new(name, prototype, database)
 
     assert(self.Prototype.object_name == "LuaEntityPrototype")
 
+    -- special entity for handmining
+    if name == "(hand-miner)" then
+        assert(prototype.name == "character")
+        self:properties{SpriteName = {get = function() return "technology/steel-axe" end}}
+    end
+
     self.NumberOnSprite --
     = self.Prototype.mining_speed --
     or self.Prototype.crafting_speed -- 
@@ -47,10 +53,10 @@ function Entity:new(name, prototype, database)
         Categories = {
             cache = true,
             get = function()
-                local xreturn= self.Database.Proxies.Category -- 
+                local xreturn = self.Database.Proxies.Category -- 
                 :Where(
                     function(category)
-                         local domain = category.Domain
+                        local domain = category.Domain
                         local list
                         if domain == "mining" or domain == "fluid-mining" then
                             list = self.Prototype.resource_category
@@ -75,7 +81,7 @@ function Entity:new(name, prototype, database)
                 return xreturn
             end,
         },
-     
+
         RecipeList = {
             cache = true,
             get = function()
