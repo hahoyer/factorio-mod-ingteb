@@ -6,10 +6,19 @@ local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
 
+local ImplicitRecipe = Common:class("ImplicitRecipe")
 local MiningRecipe = Common:class("MiningRecipe")
+local BoilingRecipe = Common:class("BoilingRecipe")
 
-function MiningRecipe:new(name, prototype, database)
-    local self = Common:new(prototype or game.entity_prototypes[name], database)
+local function GetCategoryAndRegister(self, domain, category)
+
+    local result = self.Database:GetCategory(domain.."."..category)
+    result.Recipes:Append(self)
+    return result
+end
+
+function MiningRecipe:new(prototype, database)
+    local self = Common:new(prototype, database)
     self.object_name = MiningRecipe.object_name
     self.SpriteType = "entity"
     self.TypeOrder = 2
@@ -19,19 +28,13 @@ function MiningRecipe:new(name, prototype, database)
     local configuration = self.Prototype.mineable_properties
     assert(configuration and configuration.minable)
 
-    local function GetCategory()
-        local domain ="mining"
-        if not self.Prototype.resource_category then domain =  "hand-mining" end
-        if  configuration.required_fluid then domain = "fluid-mining"end
-        local category = domain .."." .. (self.Prototype.resource_category or "steel-axe")
+    local domain = "mining"
+    if not self.Prototype.resource_category then domain = "hand-mining" end
+    if configuration.required_fluid then domain = "fluid-mining" end
+    local category = self.Prototype.resource_category or "steel-axe"
 
-        local result = self.Database:GetCategory(category)
-        result.Recipes:Append(self)
-        return result
-    end
+    self.Category = GetCategoryAndRegister(self, domain, category)
 
-    self.Category = GetCategory()
-    
     self.Resource = self.Database:GetEntity(nil, prototype)
     self.Resource.UsedBy:AppendForKey(self.Category.Key, self)
 
@@ -45,7 +48,6 @@ function MiningRecipe:new(name, prototype, database)
         fluid.Goods.UsedBy:AppendForKey(self.Category.Key, self)
         self.Input:Append(fluid)
     end
-
 
     self.IsHidden = false
     self.Output = Array:new(configuration.products) --
@@ -61,6 +63,40 @@ function MiningRecipe:new(name, prototype, database)
         end
     )
 
+    self:properties{}
+
+    return self
+end
+
+function BoilingRecipe:new(prototype, database)
+    assert(prototype.name == "steam")
+    local self = Common:new(prototype, database)
+    self.object_name = BoilingRecipe.object_name
+    self.SpriteType = "fluid"
+    self.TypeOrder = 2.1
+    self.Time = 1
+    self.Category = GetCategoryAndRegister(self,"boiling", prototype.name)
+
+    local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"} 
+    input.Goods.UsedBy:AppendForKey(self.Category.Key, self)
+    self.Input = Array:new{input}
+
+    local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"} 
+    output.Goods.CreatedBy:AppendForKey(self.Category.Key, self)
+    self.Output = Array:new{output}
+
+    return self
+end
+
+function ImplicitRecipe:new(name, prototype, database)
+    assert(name)
+    local _, _, domain, prototypeName = name:find("^(.+)%.(.*)$")
+    assert(prototypeName == prototype.name)
+
+    local self --
+    = domain == "mining" and MiningRecipe:new(prototype, database) --
+    or domain == "boiling" and BoilingRecipe:new(prototype, database) --
+    self.Domain = domain
 
     self:properties{
         OrderValue = {
@@ -86,4 +122,4 @@ function MiningRecipe:new(name, prototype, database)
     return self
 end
 
-return MiningRecipe
+return ImplicitRecipe
