@@ -142,6 +142,11 @@ function EventManager:OnLoad()
     --    History = History:new(global.Current and global.Current.History) 
 end
 
+function EventManager:OnPlayerJoined(event) 
+    self.Player = event.player_index 
+    self:EnsureGlobal()
+end
+
 function EventManager:new(instance)
     if not instance then instance = {} end
     self:adopt(instance)
@@ -151,6 +156,7 @@ function EventManager:new(instance)
             get = function() return global.Current.Player end,
             set = function(_, value)
                 if value then
+                    if not global.Current then global.Current = {} end
                     global.Current.Player --
                     = type(value) == "number" and game.players[value] --
                     or type(value) == "table" and value.object_name == "LuaPlayer" and value --
@@ -164,6 +170,7 @@ function EventManager:new(instance)
 
     instance:SetHandler("on_load", self.OnLoad)
     instance:SetHandler("on_init", self.OnInit)
+    instance:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     instance:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     instance:SetHandler(Constants.Key.Main, self.OnMainKey)
     instance:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
