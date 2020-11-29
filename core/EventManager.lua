@@ -13,25 +13,22 @@ EventManager.EventDefinesByIndex = Dictionary:new(defines.events) --
 
 function EventManager:Watch(handler, eventId)
     return function(...)
-        self:Enter(eventId)
+        self:Enter(eventId, ...)
         local result = handler(self, ...)
         self:Leave(eventId)
         return result
     end
 end
 
-function EventManager:Enter(name)
+function EventManager:Enter(name, event)
     assert(
-        not self.Active --
-        -- or name == "on_gui_closed" --
+        name == "on_gui_closed" and event.gui_type == 3 --
+        or not self.Active --
     )
     self.Active = {name, self.Active}
 end
 
-function EventManager:Leave(name)
-    assert(self.Active[1] == name)
-    self.Active = self.Active[2]
-end
+function EventManager:Leave(name) self.Active = self.Active[2] end
 
 function EventManager:SetHandler(eventId, handler, register)
     if not self.State then self.State = {} end
