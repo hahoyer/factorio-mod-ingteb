@@ -16,7 +16,7 @@ function StackOfGoods:new(goods, amounts, database)
     self.Amounts = amounts
     self.SpriteType = goods.SpriteType
     self.UsePercentage = self.Amounts.probability ~= nil
-    self.ClickHandler = self.Goods
+    self.CommonKey = self.Goods.CommonKey
 
     self:properties{
         NumberOnSprite = {

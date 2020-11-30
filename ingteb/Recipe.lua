@@ -17,7 +17,6 @@ function Recipe:new(name, prototype, database)
     self.SpriteType = "recipe"
     self.TechnologyPrototypes = Array:new()
     self.IsHidden = false
-    self.ClickHandler = self
     self.IsDynamic = true
     self.Time = self.Prototype.energy
 

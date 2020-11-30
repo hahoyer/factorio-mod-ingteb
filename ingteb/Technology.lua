@@ -18,7 +18,6 @@ function Technology:new(name, prototype, database)
     self.TypeOrder = 3
     self.SpriteType = "technology"
     self.Technologies = Array:new()
-    self.ClickHandler = self
     self.IsDynamic = true
     self.Time = self.Prototype.research_unit_energy
 

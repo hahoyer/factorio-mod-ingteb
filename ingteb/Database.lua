@@ -37,7 +37,7 @@ function Database:new()
 end
 
 function Database:GetProxy(className, name, prototype)
-    self:OnLoad()
+    self:Ensure()
     local data = self.Proxies[className]
     if not data then
         data = Dictionary:new{}
@@ -183,7 +183,7 @@ function Database:AddBonus(target, technology)
     return BonusSet(result, target.modifier, self)
 end
 
-function Database:OnLoad() self = self:new() end
+function Database:Ensure() self = self:new() end
 
 function Database:Get(target)
     assert(target.type)

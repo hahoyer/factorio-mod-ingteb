@@ -30,6 +30,7 @@ function Common:new(prototype, database)
     self.LocalizedDescription = self.Prototype.localised_description
 
     self:properties{
+        CommonKey = {get = function() return self.object_name, name = self.Name} end},
         Group = {get = function() return self.Prototype.group end},
         SubGroup = {get = function() return self.Prototype.subgroup end},
 
