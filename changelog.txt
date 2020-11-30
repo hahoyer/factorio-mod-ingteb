@@ -3,6 +3,7 @@ Version: 0.2.8
 Date: 2020-11-29
   Changes:
     - Presenting burner production as a kind of recipe
+    - restrict number of lines; provide tabs
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.7
 Date: 2020-11-29
