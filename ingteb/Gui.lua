@@ -249,7 +249,7 @@ local function CreateMainPanel(frame, target)
     end
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/clock]"
+        mainFrame, target.RecipeList, target.RichTextName .. "[img=factorio]"
     )
 
     CreateCraftingGroupsPanel(
