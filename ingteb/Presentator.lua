@@ -37,7 +37,7 @@ end
 
 local function CreateSpriteAndRegister(frame, target)
     local result = CreateSprite(frame, target)
-    if target then RegisterTargetForGuiClick(result, target.CommonKey)end
+    if target then RegisterTargetForGuiClick(result, target)end
     return result
 end
 
@@ -137,7 +137,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                             local caption = group.name
                             if value[1] and value[1].Output[1] then
                                 local main = value[1].Output[1]
-                                caption = "[" .. main.SpriteType .. "=" .. main.Name .. "]"
+                                caption =  main.RichTextName
                             end
                             local tab = groupPanel.add {
                                 type = "tab",
@@ -296,7 +296,7 @@ function Presentator:new(frame, target)
                 end
             end
         )
-        global.Current.Links[frame.index] = target
+        global.Current.Links[frame.index] = target.CommonKey
 
     end
 

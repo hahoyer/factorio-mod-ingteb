@@ -30,21 +30,18 @@ end
 function EventManager:OnSelectorForeOrBackClick(event)
     self.Player = event.player_index
     Gui:PresentTarget(self.Player, History.Current)
-    self:UpdateEvents()
 end
 
 function EventManager:OnPresentatorForeClick(event)
     self.Player = event.player_index
     History:Fore()
     Gui:PresentTarget(self.Player, History.Current)
-    self:UpdateEvents()
 end
 
 function EventManager:OnPresentatorBackClick(event)
     self.Player = event.player_index
     History:Back()
     Gui:PresentTarget(self.Player, History.Current)
-    self:UpdateEvents()
 end
 
 function EventManager:OnSelectorElementChanged(event)
@@ -110,17 +107,17 @@ end
 
 function EventManager:OnForeClicked(event)
     if Gui.Active.Presentator then
-        return History.IsForePossible and self.OnPresentatorForeClick(event)
+        return History.IsForePossible and self:OnPresentatorForeClick(event)
     else
-        return History.Current and self.OnSelectorForeOrBackClick(event)
+        return History.Current and self:OnSelectorForeOrBackClick(event)
     end
 end
 
 function EventManager:OnBackClicked(event)
     if Gui.Active.Presentator then
-        return History.IsBackPossible and self.OnPresentatorBackClick(event)
+        return History.IsBackPossible and self:OnPresentatorBackClick(event)
     else
-        return History.Current and self.OnSelectorForeOrBackClick(event)
+        return History.Current and self:OnSelectorForeOrBackClick(event)
     end
 end
 
@@ -171,6 +168,8 @@ function EventManager:new(instance)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
     self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
+    self:SetHandler(defines.events.on_gui_closed, self.OnClose)
+    self:SetHandler(defines.events.on_gui_elem_changed, self.OnElementChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
 

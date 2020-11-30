@@ -71,7 +71,7 @@ end
 
 function Gui:SelectTarget(player, targets)
     Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
-    self:SacnActiveGui(player)
+    self:ScanActiveGui(player)
 end
 
 function Gui:PresentTarget(player, target)
@@ -79,7 +79,7 @@ function Gui:PresentTarget(player, target)
     Helper.ShowFrame(
         player, "Presentator", function(frame) return Presentator:new(frame, target) end
     )
-    self:SacnActiveGui(player)
+    self:ScanActiveGui(player)
     return target
 end
 
@@ -112,7 +112,7 @@ function Gui:EnsureMainButton()
             sprite = "ingteb",
         }
     end
-    self:SacnActiveGui(player)
+    self:ScanActiveGui(player)
 end
 
 function Gui:OnGuiClick(player, event)
@@ -135,7 +135,7 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
 end
 
 function Gui:OnGuiClickForPresentator(player, event)
-    local target = global.Current.Links[event.element.index]
+    local target = Database:Get(global.Current.Links[event.element.index])
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
@@ -150,8 +150,11 @@ function Gui:OnGuiClickForPresentator(player, event)
             player.force.add_research(order.Technology)
             return
         end
-    else
-        local target = global.Current.Links[self.Active.Presentator.index]
+        return 
+    end
+    
+    local target = global.Current.Links[self.Active.Presentator.index]
+    if target then 
         self:UpdateTabOrder(target.TabOrder, event.element.name)
         return self:PresentTarget(player, target)
     end

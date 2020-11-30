@@ -74,7 +74,7 @@ function Technology:new(name, prototype, database)
         },
         IsResearched = {
             get = function()
-                return global.Current.Player.force.technologies[self.Name].researched == true
+                return global.Current.Player.force.technologies[self.Prototype.name].researched == true
             end,
         },
         IsReady = {
@@ -101,7 +101,7 @@ function Technology:new(name, prototype, database)
         Enables = {
             cache = true,
             get = function()
-                return self.Database.EnabledTechnologiesForTechnology[self.Name] --
+                return self.Database.EnabledTechnologiesForTechnology[self.Prototype.name] --
                 :Select(
                     function(technology)
                         return self.Database:GetTechnology(nil, technology)

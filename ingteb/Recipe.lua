@@ -89,7 +89,7 @@ function Recipe:new(name, prototype, database)
         NumberOnSprite = {
             get = function()
                 if not self.HandCrafter then return end
-                local result = global.Current.Player.get_craftable_count(self.Name)
+                local result = global.Current.Player.get_craftable_count(self.Prototype.name)
                 if result > 0 then return result end
             end,
         },
@@ -104,7 +104,7 @@ function Recipe:new(name, prototype, database)
         HandCrafter = {
             get = function()
                 return self.Category.Workers:Where(
-                    function(worker) return worker.Name == "character" end
+                    function(worker) return worker.Prototype.name== "character" end
                 ):Top()
             end,
         },
@@ -169,7 +169,7 @@ function Recipe:new(name, prototype, database)
         and self.HandCrafter and self.NumberOnSprite then
             local amount = 0
             if event.shift then
-                amount = game.players[event.player_index].get_craftable_count(self.Name)
+                amount = game.players[event.player_index].get_craftable_count(self.Prototype.name)
             elseif event.button == defines.mouse_button_type.left then
                 amount = 1
             elseif event.button == defines.mouse_button_type.right then
@@ -177,7 +177,7 @@ function Recipe:new(name, prototype, database)
             else
                 return
             end
-            return {count = amount, recipe = self.Name}
+            return {count = amount, recipe = self.Prototype.name}
         end
     end
 
