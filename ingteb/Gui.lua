@@ -10,7 +10,6 @@ local Selector = require("ingteb.Selector")
 
 local Gui = {Active = {}}
 
-
 function Gui:FindTarget(player)
     assert(player)
     assert(self.Active.ingteb)
@@ -148,16 +147,16 @@ function Gui:OnGuiClickForPresentator(player, event)
             return
         end
 
-        local order = target:GetResearchOrder(event)
+        local order = target:GetResearchRequest(event)
         if order then
             player.force.add_research(order.Technology)
             return
         end
-        return 
+        return
     end
-    
+
     local target = global.Current.Links[self.Active.Presentator.index]
-    if target then 
+    if target then
         self:UpdateTabOrder(target.TabOrder, event.element.name)
         return self:PresentTarget(player, target)
     end
