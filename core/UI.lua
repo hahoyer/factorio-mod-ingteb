@@ -43,7 +43,7 @@ end
 ---@return LocalisedString
 function UI.GetHelpTextForButtonsACS12(headText)
     return {
-        head,
+        headText,
         {"control-keys.alt"},
         {"control-keys.control"},
         {"control-keys.shift"},
