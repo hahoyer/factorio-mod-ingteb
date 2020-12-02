@@ -10,8 +10,8 @@ local Common = {object_name = "Common"}
 function Common:class(name) return {object_name = name} end
 
 function Common:new(prototype, database)
-    assert(prototype)
-    assert(database)
+    assert(release or prototype)
+    assert(release or database)
 
     local self = ValueCacheContainer:new{Prototype = prototype, Database = database}
     function self:properties(list)

@@ -11,7 +11,7 @@ function Recipe:new(name, prototype, database)
     local self = Common:new(prototype or game.recipe_prototypes[name], database)
     self.object_name = Recipe.object_name
 
-    assert(self.Prototype.object_name == "LuaRecipePrototype")
+    assert(release or self.Prototype.object_name == "LuaRecipePrototype")
 
     self.TypeOrder = 1
     self.SpriteType = "recipe"
