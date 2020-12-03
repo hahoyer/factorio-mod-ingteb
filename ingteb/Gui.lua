@@ -43,15 +43,13 @@ function Gui:FindTargets(player)
         if t == defines.gui_type.entity then
             assert(release or cursor.object_name == "LuaEntity")
             local result = Array:new{Database:GetItem(cursor.name)}
-
-            local inventories = Dictionary:new(defines.inventory) --
-            :Select(
-                function(_, name)
-                    return cursor.get_inventory(defines.inventory[name])
-                end
-            ) --
-            :Where(function(inventory, name) return #inventory > 0 end) --
-
+            local recipePrototype = cursor.get_recipe()
+            if recipePrototype then
+                local recipe = Database:GetRecipe(nil, recipePrototype)
+                result:Append(recipe)
+                local items = recipe.Input:Concat(recipe.Output) --
+                items:Select(function(stack) result:Append(stack.Goods) end)
+            end
             return result
         end
 

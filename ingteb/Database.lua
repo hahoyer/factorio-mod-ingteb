@@ -253,7 +253,7 @@ function Database:Get(target)
     return self:GetProxy(object_name, Name, Prototype)
 end
 
-function Database:RefreshTechnology(target) self.GetTechnology(target.name):Refresh() end
+function Database:RefreshTechnology(target) self:GetTechnology(target.name):Refresh() end
 
 return Database
 
