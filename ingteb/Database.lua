@@ -28,7 +28,7 @@ local function EnsureKey(data, key, value)
     return result
 end
 
-function Database:new()
+function Database:Ensure()
     if self.Proxies then return self end
 
     log("database initialize start...")
@@ -225,7 +225,6 @@ function Database:AddBonus(target, technology)
     return BonusSet(result, target.modifier, self)
 end
 
-function Database:Ensure() self = self:new() end
 
 function Database:Get(target)
     local object_name, Name
