@@ -64,29 +64,29 @@ function EventManager:OnPresentatorClose(event)
     Gui:ClosePresentator(self.Player)
 end
 
-function EventManager:IsIngtebControl(element)
-    if not element then return false end
-    if element == Gui.Active.Selector then return true end
-    if element == Gui.Active.Presentator then return true end
-    if element == Gui.Active.ingteb then return true end
-    return self:IsIngtebControl(element.parent)
+function EventManager:GetIngtebControl(element)
+    if not element then return element end
+    if element == Gui.Active.Selector then return element end
+    if element == Gui.Active.Presentator then return element end
+    if element == Gui.Active.ingteb then return element end
+    return self:GetIngtebControl(element.parent)
 end
 
 function EventManager:DoNothing(event) self.Player = event.player_index end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    if self:IsIngtebControl(event.element) then
-        if Gui.Active.Selector then
-            assert(release or event.element)
-            self:OnSelectorElementChanged(event)
-        elseif Gui.Active.ingteb and event.element == Gui.Active.ingteb then
-            local target = Gui:OnMainButtonPressed(self.Player)
-            if target then History:AdvanceWith(target) end
-        else
-            local target = Gui:OnGuiClick(self.Player, event)
-            if target then History:AdvanceWith(target) end
-        end
+    Gui:EnsureMainButton(self.Player)
+    local active = self:GetIngtebControl(event.element)
+    if active == Gui.Active.ingteb then
+        local target = Gui:OnMainButtonPressed(self.Player)
+        if target then History:AdvanceWith(target) end
+    elseif active == Gui.Active.Selector then
+        assert(release or event.element)
+        self:OnSelectorElementChanged(event)
+    elseif active == Gui.Active.Presentator then
+        local target = Gui:OnGuiClick(self.Player, event)
+        if target then History:AdvanceWith(target) end
     end
 end
 
@@ -106,10 +106,6 @@ function EventManager:OnLoad()
     if self.Player then Gui:EnsureMainButton(self.Player) end
     History = History:new()
     --    History = History:new(global.Current and global.Current.History) 
-end
-
-function EventManager:OnSave()
-    global.Current.Player = nil
 end
 
 function EventManager:OnPlayerJoined(event) self.Player = event.player_index end

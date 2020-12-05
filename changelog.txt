@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.23
+Date: 2020-12-05
+  Bugfixes:
+    - fixing Crash during save (2nd trial). Probably migration will help.
+    - fixing can't click quickly twice
+---------------------------------------------------------------------------------------------------
 Version: 0.2.22
 Date: 2020-12-05
   Bugfixes:

@@ -1,0 +1,1 @@
+global.Current.Player = nil
