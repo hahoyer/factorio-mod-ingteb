@@ -206,6 +206,7 @@ function Gui:EnsureMainButton(player)
             type = "sprite-button",
             name = "ingteb",
             sprite = "ingteb",
+            tooltip = {"ingteb-utility.ingteb-button-description"},
         }
     end
     self:ScanActiveGui(player)
