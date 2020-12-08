@@ -235,7 +235,7 @@ end
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
     assert(release or type(target:Top().Key) == "string")
-    assert(release or target:Top().Value[1].object_name == "Recipe")
+    assert(release or target:Top().Value[1].object_name == "Recipe"or target:Top().Value[1].object_name == "MiningRecipe")
 
     local subFrame = CreateContentPanel(frame, headerSprites)
 
@@ -263,7 +263,7 @@ local function CreateTechnologyEffectsPanel(frame, target)
     local effects = target.Effects
     if not effects then return end
 
-    local frame = CreateContentPanel(frame, target.RichTextName)
+    local frame = CreateContentPanel(frame,{"", target.RichTextName, " ", {"gui-technology-preview.effects"}})
 
     local ingredientsLine = frame.add {type = "flow", direction = "horizontal"}
     ingredientsLine.add {type = "sprite", sprite = "utility/change_recipe"}

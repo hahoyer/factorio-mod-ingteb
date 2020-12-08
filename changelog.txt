@@ -5,11 +5,11 @@ Date: 2020-12-08
     - help on technologies improved
     - Alignment in technology panels
     - Correct data for inifinte technologies 
+    - Prerequisite reseaches
     - Array:Clone whithout predicate was missing
     - Array:Stringify introduced
     - Common.ClickTarget re-introduced (it is only almost like CommonKey)
     - Eventmanager: Research-state things
-    - initiate multiple reseaches. 1st version
   Refactor:
     - better naming
 ---------------------------------------------------------------------------------------------------

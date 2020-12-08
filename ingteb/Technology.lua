@@ -21,8 +21,6 @@ function Technology:new(name, prototype, database)
     self.IsDynamic = true
     self.Time = self.Prototype.research_unit_energy
 
-    -- if not ignore and self.Prototype.research_unit_count_formula then __DebugAdapter.breakpoint() end
-
     self:properties{
         Amount = {
             cache = true,
@@ -30,14 +28,14 @@ function Technology:new(name, prototype, database)
                 local formula = self.Prototype.research_unit_count_formula
                 if formula then
                     local level = self.Prototype.level
-                    local result = game.evaluate_expression(formula,{L=level,l=level})
+                    local result = game.evaluate_expression(formula, {L = level, l = level})
                     return result
                 else
                     return self.Prototype.research_unit_count
                 end
             end,
         },
-        
+
         Ingredients = {
             get = function() --
                 return Array:new(self.Prototype.research_unit_ingredients) --
@@ -76,8 +74,12 @@ function Technology:new(name, prototype, database)
 
         FunctionalHelp = {
             get = function() --
-                if not self.IsResearchedOrResearching and self.IsReady then
+                if self.IsResearchedOrResearching then
+                    return
+                elseif self.IsReady then
                     return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
+                else
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.multiple-research")
                 end
             end,
         },
@@ -123,6 +125,17 @@ function Technology:new(name, prototype, database)
                         return self.Database:GetTechnology(nil, technology)
                     end
                 )
+            end,
+        },
+
+        TopReadyPrerequisite = {
+            get = function()
+                if self.IsResearchedOrResearching then return end
+                if self.IsReady then return self end
+                for _, technology in pairs(self.Prerequisites) do
+                    local result = technology.TopReadyPrerequisite
+                    if result then return result end
+                end
             end,
         },
 
@@ -194,7 +207,7 @@ function Technology:new(name, prototype, database)
         and self.IsReady --
         then return {Research = self} end
 
-        if UI.IsMouseCode(event, "-C- r") --
+        if UI.IsMouseCode(event, "AC- l") --
         and not self.IsResearchedOrResearching --
         then return {Research = self, Multiple = true} end
     end

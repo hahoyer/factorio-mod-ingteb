@@ -253,6 +253,47 @@ end
 
 function Gui:OnResearchFinished(research) Gui:OnResearchRefresh(research) end
 
+function Gui:DirectQueueResearch(player, research)
+    local added = player.force.add_research(research.Name)
+    if added then
+        self:Print(
+            player, {"ingteb-utility.added-to-research-queue", research.Prototype.localised_name}
+        )
+        Gui:OnResearchRefresh(research.Prototype)
+    else
+        self:Print(
+            player,
+                {"ingteb-utility.not-added-to-research-queue", research.Prototype.localised_name}
+        )
+    end
+end
+
+function Gui:Print(player, text) player.print {"", "[ingteb]", text} end
+
+function Gui:MulipleQueueResearch(player, research)
+    local queued = Array:new{}
+    local message = "ingteb-utility.research-no-ready-prerequisite"
+    repeat
+        local ready = research.TopReadyPrerequisite
+        if ready then message = "ingteb-utility.not-added-to-research-queue" end
+        local added = ready and player.force.add_research(ready.Name)
+        if added then queued:Append(ready) end
+
+    until not added
+
+    queued:Select(
+        function(research)
+            self:Print(
+                player,
+                    {"ingteb-utility.added-to-research-queue", research.Prototype.localised_name}
+            )
+            Gui:OnResearchRefresh(research.Prototype)
+        end
+    )
+    if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end
+
+end
+
 function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
     local target = self.Database:Get(global.Links[event.element.index])
@@ -266,19 +307,11 @@ function Gui:OnGuiClickForPresentator(player, event)
             return
         end
 
-        if action and action.Research and not action.Multiple then
-            local added = player.force.add_research(action.Research.Name)
-            if added then
-                player.print {
-                    "ingteb-utility.added-to-research-queue",
-                    action.Research.Prototype.localised_name,
-                }
-                Gui:OnResearchRefresh(action.Research.Prototype)
-            else
-                player.print {
-                    "ingteb-utility.not-added-to-research-queue",
-                    action.Research.Prototype.localised_name,
-                }
+        if action and action.Research then
+            if action.Research.IsReady then
+                self:DirectQueueResearch(player, action.Research)
+            elseif action.Multiple then
+                self:MulipleQueueResearch(player, action.Research)
             end
             return
         end
