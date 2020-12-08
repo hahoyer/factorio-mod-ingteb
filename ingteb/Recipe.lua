@@ -184,8 +184,8 @@ function Recipe:new(name, prototype, database)
         end
 
         if (UI.IsMouseCode(event, "-C- r")) --
-        and self.Technology and not self.Technology.IsResearched then --
-            return {Research = self.Technology, Queue = true}
+        and self.Technology and not self.Technology.IsResearchedOrResearching then --
+            return {Research = self.Technology, Multiple = true}
         end
     end
 

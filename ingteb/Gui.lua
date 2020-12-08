@@ -243,13 +243,15 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
     tabOrder:Append(dropTabIndex)
 end
 
-function Gui:OnResearchFinished(research)
+function Gui:OnResearchRefresh(research)
     if Database.IsInitialized then
         Gui:EnsureDatabase()
         Gui.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
     end
 end
+
+function Gui:OnResearchFinished(research) Gui:OnResearchRefresh(research) end
 
 function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
@@ -264,9 +266,20 @@ function Gui:OnGuiClickForPresentator(player, event)
             return
         end
 
-        if action and action.Research then
-            local r = player.force.add_research(action.Research.Name)
-            __DebugAdapter.breakpoint()
+        if action and action.Research and not action.Multiple then
+            local added = player.force.add_research(action.Research.Name)
+            if added then
+                player.print {
+                    "ingteb-utility.added-to-research-queue",
+                    action.Research.Prototype.localised_name,
+                }
+                Gui:OnResearchRefresh(action.Research.Prototype)
+            else
+                player.print {
+                    "ingteb-utility.not-added-to-research-queue",
+                    action.Research.Prototype.localised_name,
+                }
+            end
             return
         end
         return

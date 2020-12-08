@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.28
+Date: 2020-12-08
+  Changes:
+    - help on technologies improved
+    - Array:Clone whithout predicate was missing
+    - Array:Stringify introduced
+    - Common.ClickTarget re-introduced (it is only almost like CommonKey)
+    - Eventmanager: Research-state things
+    - initiate multiple reseaches. 1st version
+---------------------------------------------------------------------------------------------------
 Version: 0.2.27
 Date: 2020-12-07
   Changes:
