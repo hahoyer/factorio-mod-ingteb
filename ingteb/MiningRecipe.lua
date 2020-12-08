@@ -6,22 +6,34 @@ local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
 
-local ImplicitRecipe = Common:class("ImplicitRecipe")
 local MiningRecipe = Common:class("MiningRecipe")
-local BoilingRecipe = Common:class("BoilingRecipe")
 
 local function GetCategoryAndRegister(self, domain, category)
     local result = self.Database:GetCategory(domain .. "." .. category)
     return result
 end
 
-function MiningRecipe:new(prototype, database)
-    local self = Common:new(prototype, database)
+function MiningRecipe:new(name, prototype, database)
+    local self = Common:new(prototype or game.entity_prototypes[name], database)
     self.object_name = MiningRecipe.object_name
-    self.SpriteType = "entity"
-    self.TypeOrder = 2
 
+    self.TypeOrder = 2
+    self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
+
+    self:properties{
+        OrderValue = {
+            cache = true,
+            get = function()
+                return self.TypeOrder --
+                .. " R R " --
+                .. self.Prototype.group.order --
+                .. " " .. self.Prototype.subgroup.order --
+                .. " " .. self.Prototype.order
+            end,
+        },
+
+    }
 
     local configuration = self.Prototype.mineable_properties
     assert(release or configuration and configuration.minable)
@@ -33,7 +45,7 @@ function MiningRecipe:new(prototype, database)
 
     self.Category = GetCategoryAndRegister(self, domain, category)
 
-    self.Resource = self.Database:GetEntity(nil, prototype)
+    self.Resource = self.Database:GetEntity(nil, self.Prototype)
     self.Resource.UsedBy:AppendForKey(self.Category.Name, self)
 
     self.Input = Array:new{self.Resource}
@@ -61,55 +73,6 @@ function MiningRecipe:new(prototype, database)
         end
     )
 
-    self:properties{}
-
-    return self
-end
-
-function BoilingRecipe:new(prototype, database)
-    assert(release or prototype.name == "steam")
-    local self = Common:new(prototype, database)
-    self.object_name = BoilingRecipe.object_name
-    self.SpriteType = "fluid"
-    self.TypeOrder = 2.1
-    self.Time = 1
-    self.Category = GetCategoryAndRegister(self, "boiling", prototype.name)
-
-    local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"}
-    input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-    self.Input = Array:new{input}
-
-    local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"}
-    output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
-    self.Output = Array:new{output}
-
-    return self
-end
-
-function ImplicitRecipe:new(name, prototype, database)
-    assert(release or name)
-    local _, _, domain, prototypeName = name:find("^(.+)%.(.*)$")
-    assert(release or not prototype or prototypeName == prototype.name)
-
-    local self --
-    = (domain == "mining" or domain == "fluid-mining" or domain == "hand-mining") --
-          and MiningRecipe:new(prototype or game.entity_prototypes[prototypeName], database) --
-    or domain == "boiling" and BoilingRecipe:new(prototype, database) --
-    self.Domain = domain
-
-    self:properties{
-        OrderValue = {
-            cache = true,
-            get = function()
-                return self.TypeOrder --
-                .. " R R " --
-                .. self.Prototype.group.order --
-                .. " " .. self.Prototype.subgroup.order --
-                .. " " .. self.Prototype.order
-            end,
-        },
-
-    }
 
     function self:IsBefore(other)
         if self == other then return false end
@@ -121,4 +84,4 @@ function ImplicitRecipe:new(name, prototype, database)
     return self
 end
 
-return ImplicitRecipe
+return MiningRecipe
