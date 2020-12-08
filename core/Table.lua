@@ -66,13 +66,13 @@ function Dictionary:Sum(predicate)
     return result
 end
 
-function Dictionary:Max()
+function Dictionary:Maximum()
     local result
     for key, value in pairs(self) do if not result or result < value then result = value end end
     return result
 end
 
-function Dictionary:Min()
+function Dictionary:Minimum()
     local result
     for key, value in pairs(self) do if not result or result > value then result = value end end
     return result
@@ -86,13 +86,13 @@ function Array:Sum(predicate)
     return result
 end
 
-function Array:Max()
+function Array:Maximum()
     local result
     for key, value in ipairs(self) do if not result or result < value then result = value end end
     return result
 end
 
-function Array:Min()
+function Array:Minimum()
     local result
     for key, value in ipairs(self) do if not result or result > value then result = value end end
     return result

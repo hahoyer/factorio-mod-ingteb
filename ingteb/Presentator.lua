@@ -241,15 +241,15 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     local inCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.Input:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Input:Count() end):Maximum()
         end
-    ):Max()
+    ):Maximum()
 
     local outCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.Output:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Output:Count() end):Maximum()
         end
-    ):Max()
+    ):Maximum()
 
     target:Select(
         function(recipes, category)
@@ -291,8 +291,8 @@ local function CreateTechnologyEffectsPanel(frame, target)
 
     assert(release or effects[1].object_name == "Recipe" or effects[1].object_name == "Bonus")
 
-    local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Max()
-    local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Max()
+    local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Maximum()
+    local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Maximum()
 
     local frame = frame.add {type = "flow", direction = "vertical"}
     effects:Select(
@@ -333,8 +333,11 @@ local function Extend(items, nextItems)
 end
 
 local function CreateTechnologyList(frame, target)
+    local ingredientsCount = target --
+    :Select(function(value) return value.Ingredients:Count() end):Maximum()
     target:ToGroup(
         function(value)
+
             local key = value.Ingredients --
             :Select(function(stack) return stack.CommonKey end) --
             :Stringify(",")
@@ -344,6 +347,8 @@ local function CreateTechnologyList(frame, target)
     :Select(
         function(values)
             local frame = frame.add {type = "flow", direction = "horizontal"}
+
+            DummyTiles(frame, ingredientsCount - values[1].Ingredients:Count())
 
             values[1].Ingredients:Select(
                 function(stack) CreateSpriteAndRegister(frame, stack) end

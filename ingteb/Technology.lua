@@ -37,6 +37,7 @@ function Technology:new(name, prototype, database)
                 end
             end,
         },
+        
         Ingredients = {
             get = function() --
                 return Array:new(self.Prototype.research_unit_ingredients) --
