@@ -43,22 +43,28 @@ function Item:new(name, prototype, database)
 
         FuelDescription = {
             get = function()
-                if self.Fuel then
-                    local result = Array:new{
-                        {"", {"description.fuel-value"}, " " .. FormatEnergy(self.Fuel.Value)},
+                local result = Array:new{}
+
+                if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
+                    result:Append{
+                        "",
+                        {"description.fuel-value"},
+                        " " .. FormatEnergy(self.Prototype.fuel_value),
                     }
-                    if self.Fuel.Acceleration ~= 1 then
-                        result:Append{
-                            "",
-                            {"description.fuel-acceleration"},
-                            " " .. self.Fuel.Acceleration,
-                        }
-                    end
                 end
+
+                if self.Prototype.fuel_acceleration_multiplier
+                    and self.Prototype.fuel_acceleration_multiplier ~= 1 then
+                    result:Append{
+                        "",
+                        {"description.fuel-acceleration"},
+                        " " .. self.Prototype.fuel_acceleration_multiplier,
+                    }
+                end
+                
+                return result
             end,
         },
-
-        AdditionalHelp = {get = function() return self.FuelDescription end},
 
         SpecialFunctions = {
             get = function(self) --
