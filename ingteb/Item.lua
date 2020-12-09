@@ -4,6 +4,23 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local Goods = require("ingteb.Goods")
+local UI = require("core.UI")
+
+function FormatEnergy(value)
+    if value < 0 then return "-" .. FormatEnergy(-value) end
+    if value < 10 then return value .. "J" end
+    value = value / 1000
+    if value < 10 then return value .. "kJ" end
+    value = value / 1000
+    if value < 10 then return value .. "MJ" end
+    value = value / 1000
+    if value < 10 then return value .. "GJ" end
+    value = value / 1000
+    if value < 10 then return value .. "TJ" end
+    value = value / 1000
+    return value .. "PJ"
+
+end
 
 local Item = Common:class("Item")
 
@@ -23,6 +40,20 @@ function Item:new(name, prototype, database)
                 end
             end,
         },
+
+        FuelDescription = {
+            get = function()
+                if self.Fuel then
+                    return {
+                        "ingteb-utility.fuel_specification",
+                        self.Fuel.Category.Prototype.localised_name or "?",
+                        FormatEnergy(self.Fuel.Value),
+                        self.Fuel.Acceleration,
+                    }
+                end
+            end,
+        },
+        AdditionalHelp = {get = function() return self.FuelDescription end},
     }
 
     if self.Prototype.fuel_category then
@@ -31,6 +62,12 @@ function Item:new(name, prototype, database)
             Value = self.Prototype.fuel_value,
             Acceleration = self.Prototype.fuel_acceleration_multiplier,
         }
+
+    end
+
+    function self:GetAction(event)
+        if UI.IsMouseCode(event, "--S l") --
+        then return {Selecting = self, Entity = self.Entity} end
     end
 
     return self
