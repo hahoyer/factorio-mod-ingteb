@@ -44,16 +44,21 @@ function Item:new(name, prototype, database)
         FuelDescription = {
             get = function()
                 if self.Fuel then
-                    return {
-                        "ingteb-utility.fuel_specification",
-                        self.Fuel.Category.Prototype.localised_name or "?",
-                        FormatEnergy(self.Fuel.Value),
-                        self.Fuel.Acceleration,
+                    local result = Array:new{
+                        {"", {"description.fuel-value"}, " " .. FormatEnergy(self.Fuel.Value)},
                     }
+                    if self.Fuel.Acceleration ~= 1 then
+                        result:Append{
+                            "",
+                            {"description.fuel-acceleration"},
+                            " " .. self.Fuel.Acceleration,
+                        }
+                    end
                 end
             end,
         },
-        AdditionalHelp = {get = function() return Array:new{self.FuelDescription} end},
+
+        AdditionalHelp = {get = function() return self.FuelDescription end},
 
         SpecialFunctions = {
             get = function(self) --
