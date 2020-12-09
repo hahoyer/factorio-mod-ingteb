@@ -145,7 +145,7 @@ function Recipe:new(name, prototype, database)
                 return Array:new{
                     {
                         UICode = "A-- l",
-                        HelpText = "ingteb-utility.craft1",
+                        HelpText = "controls.craft",
                         IsAvailable = function()
                             return self.HandCrafter and self.NumberOnSprite
                         end,
@@ -155,7 +155,7 @@ function Recipe:new(name, prototype, database)
                     },
                     {
                         UICode = "A-- r",
-                        HelpText = "ingteb-utility.craft5",
+                        HelpText = "controls.craft-5",
                         IsAvailable = function()
                             return self.HandCrafter and self.NumberOnSprite
                         end,
@@ -165,7 +165,7 @@ function Recipe:new(name, prototype, database)
                     },
                     {
                         UICode = "--S l",
-                        HelpText = "ingteb-utility.craftall",
+                        HelpText = "controls.craft-all",
                         IsAvailable = function()
                             return self.HandCrafter and self.NumberOnSprite
                         end,
@@ -178,7 +178,7 @@ function Recipe:new(name, prototype, database)
                     },
                     {
                         UICode = "-C- l",
-                        HelpText = "ingteb-utility.research",
+                        HelpText = "gui-technology-preview.start-research",
                         IsAvailable = function()
                             return self.Technology and self.Technology.IsReady
                         end,

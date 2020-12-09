@@ -7,7 +7,7 @@ Date: 2020-12-08
     - Shift-click handler on item: select into cursor
     - zn-CH localisation by Ting_amm
   Refactor:
-    - Special actions reworked
+    - Special actions reworked (uses less localised strings)
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.28
 Date: 2020-12-08

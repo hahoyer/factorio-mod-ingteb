@@ -88,7 +88,7 @@ function Technology:new(name, prototype, database)
         },
 
         IsNextGeneration = {
-            get = function() return not self.IsResearched and self.IsReady and not self.IsResearching end,
+            get = function() return not (self.IsResearched or self.IsReady or self.IsResearching) end,
         },
 
         IsResearching = {
@@ -183,7 +183,7 @@ function Technology:new(name, prototype, database)
                 return Array:new{
                     {
                         UICode = "-C- l",
-                        HelpText = "ingteb-utility.research",
+                        HelpText = "gui-technology-preview.start-research",
                         IsAvailable = function() return self.IsReady end,
                         Action = function() return {Research = self} end,
                     },

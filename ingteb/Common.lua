@@ -53,7 +53,7 @@ function Common:new(prototype, database)
                     function(specialFunction)
                         return (not specialFunction.IsAvailable or specialFunction.IsAvailable()) --
                                    and specialFunction.HelpText --
-                                   and UI.GetHelpTextForButtonsACS12(specialFunction.HelpText) or nil
+                                   and UI.GetHelpTextForButtons(specialFunction.HelpText,specialFunction.UICode) or nil
                     end
                 )
             end,
