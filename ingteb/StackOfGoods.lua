@@ -52,7 +52,7 @@ function StackOfGoods:new(goods, amounts, database)
         SpriteName = {get = function() return self.Goods.SpriteName end},
 
         AdditionalHelp = {
-            get = function() if self.Goods then return self.Goods.FuelDescription end end,
+            get = function() if self.Goods then return Array:new{self.Goods.FuelDescription} end end,
         },
 
     }

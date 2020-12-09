@@ -53,7 +53,20 @@ function Item:new(name, prototype, database)
                 end
             end,
         },
-        AdditionalHelp = {get = function() return self.FuelDescription end},
+        AdditionalHelp = {get = function() return Array:new{self.FuelDescription} end},
+
+        SpecialFunctions = {
+            get = function(self) --
+                return Array:new{
+                    {
+                        UICode = "--S l",
+                        Action = function()
+                            return {Selecting = self, Entity = self.Entity}
+                        end,
+                    },
+                }
+            end,
+        },
     }
 
     if self.Prototype.fuel_category then
@@ -63,11 +76,6 @@ function Item:new(name, prototype, database)
             Acceleration = self.Prototype.fuel_acceleration_multiplier,
         }
 
-    end
-
-    function self:GetAction(event)
-        if UI.IsMouseCode(event, "--S l") --
-        then return {Selecting = self, Entity = self.Entity} end
     end
 
     return self
