@@ -5,16 +5,22 @@ local function GetInherited(self, key)
     return self.property[key] or GetInherited(self.base, key)
 end
 
-
 --- Defines a class
 --- @param name string the name of the class
---- @param base class optional, the base class
+--- @param base class the base class - optional
+--- @param properties initial properties - optional
 --- @return class new class 
-function class:new(name, base)
+function class:new(name, base, properties)
     assert(release or type(name) == "string")
     if base then assert(release or base.class == class) end
 
-    local classInstance = {name = name, metatable = {}, property = {}, class = class, base = base}
+    local classInstance = {
+        name = name,
+        metatable = {},
+        property = (properties or {}),
+        class = class,
+        base = base,
+    }
 
     local metatable = classInstance.metatable
 
@@ -58,7 +64,8 @@ function class:new(name, base)
             local inherited = GetInherited(self.base, key)
             if inherited then
                 if not rawget(instance, "inherited") then instance.inherited = {} end
-                instance.inherited[key] = inherited
+                if not instance.inherited[self.name] then instance.inherited[self.name] = {} end
+                instance.inherited[self.name][key] = inherited
             end
             if value.cache then
                 assert(release or not value.set)

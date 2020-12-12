@@ -48,7 +48,19 @@ Goods.property = {
         end,
     },
 
-    AdditionalHelp = {get = function(self) return self.FuelDescription end},
+    AdditionalHelp = {
+        get = function(self)
+            local result = self.inherited.Goods.AdditionalHelp.get(self) --
+            if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
+                result:Append{
+                    "",
+                    {"description.fuel-value"},
+                    " " .. FormatEnergy(self.Prototype.fuel_value),
+                }
+            end
+            return result
+        end,
+    },
 
 }
 

@@ -21,7 +21,7 @@ todo:
 - machine-column for labs
 - Improve recipe-column-layout in case of huge amount of recipes
 - provide filter for selector
-- provide close buttons for seletor and presentor
+- provide close buttons for selector and presentor
 - crafting from any item in Recipe panel
 - tooltip on items: inventory amount and crafting potential
 

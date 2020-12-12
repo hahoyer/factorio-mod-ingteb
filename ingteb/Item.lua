@@ -9,15 +9,15 @@ local class = require("core.class")
 
 function FormatEnergy(value)
     if value < 0 then return "-" .. FormatEnergy(-value) end
-    if value < 10 then return value .. "J" end
+    if value < 1000 then return value .. "J" end
     value = value / 1000
-    if value < 10 then return value .. "kJ" end
+    if value < 1000 then return value .. "kJ" end
     value = value / 1000
-    if value < 10 then return value .. "MJ" end
+    if value < 1000 then return value .. "MJ" end
     value = value / 1000
-    if value < 10 then return value .. "GJ" end
+    if value < 1000 then return value .. "GJ" end
     value = value / 1000
-    if value < 10 then return value .. "TJ" end
+    if value < 1000 then return value .. "TJ" end
     value = value / 1000
     return value .. "PJ"
 
@@ -25,7 +25,7 @@ end
 
 local Item = class:new("Item", Goods)
 
-Item .property = {
+Item.property = {
     Entity = {
         cache = true,
         get = function(self)
@@ -35,17 +35,9 @@ Item .property = {
         end,
     },
 
-    FuelDescription = {
+    AdditionalHelp = {
         get = function(self)
-            local result = Array:new{}
-
-            if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
-                result:Append{
-                    "",
-                    {"description.fuel-value"},
-                    " " .. FormatEnergy(self.Prototype.fuel_value),
-                }
-            end
+            local result = self.inherited.Item.AdditionalHelp.get(self) --
 
             if self.Prototype.fuel_acceleration_multiplier
                 and self.Prototype.fuel_acceleration_multiplier ~= 1 then
@@ -55,7 +47,7 @@ Item .property = {
                     " " .. self.Prototype.fuel_acceleration_multiplier,
                 }
             end
-            
+
             return result
         end,
     },
@@ -79,7 +71,6 @@ function Item:new(name, prototype, database)
     self.SpriteType = "item"
 
     assert(release or self.Prototype.object_name == "LuaItemPrototype")
-
 
     if self.Prototype.fuel_category then
         self.Fuel = {

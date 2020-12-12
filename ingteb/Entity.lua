@@ -15,7 +15,7 @@ Entity.property = {
             if self.Name == "(hand-miner)" then
                 return "technology/steel-axe"
             end
-            return self.inherited.SpriteName.get(self)
+            return self.inherited.Entity.SpriteName.get(self)
         end,
     },
 

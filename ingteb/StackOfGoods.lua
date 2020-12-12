@@ -39,7 +39,7 @@ StackOfGoods.property = {
     SpriteName = {get = function(self) return self.Goods.SpriteName end},
 
     AdditionalHelp = {
-        get = function(self) if self.Goods then return self.Goods.FuelDescription end end,
+        get = function(self) if self.Goods then return self.Goods.AdditionalHelp end end,
     },
 
 }
