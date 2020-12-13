@@ -37,11 +37,13 @@ function BoilingRecipe:new(name, prototype, database)
     self.Category = GetCategoryAndRegister(self, "boiling", name)
 
     local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"}
+    input.Source = {Recipe = self, ProductIndex = 1}
     input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
     self.Input = Array:new{input}
 
     local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"}
     output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
+    output.Source = {Recipe = self, IngredientIndex = 1}
     self.Output = Array:new{output}
 
     function self:IsBefore(other)

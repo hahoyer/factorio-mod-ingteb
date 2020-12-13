@@ -44,7 +44,7 @@ Common.property = {
         get = function(self)
 
             local name = self.Prototype.localised_name
-            local lines = Array:new{""}
+            local lines = Array:new{}
             local function append(line)
                 if line then
                     lines:Append("\n")
@@ -52,9 +52,15 @@ Common.property = {
                 end
             end
             -- append(self.LocalizedDescription)
-            self.AdditionalHelp:Select(append)
-            self.FunctionalHelp:Select(append)
-            return {"", name, lines}
+            local additionalHelp = self.AdditionalHelp
+            local functionalHelp = self.FunctionalHelp
+            additionalHelp:Select(append)
+            functionalHelp:Select(append)
+            if lines:Any() then
+                lines:InsertAt(1, "")
+                return {"", name, lines}
+            end
+            return name
         end,
     },
     SpriteName = {

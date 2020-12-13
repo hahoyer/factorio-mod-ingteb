@@ -48,7 +48,34 @@ Item.property = {
                 }
             end
 
+            local counts = self.PlayerCounts
+            if counts then
+                local craftingCountText =
+                    counts.Crafting > 0 and "(+" .. counts.Crafting .. ")" or ""
+                result:Append(
+                    self.Database:GetEntity("character").RichTextName .. ": " .. counts.Inventory
+                        .. craftingCountText
+                )
+            end
+
             return result
+        end,
+    },
+
+    PlayerCounts = {
+        get = function(self)
+            local result = {Inventory = UI.Player.get_item_count(self.Name), Crafting = 0}
+            local recipes = self.CreatedBy["crafting.crafting"]
+            if recipes then
+                result.Crafting = recipes --
+                :Select(
+                    function(recipe)
+                        return UI.Player.get_craftable_count(recipe.Name)
+                    end
+                ) --
+                :Maximum()
+            end
+            if result.Inventory > 0 or result.Crafting > 0 then return result end
         end,
     },
 
@@ -64,6 +91,8 @@ Item.property = {
             }
         end,
     },
+
+    IsRefreshRequired = {get = function(self) return {MainInventory = true} end},
 }
 
 function Item:new(name, prototype, database)

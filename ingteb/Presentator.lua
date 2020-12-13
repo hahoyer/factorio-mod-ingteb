@@ -8,6 +8,7 @@ local class = require("core.class")
 local MiningRecipe = require("ingteb.MiningRecipe")
 local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
+local StackOfGoods = require("ingteb.StackOfGoods")
 
 local DynamicElements = Dictionary:new()
 
@@ -438,7 +439,11 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 local function UpdateGui(list, target, dataBase)
-    target = dataBase:GetProxy(target.class.name, target.Name)
+    if target.class == StackOfGoods then
+        target = StackOfGoods:new(target.Goods, target.Amounts, dataBase)
+    else
+        target = dataBase:GetProxy(target.class.name, target.Name)
+    end
     local helperText = target.HelperText
     local number = target.NumberOnSprite
     local style = Helper.SpriteStyleFromCode(target.SpriteStyle)

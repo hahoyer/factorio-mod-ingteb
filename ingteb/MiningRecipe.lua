@@ -56,7 +56,7 @@ function MiningRecipe:new(name, prototype, database)
             amount = configuration.fluid_amount,
         }
         fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-        fluid.Source = {Recipe = self, IngredientIndex = 0}
+        fluid.Source = {Recipe = self, IngredientIndex = 1}
         self.Input:Append(fluid)
     end
 

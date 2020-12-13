@@ -4,45 +4,55 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local UI = require("core.UI")
 
-local StackOfGoods = class:new("StackOfGoods", Common)
+local StackOfGoods = class:new(
+    "StackOfGoods", Common, {
+        NumberOnSprite = {
+            cache = true,
+            get = function(self)
+                local amounts = self.Amounts
+                if not amounts then return end
 
-StackOfGoods.property = {
-    NumberOnSprite = {
-        cache = true,
-        get = function(self)
-            local amounts = self.Amounts
-            if not amounts then return end
+                local probability = (amounts.probability or 1)
+                local value = amounts.value
 
-            local probability = (amounts.probability or 1)
-            local value = amounts.value
-
-            if not value then
-                if not amounts.min then
-                    value = amounts.max
-                elseif not amounts.max then
-                    value = amounts.min
-                else
-                    value = (amounts.max + amounts.min) / 2
+                if not value then
+                    if not amounts.min then
+                        value = amounts.max
+                    elseif not amounts.max then
+                        value = amounts.min
+                    else
+                        value = (amounts.max + amounts.min) / 2
+                    end
+                elseif type(value) ~= "number" then
+                    return
                 end
-            elseif type(value) ~= "number" then
-                return
-            end
 
-            return value * probability
-        end,
-    },
-    ClickTarget = {get = function(self) return self.Goods.ClickTarget end},
-    CommonKey = {
-        get = function(self) return self.Goods.CommonKey .. "/" .. self:GetAmountsKey() end,
-    },
-    SpriteName = {get = function(self) return self.Goods.SpriteName end},
+                return value * probability
+            end,
+        },
+        ClickTarget = {get = function(self) return self.Goods.ClickTarget end},
+        CommonKey = {
+            get = function(self)
+                return self.Goods.CommonKey .. "/" .. self:GetAmountsKey()
+            end,
+        },
+        SpriteName = {get = function(self) return self.Goods.SpriteName end},
 
-    AdditionalHelp = {
-        get = function(self) if self.Goods then return self.Goods.AdditionalHelp end end,
-    },
+        AdditionalHelp = {
+            get = function(self)
+                local result = self.inherited.StackOfGoods.AdditionalHelp.get(self) --
+                if self.Goods then result:AppendMany(self.Goods.AdditionalHelp) end
+                return result
+            end,
+        },
 
-}
+        IsRefreshRequired = {
+            get = function(self) return self.Goods and self.Goods.IsRefreshRequired or nil end,
+        },
+    }
+)
 
 function StackOfGoods:new(goods, amounts, database)
     assert(release or goods)
