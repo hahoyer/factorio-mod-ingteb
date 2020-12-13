@@ -49,9 +49,16 @@ local StackOfGoods = class:new(
         },
 
         IsRefreshRequired = {
-            get = function(self) return self.Goods and self.Goods.IsRefreshRequired or nil end,
+            get = function(self)
+                return self.Goods and self.Goods.IsRefreshRequired or nil
+            end,
+        },
+
+        SpecialFunctions = {
+            get = function(self) return self.Goods and self.Goods.SpecialFunctions or nil end,
         },
     }
+
 )
 
 function StackOfGoods:new(goods, amounts, database)

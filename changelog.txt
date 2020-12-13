@@ -5,7 +5,8 @@ Date: 2020-12-12
     - [tech] fixing inherited has to be class specific
     - fixing wrong Joule calculations
   Changes:
-    - No fuel property anymore. Directly implemented with AdditionalHelp
+    - tooltip on items: inventory amount and crafting potential
+    - crafting from any item in Recipe panel
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.30
 Date: 2020-12-10
