@@ -56,20 +56,26 @@ function class:new(name, base, properties)
     --- @param self class
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
     --- @return instance ... but patched 
-    function classInstance:adopt(instance)
-        instance.class = self
+    function classInstance:adopt(instance, isMinimal)
+        if not isMinimal then instance.class = self end
         setmetatable(instance, self.metatable)
-        for key, value in pairs(self.property) do
-            value.class = self.name
-            local inherited = GetInherited(self.base, key)
-            if inherited then
-                if not rawget(instance, "inherited") then instance.inherited = {} end
-                if not instance.inherited[self.name] then instance.inherited[self.name] = {} end
-                instance.inherited[self.name][key] = inherited
-            end
-            if value.cache then
-                assert(release or not value.set)
-                class.addCachedProperty(instance, self, key, value.get)
+        if not isMinimal then
+            for key, value in pairs(self.property) do
+                value.class = self.name
+                local inherited = GetInherited(self.base, key)
+                if inherited then
+                    if not rawget(instance, "inherited") then
+                        instance.inherited = {}
+                    end
+                    if not instance.inherited[self.name] then
+                        instance.inherited[self.name] = {}
+                    end
+                    instance.inherited[self.name][key] = inherited
+                end
+                if value.cache then
+                    assert(release or not value.set)
+                    class.addCachedProperty(instance, self, key, value.get)
+                end
             end
         end
         return instance

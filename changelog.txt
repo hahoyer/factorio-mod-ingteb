@@ -4,6 +4,7 @@ Date: 2020-12-12
   Bugfixes:
     - [tech] fixing inherited has to be class specific
     - fixing wrong Joule calculations
+    - fixing crash at load
   Changes:
     - tooltip on items: inventory amount and crafting potential
     - crafting from any item in Recipe panel

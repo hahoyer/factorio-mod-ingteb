@@ -91,6 +91,7 @@ end
 
 function EventManager:OnTickInitial()
     Gui:EnsureMainButton()
+    History:adopt(global.History)
     self:SetHandler(defines.events.on_tick)
 end
 
@@ -136,7 +137,7 @@ function EventManager:OnClose(event)
 end
 
 function EventManager:OnLoad()
-    History:adopt(global.History)
+    History:adopt(global.History, true)
     global.History:Log("OnLoad")
 end
 
