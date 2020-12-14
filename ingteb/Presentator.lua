@@ -123,14 +123,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     CreateLinePart(subFrame, target.Output, outCount, false)
 end
 
-local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
-    assert(release or type(category) == "string")
-    inCount = math.min(inCount, maximalCount)
-    outCount = math.min(outCount, maximalCount)
-
-    local workers = target[1].Database:GetCategory(category).Workers
-
-    local columnCount = inCount + outCount + 3
+local function CreateWorkersPanel(frame, workers, columnCount)
     local workersCount = workers:Count()
     local lines = math.ceil(workersCount / columnCount)
     local potentialWorkerCount = lines * columnCount
@@ -161,6 +154,16 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
             end
         end
     )
+end
+
+local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
+    assert(release or type(category) == "string")
+    inCount = math.min(inCount, maximalCount)
+    outCount = math.min(outCount, maximalCount)
+
+    local workers = target[1].Database:GetCategory(category).Workers
+
+    CreateWorkersPanel(frame, workers, inCount + outCount + 3)
 
     frame.add {type = "line", direction = "horizontal"}
 
@@ -316,6 +319,18 @@ local function CreateTechnologyEffectsPanel(frame, target)
             end
         end
     )
+end
+
+local function CreateRecipePanel(frame, target)
+    if target.class.name ~= "Recipe" then return end
+
+    local frame = CreateContentPanel(frame, {"", target.RichTextName})
+    local inCount = math.min(target.Input:Count(), maximalCount)
+    local outCount = math.min(target.Output:Count(), maximalCount)
+    local workers = target.Category.Workers
+    CreateWorkersPanel(frame, workers, inCount + outCount + 3)
+    frame.add {type = "line", direction = "horizontal"}
+    CreateRecipeLine(frame, target, inCount, outCount)
 end
 
 local function Extend(items, nextItems)
@@ -508,7 +523,7 @@ function Presentator:new(frame, target)
     local mainFrame = scrollframe
     local columnCount --
     = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
-    + (target.RecipeData and 1 or 0) --
+          + (target.class == Recipe and 1 or 0) --
           + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
           + (target.Effects and target.Effects:Any() and 1 or 0) --
           + (target.Enables and target.Enables:Any() and 1 or 0) --
@@ -542,6 +557,7 @@ function Presentator:new(frame, target)
     )
 
     CreateTechnologyEffectsPanel(mainFrame, target)
+    CreateRecipePanel(mainFrame, target)
 
     CreateTechnologiesPanel(
         mainFrame, target.Enables,
