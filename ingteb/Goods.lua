@@ -62,55 +62,62 @@ Goods.property = {
         end,
     },
 
+    SpecialFunctions = {
+        get = function(self)
+            local result = self.inherited.Goods.SpecialFunctions.get(self)
+            return result:Concat{
+                {
+                    UICode = "--- r",
+                    HelpText = "ingteb-utility.create-reminder-task",
+                    Action = function() return {ReminderTask = self} end,
+                },
+            }
+
+        end,
+    },
 }
+
+local function Sort(target)
+    local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)
+    targetArray:Sort(
+        function(a, b)
+            if a == b then return false end
+            local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
+            local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
+            if aOrder ~= bOrder then return aOrder > bOrder end
+
+            local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
+            local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
+            return aSubOrder > bSubOrder
+
+        end
+    )
+
+    return targetArray:ToDictionary(
+        function(value)
+            value.Value:Sort(
+                function(a, b) --
+                    return a:IsBefore(b)
+                end
+            )
+            return value
+        end
+    )
+
+end
+
+function Goods:SortAll()
+    if not self.RecipeList then self.RecipeList = self.OriginalRecipeList end
+    if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
+    if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
+
+    self.RecipeList = Sort(self.RecipeList)
+    self.CreatedBy = Sort(self.CreatedBy)
+    self.UsedBy = Sort(self.UsedBy)
+end
 
 function Goods:new(prototype, database)
     local self = self:adopt(self.base:new(prototype, database))
-
-    local function Sort(target)
-        local targetArray = target:ToArray(
-            function(value, key) return {Value = value, Key = key} end
-        )
-        targetArray:Sort(
-            function(a, b)
-                if a == b then return false end
-                local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
-                local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
-                if aOrder ~= bOrder then return aOrder > bOrder end
-
-                local aSubOrder = a.Value:Select(
-                    function(recipe) return recipe.SubOrder end
-                ):Sum()
-                local bSubOrder = b.Value:Select(
-                    function(recipe) return recipe.SubOrder end
-                ):Sum()
-                return aSubOrder > bSubOrder
-
-            end
-        )
-
-        return targetArray:ToDictionary(
-            function(value)
-                value.Value:Sort(
-                    function(a, b) --
-                        return a:IsBefore(b)
-                    end
-                )
-                return value
-            end
-        )
-
-    end
-
-    function self:SortAll()
-        if not self.RecipeList then self.RecipeList = self.OriginalRecipeList end
-        if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
-        if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
-
-        self.RecipeList = Sort(self.RecipeList)
-        self.CreatedBy = Sort(self.CreatedBy)
-        self.UsedBy = Sort(self.UsedBy)
-    end
 
     return self
 

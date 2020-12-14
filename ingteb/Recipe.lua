@@ -8,7 +8,7 @@ local class = require("core.class")
 
 local Recipe = class:new("Recipe", Common)
 
-Recipe.property  = {
+Recipe.property = {
 
     Technologies = {
         cache = true,
@@ -55,9 +55,9 @@ Recipe.property  = {
         cache = true,
         get = function(self)
             return self.TypeOrder .. " " .. (self.IsResearched and "R" or "r") .. " "
-                       .. (not self.IsResearched and self.Technology.IsReady and "R" or "r")
-                       .. " " .. self.Prototype.group.order .. " "
-                       .. self.Prototype.subgroup.order .. " " .. self.Prototype.order
+                       .. (not self.IsResearched and self.Technology.IsReady and "R" or "r") .. " "
+                       .. self.Prototype.group.order .. " " .. self.Prototype.subgroup.order .. " "
+                       .. self.Prototype.order
         end,
     },
 
@@ -126,19 +126,15 @@ Recipe.property  = {
                     return result
                 end
             ) --
-            :Where(
-                function(value)
-                    return not (value.flags and value.flags.hidden)
-                end
-            ) --
+            :Where(function(value) return not (value.flags and value.flags.hidden) end) --
 
         end,
     },
-    RecipeData = {cache = true, get = function() return {} end},
 
     SpecialFunctions = {
         get = function(self) --
-            return Array:new{
+            local result = self.inherited.Recipe.SpecialFunctions.get(self)
+            return result:Concat{
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
@@ -165,6 +161,7 @@ Recipe.property  = {
                     IsAvailable = function()
                         return self.HandCrafter and self.NumberOnSprite
                     end,
+
                     Action = function(event)
                         local amount = game.players[event.player_index].get_craftable_count(
                             self.Prototype.name
@@ -178,12 +175,10 @@ Recipe.property  = {
                     IsAvailable = function()
                         return self.Technology and self.Technology.IsReady
                     end,
-                    Action = function()
-                        return {Research = self.Technology}
-                    end,
+                    Action = function() return {Research = self.Technology} end,
                 },
                 {
-                    UICode = "AC- l",
+                    UICode = "-CS l",
                     HelpText = "ingteb-utility.multiple-research",
                     IsAvailable = function()
                         return self.Technology and self.Technology.IsNextGeneration
@@ -192,14 +187,30 @@ Recipe.property  = {
                         return {Research = self.Technology, Multiple = true}
                     end,
                 },
+                {
+                    UICode = "--- r",
+                    HelpText = "ingteb-utility.create-reminder-task",
+                    Action = function() return {ReminderTask = self} end,
+                },
             }
         end,
     },
 }
 
+function Recipe:IsBefore(other)
+    if self == other then return false end
+    local aOrder = self.OrderValue
+    local bOrder = other.OrderValue
+    return aOrder < bOrder
+end
+
+function Recipe:Refresh() self.cache.Recipe.OrderValue.IsValid = false end
+
+function Recipe:SortAll() end
+
 function Recipe:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.recipe_prototypes[name], database))
-    
+
     assert(release or self.Prototype.object_name == "LuaRecipePrototype")
 
     self.TypeOrder = 1
@@ -207,17 +218,6 @@ function Recipe:new(name, prototype, database)
     self.IsHidden = false
     self.Time = self.Prototype.energy
     self.IsRefreshRequired = {Research = true, MainInventory = true}
-
-    function self:IsBefore(other)
-        if self == other then return false end
-        local aOrder = self.OrderValue
-        local bOrder = other.OrderValue
-        return aOrder < bOrder
-    end
-
-    function self:Refresh() self.cache.Recipe.OrderValue.IsValid = false end
-
-    function self:SortAll() end
 
     return self
 

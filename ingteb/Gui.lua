@@ -7,6 +7,7 @@ local Dictionary = Table.Dictionary
 local UI = require("core.UI")
 local Presentator = require("ingteb.Presentator")
 local Selector = require("ingteb.Selector")
+local Remindor = require("ingteb.Remindor")
 local Database = require("ingteb.Database")
 
 local Gui = {Active = {}}
@@ -131,6 +132,8 @@ function Gui:ScanActiveGui(player)
     self.Active.ingteb = mod_gui.get_button_flow(player).ingteb
     self.Active.Selector = player.gui.screen.Selector
     self.Active.Presentator = player.gui.screen.Presentator
+    self.Active.Remindor = mod_gui.get_frame_flow(player).Remindor
+
 end
 
 function Gui:CloseSelector(player)
@@ -148,7 +151,7 @@ function Gui:ClosePresentator(player)
 end
 
 function Gui:SelectTarget(player, targets)
-    Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
+     Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
     self:ScanActiveGui(player)
 end
 
@@ -167,6 +170,13 @@ function Gui:PresentTarget(player, target)
     )
     self:ScanActiveGui(player)
     return target.CommonKey
+end
+
+function Gui:AddReminder(player, target)
+    if not self.Active.Remindor then 
+        self.Active.Remindor = Remindor:new(mod_gui.get_frame_flow(player))
+    end
+    Remindor:SetTask(player, target)
 end
 
 function Gui:OnMainButtonPressed(player)
@@ -298,24 +308,32 @@ function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
     local target = self.Database:Get(global.Links[event.element.index])
     if target and target.Prototype then
-        if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
-
         local action = target:GetAction(event)
-        if action and action.Selecting then
+        if not action then return end
+        if action.Selecting then
             if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
                 player.cursor_ghost = action.Selecting.Prototype
             end
         end
 
-        if action and action.HandCrafting then player.begin_crafting(action.HandCrafting) end
+        if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
 
-        if action and action.Research then
+        if action.Research then
             if action.Research.IsReady then
                 self:DirectQueueResearch(player, action.Research)
             elseif action.Multiple then
                 self:MulipleQueueResearch(player, action.Research)
             end
         end
+
+        if  action.ReminderTask then
+            self:AddReminder(player,action.ReminderTask)
+        end
+
+        if action.Presenting then
+            return self:PresentTarget(player, action.Presenting)
+        end
+
         return
     end
 

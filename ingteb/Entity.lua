@@ -12,9 +12,7 @@ Entity.property = {
     SpriteName = {
         get = function(self)
             -- special entity for handmining
-            if self.Name == "(hand-miner)" then
-                return "technology/steel-axe"
-            end
+            if self.Name == "(hand-miner)" then return "technology/steel-axe" end
             return self.inherited.Entity.SpriteName.get(self)
         end,
     },
@@ -76,6 +74,19 @@ Entity.property = {
             :Where(function(recipes) return recipes:Any() end) --
         end,
     },
+    SpecialFunctions = {
+        get = function(self)
+            local result = self.inherited.Entity.SpecialFunctions.get(self)
+            return result:Concat{
+                {
+                    UICode = "--- r",
+                    HelpText = "ingteb-utility.create-reminder-task",
+                    IsAvailable = function() return self.Item end,
+                    Action = function() return {ReminderTask = self.Item} end,
+                },
+            }
+        end,
+    },
 }
 
 function Entity:SortAll() end
@@ -93,7 +104,6 @@ function Entity:new(name, prototype, database)
 
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
-
 
     return self
 

@@ -8,6 +8,10 @@ Date: 2020-12-12
   Changes:
     - tooltip on items: inventory amount and crafting potential
     - crafting from any item in Recipe panel
+    - Recipe panel layout
+    - new: Remindor
+  Refactor:
+    - SpecialActions
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.30
 Date: 2020-12-10
