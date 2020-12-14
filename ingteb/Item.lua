@@ -85,7 +85,8 @@ Item.property = {
     SpecialFunctions = {
         get = function(self) --
             local counts = self.PlayerCounts
-            return Array:new{
+            local result = self.inherited.Item.SpecialFunctions.get(self)
+            return result:Concat{
                 {
                     UICode = "--S l",
                     Action = function()

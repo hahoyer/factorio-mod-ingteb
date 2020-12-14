@@ -23,7 +23,20 @@ Common.property = {
         end,
     },
 
-    SpecialFunctions = {get = function(self) return Array:new() end},
+    SpecialFunctions = {
+        get = function(self)
+            return Array:new{
+                {
+                    UICode = "--- l",
+                    Action = function()
+                        return {Presenting = self}
+                    end,
+                },
+            }
+
+        end,
+    },
+
     AdditionalHelp = {get = function(self) return Array:new{} end},
     FunctionalHelp = {
         get = function(self)

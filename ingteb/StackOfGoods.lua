@@ -55,7 +55,13 @@ local StackOfGoods = class:new(
         },
 
         SpecialFunctions = {
-            get = function(self) return self.Goods and self.Goods.SpecialFunctions or nil end,
+            get = function(self)
+                local result = self.inherited.StackOfGoods.SpecialFunctions.get(self)
+                if self.Goods and self.Goods.SpecialFunctions then
+                    result:AppendMany(self.Goods.SpecialFunctions)
+                end
+                return result
+            end,
         },
     }
 

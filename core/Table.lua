@@ -271,8 +271,11 @@ function Array:Stringify(delimiter)
 end
 
 function Array:Concat(otherArray)
-    if not self:Any() then return otherArray end
-    if not otherArray:Any() then return self end
+    if not self:Any() then
+        if getmetatable(otherArray) == getmetatable(self) then return otherArray end
+        return Array:new(otherArray)
+    end
+    if not otherArray or #otherArray == 0 then return self end
 
     local result = Array:new{}
     result:AppendMany(self)
