@@ -18,6 +18,7 @@ Entity.property = {
     },
 
     ClickTarget = {get = function(self) return self.Item and self.Item.ClickTarget end},
+
     Item = {
         cache = true,
         get = function(self)
@@ -27,6 +28,7 @@ Entity.property = {
             return self.Database:GetItem(place[1].name)
         end,
     },
+
     IsResource = {
         cache = true,
         get = function(self)
@@ -38,6 +40,7 @@ Entity.property = {
             return not prototype.items_to_place_this
         end,
     },
+
     Categories = {
         cache = true,
         get = function(self)
@@ -74,20 +77,31 @@ Entity.property = {
             :Where(function(recipes) return recipes:Any() end) --
         end,
     },
+    
     SpecialFunctions = {
         get = function(self)
             local result = self.inherited.Entity.SpecialFunctions.get(self)
             return result:Concat{
                 {
                     UICode = "--- r",
+                    IsRestricedTo = {Presentator = true},
                     HelpText = "ingteb-utility.create-reminder-task",
-                    IsAvailable = function() return self.Item end,
-                    Action = function() return {ReminderTask = self.Item} end,
+                    IsAvailable = function(self) return self.Item end,
+                    Action = function(self) return {ReminderTask = self.Item} end,
                 },
             }
         end,
     },
+
+    TaskInformation = {get = function(self) return self:GetTaskInformation() end},
 }
+
+function Entity:GetTaskInformation(isForWorker)
+    if self.Item then return self.Item:GetTaskInformation(isForWorker) end
+    if self.Name == "character" then return Array:new{} end
+    assert(release)
+    return Array:new{}
+end
 
 function Entity:SortAll() end
 

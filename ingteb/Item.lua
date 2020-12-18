@@ -89,31 +89,31 @@ Item.property = {
             return result:Concat{
                 {
                     UICode = "--S l",
-                    Action = function()
+                    Action = function(self)
                         return {Selecting = self, Entity = self.Entity}
                     end,
                 },
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
-                    IsAvailable = function() return counts and counts.Crafting > 0 end,
-                    Action = function(event)
+                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
+                    Action = function(self,event)
                         return {HandCrafting = {count = 1, recipe = counts.Recipe.Name}}
                     end,
                 },
                 {
                     UICode = "A-- r",
                     HelpText = "controls.craft-5",
-                    IsAvailable = function() return counts and counts.Crafting > 0 end,
-                    Action = function()
+                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
+                    Action = function(self)
                         return {HandCrafting = {count = 5, recipe = counts.Recipe.Name}}
                     end,
                 },
                 {
                     UICode = "--S l",
                     HelpText = "controls.craft-all",
-                    IsAvailable = function() return counts and counts.Crafting > 0 end,
-                    Action = function(event)
+                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
+                    Action = function(self,event)
                         local amount = game.players[event.player_index].get_craftable_count(
                             counts.Recipe.Name
                         )

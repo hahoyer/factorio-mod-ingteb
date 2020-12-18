@@ -1,5 +1,6 @@
 local Constants = require("Constants")
 local Table = require("core.Table")
+local RequiredThings = require "ingteb.RequiredThings"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
@@ -33,18 +34,25 @@ Recipe.property = {
         end,
     },
 
+    NotResearchedTechnologiesForRecipe = {
+        get = function(self)
+            local result = self.Technologies --
+            :Select(function(technology) return technology.NotResearchedPrerequisites end) --
+            :GetShortest()
+            return result
+        end,
+    },
+
     Technology = {
         get = function(self)
             if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
 
-            local researched = self.Technologies:Where(
-                function(technology) return technology.IsResearched end
-            )
+            local researched = self.Technologies --
+            :Where(function(technology) return technology.IsResearched end)
             if researched:Count() > 0 then return researched:Top() end
 
-            local ready = self.Technologies:Where(
-                function(technology) return technology.IsReady end
-            )
+            local ready = self.Technologies --
+            :Where(function(technology) return technology.IsReady end)
             if ready:Count() > 0 then return researched:Top() end
 
             return self.Technologies:Top()
@@ -54,10 +62,12 @@ Recipe.property = {
     OrderValue = {
         cache = true,
         get = function(self)
-            return self.TypeOrder .. " " .. (self.IsResearched and "R" or "r") .. " "
-                       .. (not self.IsResearched and self.Technology.IsReady and "R" or "r") .. " "
-                       .. self.Prototype.group.order .. " " .. self.Prototype.subgroup.order .. " "
-                       .. self.Prototype.order
+            return --
+            self.TypeOrder .. " " --
+            .. (self.IsResearched and "R" or "r") .. " "
+                .. (not self.IsResearched and self.Technology.IsReady and "R" or "r") .. " "
+                .. self.Prototype.group.order .. " " .. self.Prototype.subgroup.order .. " "
+                .. self.Prototype.order
         end,
     },
 
@@ -138,31 +148,31 @@ Recipe.property = {
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
-                    IsAvailable = function()
+                    IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
-                    Action = function(event)
+                    Action = function(self, event)
                         return {HandCrafting = {count = 1, recipe = self.Name}}
                     end,
                 },
                 {
                     UICode = "A-- r",
                     HelpText = "controls.craft-5",
-                    IsAvailable = function()
+                    IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
-                    Action = function()
+                    Action = function(self)
                         return {HandCrafting = {count = 5, recipe = self.Name}}
                     end,
                 },
                 {
                     UICode = "--S l",
                     HelpText = "controls.craft-all",
-                    IsAvailable = function()
+                    IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
 
-                    Action = function(event)
+                    Action = function(self, event)
                         local amount = game.players[event.player_index].get_craftable_count(
                             self.Prototype.name
                         )
@@ -172,30 +182,77 @@ Recipe.property = {
                 {
                     UICode = "-C- l",
                     HelpText = "gui-technology-preview.start-research",
-                    IsAvailable = function()
+                    IsAvailable = function(self)
                         return self.Technology and self.Technology.IsReady
                     end,
-                    Action = function() return {Research = self.Technology} end,
+                    Action = function(self) return {Research = self.Technology} end,
                 },
                 {
                     UICode = "-CS l",
                     HelpText = "ingteb-utility.multiple-research",
-                    IsAvailable = function()
+                    IsAvailable = function(self)
                         return self.Technology and self.Technology.IsNextGeneration
                     end,
-                    Action = function()
+                    Action = function(self)
                         return {Research = self.Technology, Multiple = true}
                     end,
                 },
                 {
                     UICode = "--- r",
                     HelpText = "ingteb-utility.create-reminder-task",
-                    Action = function() return {ReminderTask = self} end,
+                    Action = function(self) return {ReminderTask = self} end,
                 },
             }
         end,
     },
+
+    TaskInformation = {get = function(self) return self:GetTaskInformation() end},
 }
+
+function Recipe:GetTaskInformation(isForWorker)
+    local workers = isForWorker and self:GetCheapestWorkers() or self.Category.Workers
+    assert(release or workers:Any())
+    local workers = workers:Select(
+        function(worker)
+            local result = worker:GetTaskInformation(true)
+            return {Worker = worker, Recipes = result.Recipes, Required = result.Required}
+        end
+    )
+    workers:Sort(
+        function(a, b)
+            if a == b then return false end
+            local aCount = a.Required and a.Required:Count() or 0
+            local bCount = b.Required and b.Required:Count() or 0
+            if aCount ~= bCount then return aCount < bCount end
+            assert(release)
+        end
+    )
+
+    return {
+        Required = RequiredThings:new(self.NotResearchedTechnologiesForRecipe, self.Input),
+        Workers = workers,
+    }
+end
+
+function Recipe:GetCheapestWorkers()
+    if self.HandCrafter then return Array:new{self.HandCrafter} end
+    assert(release)
+end
+
+function Recipe:GetWorkerCraftingQueue()
+    if self.HandCrafter then return Array:new{} end
+    local worker = self.Category.Workers:Select(
+        function(worker)
+            if worker.Item then
+                local result = self.CreatedBy --
+                :ToArray(function(recipes) return recipes end) --
+                :ConcatMany()
+                assert(release)
+            end
+        end
+    )
+    assert(release)
+end
 
 function Recipe:IsBefore(other)
     if self == other then return false end

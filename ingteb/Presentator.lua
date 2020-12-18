@@ -8,11 +8,14 @@ local class = require("core.class")
 local MiningRecipe = require("ingteb.MiningRecipe")
 local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
-local StackOfGoods = require("ingteb.StackOfGoods")
+local SpritorClass = require("ingteb.Spritor")
+local Bonus = require("ingteb.Bonus")
 
-local DynamicElements = Dictionary:new()
+local Presentator = {}
 
-local function CreateContentPanel(frame, headerSprites)
+local Spritor = SpritorClass:new("Presentator")
+
+local function CreateContentPanel(frame, headerSprites, tooltip)
     local subFrame = frame.add {
         type = "frame",
         horizontal_scroll_policy = "never",
@@ -30,6 +33,7 @@ local function CreateContentPanel(frame, headerSprites)
         type = "label",
         name = "headerSprites",
         caption = headerSprites,
+        tooltip = tooltip,
         style = "ingteb-big-label",
     }
 
@@ -38,89 +42,26 @@ local function CreateContentPanel(frame, headerSprites)
     return subFrame
 end
 
-local function CreateSprite(frame, target, sprite)
-    local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
-
-    if not target then return frame.add {type = "sprite-button", sprite = sprite, style = style} end
-
-    local tooltip = target.HelperText
-    local sprite = target.SpriteName
-    local number = target.NumberOnSprite
-    local show_percent_for_small_numbers = target.UsePercentage
-
-    if sprite == "fuel-category/chemical" then sprite = "chemical" end
-    return frame.add {
-        type = "sprite-button",
-        tooltip = tooltip,
-        sprite = sprite,
-        number = number,
-        show_percent_for_small_numbers = show_percent_for_small_numbers,
-        style = style,
-    }
-end
-
-local function RegisterTargetForGuiClick(result, target)
-    global.Links[result.index] = target and target.ClickTarget
-    if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
-        DynamicElements:AppendForKey(target, result)
-    end
-    return result
-end
-
-local function CreateSpriteAndRegister(frame, target, sprite)
-    local result = CreateSprite(frame, target, sprite)
-    if target then RegisterTargetForGuiClick(result, target) end
-    return result
-end
-
 local maximalCount = 6
-
-local function DummyTiles(frame, count)
-    for _ = 1, count do --
-        frame.add {type = "sprite", style = "ingteb-un-button"}
-    end
-end
-
-local function CreateLinePart(frame, target, count, isLeftSide)
-    local scrollFrame = frame
-    if target:Count() > count then
-        scrollFrame = frame.add {
-            type = "scroll-pane",
-            direction = "horizontal",
-            vertical_scroll_policy = "never",
-            style = "ingteb-scroll-6x1",
-        }
-    end
-
-    local subPanel = scrollFrame.add {
-        type = "flow",
-        direction = "horizontal",
-        style = isLeftSide and "ingteb-flow-right" or nil,
-    }
-
-    target:Select(function(element) return CreateSpriteAndRegister(subPanel, element) end)
-
-    if isLeftSide then return end
-
-    DummyTiles(subPanel, count - target:Count())
-end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame = frame.add {type = "flow", direction = "horizontal"}
 
-    CreateLinePart(subFrame, target.Input, inCount, true)
+    Spritor:CreateLinePart(subFrame, target.Input, inCount, true)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-    CreateSpriteAndRegister(
+    Spritor:CreateSpriteAndRegister(
         properties, target.Technology
             or {SpriteName = "factorio", HelperText = {"ingteb-utility.initial-technology"}}
     )
-    CreateSpriteAndRegister(properties, target)
-    CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
+    Spritor:CreateSpriteAndRegister(properties, target)
+    Spritor:CreateSpriteAndRegister(
+        properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time}
+    )
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
-    CreateLinePart(subFrame, target.Output, outCount, false)
+    Spritor:CreateLinePart(subFrame, target.Output, outCount, false)
 end
 
 local function CreateWorkersPanel(frame, workers, columnCount)
@@ -143,10 +84,10 @@ local function CreateWorkersPanel(frame, workers, columnCount)
                 workersPanel.add {type = "sprite", sprite = "utility/change_recipe"}
             end
             if lines == 1 and position == 0 then
-                DummyTiles(workersPanel, dummyColumnsLeft)
+                Spritor:DummyTiles(workersPanel, dummyColumnsLeft)
                 position = position + dummyColumnsLeft
             end
-            CreateSpriteAndRegister(workersPanel, worker)
+            Spritor:CreateSpriteAndRegister(workersPanel, worker)
             position = position + 1
             if position >= columnCount then
                 position = 0
@@ -239,7 +180,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
     frame.add {type = "line", direction = "horizontal"}
 end
 
-local function CreateCraftingGroupsPanel(frame, target, headerSprites)
+local function CreateCraftingGroupsPanel(frame, target, headerSprites, tooltip)
     if not target or not target:Any() then return end
     assert(release or type(target:Top().Key) == "string")
     assert(
@@ -247,7 +188,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
         or target:Top().Value[1].class == MiningRecipe
     )
 
-    local subFrame = CreateContentPanel(frame, headerSprites)
+    local subFrame = CreateContentPanel(frame, headerSprites, tooltip)
 
     local inCount = target:Select(
         function(group)
@@ -286,12 +227,12 @@ local function CreateTechnologyEffectsPanel(frame, target)
         style = "ingteb-flow-centered",
     }
 
-    target.Ingredients:Select(function(stack) CreateSprite(ingredientsPanel, stack) end)
+    target.Ingredients:Select(function(stack) Spritor:CreateSprite(ingredientsPanel, stack) end)
     frame.add {type = "line", direction = "horizontal"}
 
     if not effects:Any() then
         local frame = frame.add {type = "flow", direction = "horizontal"}
-        CreateSpriteAndRegister(frame, target)
+        Spritor:CreateSpriteAndRegister(frame, target)
 
         frame.add {
             type = "label",
@@ -313,9 +254,9 @@ local function CreateTechnologyEffectsPanel(frame, target)
                 CreateRecipeLine(frame, effekt, inCount, outCount)
             else
                 local frame = frame.add {type = "flow", direction = "horizontal"}
-                CreateSpriteAndRegister(frame, target)
+                Spritor:CreateSpriteAndRegister(frame, target)
                 frame.add {type = "label", caption = "[img=utility/go_to_arrow]"}
-                CreateSpriteAndRegister(frame, effekt)
+                Spritor:CreateSpriteAndRegister(frame, effekt)
             end
         end
     )
@@ -324,7 +265,7 @@ end
 local function CreateRecipePanel(frame, target)
     if target.class.name ~= "Recipe" then return end
 
-    local frame = CreateContentPanel(frame, {"", target.RichTextName})
+    local frame = CreateContentPanel(frame, {"", target.RichTextName}, "Information about the recipe")
     local inCount = math.min(target.Input:Count(), maximalCount)
     local outCount = math.min(target.Output:Count(), maximalCount)
     local workers = target.Category.Workers
@@ -372,10 +313,10 @@ local function CreateTechnologyList(frame, target)
         function(values)
             local frame = frame.add {type = "flow", direction = "horizontal"}
 
-            DummyTiles(frame, ingredientsCount - values[1].Ingredients:Count())
+            Spritor:DummyTiles(frame, ingredientsCount - values[1].Ingredients:Count())
 
             values[1].Ingredients:Select(
-                function(stack) CreateSpriteAndRegister(frame, stack) end
+                function(stack) Spritor:CreateSpriteAndRegister(frame, stack) end
             )
 
             frame.add {type = "label", caption = "[img=utility/go_to_arrow]"}
@@ -384,9 +325,13 @@ local function CreateTechnologyList(frame, target)
             values:Select(
                 function(target)
                     local frame = technologiesPanel.add {type = "frame", direction = "horizontal"}
-                    CreateSpriteAndRegister(frame, target)
-                    CreateSprite(frame, {SpriteName = "item/lab", NumberOnSprite = target.Amount})
-                    CreateSprite(frame, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
+                    Spritor:CreateSpriteAndRegister(frame, target)
+                    Spritor:CreateSprite(
+                        frame, {SpriteName = "item/lab", NumberOnSprite = target.Amount}
+                    )
+                    Spritor:CreateSprite(
+                        frame, {SpriteName = "utility/clock", NumberOnSprite = target.Time}
+                    )
                 end
             )
         end
@@ -397,7 +342,7 @@ local function CreateTechnologiesPanel(frame, target, headerSprites, isPrerequis
     if not target or not target:Any() then return end
     assert(release or target:Top().class == Technology)
 
-    local frame = CreateContentPanel(frame, headerSprites)
+    local frame = CreateContentPanel(frame, headerSprites, isPrerequisites and "Techonlogies required for this technology" or "Techonlogies this technology enables")
 
     local targetExtendend = Extend(
         target, function(technology)
@@ -447,54 +392,25 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
                 end
             end
         )
-        global.Links[frame.index] = target.ClickTarget
+        global.Links.Presentator[frame.index] = target.ClickTarget
 
     end
 
 end
 
-local function UpdateGui(list, target, dataBase)
-    if target.class == StackOfGoods then
-        target = StackOfGoods:new(target.Goods, target.Amounts, dataBase)
-    else
-        target = dataBase:GetProxy(target.class.name, target.Name)
-    end
-    local helperText = target.HelperText
-    local number = target.NumberOnSprite
-    local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
-
-    for _, guiElement in pairs(list) do
-        if guiElement.valid then
-            guiElement.tooltip = helperText
-            guiElement.number = number
-            guiElement.style = style
-        end
-    end
-end
-
-local Presentator = {}
-
-function Presentator:Close()
-    DynamicElements = Dictionary:new() --
-end
+function Presentator:Close() Spritor:Close() end
 
 function Presentator:RefreshMainInventoryChanged(dataBase)
-    DynamicElements --
-    :Where(function(_, target) return target.IsRefreshRequired.MainInventory end) --
-    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
+    Spritor:RefreshMainInventoryChanged(dataBase)
 end
 
 function Presentator:RefreshStackChanged(dataBase) end
 
-function Presentator:RefreshResearchChanged(dataBase)
-    DynamicElements --
-    :Where(function(_, target) return target.IsRefreshRequired.Research end) --
-    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
-end
+function Presentator:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
 
 function Presentator:new(frame, target)
-    DynamicElements = Dictionary:new() --
-    global.Links = {}
+    Spritor.DynamicElements = Dictionary:new() --
+    global.Links.Presentator = {}
     frame.caption = target.LocalisedName
 
     local scrollframe = frame.add {
@@ -541,7 +457,7 @@ function Presentator:new(frame, target)
             caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
         }
 
-        CreateSpriteAndRegister(none, target)
+        Spritor:CreateSpriteAndRegister(none, target)
 
         none.add {
             type = "label",
@@ -565,17 +481,17 @@ function Presentator:new(frame, target)
     )
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]"
+        mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]", "Recipes this machine can handle"
     )
 
     CreateCraftingGroupsPanel(
         mainFrame, target.CreatedBy,
-            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName
+            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName, "Recipes that produces this item."
     )
 
     CreateCraftingGroupsPanel(
         mainFrame, target.UsedBy,
-            target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
+            target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]", "Recipes this item uses a ingredience."
     )
 
     CheckedTabifyColumns(frame, mainFrame, target, columnCount)

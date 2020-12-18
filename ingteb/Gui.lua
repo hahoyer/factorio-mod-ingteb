@@ -32,9 +32,15 @@ function Gui:GetInventoryData(inventory, result)
     end
 end
 
-function Gui:OnMainInventoryChanged() Presentator:RefreshMainInventoryChanged(Database) end
+function Gui:OnMainInventoryChanged() 
+    Presentator:RefreshMainInventoryChanged(Database) 
+    if self.Active.Remindor then  Remindor:RefreshMainInventoryChanged(Database) end
+end
 
-function Gui:OnStackChanged() Presentator:RefreshStackChanged(Database) end
+function Gui:OnStackChanged() 
+    Presentator:RefreshStackChanged(Database) 
+    if self.Active.Remindor then  Remindor:RefreshStackChanged(Database) end
+end
 
 function Gui:PresentSelected(player, name)
     local target = Database:Get(name)
@@ -146,12 +152,12 @@ function Gui:ClosePresentator(player)
     Helper.OnClose("Presentator", self.Active.Presentator)
     player.gui.screen.Presentator.destroy()
     Presentator:Close()
-    global.Links = {}
+    global.Links.Presentator = {}
     self.Active.Presentator = nil
 end
 
 function Gui:SelectTarget(player, targets)
-     Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
+    Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
     self:ScanActiveGui(player)
 end
 
@@ -173,7 +179,7 @@ function Gui:PresentTarget(player, target)
 end
 
 function Gui:AddReminder(player, target)
-    if not self.Active.Remindor then 
+    if not self.Active.Remindor then
         self.Active.Remindor = Remindor:new(mod_gui.get_frame_flow(player))
     end
     Remindor:SetTask(player, target)
@@ -233,7 +239,7 @@ function Gui:EnsureMainButton()
     end
 end
 
-function Gui:OnGuiClick(player, event)
+function Gui:OnGuiClick(player, event, site)
 
     local element = event.element
     if element == Gui.Active.ingteb then
@@ -242,9 +248,49 @@ function Gui:OnGuiClick(player, event)
         return
     elseif element == Gui.Active.Presentator then
         return
+    elseif element == Gui.Active.Remindor then
+        return
     end
 
-    if self.Active.Presentator then return self:OnGuiClickForPresentator(player, event) end
+    self:EnsureDatabase()
+    local target = self.Database:Get(global.Links[site][event.element.index])
+    if target and target.Prototype then
+        local action = target:GetAction(event)
+        if not action then return end
+        if action.Selecting then
+            if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
+                player.cursor_ghost = action.Selecting.Prototype
+            end
+        end
+
+        if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
+
+        if action.Research then
+            if action.Research.IsReady then
+                self:DirectQueueResearch(player, action.Research)
+            elseif action.Multiple then
+                self:MulipleQueueResearch(player, action.Research)
+            end
+        end
+
+        if action.ReminderTask then self:AddReminder(player, action.ReminderTask) end
+
+        if action.Presenting then
+            local result = self:PresentTarget(player, action.Presenting)
+            return result
+        end
+
+        return
+    end
+
+    if site == "Remindor" then return Remindor:OnGuiClick(player,event)end
+
+    if true then return end
+    local target = global.Links.Presentator[self.Active.Presentator.index]
+    if target then
+        self:UpdateTabOrder(target.TabOrder, event.element.name)
+        return self:PresentTarget(player, target)
+    end
 end
 
 function Gui:UpdateTabOrder(tabOrder, dropIndex)
@@ -258,6 +304,7 @@ function Gui:OnResearchRefresh(research)
         Gui:EnsureDatabase()
         Gui.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
+        if self.Active.Remindor then  Remindor:RefreshResearchChanged(Database)end
     end
 end
 
@@ -302,46 +349,6 @@ function Gui:MulipleQueueResearch(player, research)
     )
     if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end
 
-end
-
-function Gui:OnGuiClickForPresentator(player, event)
-    self:EnsureDatabase()
-    local target = self.Database:Get(global.Links[event.element.index])
-    if target and target.Prototype then
-        local action = target:GetAction(event)
-        if not action then return end
-        if action.Selecting then
-            if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
-                player.cursor_ghost = action.Selecting.Prototype
-            end
-        end
-
-        if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
-
-        if action.Research then
-            if action.Research.IsReady then
-                self:DirectQueueResearch(player, action.Research)
-            elseif action.Multiple then
-                self:MulipleQueueResearch(player, action.Research)
-            end
-        end
-
-        if  action.ReminderTask then
-            self:AddReminder(player,action.ReminderTask)
-        end
-
-        if action.Presenting then
-            return self:PresentTarget(player, action.Presenting)
-        end
-
-        return
-    end
-
-    local target = global.Links[self.Active.Presentator.index]
-    if target then
-        self:UpdateTabOrder(target.TabOrder, event.element.name)
-        return self:PresentTarget(player, target)
-    end
 end
 
 return Gui

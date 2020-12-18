@@ -50,6 +50,7 @@ end
 
 function EventManager:GetIngtebControl(element)
     if not element then return element end
+    if element == Gui.Active.Remindor then return element end
     if element == Gui.Active.Selector then return element end
     if element == Gui.Active.Presentator then return element end
     if element == Gui.Active.ingteb then return element end
@@ -69,8 +70,8 @@ function EventManager:OnGuiClick(event)
             if event.element == active then return end
             assert(release or event.element)
             self:OnSelectorElementChanged(event)
-        elseif active == Gui.Active.Presentator then
-            local target = Gui:OnGuiClick(self.Player, event)
+        elseif active == Gui.Active.Presentator or active == Gui.Active.Remindor then
+            local target = Gui:OnGuiClick(self.Player, event, active.name)
             if target then global.History:AdvanceWith(target) end
         end
     end
@@ -101,8 +102,8 @@ function EventManager:OnMainKey(event)
     if target then global.History:ResetTo(target) end
 end
 
-function EventManager:OnPlayerJoined(event) 
-    self.Player = event.player_index 
+function EventManager:OnPlayerJoined(event)
+    self.Player = event.player_index
     Gui:EnsureMainButton(self.Player)
 end
 
@@ -142,7 +143,7 @@ function EventManager:OnLoad()
 end
 
 function EventManager:OnInitialise()
-    global = {Links = {}, Location = {}, History = History:new()}
+    global = {Links = {Presentator = {}, Remindor = {}}, Location = {}, History = History:new()}
     Gui:EnsureMainButton()
 end
 

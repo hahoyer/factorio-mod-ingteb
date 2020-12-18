@@ -9,10 +9,10 @@ local UI = require("core.UI")
 local Common = class:new("Common")
 
 Common.property = {
-    CommonKey = {get = function(self) return self.class.name .. "." .. self.Name end},
-    ClickTarget = {get = function(self) return self.CommonKey end},
-    Group = {get = function(self) return self.Prototype.group end},
-    SubGroup = {get = function(self) return self.Prototype.subgroup end},
+    CommonKey = {cache = true, get = function(self) return self.class.name .. "." .. self.Name end},
+    ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
+    Group = {cache = true, get = function(self) return self.Prototype.group end},
+    SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
 
     LocalisedName = {
         get = function(self)
@@ -25,12 +25,10 @@ Common.property = {
 
     SpecialFunctions = {
         get = function(self)
-            return Array:new{
+            return Array:new{ --
                 {
-                    UICode = "--- l",
-                    Action = function()
-                        return {Presenting = self}
-                    end,
+                    UICode = "--- l", --
+                    Action = function(self) return {Presenting = self} end,
                 },
             }
 
@@ -38,44 +36,8 @@ Common.property = {
     },
 
     AdditionalHelp = {get = function(self) return Array:new{} end},
-    FunctionalHelp = {
-        get = function(self)
-            return self.SpecialFunctions:Select(
-                function(specialFunction)
-                    return (not specialFunction.IsAvailable or specialFunction.IsAvailable()) --
-                               and specialFunction.HelpText --
-                               and UI.GetHelpTextForButtons(
-                            specialFunction.HelpText, specialFunction.UICode
-                        ) or nil
-                end
-            )
-        end,
-    },
     HasLocalisedDescription = {get = function() end},
 
-    HelperText = {
-        get = function(self)
-
-            local name = self.Prototype.localised_name
-            local lines = Array:new{}
-            local function append(line)
-                if line then
-                    lines:Append("\n")
-                    lines:Append(line)
-                end
-            end
-            -- append(self.LocalizedDescription)
-            local additionalHelp = self.AdditionalHelp
-            local functionalHelp = self.FunctionalHelp
-            additionalHelp:Select(append)
-            functionalHelp:Select(append)
-            if lines:Any() then
-                lines:InsertAt(1, "")
-                return {"", name, lines}
-            end
-            return name
-        end,
-    },
     SpriteName = {
         cache = true,
         get = function(self) return self.SpriteType .. "/" .. self.Prototype.name end,
@@ -87,6 +49,41 @@ Common.property = {
 function Common:GetHandCraftingRequest(event) end
 function Common:GetResearchRequest(event) end
 
+function Common:GetFunctionalHelp(site)
+    return self.SpecialFunctions --
+    :Select(
+        function(specialFunction)
+            return --
+            (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --        
+                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) --
+                and specialFunction.HelpText --
+                and UI.GetHelpTextForButtons(specialFunction.HelpText, specialFunction.UICode) or nil
+        end
+    )
+end
+
+function Common:GetHelperText(site)
+
+    local name = self.LocalisedName
+    local lines = Array:new{}
+    local function append(line)
+        if line then
+            lines:Append("\n")
+            lines:Append(line)
+        end
+    end
+    -- append(self.LocalizedDescription)
+    local additionalHelp = self.AdditionalHelp
+    local functionalHelp = self:GetFunctionalHelp(site)
+    additionalHelp:Select(append)
+    functionalHelp:Select(append)
+    if lines:Any() then
+        lines:InsertAt(1, "")
+        return {"", name, lines}
+    end
+    return name
+end
+
 function Common:SealUp()
     self:SortAll()
     return self
@@ -95,8 +92,8 @@ end
 function Common:GetAction(event)
     for _, specialFunction in pairs(self.SpecialFunctions) do
         if UI.IsMouseCode(event, specialFunction.UICode) then
-            if (not specialFunction.IsAvailable or specialFunction.IsAvailable()) then
-                return specialFunction.Action(event)
+            if (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
+                return specialFunction.Action(self,event)
             end
         end
     end

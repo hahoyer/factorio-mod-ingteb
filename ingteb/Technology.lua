@@ -123,6 +123,25 @@ local Technology = class:new(
             end,
         },
 
+        NotResearchedPrerequisitesRaw = {
+            get = function(self)
+                local result = Array:new{}
+                if self.IsResearched then return result end
+                for _, technology in pairs(self.Prerequisites) do
+                    result:AppendMany(technology.NotResearchedPrerequisitesRaw)
+                end
+                result:Append(self)
+                return result
+            end,
+        },
+
+        NotResearchedPrerequisites = {
+            get = function(self)
+                return self.NotResearchedPrerequisitesRaw --
+                :GetUniqueEntries(function(value) return value.Name end)
+            end,
+        },
+
         Enables = {
             cache = true,
             get = function(self)
@@ -176,21 +195,24 @@ local Technology = class:new(
                     {
                         UICode = "-C- l",
                         HelpText = "gui-technology-preview.start-research",
-                        IsAvailable = function() return self.IsReady end,
-                        Action = function() return {Research = self} end,
+                        IsAvailable = function(self) return self.IsReady end,
+                        Action = function(self) return {Research = self} end,
                     },
                     {
                         UICode = "-CS l",
                         HelpText = "ingteb-utility.multiple-research",
-                        IsAvailable = function() return self.IsNextGeneration end,
-                        Action = function()
+                        IsAvailable = function(self)
+                            return self.IsNextGeneration
+                        end,
+                        Action = function(self)
                             return {Research = self, Multiple = true}
                         end,
                     },
                     {
                         UICode = "--- r",
+                        IsRestricedTo = {Presentator = true},
                         HelpText = "ingteb-utility.create-reminder-task",
-                        Action = function() return {ReminderTask = self} end,
+                        Action = function(self) return {ReminderTask = self} end,
                     },
                 }
             end,
