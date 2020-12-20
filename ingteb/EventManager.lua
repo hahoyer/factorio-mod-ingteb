@@ -140,6 +140,7 @@ end
 function EventManager:OnLoad()
     History:adopt(global.History, true)
     global.History:Log("OnLoad")
+    Gui:OnLoad()
 end
 
 function EventManager:OnInitialise()

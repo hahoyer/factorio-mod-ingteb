@@ -78,23 +78,25 @@ Goods.property = {
         end,
     },
 
-    TaskInformation = {get = function(self) return self:GetTaskInformation() end},
+    Recipes = {
+        get = function(self)
+            return self.CreatedBy:ToArray(function(recipes) return recipes end) --
+            :ConcatMany()
+        end,
+    },
+
+    Required = {
+        get = function(self)
+            return self.Recipes:Select(function(recipe) return recipe.Required end) --
+            :Aggregate(
+                function(c, n)
+                    if not c then return n end
+                    assert(release)
+                end
+            )
+        end,
+    },
 }
-
-function Goods:GetTaskInformation(isForWorker)
-    local required = RequiredThings:new()
-    local recipes = self.CreatedBy:ToArray(function(recipes) return recipes end) --
-    :ConcatMany() --
-    :Select(
-        function(recipe)
-            local result = recipe:GetTaskInformation(isForWorker)
-            required:AddOption(result.Required)
-            return {Recipe = recipe, Required = result.Required, Workers = result.Workers}
-        end
-    ) --
-
-    return {Recipes = recipes, Required = required}
-end
 
 local function Sort(target)
     local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)

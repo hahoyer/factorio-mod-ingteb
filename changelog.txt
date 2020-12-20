@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
-Date: 2020-12-12
+Date: 2020-12-20
   Bugfixes:
     - [tech] fixing inherited has to be class specific
     - fixing wrong Joule calculations
@@ -10,6 +10,7 @@ Date: 2020-12-12
     - crafting from any item in Recipe panel
     - Recipe panel layout
     - new: Remindor
+    - [tech] some more table functions
   Refactor:
     - SpecialActions
 ---------------------------------------------------------------------------------------------------

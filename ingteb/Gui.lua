@@ -12,7 +12,10 @@ local Database = require("ingteb.Database")
 
 local Gui = {Active = {}}
 
-function Gui:EnsureDatabase() self.Database = Database:Ensure() end
+function Gui:EnsureDatabase()
+    self.Database = Database:Ensure()
+    Remindor:RefreshClasses(self.Active.Remindor, self.Database)
+end
 
 function Gui:GetRecipeData(recipePrototype, result)
     if recipePrototype then
@@ -32,14 +35,14 @@ function Gui:GetInventoryData(inventory, result)
     end
 end
 
-function Gui:OnMainInventoryChanged() 
-    Presentator:RefreshMainInventoryChanged(Database) 
-    if self.Active.Remindor then  Remindor:RefreshMainInventoryChanged(Database) end
+function Gui:OnMainInventoryChanged()
+    Presentator:RefreshMainInventoryChanged(Database)
+    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
 end
 
-function Gui:OnStackChanged() 
-    Presentator:RefreshStackChanged(Database) 
-    if self.Active.Remindor then  Remindor:RefreshStackChanged(Database) end
+function Gui:OnStackChanged()
+    Presentator:RefreshStackChanged(Database)
+    if self.Active.Remindor then Remindor:RefreshStackChanged(Database) end
 end
 
 function Gui:PresentSelected(player, name)
@@ -180,9 +183,15 @@ end
 
 function Gui:AddReminder(player, target)
     if not self.Active.Remindor then
-        self.Active.Remindor = Remindor:new(mod_gui.get_frame_flow(player))
+        local frame = mod_gui.get_frame_flow(player).add {
+            type = "frame",
+            name = "Remindor",
+            direction = "vertical",
+        }
+        self.Active.Remindor = frame
+        Remindor:new(frame)
     end
-    Remindor:SetTask(player, target)
+    Remindor:SetTask(target)
 end
 
 function Gui:OnMainButtonPressed(player)
@@ -220,22 +229,6 @@ function Gui:EnsureMainButton(player)
         self:ScanActiveGui(player)
     else
         for _, player in pairs(game.players) do self:EnsureMainButton(player) end
-    end
-end
-
-function Gui:EnsureMainButton()
-    for _, player in pairs(game.players) do
-        if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
-        if mod_gui.get_button_flow(player).ingteb == nil then
-            assert(release or not self.Active.ingteb)
-            mod_gui.get_button_flow(player).add {
-                type = "sprite-button",
-                name = "ingteb",
-                sprite = "ingteb",
-                tooltip = {"ingteb-utility.ingteb-button-description"},
-            }
-        end
-        self:ScanActiveGui(player)
     end
 end
 
@@ -283,7 +276,9 @@ function Gui:OnGuiClick(player, event, site)
         return
     end
 
-    if site == "Remindor" then return Remindor:OnGuiClick(player,event)end
+    if site == "Remindor" then
+        return Remindor:OnGuiClick(event, self.Active.Remindor, self.Database)
+    end
 
     if true then return end
     local target = global.Links.Presentator[self.Active.Presentator.index]
@@ -304,11 +299,12 @@ function Gui:OnResearchRefresh(research)
         Gui:EnsureDatabase()
         Gui.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
-        if self.Active.Remindor then  Remindor:RefreshResearchChanged(Database)end
+        if self.Active.Remindor then Remindor:RefreshResearchChanged(Database) end
     end
 end
 
 function Gui:OnResearchFinished(research) Gui:OnResearchRefresh(research) end
+function Gui:Print(player, text) player.print {"", "[ingteb]", text} end
 
 function Gui:DirectQueueResearch(player, research)
     local added = player.force.add_research(research.Name)
@@ -324,8 +320,6 @@ function Gui:DirectQueueResearch(player, research)
         )
     end
 end
-
-function Gui:Print(player, text) player.print {"", "[ingteb]", text} end
 
 function Gui:MulipleQueueResearch(player, research)
     local queued = Array:new{}
@@ -350,5 +344,7 @@ function Gui:MulipleQueueResearch(player, research)
     if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end
 
 end
+
+function Gui:OnLoad() Remindor:OnLoad() end
 
 return Gui

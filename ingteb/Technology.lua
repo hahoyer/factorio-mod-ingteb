@@ -240,7 +240,6 @@ function Technology:new(name, prototype, database)
 
     assert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
-    self.TypeOrder = 3
     self.SpriteType = "technology"
     self.Time = self.Prototype.research_unit_energy
     self.IsRefreshRequired = {Research = true}

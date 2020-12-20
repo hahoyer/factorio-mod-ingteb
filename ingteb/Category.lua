@@ -23,19 +23,10 @@ local function GetPrototype(domain, category)
 end
 
 Category.property = {
-    Workers = {
-        cache = true,
+    OriginalWorkers = {
         get = function(self)
-            local result = self.Database.WorkersForCategory[self.Name] --
+            return self.Database.WorkersForCategory[self.Name] --
             :Select(function(worker) return self.Database:GetEntity(nil, worker) end)
-
-            if self.Domain == "mining" or self.Domain == "hand-mining" then
-                result:Append(
-                    self.Database:GetEntity("(hand-miner)", game.entity_prototypes["character"])
-                )
-            end
-
-            return result
         end,
     },
 
@@ -48,8 +39,8 @@ Category.property = {
                 function(recipeName)
                     if self.Domain == "crafting" then
                         return self.Database:GetRecipe(recipeName)
-                    elseif self.Domain == "mining" or self.Domain == "fluid-mining"
-                        or self.Domain == "hand-mining" then
+                    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
+                        == "hand-mining" then
                         return self.Database:GetMiningRecipe(recipeName)
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(recipeName)
@@ -64,6 +55,12 @@ Category.property = {
     },
 }
 
+function Category:SortAll()
+    local result = self.OriginalWorkers
+    result:Sort(function(a, b) return a:IsBefore(b) end)
+    self.Workers = result
+end
+
 function Category:new(name, prototype, database)
     assert(release or name)
 
@@ -75,12 +72,6 @@ function Category:new(name, prototype, database)
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName
-
-
-    self.cache.Category.Workers.IsValid = true
-
-    function self:SortAll() end
-
     return self
 
 end

@@ -1,6 +1,8 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local BoilingRecipe = require "ingteb.BoilingRecipe"
+local MiningRecipe = require "ingteb.MiningRecipe"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
@@ -35,6 +37,19 @@ end
 
 function Database:Ensure()
     if self.IsInitialized then return self end
+    self.Order = {
+        Recipe = 1,
+        MiningRecipe = 2,
+        BoilingRecipe = 3,
+        Technology = 4,
+        Entity = 5,
+        Bonus = 6,
+        Item = 7,
+        Fluid = 8,
+        FuelCategory = 9,
+        StackOfGoods = 10,
+    }
+
     self.IsInitialized = "pending"
 
     log("database initialize start...")
@@ -72,11 +87,11 @@ function Database:Ensure()
     log("database initialize categories...")
     self:CreateBoilerRecipe()
     self:CreateHandMiningCategory()
+    self.Proxies.Item = Dictionary:new{}
+    self.Proxies.FuelCategory = Dictionary:new{}
     for categoryName in pairs(self.WorkersForCategory) do self:GetCategory(categoryName) end
 
     log("database initialize recipes...")
-    self.Proxies.Item = Dictionary:new{}
-    self.Proxies.FuelCategory = Dictionary:new{}
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
     self.Proxies.Bonus = Dictionary:new{}
@@ -97,9 +112,13 @@ function Database:GetProxy(className, name, prototype)
     local key = name or prototype.name
 
     local result = data[key]
+    assert(release or result ~= "pending")
+
     if not result then
-        result = Proxy[className]:new(name, prototype, self):SealUp()
+        data[key] = "pending"
+        result = Proxy[className]:new(name, prototype, self)
         data[key] = result
+        result:SealUp()
     end
 
     return result
@@ -110,8 +129,12 @@ function Database:GetItem(name, prototype) return self:GetProxy("Item", name, pr
 function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
-function Database:GetMiningRecipe(name, prototype) return self:GetProxy("MiningRecipe", name, prototype) end
-function Database:GetBoilingRecipe(name, prototype) return self:GetProxy("BoilingRecipe", name, prototype) end
+function Database:GetMiningRecipe(name, prototype)
+    return self:GetProxy("MiningRecipe", name, prototype)
+end
+function Database:GetBoilingRecipe(name, prototype)
+    return self:GetProxy("BoilingRecipe", name, prototype)
+end
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 function Database:GetFuelCategory(name, prototype)
     return self:GetProxy("FuelCategory", name, prototype)
@@ -126,7 +149,7 @@ function Database:GetBonusFromEffect(target)
         modifier = target.modifier,
     }
 
-    local name = type .."/"..tostring(target.mining)
+    local name = type .. "/" .. tostring(target.mining)
     return self:GetProxy("Bonus", name, prototype)
 end
 

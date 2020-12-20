@@ -120,7 +120,7 @@ end
 
 function Spritor:CreateLine(frame, target, tooltip)
     local scrollFrame = frame
-    local count = target.Technologies:Count() + target.StackOfGoods:Count()
+    local count = target:Count()
     if count > 6 then
         scrollFrame = frame.add {
             type = "scroll-pane",
@@ -131,8 +131,14 @@ function Spritor:CreateLine(frame, target, tooltip)
     end
 
     local subPanel = scrollFrame.add {type = "flow", direction = "horizontal"}
-    target.Technologies:Select(function(element) return self:CreateSpriteAndRegister(subPanel, element) end)
-    target.StackOfGoods:Select(function(element) return self:CreateSpriteAndRegister(subPanel, element) end)
+    if target.Technologies then
+        target.Technologies:Select(
+            function(element) return self:CreateSpriteAndRegister(subPanel, element) end
+        )
+    end
+    target.StackOfGoods:Select(
+        function(element) return self:CreateSpriteAndRegister(subPanel, element) end
+    )
     if count > 0 then frame.add {type = "sprite", sprite = "info", tooltip = tooltip} end
 end
 

@@ -6,6 +6,7 @@ local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
 local class = require("core.class")
+local RequiredThings = require "ingteb.RequiredThings"
 
 local MiningRecipe = class:new("MiningRecipe", Common)
 
@@ -26,12 +27,12 @@ MiningRecipe.property = {
         end,
     },
 
+    Required = {get = function(self) return RequiredThings:new(nil, self.Input) end},
 }
 
 function MiningRecipe:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.entity_prototypes[name], database))
 
-    self.TypeOrder = 2
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
 

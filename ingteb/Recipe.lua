@@ -206,33 +206,12 @@ Recipe.property = {
         end,
     },
 
-    TaskInformation = {get = function(self) return self:GetTaskInformation() end},
+    Required = {
+        get = function(self)
+            return RequiredThings:new(self.NotResearchedTechnologiesForRecipe, self.Input)
+        end,
+    },
 }
-
-function Recipe:GetTaskInformation(isForWorker)
-    local workers = isForWorker and self:GetCheapestWorkers() or self.Category.Workers
-    assert(release or workers:Any())
-    local workers = workers:Select(
-        function(worker)
-            local result = worker:GetTaskInformation(true)
-            return {Worker = worker, Recipes = result.Recipes, Required = result.Required}
-        end
-    )
-    workers:Sort(
-        function(a, b)
-            if a == b then return false end
-            local aCount = a.Required and a.Required:Count() or 0
-            local bCount = b.Required and b.Required:Count() or 0
-            if aCount ~= bCount then return aCount < bCount end
-            assert(release)
-        end
-    )
-
-    return {
-        Required = RequiredThings:new(self.NotResearchedTechnologiesForRecipe, self.Input),
-        Workers = workers,
-    }
-end
 
 function Recipe:GetCheapestWorkers()
     if self.HandCrafter then return Array:new{self.HandCrafter} end
@@ -270,7 +249,6 @@ function Recipe:new(name, prototype, database)
 
     assert(release or self.Prototype.object_name == "LuaRecipePrototype")
 
-    self.TypeOrder = 1
     self.SpriteType = "recipe"
     self.IsHidden = false
     self.Time = self.Prototype.energy

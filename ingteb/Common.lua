@@ -9,10 +9,10 @@ local UI = require("core.UI")
 local Common = class:new("Common")
 
 Common.property = {
-    CommonKey = {cache = true, get = function(self) return self.class.name .. "." .. self.Name end},
     ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
     Group = {cache = true, get = function(self) return self.Prototype.group end},
     SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
+    TypeOrder = {cache = true, get = function(self) return self.Database.Order[self.class.name] end},
 
     LocalisedName = {
         get = function(self)
@@ -45,6 +45,15 @@ Common.property = {
 
     RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
 }
+
+function Common:IsBefore(other)
+    if self == other then return false end
+    if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end
+    if self.TypeSubOrder ~= other.TypeSubOrder then return self.TypeSubOrder < other.TypeSubOrder end
+    if self.Group.order ~= other.Group.order then return self.Group.order < other.Group.order end
+    if self.SubGroup.order ~= other.SubGroup.order then return self.SubGroup.order < other.SubGroup.order end
+    return self.Prototype.order < other.Prototype.order
+end
 
 function Common:GetHandCraftingRequest(event) end
 function Common:GetResearchRequest(event) end
@@ -86,6 +95,7 @@ end
 
 function Common:SealUp()
     self:SortAll()
+    self.CommonKey = self.class.name .. "." .. self.Name 
     return self
 end
 
@@ -93,7 +103,7 @@ function Common:GetAction(event)
     for _, specialFunction in pairs(self.SpecialFunctions) do
         if UI.IsMouseCode(event, specialFunction.UICode) then
             if (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
-                return specialFunction.Action(self,event)
+                return specialFunction.Action(self, event)
             end
         end
     end
@@ -105,6 +115,7 @@ function Common:new(prototype, database)
 
     local self = self:adopt{Prototype = prototype, Database = database}
     self.Name = self.Prototype.name
+    self.TypeSubOrder = 0
     self.LocalizedDescription = self.Prototype.localised_description
 
     return self

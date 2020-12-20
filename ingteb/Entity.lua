@@ -1,6 +1,7 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local RequiredThings = require "ingteb.RequiredThings"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
@@ -77,7 +78,7 @@ Entity.property = {
             :Where(function(recipes) return recipes:Any() end) --
         end,
     },
-    
+
     SpecialFunctions = {
         get = function(self)
             local result = self.inherited.Entity.SpecialFunctions.get(self)
@@ -93,21 +94,27 @@ Entity.property = {
         end,
     },
 
-    TaskInformation = {get = function(self) return self:GetTaskInformation() end},
+    Required = {
+        get = function(self)
+            if self.Item then return self.Item.Required end
+            if self.Prototype.name ~= "character" then 
+                assert(release)
+            end
+            return RequiredThings:new()
+        end,
+    },
 }
-
-function Entity:GetTaskInformation(isForWorker)
-    if self.Item then return self.Item:GetTaskInformation(isForWorker) end
-    if self.Name == "character" then return Array:new{} end
-    assert(release)
-    return Array:new{}
-end
 
 function Entity:SortAll() end
 
 function Entity:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.entity_prototypes[name], database))
     self.SpriteType = "entity"
+    if name then 
+        self.Name = name 
+    end
+
+    if self.Name == "character" then self.TypeSubOrder = -1 end
 
     assert(release or self.Prototype.object_name == "LuaEntityPrototype")
 

@@ -32,8 +32,7 @@ function RequiredThings:Any()
 end
 
 function RequiredThings:Count()
-    return (self.Technologies and self.Technologies:Count() or 0) --
-               + self.StackOfGoods:Select(function(stack) return stack.Amounts.value or 0 end):Sum()
+    return (self.Technologies and self.Technologies:Count() or 0) + self.StackOfGoods:Count()
 end
 
 function RequiredThings:AddOption(option)

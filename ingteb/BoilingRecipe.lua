@@ -31,7 +31,6 @@ BoilingRecipe.property = {
 function BoilingRecipe:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype, database))
     self.Name = name
-    self.TypeOrder = 2.1
     self.SpriteType = "fluid"
     self.Time = 1
     self.Category = GetCategoryAndRegister(self, "boiling", name)
