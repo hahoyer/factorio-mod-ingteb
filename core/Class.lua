@@ -3,7 +3,7 @@ local ValueCache = require("core.ValueCache2")
 
 --- installs the cache for a cached property
 --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
---- @param classInstance class
+--- @param classInstance table
 --- @param name string then property name
 --- @param getter function the function that calulates the actual value
 function class.addCachedProperty(instance, classInstance, name, getter)

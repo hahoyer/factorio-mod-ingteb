@@ -155,7 +155,7 @@ end
 
 ---@param domain string
 ---@param category string
----@param prototype LuaEntityPrototype
+---@param prototype table LuaEntityPrototype
 function Database:AddWorkerForCategory(domain, category, prototype)
     EnsureKey(self.WorkersForCategory, domain .. "." .. category, Array:new{}):Append(prototype)
 end

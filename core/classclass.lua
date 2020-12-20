@@ -7,9 +7,9 @@ end
 
 --- Defines a class
 --- @param name string the name of the class
---- @param base class the base class - optional
---- @param properties initial properties - optional
---- @return class new class 
+--- @param base table class the base class - optional
+--- @param properties table initial properties - optional
+--- @return table class new class 
 function class:new(name, base, properties)
     assert(release or type(name) == "string")
     if base then assert(release or base.class == class) end
@@ -53,9 +53,8 @@ function class:new(name, base, properties)
     end
 
     --- "Adopts" any table as instance of a class by providing metatable and property setup
-    --- @param self class
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
-    --- @return instance ... but patched 
+    --- @return table instance ... but patched 
     function classInstance:adopt(instance, isMinimal)
         if not isMinimal then instance.class = self end
         setmetatable(instance, self.metatable)

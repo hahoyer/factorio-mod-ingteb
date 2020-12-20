@@ -39,18 +39,6 @@ function UI.IsMouseCode(event, pattern)
     return true
 end
 
----@param headText LocalisedString can use \_\_1\_\_ = Alt \_\_2\_\_ = Control \_\_3\_\_ = Shift \_\_2\_\_ = Mouse1 \_\_5\_\_ = Mouse2 to replace texts for buttons or mouse buttons
----@return LocalisedString
-function UI.GetHelpTextForButtonsACS12(headText)
-    return {
-        headText,
-        {"control-keys.alt"},
-        {"control-keys.control"},
-        {"control-keys.shift"},
-        {"control-keys.mouse-button-1-alt-1"},
-        {"control-keys.mouse-button-2-alt-1"},
-    }
-end
 function UI.GetHelpTextForButtons(helpTag, pattern)
     local result = {""}
 

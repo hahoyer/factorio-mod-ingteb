@@ -2,7 +2,7 @@
 Version: 0.3.1
 Date: 2020-12-20
   Changes:
-  	- "Remindor": create tasks to remind you to do things
+    - "Remindor" - create tasks to remind you to do things
   Refactor:
     - [tech] sorting feature 
 ---------------------------------------------------------------------------------------------------

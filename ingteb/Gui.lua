@@ -9,6 +9,7 @@ local Presentator = require("ingteb.Presentator")
 local Selector = require("ingteb.Selector")
 local Remindor = require("ingteb.Remindor")
 local Database = require("ingteb.Database")
+local Entity = require("ingteb.Entity")
 
 local Gui = {Active = {}}
 
@@ -204,7 +205,7 @@ function Gui:OnMainButtonPressed(player)
         self:ClosePresentator(player)
     else
         local targets = self:FindTargets(player)
-        if target then return end
+        if targets then return end
         player.opened = nil
         if #targets == 1 then
             return self:PresentTarget(player, targets[1])

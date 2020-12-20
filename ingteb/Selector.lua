@@ -7,7 +7,7 @@ local UI = require("core.UI")
 
 ColumnCount = 12
 
----@param data Dictionary Dictionary where the key is searched
+---@param data table Dictionary Dictionary where the key is searched
 ---@param key string
 ---@param value any Value to use if key is not jet contained in data
 ---@return any the value stored at key
@@ -21,8 +21,8 @@ local function EnsureKey(data, key, value)
 end
 
 local Selector = {}
---- @param frame LuaGuiElement
---- @param targets Array | nil
+--- @param frame table LuaGuiElement
+--- @param targets table Array | nil
 function Selector:new(frame, targets)
     self.Frame = frame
     frame.caption = {"ingteb-utility.selector"}
