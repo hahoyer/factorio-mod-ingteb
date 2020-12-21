@@ -205,7 +205,6 @@ function Gui:OnMainButtonPressed(player)
         self:ClosePresentator(player)
     else
         local targets = self:FindTargets(player)
-        if targets then return end
         player.opened = nil
         if #targets == 1 then
             return self:PresentTarget(player, targets[1])
@@ -300,7 +299,7 @@ function Gui:OnResearchRefresh(research)
         Gui:EnsureDatabase()
         Gui.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
-        if self.Active.Remindor then Remindor:RefreshResearchChanged(Database) end
+        if self.Active.Remindor then Remindor:RefreshResearchChanged() end
     end
 end
 

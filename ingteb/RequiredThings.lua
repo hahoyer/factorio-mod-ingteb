@@ -6,11 +6,6 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 
-local function CombineStackOfGoods(stack, otherStack)
-    if not stack then return otherStack end
-    assert(release)
-end
-
 local RequiredThings = class:new("RequiredThings", nil)
 
 function RequiredThings:new(technologies, stackOfGoods)
@@ -18,10 +13,7 @@ function RequiredThings:new(technologies, stackOfGoods)
 
     if stackOfGoods then
         stackOfGoods:Select(
-            function(stack)
-                self.StackOfGoods[stack.Goods.CommonKey] =
-                    CombineStackOfGoods(self.StackOfGoods[stack.Goods.CommonKey], stack)
-            end
+            function(stack) self.StackOfGoods[stack.Goods.CommonKey] = stack:Clone() end
         )
     end
     return self
@@ -36,13 +28,21 @@ function RequiredThings:Count()
 end
 
 function RequiredThings:AddOption(option)
-    self.Technologies = self.Technologies and self.Technologies:Intersection(option.Technologies)
-                            or option.Technologies
+    if not self.Technologies then
+        self.Technologies = option.Technologies
+    elseif option.Technologies then
+        self.Technologies = self.Technologies:Intersection(option.Technologies)
+    else
+        self.Technologies = Array:new()
+    end
 
     option.StackOfGoods:Select(
         function(stack)
-            self.StackOfGoods[stack.Goods.CommonKey] =
-                CombineStackOfGoods(self.StackOfGoods[stack.Goods.CommonKey], stack)
+            if self.StackOfGoods[stack.Goods.CommonKey] then
+                self.StackOfGoods[stack.Goods.CommonKey]:AddOption(stack)
+            else
+                self.StackOfGoods[stack.Goods.CommonKey] = stack:Clone()
+            end
         end
     )
 end
@@ -54,6 +54,11 @@ function RequiredThings:Except(other)
     result.StackOfGoods = self.StackOfGoods:Except(other.StackOfGoods)
 
     return result
+end
+
+function RequiredThings:RemoveThings(other)
+    if self.Technologies then self.Technologies = self.Technologies:Except(other.Technologies) end
+    self.StackOfGoods = self.StackOfGoods:Except(other.StackOfGoods)
 end
 
 return RequiredThings

@@ -1,8 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 2020-12-20
+  Bugfixes:
+    - Miningrecipe must not not requirements
   Changes:
     - "Remindor" - create tasks to remind you to do things
+    - Rmindor: smart presentation of technologies and ingredients 
   Refactor:
     - [tech] sorting feature 
 ---------------------------------------------------------------------------------------------------

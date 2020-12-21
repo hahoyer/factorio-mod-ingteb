@@ -27,7 +27,7 @@ MiningRecipe.property = {
         end,
     },
 
-    Required = {get = function(self) return RequiredThings:new(nil, self.Input) end},
+    Required = {get = function(self) return RequiredThings:new() end},
 }
 
 function MiningRecipe:new(name, prototype, database)

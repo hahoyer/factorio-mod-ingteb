@@ -26,6 +26,60 @@ end
 
 function Task:RemoveOption(commonKey) self.Filter[commonKey] = true end
 
+function Task:CreateLine(frame, target, required, functionData, tooltip)
+    local line = frame.add {type = "flow", direction = "horizontal"}
+
+    local closeButton = line.add {
+        type = "sprite",
+        sprite = "utility/close_black",
+        tooltip = "press to close.",
+    }
+    global.Remindor.Links[closeButton.index] = functionData
+
+    Spritor:CreateSpriteAndRegister(line, target)
+    Spritor:CreateLine(line, required, tooltip)
+end
+
+function Task:GetRestructuredWorker(worker) return {Worker = worker, Required = worker.Required} end
+
+function Task:GetRestructuredRecipe(recipe)
+    local result = {Recipe = recipe, Required = RequiredThings:new()}
+    result.Workers = recipe.Category.Workers --
+    :Where(function(worker) return not self.Filter[worker.CommonKey] end) --
+    :Select(
+        function(worker)
+            local workerData = self:GetRestructuredWorker(worker)
+            result.Required:AddOption(workerData.Required)
+            return workerData
+        end
+    )
+    return result
+end
+
+function Task:GetRestructuredData()
+    local result = {Target = self.Target, Required = RequiredThings:new()}
+    result.Recipes = self.Target.Recipes --
+    :Where(function(recipe) return not self.Filter[recipe.CommonKey] end)--
+    :Select(
+        function(recipe)
+            local recipeData = self:GetRestructuredRecipe(recipe)
+            result.Required:AddOption(recipeData.Required)
+            return recipeData
+        end
+    )
+    result.Recipes:Select(
+        function(recipeData)
+            recipeData.Workers:Select(function(workerData)
+                workerData.Required:RemoveThings(result.Required)
+                workerData.Required:RemoveThings(recipeData.Required)
+            end)
+            recipeData.Required:RemoveThings(result.Required)
+        end
+    )
+
+    return result
+end
+
 function Task:CreatePanel(frame)
     local vertical = frame.add {
         type = "frame",
@@ -33,12 +87,14 @@ function Task:CreatePanel(frame)
         direction = "vertical",
     }
 
-    local headLine = vertical.add {type = "flow", direction = "horizontal"}
-    self:CreateCloseButton(headLine, {type = "close-task", key = self.Target.CommonKey})
-    Spritor:CreateSpriteAndRegister(headLine, self.Target)
+    local data = self:GetRestructuredData()
 
-    local recipes = self.Target.Recipes --
-    :Where(function(recipe) return not self.Filter[recipe.CommonKey] end)
+    Task:CreateLine(
+        vertical, data.Target, data.Required, {type = "close-task", key = data.Target.CommonKey},
+            {"ingteb-utility.required-for-item"}
+    )
+
+    local recipes = data.Recipes
     if not recipes:Any() then return end
 
     local bodyFrame = vertical.add {type = "flow", direction = "horizontal"}
@@ -48,43 +104,36 @@ function Task:CreatePanel(frame)
 
 end
 
-function Task:CreateRecipeEntry(body, recipe)
+function Task:CreateRecipeEntry(body, recipeData)
     local headLine = body.add {type = "flow", direction = "horizontal"}
-    self:CreateCloseButton(
-        headLine, {type = "remove-option", key = self.Target.CommonKey, subKey = recipe.CommonKey}
-    )
-    Spritor:CreateSpriteAndRegister(headLine, recipe)
-    Spritor:CreateLine(
-        headLine, recipe.Required, {"ingteb-utility.required-technologies-for-recipe"}
+
+    Task:CreateLine(
+        headLine, recipeData.Recipe, recipeData.Required,
+            {type = "remove-option", key = self.Target.CommonKey, subKey = recipeData.Recipe.CommonKey},
+            {"ingteb-utility.required-technologies-for-recipe"}
     )
 
     local bodyFrame = body.add {type = "flow", direction = "horizontal"}
     bodyFrame.add {type = "line", direction = "vertical"}
     body = bodyFrame.add {type = "flow", direction = "vertical"}
 
-    recipe.Category.Workers --
+    recipeData.Workers --
     :Where(function(worker) return not self.Filter[worker.CommonKey] end) --
     :Select(function(workerInformation) self:CreateWorkerEntry(body, workerInformation) end)
 end
 
-function Task:CreateWorkerEntry(frame, worker)
+function Task:CreateWorkerEntry(frame, workerData)
     local headLine = frame.add {type = "flow", direction = "horizontal"}
-    self:CreateCloseButton(
-        headLine, {type = "remove-option", key = self.Target.CommonKey, subKey = worker.CommonKey}
-    )
-    Spritor:CreateSpriteAndRegister(headLine, worker)
-    if not worker.Required then
-        assert(release or not worker.Recipes)
-        return
-    end
 
-    Spritor:CreateLine(
-        headLine, worker.Required, {"ingteb-utility.required-technologies-for-worker"}
+    Task:CreateLine(
+        headLine, workerData.Worker, workerData.Required,
+            {type = "remove-option", key = self.Target.CommonKey, subKey = workerData.Worker.CommonKey},
+            {"ingteb-utility.required-technologies-for-worker"}
     )
 
     if true then return end
 
-    worker.Recipes:Select(
+    workerData.Recipes:Select(
         function(recipeInformation) self:CreateRecipeEntry(frame, recipeInformation) end
     )
 end
@@ -130,14 +179,6 @@ function Remindor:SetTask(target)
 
 end
 
-function Remindor:RemoveTask(commonKey)
-    self:EnsureGlobal()
-    local index = global.Remindor.Dictionary[commonKey]
-    assert(release or index)
-    global.Remindor.Dictionary[commonKey] = nil
-    global.Remindor.List:Remove(index)
-end
-
 function Remindor:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
 
 function Remindor:RefreshStackChanged(dataBase) end
@@ -161,12 +202,16 @@ end
 
 function Remindor:OnGuiClick(event)
     self:AssertValidLinks()
-    local functionData = global.Remindor.Links[event.element.index]
+    self:EnsureGlobal()
+    local linkIndex = event.element.index
+    local functionData = global.Remindor.Links[linkIndex]
     if not functionData then return end
+    global.Remindor.Links[linkIndex] = nil
     local index = global.Remindor.Dictionary[functionData.key]
+    assert(release or index)
     if functionData.type == "close-task" then
         global.Remindor.Dictionary[functionData.key] = nil
-        self:RemoveTask(index)
+        global.Remindor.List:Remove(index)
     elseif functionData.type == "remove-option" then
         local task = global.Remindor.List[index]
         task:RemoveOption(functionData.subKey)

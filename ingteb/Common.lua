@@ -51,9 +51,13 @@ function Common:IsBefore(other)
     if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end
     if self.TypeSubOrder ~= other.TypeSubOrder then return self.TypeSubOrder < other.TypeSubOrder end
     if self.Group.order ~= other.Group.order then return self.Group.order < other.Group.order end
-    if self.SubGroup.order ~= other.SubGroup.order then return self.SubGroup.order < other.SubGroup.order end
+    if self.SubGroup.order ~= other.SubGroup.order then
+        return self.SubGroup.order < other.SubGroup.order
+    end
     return self.Prototype.order < other.Prototype.order
 end
+
+function Common:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end
 
 function Common:GetHandCraftingRequest(event) end
 function Common:GetResearchRequest(event) end
@@ -95,7 +99,7 @@ end
 
 function Common:SealUp()
     self:SortAll()
-    self.CommonKey = self.class.name .. "." .. self.Name 
+    self.CommonKey = self.class.name .. "." .. self.Name
     return self
 end
 
