@@ -40,10 +40,29 @@ local StackOfGoods = class:new(
         },
         SpriteName = {get = function(self) return self.Goods.SpriteName end},
 
+        AdditionalAmountsHelp = {
+            get = function(self)
+                local amounts = self.Amounts
+                local results = Array:new{}
+                if amounts then
+                    if amounts.probability and amounts.probability ~= 1 then
+                        results:Append("probablity = " .. amounts.probability * 100 .. "%")
+                    end
+                    if amounts.min or amounts.max then
+                        results:Append(
+                            "range = " .. (amounts.min or "") .. ".." .. (amounts.max or "")
+                        )
+                    end
+                end
+                return results
+            end,
+        },
+
         AdditionalHelp = {
             get = function(self)
                 local result = self.inherited.StackOfGoods.AdditionalHelp.get(self) --
                 if self.Goods then result:AppendMany(self.Goods.AdditionalHelp) end
+                result:AppendMany(self.AdditionalAmountsHelp)
                 return result
             end,
         },
