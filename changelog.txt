@@ -5,7 +5,9 @@ Date: 2020-12-21
     - Miningrecipe must not not requirements
   Changes:
     - "Remindor" - create tasks to remind you to do things
-    - Rmindor: smart presentation of technologies and ingredients 
+    - Remindor: smart presentation of technologies and ingredients 
+    - Stack of goods show range and probability as tooltip
+    - Remindor: some horizontal lines
   Refactor:
     - [tech] sorting feature 
 ---------------------------------------------------------------------------------------------------

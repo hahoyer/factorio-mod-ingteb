@@ -120,6 +120,7 @@ function Task:CreateRecipeEntry(body, recipeData)
     recipeData.Workers --
     :Where(function(worker) return not self.Filter[worker.CommonKey] end) --
     :Select(function(workerInformation) self:CreateWorkerEntry(body, workerInformation) end)
+    body.add {type = "line", direction = "horizontal"}
 end
 
 function Task:CreateWorkerEntry(frame, workerData)
