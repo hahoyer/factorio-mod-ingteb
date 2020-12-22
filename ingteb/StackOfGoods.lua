@@ -45,14 +45,12 @@ local StackOfGoods = class:new(
                 local amounts = self.Amounts
                 local results = Array:new{}
                 if amounts then
-                    if amounts.probability and amounts.probability ~= 1 then
-                        results:Append("probablity = " .. amounts.probability * 100 .. "%")
-                    end
-                    if amounts.min or amounts.max then
-                        results:Append(
-                            "range = " .. (amounts.min or "") .. ".." .. (amounts.max or "")
-                        )
-                    end
+                    results:Append(
+                        (amounts.min and "min: " .. amounts.min .. ", " or "")
+                            .. (amounts.max and "max: " .. amounts.max .. ", " or "")
+                            .. (amounts.probability and amounts.probability ~= 1 and "probability: "
+                                .. amounts.probability .. "%" or "")
+                    )
                 end
                 return results
             end,

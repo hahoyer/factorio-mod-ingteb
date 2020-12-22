@@ -59,7 +59,7 @@ end
 function Task:GetRestructuredData()
     local result = {Target = self.Target, Required = RequiredThings:new()}
     result.Recipes = self.Target.Recipes --
-    :Where(function(recipe) return not self.Filter[recipe.CommonKey] end)--
+    :Where(function(recipe) return not self.Filter[recipe.CommonKey] end) --
     :Select(
         function(recipe)
             local recipeData = self:GetRestructuredRecipe(recipe)
@@ -69,10 +69,12 @@ function Task:GetRestructuredData()
     )
     result.Recipes:Select(
         function(recipeData)
-            recipeData.Workers:Select(function(workerData)
-                workerData.Required:RemoveThings(result.Required)
-                workerData.Required:RemoveThings(recipeData.Required)
-            end)
+            recipeData.Workers:Select(
+                function(workerData)
+                    workerData.Required:RemoveThings(result.Required)
+                    workerData.Required:RemoveThings(recipeData.Required)
+                end
+            )
             recipeData.Required:RemoveThings(result.Required)
         end
     )
@@ -108,9 +110,11 @@ function Task:CreateRecipeEntry(body, recipeData)
     local headLine = body.add {type = "flow", direction = "horizontal"}
 
     Task:CreateLine(
-        headLine, recipeData.Recipe, recipeData.Required,
-            {type = "remove-option", key = self.Target.CommonKey, subKey = recipeData.Recipe.CommonKey},
-            {"ingteb-utility.required-technologies-for-recipe"}
+        headLine, recipeData.Recipe, recipeData.Required, {
+            type = "remove-option",
+            key = self.Target.CommonKey,
+            subKey = recipeData.Recipe.CommonKey,
+        }, {"ingteb-utility.required-technologies-for-recipe"}
     )
 
     local bodyFrame = body.add {type = "flow", direction = "horizontal"}
@@ -127,9 +131,11 @@ function Task:CreateWorkerEntry(frame, workerData)
     local headLine = frame.add {type = "flow", direction = "horizontal"}
 
     Task:CreateLine(
-        headLine, workerData.Worker, workerData.Required,
-            {type = "remove-option", key = self.Target.CommonKey, subKey = workerData.Worker.CommonKey},
-            {"ingteb-utility.required-technologies-for-worker"}
+        headLine, workerData.Worker, workerData.Required, {
+            type = "remove-option",
+            key = self.Target.CommonKey,
+            subKey = workerData.Worker.CommonKey,
+        }, {"ingteb-utility.required-technologies-for-worker"}
     )
 
     if true then return end
