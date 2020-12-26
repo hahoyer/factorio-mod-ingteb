@@ -108,22 +108,21 @@ function Spritor:GetLinePart(target, count, isRightAligned)
     )
     if not isRightAligned then children:AppendMany(self:GetTiles(count - target:Count())) end
 
-    if target:Count() > count then
-        return {
-            type = "scroll-pane",
-            direction = "horizontal",
-            vertical_scroll_policy = "never",
-            style = "ingteb-scroll-6x1",
-            children = children,
-        }
-    else
-        return {
-            type = "flow",
-            direction = "horizontal",
-            style = isRightAligned and "ingteb-flow-right" or nil,
-            children = children,
-        }
-    end
+    local result = {
+        type = "flow",
+        direction = "horizontal",
+        style = isRightAligned and "ingteb-flow-right" or nil,
+        children = children,
+    }
+
+    if target:Count() <= count then return result end
+    return {
+        type = "scroll-pane",
+        direction = "horizontal",
+        vertical_scroll_policy = "never",
+        style = "ingteb-scroll-6x1",
+        children = {result},
+    }
 
 end
 
