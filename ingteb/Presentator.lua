@@ -15,6 +15,11 @@ local Bonus = require("ingteb.Bonus")
 local Presentator = {}
 
 local Spritor = SpritorClass:new("Presentator")
+local nextId = 0
+local function GetNextId()
+    nextId = nextId + 1
+    return nextId
+end
 
 ---Create the header for content
 ---@param headerSprites string rich text and/or localised string
@@ -51,11 +56,13 @@ local maximalCount = 6
 local function GetRecipeLine(target, inCount, outCount)
     return {
         type = "flow",
+        name = "GetRecipeLine " .. GetNextId(),
         direction = "horizontal",
         children = {
             Spritor:GetLinePart(target.Input, inCount, true),
             {
                 type = "flow",
+                name = "GetRecipeLine inner " .. GetNextId(),
                 direction = "horizontal",
                 children = {
                     {type = "sprite", sprite = "utility/go_to_arrow"},
@@ -123,6 +130,7 @@ local function GetTechnologyEffectsData(target)
     if not effects:Any() then
         return {
             type = "flow",
+            name = "GetTechnologyEffectsData no effects " .. GetNextId(),
             direction = "horizontal",
             children = Spritor:GetSpriteButtonAndRegister(target),
             {
@@ -140,6 +148,7 @@ local function GetTechnologyEffectsData(target)
 
     return {
         type = "flow",
+        name = "GetTechnologyEffectsData " .. GetNextId(),
         direction = "vertical",
         children = effects:Select(
             function(effekt)
@@ -167,11 +176,13 @@ local function GetTechnologyEffectsPanel(target)
         {"", target.RichTextName, " ", {"gui-technology-preview.effects"}}, {
             {
                 type = "flow",
+                name = "GetTechnologyEffectsPanel " .. GetNextId(),
                 direction = "horizontal",
                 children = {
                     {type = "sprite", sprite = "utility/change_recipe"},
                     {
                         type = "flow",
+                        name = "GetTechnologyEffectsPanel inner " .. GetNextId(),
                         direction = "horizontal",
                         style = "ingteb-flow-centered",
                         children = target.Ingredients:Select(
@@ -189,17 +200,18 @@ local function GetTechnologyEffectsPanel(target)
 
 end
 
-local function GetSubGroupPanel(subGroup, recipeLines)
-    local group = subGroup.SubGroup
+local function GetSubGroupTabPanel(subGroup, recipeLines)
+    local group = subGroup[1].SubGroup
     local caption = group.name
-    if subGroup and subGroup.Output[1] then
-        local main = subGroup.Output[1]
+    if subGroup and subGroup[1].Output[1] then
+        local main = subGroup[1].Output[1]
         caption = main.RichTextName
     end
     return {
         type = "tab-and-content",
         tab = {
             type = "tab",
+            name = "GetSubGroupTabPanel " .. GetNextId(),
             caption = caption,
             tooltip = group.localised_name,
             style = "ingteb-medium-tab",
@@ -208,41 +220,57 @@ local function GetSubGroupPanel(subGroup, recipeLines)
     }
 end
 
+local function GetSubGroupPanelContent(target, inCount, outCount)
+    return {
+        type = "flow",
+        direction = "vertical",
+        name = "GetSubGroupPanelContent " .. GetNextId(),
+        children = target:Select(
+            function(recipe) return GetRecipeLine(recipe, inCount, outCount) end
+        ),
+    }
+end
+
 local function GetGroupPanelContent(value, inCount, outCount)
     if value:Count() < settings.player["ingteb_subgroup-tab-threshold"].value then
-        return value:Select(function(recipe) return GetRecipeLine(recipe, inCount, outCount) end)
+        return {
+            type = "flow",
+            direction = "vertical",
+            name = "GetGroupPanelContent " .. GetNextId(),
+            children = value:Select(
+                function(recipe) return GetRecipeLine(recipe, inCount, outCount) end
+            ),
+        }
     end
 
     local subGroups = value:ToGroup(
         function(value) return {Key = value.SubGroup.name, Value = value} end
     ):ToArray() --
 
-    return subGroups:Select(
-        function(value)
-            local recipeLines = {
-                type = "flow",
-                direction = "vertical",
-                name = "GetGroupPanelContent",
-                children = value:Select(
-                    function(recipe) GetRecipeLine(recipe, inCount, outCount) end
-                ),
-            }
-            if subGroups.Count() > 1 then
-                return (GetSubGroupPanel(subGroups, recipeLines))
-            else
-                return (recipeLines)
+    if subGroups:Count() == 1 then
+        return GetSubGroupPanelContent(subGroups[1], inCount, outCount)
+    end
+
+    return {
+        type = "tabbed-pane",
+        name = "GetGroupPanelContent " .. GetNextId(),
+        children = subGroups:Select(
+            function(value)
+                local recipeLines = GetSubGroupPanelContent(value, inCount, outCount)
+                return (GetSubGroupTabPanel(value, recipeLines))
             end
-        end
-    )
+        ),
+    }
 
 end
 
-local function GetGroupPanel(value, content)
+local function GetGroupTabPanel(value, content)
     local group = value[1].Group
     return {
         type = "tab-and-content",
         tab = {
             type = "tab",
+            name = "GetGroupTabPanel " .. GetNextId(),
             caption = "[item-group=" .. group.name .. "]",
             tooltip = group.localised_name,
             style = "ingteb-medium-tab",
@@ -253,29 +281,31 @@ end
 
 local function GetCraftigGroupData(target, inCount, outCount)
     if target:Count() < settings.player["ingteb_group-tab-threshold"].value then
-        return target:Select(
-            function(recipe) return (GetRecipeLine(recipe, inCount, outCount)) end
-        )
+        return {
+            type = "flow",
+            direction = "vertical",
+            name = "GetCraftigGroupData " .. GetNextId(),
+            children = target:Select(
+                function(recipe) return (GetRecipeLine(recipe, inCount, outCount)) end
+            ),
+        }
     end
 
     local groups =
         target:ToGroup(function(value) return {Key = value.Group.name, Value = value} end):ToArray()
 
+    if groups:Count() == 1 then return GetGroupPanelContent(groups[1], inCount, outCount) end
+
     return {
-        type = "flow",
-        direction = "horizontal",
-        name = "GetCraftigGroupData",
+        type = "tabbed-pane",
         children = groups:Select(
             function(value)
                 local content = GetGroupPanelContent(value, inCount, outCount)
-                if groups:Count() > 1 then
-                    return GetGroupPanel(value, content)
-                else
-                    return content
-                end
+                return GetGroupTabPanel(value, content)
             end
         ),
     }
+
 end
 
 local function GetCraftingGroupPanel(target, category, inCount, outCount)
@@ -285,27 +315,28 @@ local function GetCraftingGroupPanel(target, category, inCount, outCount)
 
     local workers = target[1].Database:GetCategory(category).Workers
 
-    return {
+    local result = {
         type = "flow",
+        name = "GetCraftingGroupPanel " .. GetNextId(),
         direction = "vertical",
         children = {
             GetWorkersPanel(workers, inCount + outCount + 3),
             {type = "line", direction = "horizontal"},
-            {
-                type = "flow",
-                direction = "vertical",
-                children = GetCraftigGroupData(target, inCount, outCount),
-            },
+            GetCraftigGroupData(target, inCount, outCount),
             {type = "line", direction = "horizontal"},
         },
     }
+    return result
 end
 
 local function GetCraftingGroupsPanel(target, headerSprites, tooltip)
-    assert(release or type(target:Top().Key) == "string")
+    local sampleCategogy = target:Top()
+    assert(release or type(sampleCategogy.Key) == "string")
+    local sampleClient = sampleCategogy.Value[1]
     assert(
-        release or target:Top().Value[1].class == Recipe --
-        or target:Top().Value[1].class == MiningRecipe
+        release or sampleClient.class == Recipe --
+        or sampleClient.class == MiningRecipe --
+        or sampleClient.class == Technology --
     )
 
     local inCount = target:Select(
@@ -386,6 +417,7 @@ local function GetTechnologyList(target)
         function(values)
             local frame = {
                 type = "flow",
+                name = "GetTechnologyList " .. GetNextId(),
                 direction = "horizontal",
                 children = Spritor:GetTiles(ingredientsCount - values[1].Ingredients:Count()) --
                 :Concat(
