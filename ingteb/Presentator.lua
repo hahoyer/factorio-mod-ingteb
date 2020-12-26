@@ -172,6 +172,8 @@ local function GetTechnologyEffectsData(target)
 end
 
 local function GetTechnologyEffectsPanel(target)
+    if not target or not target.Effects then return {} end
+
     return GetContentPanel(
         {"", target.RichTextName, " ", {"gui-technology-preview.effects"}}, {
             {
@@ -330,6 +332,7 @@ local function GetCraftingGroupPanel(target, category, inCount, outCount)
 end
 
 local function GetCraftingGroupsPanel(target, headerSprites, tooltip)
+    if not target or not target:Any() then return {} end
     local sampleCategogy = target:Top()
     assert(release or type(sampleCategogy.Key) == "string")
     local sampleClient = sampleCategogy.Value[1]
@@ -365,7 +368,7 @@ local function GetCraftingGroupsPanel(target, headerSprites, tooltip)
 end
 
 local function GetRecipePanel(target)
-    if target.class.name ~= "Recipe" then return end
+    if target.class.name ~= "Recipe" then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
     local outCount = math.min(target.Output:Count(), maximalCount)
     local workers = target.Category.Workers
@@ -461,6 +464,7 @@ local function GetTechnologyList(target)
 end
 
 local function GetTechnologiesPanel(target, headerSprites, isPrerequisites)
+    if not target or not target:Any() then return {} end
     assert(release or target:Top().class == Technology)
 
     local targetExtendend = Extend(
@@ -541,13 +545,6 @@ function Presentator:new(frame, target)
     global.Links.Presentator = {}
     frame.caption = target.LocalisedName
 
-    local scrollframe = frame.add {
-        type = "scroll-pane",
-        horizontal_scroll_policy = "never",
-        direction = "vertical",
-        name = "frame",
-    }
-
     target:SortAll()
     assert(
         release or not target.RecipeList or not next(target.RecipeList)
@@ -564,7 +561,6 @@ function Presentator:new(frame, target)
                 or type(next(target.CreatedBy)) == "string"
     )
 
-    local mainFrame = scrollframe
     local columnCount --
     = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
           + (target.class == Recipe and 1 or 0) --
@@ -574,81 +570,76 @@ function Presentator:new(frame, target)
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
 
-    if columnCount > 1 then
-        mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
-    end
-
     if columnCount == 0 then
-        local none = mainFrame.add {type = "frame", direction = "horizontal"}
-        none.add {
-            type = "label",
-            caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
-        }
-
-        Spritor:CreateSpriteAndRegister(none, target)
-
-        none.add {
-            type = "label",
-            caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
-        }
-
+        gui.build(
+            frame, {
+                {
+                    type = "frame",
+                    direction = "horizontal",
+                    children = {
+                        {
+                            type = "label",
+                            caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
+                        },
+                        Spritor:GetSpriteButtonAndRegister(target),
+                        {
+                            type = "label",
+                            caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
+                        },
+                    },
+                },
+            }
+        )
         return
     end
 
-    if target.Prerequisites and target.Prerequisites:Any() then
-        gui.build(
-            mainFrame, GetTechnologiesPanel(
-                target.Prerequisites,
-                    "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName,
-                    true
-            )
-        )
-    end
+    gui.build(
+        frame, {
+            {
+                type = "scroll-pane",
+                horizontal_scroll_policy = "never",
+                direction = "vertical",
+                name = "frame",
+                children = {
+                    {
+                        type = columnCount > 1 and "frame" or "flow",
+                        direction = "horizontal",
+                        name = "frame",
+                        children = Array:new{
+                            GetTechnologiesPanel(
+                                target.Prerequisites,
+                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                        .. target.RichTextName, true
+                            ),
+                            GetTechnologyEffectsPanel(target),
+                            GetRecipePanel(target),
+                            GetTechnologiesPanel(
+                                target.Enables, target.RichTextName
+                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.RecipeList,
+                                    target.RichTextName .. "[img=utility/change_recipe]",
+                                    "Recipes this machine can handle"
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.CreatedBy,
+                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                        .. target.RichTextName, "Recipes that produces this item."
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.UsedBy, target.RichTextName
+                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
+                                    "Recipes this item uses a ingredience."
+                            ),
+                        }:ConcatMany(),
 
-    if target.Effects then gui.build(mainFrame, GetTechnologyEffectsPanel(target)) end
+                    },
+                },
+            },
+        }
+    )
 
-    if target.class.name == "Recipe" then gui.build(mainFrame, GetRecipePanel(target)) end
-
-    if target.Enables and target.Enables:Any() then
-        gui.build(
-            mainFrame, GetTechnologiesPanel(
-                target.Enables,
-                    target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
-                    false
-            )
-        )
-    end
-
-    if target.RecipeList and target.RecipeList:Any() then
-        gui.build(
-            mainFrame, GetCraftingGroupsPanel(
-                target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]",
-                    "Recipes this machine can handle"
-            )
-        )
-    end
-
-    if target.CreatedBy and target.CreatedBy:Any() then
-        local panel = GetCraftingGroupsPanel(
-            target.CreatedBy,
-                "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName,
-                "Recipes that produces this item."
-        )
-
-        gui.build(mainFrame, panel)
-    end
-
-    if target.UsedBy and target.UsedBy:Any() then
-        gui.build(
-            mainFrame, GetCraftingGroupsPanel(
-                target.UsedBy,
-                    target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
-                    "Recipes this item uses a ingredience."
-            )
-        )
-    end
-
-    CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 return Presentator
