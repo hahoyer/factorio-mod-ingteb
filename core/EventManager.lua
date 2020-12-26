@@ -1,4 +1,5 @@
 local event = require("__flib__.event")
+local gui = require("__flib__.gui")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
@@ -37,6 +38,9 @@ end
 
 function EventManager:Watch(handler, eventId)
     return function(...)
+        if eventId ~= "on_init" and eventId ~= "on_load" and gui.dispatch_handlers(...) then
+            return
+        end
         self:Enter(eventId, ...)
         local result = handler(self, ...)
         self:Leave(eventId)
@@ -70,9 +74,7 @@ function EventManager:SetHandler(eventId, handler, register)
     self.State[name] = register
 end
 
-function EventManager:SetHandlers(list)
-    list:Select(function(command, key) self:SetHandler(key, command[1], command[2]) end)
-end
+gui.register_handlers()
 
 return EventManager
 

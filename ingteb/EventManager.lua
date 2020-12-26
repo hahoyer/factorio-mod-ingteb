@@ -1,4 +1,5 @@
 local event = require("__flib__.event")
+local gui = require("__flib__.gui")
 local Constants = require("Constants")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -31,13 +32,6 @@ function EventManager:OnPresentatorBackClick(event)
     Gui:PresentTargetFromCommonKey(self.Player, global.History.Current)
 end
 
-function EventManager:OnSelectorElementChanged(event)
-    self.Player = event.player_index
-    log("event.element.name = " .. tostring(event.element.name))
-    local target = Gui:PresentSelected(self.Player, event.element.name)
-    if target then global.History:ResetTo(target) end
-end
-
 function EventManager:OnSelectorClose(event)
     self.Player = event.player_index
     Gui:CloseSelector(self.Player)
@@ -66,14 +60,12 @@ function EventManager:OnGuiClick(event)
         if active == Gui.Active.ingteb then
             local target = Gui:OnMainButtonPressed(self.Player)
             if target then global.History:ResetTo(target) end
-        elseif active == Gui.Active.Selector then
-            if event.element == active then return end
-            assert(release or event.element)
-            self:OnSelectorElementChanged(event)
-        elseif active == Gui.Active.Presentator or active == Gui.Active.Remindor then
-            local target = Gui:OnGuiClick(self.Player, event, active.name)
-            if target then global.History:AdvanceWith(target) end
+        elseif active == Gui.Active.Presentator then
+        elseif active == Gui.Active.Remindor then
+            assert(release)
         end
+    else
+        -- assert(release)
     end
 end
 
@@ -81,9 +73,7 @@ function EventManager:OnGuiMoved(event)
     self.Player = event.player_index
     local active = self:GetIngtebControl(event.element)
     if active and active == event.element then
-        if active == Gui.Active.Selector then
-            global.Location.Selector = active.location
-        elseif active == Gui.Active.Presentator then
+        if active == Gui.Active.Presentator then
             global.Location.Presentator = active.location
         end
     end
@@ -141,12 +131,44 @@ function EventManager:OnLoad()
     History:adopt(global.History, true)
     global.History:Log("OnLoad")
     Gui:OnLoad()
+    gui.build_lookup_tables()
 end
 
 function EventManager:OnInitialise()
     global = {Links = {Presentator = {}, Remindor = {}}, Location = {}, History = History:new()}
     Gui:EnsureMainButton()
+    gui.init()
+    gui.build_lookup_tables()
 end
+
+gui.add_handlers {
+    Spritor = {
+        Button = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:OnGuiClick(player, event, "Presentor")
+                if target then global.History:AdvanceWith(target) end
+            end,
+            on_gui_close = function(event) __DebugAdapter.breakpoint() end,
+        },
+    },
+    Selector = {
+        Main = {
+            on_gui_location_changed = function(event)
+                global.Location.Selector = event.element.location
+            end,
+        },
+        Goods = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:PresentSelected(player, event.element.name)
+                if target then global.History:ResetTo(target) end
+                return true
+            end,
+            on_gui_close = function(event) __DebugAdapter.breakpoint() end,
+        },
+    },
+}
 
 function EventManager:new()
     local instance = core.EventManager:new()

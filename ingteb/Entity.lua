@@ -18,7 +18,9 @@ Entity.property = {
         end,
     },
 
-    ClickTarget = {get = function(self) return self.Item and self.Item.ClickTarget end},
+    ClickTarget = {
+        get = function(self) return self.Item and self.Item.ClickTarget or self.CommonKey end,
+    },
 
     Item = {
         cache = true,
@@ -97,9 +99,7 @@ Entity.property = {
     Required = {
         get = function(self)
             if self.Item then return self.Item.Required end
-            if self.Prototype.name ~= "character" then 
-                assert(release)
-            end
+            if self.Prototype.name ~= "character" then assert(release) end
             return RequiredThings:new()
         end,
     },
@@ -110,9 +110,7 @@ function Entity:SortAll() end
 function Entity:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.entity_prototypes[name], database))
     self.SpriteType = "entity"
-    if name then 
-        self.Name = name 
-    end
+    if name then self.Name = name end
 
     if self.Name == "character" then self.TypeSubOrder = -1 end
 

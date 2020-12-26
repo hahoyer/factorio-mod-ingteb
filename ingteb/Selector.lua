@@ -1,3 +1,4 @@
+local gui = require("__flib__.gui")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -21,53 +22,80 @@ local function EnsureKey(data, key, value)
 end
 
 local Selector = {}
---- @param frame table LuaGuiElement
+--- @param player table LuaGuiElement
 --- @param targets table Array | nil
-function Selector:new(frame, targets)
-    self.Frame = frame
-    frame.caption = {"ingteb-utility.selector"}
-
-    if #targets > 0 then
-        self:ShowTargets(targets)
+function Selector:new(player, targets)
+    local children = {self:Show(targets)}
+    local result = gui.build(
+        player.gui.screen, {
+            {
+                type = "frame",
+                caption = {"ingteb-utility.selector"},
+                name = "Selector",
+                save_as = "Main",
+                handlers = "Selector.Main",
+                direction = "vertical",
+                style = "ingteb-main-frame",
+                children = children,
+            },
+        }
+    )
+    if global.Location.Selector then
+        result.Main.location = global.Location.Selector
     else
-        -- self:ShowSelectionForAllItems()
-        self:ShowAllItems()
+        result.Main.force_auto_center()
+        global.Location.Selector = result.Main.location
     end
-
+    player.opened = result.Main
 end
 
-function Selector:ShowTargets(targets)
+function Selector:Show(targets)
+    if #targets > 0 then
+        return self:ShowTargets(Array:new{targets})
+    else
+        return self:ShowAllItems()
+    end
+end
 
-    local frame = self.Frame.add {type = "flow", direction = "vertical"}
-    local targetPanel = frame.add {type = "table", column_count = ColumnCount}
-    frame.add {type = "line", direction = "horizontal"}
-    local recent = frame.add {type = "table", column_count = ColumnCount}
-
-    targets:Select(
+function Selector:GetTargets(targets)
+    return targets:Select(
         function(target)
             if target.SpriteType == "fuel-category" then
-                targetPanel.add {
+                return {
                     type = "sprite-button",
                     sprite = target.Name,
                     name = target.CommonKey,
                     tooltip = target.LocalisedName,
                 }
             else
-                local targetBox = targetPanel.add {
+                return {
                     type = "choose-elem-button",
                     elem_type = target.SpriteType,
                     name = target.CommonKey,
+                    elem_mods = {elem_value = target.Name, locked = true},
                 }
-                targetBox.elem_value = target.Name
-                targetBox.locked = true
             end
         end
     )
 
-    return frame
+end
+
+function Selector:ShowTargets(targets)
+    return {
+        type = "flow",
+        direction = "vertical",
+        children = {
+            {type = "table", column_count = ColumnCount, children = Selector:GetTargets(targets)},
+            {type = "line", direction = "horizontal"},
+            {type = "table", column_count = ColumnCount},
+        },
+
+    }
+
 end
 
 local SelectorCache = {}
+
 function SelectorCache.EnsureGroups()
     local self = SelectorCache
     if not self.Groups then
@@ -90,59 +118,71 @@ function SelectorCache.EnsureGroups()
     return self.Groups
 end
 
-function Selector:ShowAllItems()
-    local groups = SelectorCache:EnsureGroups()
-    local groupPanel = self.Frame.add {type = "tabbed-pane"}
-    groups:Select(
-        function(group)
-            local groupHeader = group[next(group)][1].group
+function Selector:GetGoodsPanel(goods)
+    local name =
+        (goods.object_name == "LuaItemPrototype" and "Item" or "Fluid") .. "." .. goods.name
+    return {
+        type = "sprite-button",
+        sprite = (goods.object_name == "LuaItemPrototype" and "item" or "fluid") .. "." .. goods.name,
+        name = name,
+        tooltip = goods.localised_name,
+        handlers = "Selector.Goods",
+    }
+end
 
-            local tab = groupPanel.add {
-                type = "tab",
-                caption = "[item-group=" .. groupHeader.name .. "]",
-                style = "ingteb-big-tab",
-                tooltip = groupHeader.localised_name,
+function Selector:GetSubGroupPanel(group)
+    return group:ToArray():Select(
+        function(subgroup)
+            return {
+                type = "table",
+                column_count = SelectorCache.ColumnCount,
+                children = subgroup:Select(
+                    function(goods) return self:GetGoodsPanel(goods) end
+                ),
             }
-
-            local itemPanel = groupPanel.add {type = "flow", direction = "vertical"}
-
-            groupPanel.add_tab(tab, itemPanel)
-
-            local scrollframe = itemPanel.add {
-                type = "scroll-pane",
-                horizontal_scroll_policy = "never",
-                direction = "vertical",
-            }
-
-            local itemPanel = scrollframe.add {
-                type = "flow",
-                direction = "vertical",
-                style = "ingteb-flow-fill",
-            }
-
-            group:Select(
-                function(subgroup)
-                    local itemline = itemPanel.add {
-                        type = "table",
-                        column_count = SelectorCache.ColumnCount,
-                    }
-                    subgroup:Select(
-                        function(goods)
-                            itemline.add {
-                                type = "sprite-button",
-                                sprite = (goods.object_name == "LuaItemPrototype" and "item"
-                                    or "fluid") .. "." .. goods.name,
-                                name = (goods.object_name == "LuaItemPrototype" and "Item" or "Fluid")
-                                    .. "." .. goods.name,
-                                tooltip = goods.localised_name,
-                            }
-                        end
-                    )
-                end
-            )
         end
     )
-    return groups
+end
+
+function Selector:ShowAllItems()
+    local groups = SelectorCache:EnsureGroups()
+
+    return {
+        type = "tabbed-pane",
+        children = groups:ToArray():Select(
+            function(group)
+                local groupHeader = group[next(group)][1].group
+                return {
+                    type = "tab-and-content",
+                    tab = {
+                        type = "tab",
+                        caption = "[item-group=" .. groupHeader.name .. "]",
+                        style = "ingteb-big-tab",
+                        tooltip = groupHeader.localised_name,
+                    },
+                    content = {
+                        type = "flow",
+                        direction = "vertical",
+                        children = {
+                            {
+                                type = "scroll-pane",
+                                horizontal_scroll_policy = "never",
+                                direction = "vertical",
+                                children = {
+                                    {
+                                        type = "flow",
+                                        direction = "vertical",
+                                        style = "ingteb-flow-fill",
+                                        children = self:GetSubGroupPanel(group),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                }
+            end
+        ),
+    }
 end
 
 function Selector:ShowSelectionForAllItems()

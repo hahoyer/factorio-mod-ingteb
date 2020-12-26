@@ -94,6 +94,14 @@ Recipe.property = {
         end,
     },
 
+    Workers = {
+        get = function(self)
+            local result = self.Category.Workers
+            result:Sort(function(a, b) return a:IsBefore(b) end)
+            return result
+        end,
+    },
+
     SpriteStyle = {
         get = function(self)
             if not self.IsResearched then return false end

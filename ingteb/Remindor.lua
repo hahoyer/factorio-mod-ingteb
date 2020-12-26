@@ -1,10 +1,9 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
-local recipe = require "recipe"
+local gui = require "core.gui"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local UI = require("core.UI")
 local class = require("core.class")
 local SpritorClass = require("ingteb.Spritor")
 local RequiredThings = require("ingteb.RequiredThings")
@@ -26,18 +25,27 @@ end
 
 function Task:RemoveOption(commonKey) self.Filter[commonKey] = true end
 
-function Task:CreateLine(frame, target, required, functionData, tooltip)
-    local line = frame.add {type = "flow", direction = "horizontal"}
+function Task:GetLine(target, required, functionData, tooltip)
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {
+                type = "sprite",
+                sprite = "utility/close_black",
+                save_as = "Remindor.Task.CloseButton",
+                tooltip = "press to close.",
+            },
 
-    local closeButton = line.add {
-        type = "sprite",
-        sprite = "utility/close_black",
-        tooltip = "press to close.",
+            Spritor:GetSpriteButtonAndRegister(target),
+            Spritor:GetLine(required, tooltip),
+        },
     }
-    global.Remindor.Links[closeButton.index] = functionData
+end
 
-    Spritor:CreateSpriteAndRegister(line, target)
-    Spritor:CreateLine(line, required, tooltip)
+function Task:CreateLine(frame, target, required, functionData, tooltip)
+    local data = gui.guild(frame, self:GetLine(target, required, tooltip))
+    global.Remindor.Links[data.Remindor.Task.CloseButton.index] = functionData
 end
 
 function Task:GetRestructuredWorker(worker) return {Worker = worker, Required = worker.Required} end

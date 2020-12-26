@@ -1,4 +1,5 @@
 local mod_gui = require("mod-gui")
+local gui = require("__flib__.gui")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -8,6 +9,7 @@ local UI = require("core.UI")
 local Presentator = require("ingteb.Presentator")
 local Selector = require("ingteb.Selector")
 local Remindor = require("ingteb.Remindor")
+local SelectRemindor = require("ingteb.SelectRemindor")
 local Database = require("ingteb.Database")
 local Entity = require("ingteb.Entity")
 
@@ -47,7 +49,7 @@ function Gui:OnStackChanged()
 end
 
 function Gui:PresentSelected(player, name)
-    local target = Database:Get(name)
+    local target = Database:GetProxyFromCommonKey(name)
     if target then
         Gui:CloseSelector(player)
         Gui:PresentTarget(player, target)
@@ -153,6 +155,7 @@ function Gui:CloseSelector(player)
 end
 
 function Gui:ClosePresentator(player)
+    if player.gui.screen.SelectRemindor then return end
     Helper.OnClose("Presentator", self.Active.Presentator)
     player.gui.screen.Presentator.destroy()
     Presentator:Close()
@@ -161,7 +164,7 @@ function Gui:ClosePresentator(player)
 end
 
 function Gui:SelectTarget(player, targets)
-    Helper.ShowFrame(player, "Selector", function(frame) return Selector:new(frame, targets) end)
+    Selector:new(player, targets)
     self:ScanActiveGui(player)
 end
 
@@ -181,6 +184,8 @@ function Gui:PresentTarget(player, target)
     self:ScanActiveGui(player)
     return target.CommonKey
 end
+
+function Gui:SelectReminder(player, target) SelectRemindor:new(player, target) end
 
 function Gui:AddReminder(player, target)
     if not self.Active.Remindor then
@@ -246,7 +251,7 @@ function Gui:OnGuiClick(player, event, site)
     end
 
     self:EnsureDatabase()
-    local target = self.Database:Get(global.Links[site][event.element.index])
+    local target = self.Database:GetProxyFromCommonKey(event.element.name)
     if target and target.Prototype then
         local action = target:GetAction(event)
         if not action then return end
@@ -266,7 +271,7 @@ function Gui:OnGuiClick(player, event, site)
             end
         end
 
-        if action.ReminderTask then self:AddReminder(player, action.ReminderTask) end
+        if action.ReminderTask then self:SelectReminder(player, action.ReminderTask) end
 
         if action.Presenting then
             local result = self:PresentTarget(player, action.Presenting)

@@ -85,6 +85,15 @@ Goods.property = {
         end,
     },
 
+    Workers = {
+        get = function(self)
+            local result = self.Recipes:Select(function(recipe) return recipe.Workers end) --
+            :UnionMany()
+            result:Sort(function(a, b) return a:IsBefore(b) end)
+            return result
+        end,
+    },
+
     Required = {
         get = function(self)
             return self.Recipes:Select(function(recipe) return recipe.Required end) --

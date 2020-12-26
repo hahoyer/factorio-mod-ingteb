@@ -41,6 +41,13 @@ function Array:IntersectMany()
     return result
 end
 
+function Array:UnionMany()
+    if not self:Any() then return Array:new{} end
+    local result = self[1]
+    for index = 2, #self do result = result:Union(self[index]) end
+    return result
+end
+
 function Dictionary:new(target)
     if not target then target = {} end
     self.object_name = "Dictionary"

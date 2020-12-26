@@ -1,6 +1,7 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local gui = require "core.gui"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
@@ -10,25 +11,27 @@ local Spritor = class:new("Spritor")
 
 function Spritor:new(site) return self:adopt{DynamicElements = Dictionary:new(), Site = site} end
 
-function Spritor:CreateSprite(frame, target, sprite)
+function Spritor:GetSpriteButton(target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
-    if not target then return frame.add {type = "sprite-button", sprite = sprite, style = style} end
-
-    local tooltip = self:GetHelperText(target)
+    if not target then return {type = "sprite-button", sprite = sprite, style = style} end
     local sprite = target.SpriteName
-    local number = target.NumberOnSprite
-    local show_percent_for_small_numbers = target.UsePercentage
-
     if sprite == "fuel-category/chemical" then sprite = "chemical" end
-    return frame.add {
+
+    return {
         type = "sprite-button",
-        tooltip = tooltip,
+        tooltip = self:GetHelperText(target),
         sprite = sprite,
-        number = number,
-        show_percent_for_small_numbers = show_percent_for_small_numbers,
+        number = target.NumberOnSprite,
+        show_percent_for_small_numbers = target.UsePercentage,
+        handlers = "Spritor.Button",
+        name = target.ClickTarget,
         style = style,
     }
+end
+
+function Spritor:CreateSprite(frame, target, sprite)
+    return gui.build(frame, self:GetSpriteButton(target, sprite))
 end
 
 function Spritor:GetHelperText(target)
@@ -37,17 +40,21 @@ function Spritor:GetHelperText(target)
 end
 
 function Spritor:RegisterTargetForGuiClick(result, target)
-    global.Links[self.Site][result.index] = target and target.ClickTarget
+    --    global.Links[self.Site][result.index] = target and target.ClickTarget
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         self.DynamicElements:AppendForKey(target, result)
     end
     return result
 end
 
-function Spritor:CreateSpriteAndRegister(frame, target, sprite)
-    local result = self:CreateSprite(frame, target, sprite)
+function Spritor:GetSpriteButtonAndRegister(target, sprite)
+    local result = self:GetSpriteButton(target, sprite)
     if target then self:RegisterTargetForGuiClick(result, target) end
     return result
+end
+
+function Spritor:CreateSpriteAndRegister(frame, target, sprite)
+    return gui.build(frame, self:GetSpriteButtonAndRegister(target, sprite))
 end
 
 function Spritor:UpdateGui(list, target, dataBase)
@@ -87,59 +94,67 @@ function Spritor:RefreshResearchChanged(dataBase)
     :Select(function(list, target) self:UpdateGui(list, target, dataBase) end) --
 end
 
-function Spritor:DummyTiles(frame, count)
-    for _ = 1, count do --
-        frame.add {type = "sprite", style = "ingteb-un-button"}
-    end
+function Spritor:GetTiles(count)
+    return Array:FromNumber(count) --
+    :Select(function() return {type = "sprite", style = "ingteb-un-button"} end)
 end
 
-function Spritor:CreateLinePart(frame, target, count, isRightAligned)
-    local scrollFrame = frame
+function Spritor:GetLinePart(target, count, isRightAligned)
     if not count then count = math.min(6, target:Count()) end
+
+    local children = Array:new()
+    children:AppendMany(
+        target:Select(function(element) return self:GetSpriteButtonAndRegister(element) end)
+    )
+    if not isRightAligned then children:AppendMany(self:GetTiles(count - target:Count())) end
+
     if target:Count() > count then
-        scrollFrame = frame.add {
+        return {
             type = "scroll-pane",
             direction = "horizontal",
             vertical_scroll_policy = "never",
             style = "ingteb-scroll-6x1",
+            children = children,
+        }
+    else
+        return {
+            type = "flow",
+            direction = "horizontal",
+            style = isRightAligned and "ingteb-flow-right" or nil,
+            children = children,
         }
     end
 
-    local subPanel = scrollFrame.add {
-        type = "flow",
-        direction = "horizontal",
-        style = isRightAligned and "ingteb-flow-right" or nil,
-    }
-
-    target:Select(function(element) return self:CreateSpriteAndRegister(subPanel, element) end)
-
-    if isRightAligned then return end
-
-    self:DummyTiles(subPanel, count - target:Count())
 end
 
-function Spritor:CreateLine(frame, target, tooltip)
-    local scrollFrame = frame
+function Spritor:GetLine(target, tooltip)
     local count = target:Count()
-    if count > 6 then
-        scrollFrame = frame.add {
-            type = "scroll-pane",
-            direction = "horizontal",
-            vertical_scroll_policy = "never",
-            style = "ingteb-scroll-6x1",
-        }
-    end
-
-    local subPanel = scrollFrame.add {type = "flow", direction = "horizontal"}
+    local children = Array:new()
     if target.Technologies then
-        target.Technologies:Select(
-            function(element) return self:CreateSpriteAndRegister(subPanel, element) end
+        children:AppendMany(
+            target.Technologies:Select(
+                function(element) return self:GetSpriteButtonAndRegister(element) end
+            )
         )
     end
-    target.StackOfGoods:Select(
-        function(element) return self:CreateSpriteAndRegister(subPanel, element) end
-    )
-    if count > 0 then frame.add {type = "sprite", sprite = "info", tooltip = tooltip} end
+    target.StackOfGoods:Select(function(element) return self:GetSpriteButtonAndRegister(element) end)
+
+    local scrollFrame = {
+        type = count > 6 and "scroll-pane" or "flow",
+        direction = "horizontal",
+        vertical_scroll_policy = "never",
+        style = "ingteb-scroll-6x1",
+        children = {{type = "flow", direction = "horizontal", children = children}},
+    }
+
+    if count > 0 then
+        return {
+            type = "flow",
+            direction = "horizontal",
+            children = {scrollFrame, {type = "sprite", sprite = "info", tooltip = tooltip}},
+        }
+    end
+    return scrollFrame
 end
 
 return Spritor

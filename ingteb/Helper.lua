@@ -1,5 +1,6 @@
 local event = require("__flib__.event")
 local Table = require("core.Table")
+local gui = require "core.gui"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 

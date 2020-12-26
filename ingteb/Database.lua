@@ -269,7 +269,7 @@ function Database:Get(target)
     if not target or target == "" then
         return
     elseif type(target) == "string" then
-        _, _, className, Name = target:find("^(.-)%.(.*)$")
+        return self:GetProxyFromCommonKey(target)
     elseif target.type then
         if target.type == "item" then
             className = "Item"
