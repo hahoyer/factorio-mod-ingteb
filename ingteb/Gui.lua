@@ -49,7 +49,7 @@ function Gui:OnStackChanged()
 end
 
 function Gui:PresentSelected(player, name)
-    local target = Database:GetProxyFromCommonKey(name)
+    local target = self:GetObject(name)
     if target then
         Gui:CloseSelector(player)
         Gui:PresentTarget(player, target)
@@ -130,7 +130,7 @@ function Gui:FindTargets(player)
             end
 
             return result:Select(
-                function(_, key) return Database:GetProxyFromCommonKey(key) end
+                function(_, key) return self:GetObject(key) end
             )
         end
 
@@ -170,8 +170,8 @@ function Gui:SelectTarget(player, targets)
 end
 
 function Gui:PresentTargetFromCommonKey(player, targetKey)
-    local target = Database:GetProxyFromCommonKey(targetKey)
-    Gui:PresentTarget(player, target)
+    local target = self:GetObject(targetKey)
+    self:PresentTarget(player, target)
 end
 
 function Gui:PresentTarget(player, target)
@@ -238,6 +238,11 @@ function Gui:EnsureMainButton(player)
     end
 end
 
+function Gui:GetObject(commonKey)
+    self:EnsureDatabase()
+    return self.Database:GetProxyFromCommonKey(commonKey)
+end
+
 function Gui:OnGuiClick(player, event, site)
 
     local element = event.element
@@ -251,8 +256,7 @@ function Gui:OnGuiClick(player, event, site)
         return
     end
 
-    self:EnsureDatabase()
-    local target = self.Database:GetProxyFromCommonKey(event.element.name)
+    local target = self:GetObject(event.element.name)
     if target and target.Prototype then
         local action = target:GetAction(event)
         if not action then return end

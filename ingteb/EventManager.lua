@@ -180,17 +180,27 @@ gui.add_handlers {
         Button = {
             on_gui_click = function(event)
                 local player = game.players[event.player_index]
-                local target = Gui:OnGuiClick(player, event, "SelectRemindor")
-                if target then global.History:AdvanceWith(target) end
+                SelectRemindor:OnGuiClick(player, Gui:GetObject(event.element.name))
             end,
         },
-        Close = {on_gui_click = function(event) SelectRemindor:OnClose(event) end},
+        Close = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                SelectRemindor:OnClose(player)
+            end,
+        },
         Main = {
             on_gui_location_changed = function(event)
                 global.Location.SelectRemindor = event.element.location
             end,
-            on_gui_click = function(event) SelectRemindor:OnClose(event) end,
-            on_gui_closed = function(event) SelectRemindor:OnClose(event) end,
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                SelectRemindor:OnClose(player)
+            end,
+            on_gui_closed = function(event)
+                local player = game.players[event.player_index]
+                SelectRemindor:OnClose(player)
+            end,
         },
     },
 

@@ -5,19 +5,60 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local SpritorClass = require("ingteb.Spritor")
+local Recipe = require("ingteb.Recipe")
 
-local SelectRemindor = {}
-local Spritor = SpritorClass:new("SelectRemindor")
+local SelectRemindor = class:new("SelectRemindor")
 
-function SelectRemindor:OnClose(event)
-    local player = game.players[event.player_index]
+function SelectRemindor:OnClose(player)
     player.gui.screen.SelectRemindor.destroy()
     player.opened = SelectRemindor.Parent
 end
 
+function SelectRemindor:GetWorkerSpriteStyle(target)
+    if target == self.Worker then return true end
+    if not self:GetBelongingWorkers(self.Recipe):Contains(target) then return false end
+end
+
+function SelectRemindor:GetRecipeSpriteStyle(target)
+    if target == self.Recipe then return true end
+    if not self:GetBelongingRecipes(self.Worker):Contains(target) then return false end
+end
+
+function SelectRemindor:GetSpriteButton(target)
+
+    local styleCode = target.class == Recipe and self:GetRecipeSpriteStyle(target)
+                          or self:GetWorkerSpriteStyle(target)
+
+    local sprite = target.SpriteName
+    if sprite == "fuel-category/chemical" then sprite = "chemical" end
+
+    return {
+        type = "sprite-button",
+        sprite = sprite,
+        name = target.CommonKey,
+        handlers = "SelectRemindor.Button",
+        style = Helper.SpriteStyleFromCode(styleCode),
+    }
+end
+
+function SelectRemindor:OnGuiClick(player, target)
+    if target.class == Recipe then
+        self.Recipe = target
+        if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
+            self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
+        end
+    else
+        self.Worker = target
+        if not self:GetBelongingRecipes(self.Worker):Contains(self.Recipe) then
+            self.Recipe = self:GetBelongingRecipes(self.Worker):Top()
+        end
+    end
+    self:OnClose(player)
+    self:Refresh(player)
+end
+
 function SelectRemindor:CreateSelection(target)
-    return target:Select(function(object) return Spritor:GetSpriteButton(object) end)
+    return target:Select(function(object) return self:GetSpriteButton(object) end)
 end
 
 function SelectRemindor:GetLinePart(children)
@@ -35,18 +76,52 @@ function SelectRemindor:GetLinePart(children)
     }
 end
 
-function SelectRemindor:GetGui(target)
-    local recipes = target.Recipes
-    local workers = target.Workers
-    local recipe = recipes[1]
-    local worker = workers:Where(
+function SelectRemindor:GetBelongingWorkers(recipe)
+    return self.Workers:Where(
         function(worker)
             return worker.RecipeList:Where(
                 function(category) return category:Contains(recipe) end
             ):Any()
         end
-    ):Top()
+    )
+end
 
+function SelectRemindor:GetBelongingRecipes(worker)
+    return self.Recipes:Where(
+        function(recipe) return self:GetBelongingWorkers(recipe):Contains(worker) end
+    )
+end
+
+function SelectRemindor:Refresh(player)
+
+    local result = gui.build(player.gui.screen, {self:GetGui()})
+
+    result.DragBar.drag_target = result.Main
+
+    if global.Location.SelectRemindor then
+        result.Main.location = global.Location.SelectRemindor
+    else
+        result.Main.force_auto_center()
+        global.Location.SelectRemindor = result.Main.location
+    end
+
+    self.Parent = player.opened
+    player.opened = result.Main
+end
+
+function SelectRemindor:new(player, target)
+    assert(release or not self.Target)
+    self.Target = target
+    self.Recipes = self.Target.Recipes
+    self.Workers = self.Target.Workers
+    self.Recipe = self.Recipes[1]
+    self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
+
+    self:Refresh(player)
+    return self
+end
+
+function SelectRemindor:GetGui()
     return {
         type = "frame",
         direction = "vertical",
@@ -80,63 +155,45 @@ function SelectRemindor:GetGui(target)
                     {type = "label", caption = "Target: "},
                     {
                         type = "sprite",
-                        sprite = target.SpriteName,
-                        tooltip = target:GetHelperText("SelectRemindor"),
+                        sprite = self.Target.SpriteName,
+                        tooltip = self.Target:GetHelperText("SelectRemindor"),
                     },
                 },
             },
             {
                 type = "condition",
-                condition = workers:Count() > 1,
+                condition = self.Workers:Count() > 1,
                 children = {
                     {
                         type = "flow",
                         direction = "horizontal",
                         children = {
                             {type = "label", caption = "Worker: "},
-                            {type = "sprite", sprite = worker.SpriteName, save_as = "Worker"},
+                            {type = "sprite", sprite = self.Worker.SpriteName, save_as = "Worker"},
                             {type = "label", caption = "Variants: "},
-                            self:GetLinePart(self:CreateSelection(workers)),
+                            self:GetLinePart(self:CreateSelection(self.Workers)),
                         },
                     },
                 },
             },
             {
                 type = "condition",
-                condition = recipes:Count() > 1,
+                condition = self.Recipes:Count() > 1,
                 children = {
                     {
                         type = "flow",
                         direction = "horizontal",
                         children = {
                             {type = "label", caption = "Recipe: "},
-                            {type = "sprite", sprite = recipe.SpriteName, save_as = "Recipe"},
+                            {type = "sprite", sprite = self.Recipe.SpriteName, save_as = "Recipe"},
                             {type = "label", caption = "Variants: "},
-                            self:GetLinePart(self:CreateSelection(recipes)),
+                            self:GetLinePart(self:CreateSelection(self.Recipes)),
                         },
                     },
                 },
             },
         },
     }
-end
-
-function SelectRemindor:new(player, target)
-    Spritor = SpritorClass:new("SelectRemindor")
-    local result = gui.build(player.gui.screen, {self:GetGui(target)})
-
-    result.DragBar.drag_target = result.Main
-
-    if global.Location.SelectRemindor then
-        result.Main.location = global.Location.SelectRemindor
-    else
-        result.Main.force_auto_center()
-        global.Location.SelectRemindor = result.Main.location
-    end
-
-    self.Parent = player.opened
-    player.opened = result.Main
-    return self
 end
 
 return SelectRemindor
