@@ -48,12 +48,12 @@ function SelectRemindor:OnGuiClick(player, target)
     if target.IsRecipe then
         self.Recipe = target
         if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
-            self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
+            self.Worker = self:GetBelongingWorkers(self.Recipe):Top(false)
         end
     else
         self.Worker = target
         if not self:GetBelongingRecipes(self.Worker):Contains(self.Recipe) then
-            self.Recipe = self:GetBelongingRecipes(self.Worker):Top()
+            self.Recipe = self:GetBelongingRecipes(self.Worker):Top(false)
         end
     end
     self:OnClose(player)
@@ -116,6 +116,17 @@ function SelectRemindor:Refresh(player)
     player.opened = result.Main
 end
 
+function SelectRemindor:GetSelection()
+    return {
+        Target = self.Target,
+        Worker = self.Worker,
+        Recipe = self.Recipe,
+        GetCommonKey = function(self)
+            return self.Target.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
+        end,
+    }
+end
+
 function SelectRemindor:new(player, target)
     assert(release or not self.Target)
     self.Target = target
@@ -145,6 +156,12 @@ function SelectRemindor:GetGui()
                         type = "empty-widget",
                         style = "flib_titlebar_drag_handle",
                         save_as = "DragBar",
+                    },
+                    {
+                        type = "sprite-button",
+                        sprite = "utility/check_mark_white",
+                        handlers = "SelectRemindor.Enter",
+                        style = "frame_action_button",
                     },
                     {
                         type = "sprite-button",

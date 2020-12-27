@@ -255,7 +255,7 @@ end
 function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
         if allowEmpty == false or onEmpty then
-            error(onEmpty and onEmpty() or "Array contains no element.")
+            error(onEmpty and onEmpty() or "Array contains no element.", 2)
         end
         return
     elseif #self > 1 then
@@ -265,7 +265,7 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
                         .. #self .. ")."
-            )
+            , 1)
         end
     end
     return self[1]
@@ -281,7 +281,7 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
                         .. #self .. ")."
-            )
+          ,1  )
         end
         result = {Key = key, Value = value}
     end
@@ -289,14 +289,14 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if result then return result end
 
     if allowEmpty == false or onEmpty then
-        error(onEmpty and onEmpty() or "Array contains no element.")
+        error(onEmpty and onEmpty() or "Array contains no element.",1)
     end
 end
 
 function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
         if allowEmpty == false or onEmpty then
-            error(onEmpty and onEmpty() or "Array contains no element.")
+            error(onEmpty and onEmpty() or "Array contains no element.",1)
         end
         return
     elseif #self > 1 then
@@ -305,7 +305,7 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
 
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ")."
+                        .. #self .. ").",1
             )
         end
     end
@@ -361,7 +361,7 @@ function Dictionary:Concat(other, combine)
 
     local result = self:Clone()
     for key, value in pairs(other) do
-        result[key] = result[key] and combine(result[key], value) or value
+        result[key] = result[key] and combine(result[key], value, key) or value
     end
     return result
 end

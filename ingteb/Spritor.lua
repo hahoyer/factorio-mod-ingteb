@@ -24,7 +24,7 @@ function Spritor:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        handlers = self.Site..".Button",
+        handlers = self.Site .. ".Button",
         name = target.ClickTarget,
         style = style,
     }
@@ -136,24 +136,21 @@ function Spritor:GetLine(target, tooltip)
             )
         )
     end
-    target.StackOfGoods:Select(function(element) return self:GetSpriteButtonAndRegister(element) end)
+    target.StackOfGoods:Select(
+        function(element) children:Append(self:GetSpriteButtonAndRegister(element)) end
+    )
 
-    local scrollFrame = {
-        type = count > 6 and "scroll-pane" or "flow",
+    local result = {type = "flow", direction = "horizontal", tooltip = tooltip, children = children}
+    if count <= 6 then return result end
+
+    return {
+        type = "scroll-pane",
         direction = "horizontal",
         vertical_scroll_policy = "never",
         style = "ingteb-scroll-6x1",
-        children = {{type = "flow", direction = "horizontal", children = children}},
+        children = {result},
     }
 
-    if count > 0 then
-        return {
-            type = "flow",
-            direction = "horizontal",
-            children = {scrollFrame, {type = "sprite", sprite = "info", tooltip = tooltip}},
-        }
-    end
-    return scrollFrame
 end
 
 return Spritor

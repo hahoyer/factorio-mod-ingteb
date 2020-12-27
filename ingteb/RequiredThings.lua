@@ -47,6 +47,28 @@ function RequiredThings:AddOption(option)
     )
 end
 
+function RequiredThings:Concat(other)
+    local result = RequiredThings:new()
+    if not self.Technologies then
+        result.Technologies = other.Technologies
+    elseif not other.Technologies then
+        result.Technologies = self.Technologies
+    else
+        result.Technologies = self.Technologies:Union(other.Technologies)
+    end
+
+    if not self.StackOfGoods:Any() then
+        result.StackOfGoods = other.StackOfGoods
+    elseif not other.StackOfGoods:Any() then
+        result.StackOfGoods = self.StackOfGoods
+    else
+        result.StackOfGoods = self.StackOfGoods:Concat(
+            other.StackOfGoods, function(a, b, key) assert(release) end
+        )
+    end
+    return result
+end
+
 function RequiredThings:Except(other)
     local result = RequiredThings:new()
     if self.Technologies then result.Technologies = self.Technologies:Except(other.Technologies) end

@@ -160,6 +160,35 @@ gui.add_handlers {
             end,
         },
     },
+    Remindor = {
+        Button = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:OnGuiClick(player, event, "Presentator")
+                if target then global.History:AdvanceWith(target) end
+            end,
+        },
+        CloseTask = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                __DebugAdapter.breakpoint() 
+            end,
+        },
+        Main = {
+            on_gui_location_changed = function(event)
+                global.Location.Remindor = event.element.location
+            end,
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:OnGuiClick(player, event, "Presentor")
+                if target then global.History:AdvanceWith(target) end
+            end,
+            on_gui_closed = function(event)
+                local player = game.players[event.player_index]
+                Gui:CloseRemindor(player)
+            end,
+        },
+    },
     Selector = {
         Button = {on_gui_click = function(event) __DebugAdapter.breakpoint() end},
         Main = {
@@ -188,6 +217,15 @@ gui.add_handlers {
                 local player = game.players[event.player_index]
                 SelectRemindor:OnClose(player)
                 SelectRemindor.Target = nil
+            end,
+        },
+        Enter = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local selection = SelectRemindor:GetSelection()
+                SelectRemindor:OnClose(player)
+                SelectRemindor.Target = nil
+                Gui:AddRemindor(player, selection)
             end,
         },
         Main = {

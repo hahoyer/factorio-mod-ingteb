@@ -188,7 +188,7 @@ end
 
 function Gui:SelectRemindor(player, target) SelectRemindor:new(player, target) end
 
-function Gui:AddReminder(player, target)
+function Gui:AddRemindor(player, selection)
     if not self.Active.Remindor then
         local frame = mod_gui.get_frame_flow(player).add {
             type = "frame",
@@ -198,7 +198,7 @@ function Gui:AddReminder(player, target)
         self.Active.Remindor = frame
         Remindor:new(frame)
     end
-    Remindor:SetTask(target)
+    Remindor:SetTask(selection)
 end
 
 function Gui:OnMainButtonPressed(player)
