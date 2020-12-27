@@ -9,6 +9,7 @@ local Gui = require("ingteb.Gui")
 local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}
+local SelectRemindor = require("ingteb.SelectRemindor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -119,13 +120,7 @@ function EventManager:OnBackClicked(event)
     end
 end
 
-function EventManager:OnClose(event)
-    if Gui.Active.Selector then
-        self:OnSelectorClose(event)
-    elseif Gui.Active.Presentator then
-        self:OnPresentatorClose(event)
-    end
-end
+function EventManager:OnClose(event) assert(release) end
 
 function EventManager:OnLoad()
     History:adopt(global.History, true)
@@ -142,17 +137,31 @@ function EventManager:OnInitialise()
 end
 
 gui.add_handlers {
-    Spritor = {
+    Presentator = {
         Button = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:OnGuiClick(player, event, "Presentator")
+                if target then global.History:AdvanceWith(target) end
+            end,
+        },
+        Main = {
+            on_gui_location_changed = function(event)
+                global.Location.Presentator = event.element.location
+            end,
             on_gui_click = function(event)
                 local player = game.players[event.player_index]
                 local target = Gui:OnGuiClick(player, event, "Presentor")
                 if target then global.History:AdvanceWith(target) end
             end,
-            on_gui_close = function(event) __DebugAdapter.breakpoint() end,
+            on_gui_closed = function(event)
+                local player = game.players[event.player_index]
+                Gui:ClosePresentator(player)
+            end,
         },
     },
     Selector = {
+        Button = {on_gui_click = function(event) __DebugAdapter.breakpoint() end},
         Main = {
             on_gui_location_changed = function(event)
                 global.Location.Selector = event.element.location
@@ -165,9 +174,26 @@ gui.add_handlers {
                 if target then global.History:ResetTo(target) end
                 return true
             end,
-            on_gui_close = function(event) __DebugAdapter.breakpoint() end,
         },
     },
+    SelectRemindor = {
+        Button = {
+            on_gui_click = function(event)
+                local player = game.players[event.player_index]
+                local target = Gui:OnGuiClick(player, event, "SelectRemindor")
+                if target then global.History:AdvanceWith(target) end
+            end,
+        },
+        Close = {on_gui_click = function(event) SelectRemindor:OnClose(event) end},
+        Main = {
+            on_gui_location_changed = function(event)
+                global.Location.SelectRemindor = event.element.location
+            end,
+            on_gui_click = function(event) SelectRemindor:OnClose(event) end,
+            on_gui_closed = function(event) SelectRemindor:OnClose(event) end,
+        },
+    },
+
 }
 
 function EventManager:new()

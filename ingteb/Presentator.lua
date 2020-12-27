@@ -538,12 +538,33 @@ function Presentator:RefreshStackChanged(dataBase) end
 
 function Presentator:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
 
-function Presentator:BuildGui(frame, target) end
+function Presentator:new(player, target)
+    local result = gui.build(
+        player.gui.screen, {
+            {
+                type = "frame",
+                caption = target.LocalisedName,
+                name = "Presentator",
+                save_as = "Main",
+                handlers = "Presentator.Main",
+                direction = "vertical",
+                style = "ingteb-main-frame",
+                children = {self:GetGui(target)},
+            },
+        }
+    )
+    if global.Location.Presentator then
+        result.Main.location = global.Location.Presentator
+    else
+        result.Main.force_auto_center()
+        global.Location.Presentator = result.Main.location
+    end
+    player.opened = result.Main
+end
 
-function Presentator:new(frame, target)
+function Presentator:GetGui(target)
     Spritor.DynamicElements = Dictionary:new() --
     global.Links.Presentator = {}
-    frame.caption = target.LocalisedName
 
     target:SortAll()
     assert(
@@ -571,74 +592,65 @@ function Presentator:new(frame, target)
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
 
     if columnCount == 0 then
-        gui.build(
-            frame, {
+        return {
+            type = "frame",
+            direction = "horizontal",
+            children = {
                 {
-                    type = "frame",
-                    direction = "horizontal",
-                    children = {
-                        {
-                            type = "label",
-                            caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
-                        },
-                        Spritor:GetSpriteButtonAndRegister(target),
-                        {
-                            type = "label",
-                            caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
-                        },
-                    },
+                    type = "label",
+                    caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
                 },
-            }
-        )
-        return
-    end
-
-    gui.build(
-        frame, {
-            {
-                type = "scroll-pane",
-                horizontal_scroll_policy = "never",
-                direction = "vertical",
-                name = "frame",
-                children = {
-                    {
-                        type = columnCount > 1 and "frame" or "flow",
-                        direction = "horizontal",
-                        name = "frame",
-                        children = Array:new{
-                            GetTechnologiesPanel(
-                                target.Prerequisites,
-                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                                        .. target.RichTextName, true
-                            ),
-                            GetTechnologyEffectsPanel(target),
-                            GetRecipePanel(target),
-                            GetTechnologiesPanel(
-                                target.Enables, target.RichTextName
-                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
-                            ),
-                            GetCraftingGroupsPanel(
-                                target.RecipeList,
-                                    target.RichTextName .. "[img=utility/change_recipe]",
-                                    "Recipes this machine can handle"
-                            ),
-                            GetCraftingGroupsPanel(
-                                target.CreatedBy,
-                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                                        .. target.RichTextName, "Recipes that produces this item."
-                            ),
-                            GetCraftingGroupsPanel(
-                                target.UsedBy, target.RichTextName
-                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
-                                    "Recipes this item uses a ingredience."
-                            ),
-                        }:ConcatMany(),
-
-                    },
+                Spritor:GetSpriteButtonAndRegister(target),
+                {
+                    type = "label",
+                    caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
                 },
             },
         }
-    )
+
+    end
+
+    return {
+
+        type = "scroll-pane",
+        horizontal_scroll_policy = "never",
+        direction = "vertical",
+        name = "frame",
+        children = {
+            {
+                type = columnCount > 1 and "frame" or "flow",
+                direction = "horizontal",
+                name = "frame",
+                children = Array:new{
+                    GetTechnologiesPanel(
+                        target.Prerequisites, "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                            .. target.RichTextName, true
+                    ),
+                    GetTechnologyEffectsPanel(target),
+                    GetRecipePanel(target),
+                    GetTechnologiesPanel(
+                        target.Enables, target.RichTextName
+                            .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
+                    ),
+                    GetCraftingGroupsPanel(
+                        target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]",
+                            "Recipes this machine can handle"
+                    ),
+                    GetCraftingGroupsPanel(
+                        target.CreatedBy, "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                            .. target.RichTextName, "Recipes that produces this item."
+                    ),
+                    GetCraftingGroupsPanel(
+                        target.UsedBy, target.RichTextName
+                            .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
+                            "Recipes this item uses a ingredience."
+                    ),
+                }:ConcatMany(),
+
+            },
+        },
+
+    }
 
 end
 

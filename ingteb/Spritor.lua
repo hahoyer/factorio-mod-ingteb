@@ -24,7 +24,7 @@ function Spritor:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        handlers = "Spritor.Button",
+        handlers = self.Site..".Button",
         name = target.ClickTarget,
         style = style,
     }

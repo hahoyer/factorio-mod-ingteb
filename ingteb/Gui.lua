@@ -156,6 +156,7 @@ end
 
 function Gui:ClosePresentator(player)
     if player.gui.screen.SelectRemindor then return end
+    if not self.Active.Presentator then return end
     Helper.OnClose("Presentator", self.Active.Presentator)
     player.gui.screen.Presentator.destroy()
     Presentator:Close()
@@ -178,14 +179,14 @@ function Gui:PresentTarget(player, target)
     if target.class == Entity and target.Item then actualTarget = target.Item end
 
     assert(release or actualTarget.Prototype)
-    Helper.ShowFrame(
-        player, "Presentator", function(frame) return Presentator:new(frame, actualTarget) end
-    )
+
+    self:ClosePresentator(player)
+    Presentator:new(player, actualTarget)
     self:ScanActiveGui(player)
     return target.CommonKey
 end
 
-function Gui:SelectReminder(player, target) SelectRemindor:new(player, target) end
+function Gui:SelectRemindor(player, target) SelectRemindor:new(player, target) end
 
 function Gui:AddReminder(player, target)
     if not self.Active.Remindor then
@@ -271,7 +272,7 @@ function Gui:OnGuiClick(player, event, site)
             end
         end
 
-        if action.ReminderTask then self:SelectReminder(player, action.ReminderTask) end
+        if action.ReminderTask then self:SelectRemindor(player, action.ReminderTask) end
 
         if action.Presenting then
             local result = self:PresentTarget(player, action.Presenting)
