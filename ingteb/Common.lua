@@ -97,9 +97,14 @@ function Common:GetHelperText(site)
     return name
 end
 
+function Common:AssertValid()
+end
+
 function Common:SealUp()
     self:SortAll()
     self.CommonKey = self.class.name .. "." .. self.Name
+    self:AssertValid()
+    self.IsSealed = true
     return self
 end
 
@@ -118,6 +123,7 @@ function Common:new(prototype, database)
     assert(release or database)
 
     local self = self:adopt{Prototype = prototype, Database = database}
+    self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
     self.LocalizedDescription = self.Prototype.localised_description

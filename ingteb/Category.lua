@@ -61,6 +61,25 @@ function Category:SortAll()
     self.Workers = result
 end
 
+function Category:AssertValid()
+    local badWorkers = self.Workers:Where(
+        function(worker)
+            if release then return end
+            assert(release or worker.IsSealed)
+            return not worker.Categories:Any(
+                function(value) return value.Workers:Contains(worker) end
+            )
+        end
+    ):Select(function(worker) return worker.Name end)
+
+    if badWorkers:Any() then
+        error(
+            "Category " .. self.Name .. " is not mapped to some of its workers: "
+                .. badWorkers:Stringify(", ")
+        )
+    end
+end
+
 function Category:new(name, prototype, database)
     assert(release or name)
 

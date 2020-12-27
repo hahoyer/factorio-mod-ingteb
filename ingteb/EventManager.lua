@@ -187,6 +187,7 @@ gui.add_handlers {
             on_gui_click = function(event)
                 local player = game.players[event.player_index]
                 SelectRemindor:OnClose(player)
+                SelectRemindor.Target = nil
             end,
         },
         Main = {
@@ -196,10 +197,12 @@ gui.add_handlers {
             on_gui_click = function(event)
                 local player = game.players[event.player_index]
                 SelectRemindor:OnClose(player)
+                SelectRemindor.Target = nil
             end,
             on_gui_closed = function(event)
                 local player = game.players[event.player_index]
                 SelectRemindor:OnClose(player)
+                SelectRemindor.Target = nil
             end,
         },
     },

@@ -28,6 +28,16 @@ MiningRecipe.property = {
     },
 
     Required = {get = function(self) return RequiredThings:new() end},
+
+    Workers = {
+        cache = true,
+        get = function(self)
+            local result = self.Category.Workers
+            result:Sort(function(a, b) return a:IsBefore(b) end)
+            return result
+        end,
+    },
+
 }
 
 function MiningRecipe:new(name, prototype, database)
@@ -35,6 +45,7 @@ function MiningRecipe:new(name, prototype, database)
 
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
+    self.IsRecipe = true
 
     local configuration = self.Prototype.mineable_properties
     assert(release or configuration and configuration.minable)

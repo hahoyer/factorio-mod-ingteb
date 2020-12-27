@@ -261,6 +261,7 @@ function Recipe:new(name, prototype, database)
     self.IsHidden = false
     self.Time = self.Prototype.energy
     self.IsRefreshRequired = {Research = true, MainInventory = true}
+    self.IsRecipe = true
 
     return self
 

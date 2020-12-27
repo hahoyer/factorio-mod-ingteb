@@ -47,6 +47,7 @@ Entity.property = {
     Categories = {
         cache = true,
         get = function(self)
+            --if self.Name == "character" then __DebugAdapter.breakpoint() end
             local xreturn = self.Database.Proxies.Category -- 
             :Where(
                 function(category)
@@ -57,11 +58,11 @@ Entity.property = {
                     elseif domain == "crafting" then
                         list = self.Prototype.crafting_categories
                     elseif domain == "hand-mining" then
-                        return
+                        return self.Name == "character"
                     elseif domain == "researching" then
                         return self.Prototype.lab_inputs
                     elseif domain == "boiling" then
-                        return self.Prototype.lab_inputs
+                        return self.Prototype.type == "boiler"
                     else
                         assert(release)
                     end

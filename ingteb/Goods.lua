@@ -79,6 +79,7 @@ Goods.property = {
     },
 
     Recipes = {
+        cache = true,
         get = function(self)
             return self.CreatedBy:ToArray(function(recipes) return recipes end) --
             :ConcatMany()
@@ -86,6 +87,7 @@ Goods.property = {
     },
 
     Workers = {
+        cache = true,
         get = function(self)
             local result = self.Recipes:Select(function(recipe) return recipe.Workers end) --
             :UnionMany()

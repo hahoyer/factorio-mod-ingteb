@@ -5,7 +5,6 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local Recipe = require("ingteb.Recipe")
 
 local SelectRemindor = class:new("SelectRemindor")
 
@@ -26,8 +25,12 @@ end
 
 function SelectRemindor:GetSpriteButton(target)
 
-    local styleCode = target.class == Recipe and self:GetRecipeSpriteStyle(target)
-                          or self:GetWorkerSpriteStyle(target)
+    local styleCode
+    if target.IsRecipe then
+        styleCode = self:GetRecipeSpriteStyle(target)
+    else
+        styleCode = self:GetWorkerSpriteStyle(target)
+    end
 
     local sprite = target.SpriteName
     if sprite == "fuel-category/chemical" then sprite = "chemical" end
@@ -42,7 +45,7 @@ function SelectRemindor:GetSpriteButton(target)
 end
 
 function SelectRemindor:OnGuiClick(player, target)
-    if target.class == Recipe then
+    if target.IsRecipe then
         self.Recipe = target
         if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
             self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
@@ -77,22 +80,26 @@ function SelectRemindor:GetLinePart(children)
 end
 
 function SelectRemindor:GetBelongingWorkers(recipe)
-    return self.Workers:Where(
+    local result = self.Workers:Where(
         function(worker)
-            return worker.RecipeList:Where(
+            return worker.RecipeList:Any(
                 function(category) return category:Contains(recipe) end
-            ):Any()
+            )
         end
     )
+    return result
 end
 
 function SelectRemindor:GetBelongingRecipes(worker)
-    return self.Recipes:Where(
+    local result = self.Recipes:Where(
         function(recipe) return self:GetBelongingWorkers(recipe):Contains(worker) end
     )
+    return result
 end
 
 function SelectRemindor:Refresh(player)
+    assert(release or self.Recipe)
+    assert(release or self.Worker)
 
     local result = gui.build(player.gui.screen, {self:GetGui()})
 
