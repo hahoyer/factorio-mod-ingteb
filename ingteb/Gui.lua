@@ -1,5 +1,5 @@
 local mod_gui = require("mod-gui")
-local gui = require("__flib__.gui")
+local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -48,16 +48,17 @@ function Gui:OnStackChanged()
     if self.Active.Remindor then Remindor:RefreshStackChanged(Database) end
 end
 
-function Gui:PresentSelected(player, name)
+function Gui:PresentSelected(global, name)
     local target = self:GetObject(name)
     if target then
-        Gui:CloseSelector(player)
-        Gui:PresentTarget(player, target)
+        Gui:Close(global, "Selector")
+        Gui:PresentTarget(global, target)
         return target.CommonKey
     end
 end
 
-function Gui:FindTargets(player)
+function Gui:FindTargets(global)
+    local player = game.players[global.Index]
     self:EnsureDatabase()
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector)
@@ -129,9 +130,7 @@ function Gui:FindTargets(player)
                 __DebugAdapter.breakpoint()
             end
 
-            return result:Select(
-                function(_, key) return self:GetObject(key) end
-            )
+            return result:Select(function(_, key) return self:GetObject(key) end)
         end
 
         __DebugAdapter.breakpoint()
@@ -148,20 +147,20 @@ function Gui:ScanActiveGui(player)
 
 end
 
-function Gui:CloseSelector(player)
-    Helper.OnClose("Selector", self.Active.Selector)
-    player.gui.screen.Selector.destroy()
-    self.Active.Selector = nil
+function Gui:Close(global, gui)
+    local player = game.players[global.Index]
+    global.Location[gui]= self.Active[gui].location 
+    player.gui.screen[gui].destroy()
+    self.Active[gui] = nil
 end
 
-function Gui:ClosePresentator(player)
+function Gui:ClosePresentator(global)
+    local player = game.players[global.Index]
     if player.gui.screen.SelectRemindor then return end
     if not self.Active.Presentator then return end
-    Helper.OnClose("Presentator", self.Active.Presentator)
-    player.gui.screen.Presentator.destroy()
-    Presentator:Close()
+    self:Close(global, "Presentator")
+    Presentator:OnClose()
     global.Links.Presentator = {}
-    self.Active.Presentator = nil
 end
 
 function Gui:SelectTarget(player, targets)
@@ -169,19 +168,20 @@ function Gui:SelectTarget(player, targets)
     self:ScanActiveGui(player)
 end
 
-function Gui:PresentTargetFromCommonKey(player, targetKey)
+function Gui:PresentTargetFromCommonKey(global, targetKey)
     local target = self:GetObject(targetKey)
-    self:PresentTarget(player, target)
+    self:PresentTarget(global, target)
 end
 
-function Gui:PresentTarget(player, target)
+function Gui:PresentTarget(global, target)
+    local player = game.players[global.Index]
     local actualTarget = target
     if target.class == Entity and target.Item then actualTarget = target.Item end
 
     assert(release or actualTarget.Prototype)
 
-    self:ClosePresentator(player)
-    Presentator:new(player, actualTarget)
+    self:ClosePresentator(global)
+    Presentator:new(global, actualTarget)
     self:ScanActiveGui(player)
     return target.CommonKey
 end
@@ -201,21 +201,21 @@ function Gui:AddRemindor(player, selection)
     Remindor:SetTask(selection)
 end
 
-function Gui:OnMainButtonPressed(player)
+function Gui:OnMainButtonPressed(global)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector or not self.Active.Presentator)
 
     if self.Active.Selector then
-        self:CloseSelector(player)
+        self:Close(global, "Selector")
     elseif self.Active.Presentator then
-        self:ClosePresentator(player)
+        self:ClosePresentator(global)
     else
-        local targets = self:FindTargets(player)
-        player.opened = nil
+        local targets = self:FindTargets(global)
+        game.players[global.Index].opened = nil
         if #targets == 1 then
-            return self:PresentTarget(player, targets[1])
+            return self:PresentTarget(global, targets[1])
         else
-            self:SelectTarget(player, targets)
+            self:SelectTarget(global, targets)
         end
     end
 end
@@ -243,11 +243,12 @@ function Gui:GetObject(commonKey)
     return self.Database:GetProxyFromCommonKey(commonKey)
 end
 
-function Gui:OnGuiClick(player, event, site)
+function Gui:OnGuiClick(global, event, site)
+    local player = game.players[global.Index]
 
     local element = event.element
     if element == Gui.Active.ingteb then
-        return self:OnMainButtonPressed(player)
+        return self:OnMainButtonPressed(global)
     elseif element == Gui.Active.Selector then
         return
     elseif element == Gui.Active.Presentator then
@@ -270,16 +271,16 @@ function Gui:OnGuiClick(player, event, site)
 
         if action.Research then
             if action.Research.IsReady then
-                self:DirectQueueResearch(player, action.Research)
+                self:DirectQueueResearch(global, action.Research)
             elseif action.Multiple then
-                self:MulipleQueueResearch(player, action.Research)
+                self:MulipleQueueResearch(global, action.Research)
             end
         end
 
-        if action.ReminderTask then self:SelectRemindor(player, action.ReminderTask) end
+        if action.ReminderTask then self:SelectRemindor(global, action.ReminderTask) end
 
         if action.Presenting then
-            local result = self:PresentTarget(player, action.Presenting)
+            local result = self:PresentTarget(global, action.Presenting)
             return result
         end
 
@@ -354,7 +355,5 @@ function Gui:MulipleQueueResearch(player, research)
     if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end
 
 end
-
-function Gui:OnLoad() Remindor:OnLoad() end
 
 return Gui

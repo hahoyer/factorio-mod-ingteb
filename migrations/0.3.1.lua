@@ -1,3 +1,3 @@
-local gui = require("__flib__.gui")
+local gui = require("__flib__.gui-beta")
 gui.init()
-game.print("[ingteb] migration 0.3.2")
+game.print("[ingteb] migration 0.3.1")

@@ -1,4 +1,4 @@
-local gui = require("__flib__.gui")
+local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -34,15 +34,10 @@ function Task:GetLine(target, required, tooltip)
             {
                 type = "sprite",
                 sprite = "utility/close_black",
-                save_as = "Remindor.Task.CloseButton",
+                ref = {"Remindor", "Task", "CloseButton"},
                 tooltip = "press to close.",
             },
-            {
-                type = "condition",
-                condition = target,
-                children = {Spritor:GetSpriteButtonAndRegister(target)},
-            },
-
+            target and Spritor:GetSpriteButtonAndRegister(target) or {type = "empty-widget"},
             Spritor:GetLine(required, tooltip),
         },
     }
@@ -153,13 +148,16 @@ function Task:GetGui()
             Spritor:GetSpriteButtonAndRegister(self.Target),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
-            Spritor:GetLine( self:GetRequired(), "tooltip"),
+            Spritor:GetLine(self:GetRequired(), "tooltip"),
             {
                 type = "sprite-button",
                 sprite = "utility/close_white",
                 style = "frame_action_button",
-                save_as = "Remindor.Task.CloseButton",
-                handlers = "Remindor.CloseTask",
+                ref = {"Remindor", "Task", "CloseButton"},
+                name = self.Target.CommonKey,
+                actions = {
+                    on_click = {gui = "Remindor.Task", action = "Closed"},
+                },
                 tooltip = "press to close.",
             },
 
@@ -253,10 +251,6 @@ function Remindor:Refresh()
 end
 
 function Remindor:RefreshResearchChanged() self:Refresh() end
-
-function Remindor:OnLoad()
-    -- Remindor:new()
-end
 
 function Remindor:new(frame)
     Spritor = SpritorClass:new("Remindor")

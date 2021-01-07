@@ -1,4 +1,4 @@
-local gui = require("__flib__.gui")
+local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -22,9 +22,10 @@ local function EnsureKey(data, key, value)
 end
 
 local Selector = {}
---- @param player table LuaGuiElement
+--- @param global table global data for current player
 --- @param targets table Array | nil
-function Selector:new(player, targets)
+function Selector:new(global, targets)
+    local player = game.players[global.Index]
     local children = {self:Show(targets)}
     local result = gui.build(
         player.gui.screen, {
@@ -32,8 +33,11 @@ function Selector:new(player, targets)
                 type = "frame",
                 caption = {"ingteb-utility.selector"},
                 name = "Selector",
-                save_as = "Main",
-                handlers = "Selector.Main",
+                ref = {"Main"},
+                actions = {
+                    on_location_changed = {gui = "Selector", action = "Moved"},
+                    on_closed = {gui = "Selector", action = "Closed"},
+                },
                 direction = "vertical",
                 style = "ingteb-main-frame",
                 children = children,
@@ -126,7 +130,9 @@ function Selector:GetGoodsPanel(goods)
         sprite = (goods.object_name == "LuaItemPrototype" and "item" or "fluid") .. "." .. goods.name,
         name = name,
         tooltip = goods.localised_name,
-        handlers = "Selector.Goods",
+        actions = {
+            on_click = {gui = "Selector", action = "Click"},
+        },
     }
 end
 
@@ -149,11 +155,10 @@ function Selector:ShowAllItems()
 
     return {
         type = "tabbed-pane",
-        children = groups:ToArray():Select(
+        tabs = groups:ToArray():Select(
             function(group)
                 local groupHeader = group[next(group)][1].group
                 return {
-                    type = "tab-and-content",
                     tab = {
                         type = "tab",
                         caption = "[item-group=" .. groupHeader.name .. "]",

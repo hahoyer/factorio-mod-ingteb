@@ -1,5 +1,5 @@
 local Constants = require("Constants")
-local gui = require("__flib__.gui")
+local gui = require("__flib__.gui-beta")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -210,7 +210,6 @@ local function GetSubGroupTabPanel(subGroup, recipeLines)
         caption = main.RichTextName
     end
     return {
-        type = "tab-and-content",
         tab = {
             type = "tab",
             name = "GetSubGroupTabPanel " .. GetNextId(),
@@ -256,7 +255,7 @@ local function GetGroupPanelContent(value, inCount, outCount)
     return {
         type = "tabbed-pane",
         name = "GetGroupPanelContent " .. GetNextId(),
-        children = subGroups:Select(
+        tabs = subGroups:Select(
             function(value)
                 local recipeLines = GetSubGroupPanelContent(value, inCount, outCount)
                 return (GetSubGroupTabPanel(value, recipeLines))
@@ -269,7 +268,6 @@ end
 local function GetGroupTabPanel(value, content)
     local group = value[1].Group
     return {
-        type = "tab-and-content",
         tab = {
             type = "tab",
             name = "GetGroupTabPanel " .. GetNextId(),
@@ -300,7 +298,7 @@ local function GetCraftigGroupData(target, inCount, outCount)
 
     return {
         type = "tabbed-pane",
-        children = groups:Select(
+        tabs = groups:Select(
             function(value)
                 local content = GetGroupPanelContent(value, inCount, outCount)
                 return GetGroupTabPanel(value, content)
@@ -528,7 +526,7 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 
 end
 
-function Presentator:Close() Spritor:Close() end
+function Presentator:OnClose() Spritor:Close() end
 
 function Presentator:RefreshMainInventoryChanged(dataBase)
     Spritor:RefreshMainInventoryChanged(dataBase)
@@ -538,15 +536,20 @@ function Presentator:RefreshStackChanged(dataBase) end
 
 function Presentator:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
 
-function Presentator:new(player, target)
+function Presentator:new(global, target)
+    local player = game.players[global.Index]
+    global.Links.Presentator = {}
     local result = gui.build(
         player.gui.screen, {
             {
                 type = "frame",
                 caption = target.LocalisedName,
                 name = "Presentator",
-                save_as = "Main",
-                handlers = "Presentator.Main",
+                ref = {"Main"},
+                actions = {
+                    on_location_changed = {gui = "Presentator", action = "Moved"},
+                    on_closed = {gui = "Presentator", action = "Closed"},
+                },
                 direction = "vertical",
                 style = "ingteb-main-frame",
                 children = {self:GetGui(target)},
@@ -564,7 +567,6 @@ end
 
 function Presentator:GetGui(target)
     Spritor.DynamicElements = Dictionary:new() --
-    global.Links.Presentator = {}
 
     target:SortAll()
     assert(
