@@ -1,3 +1,3 @@
-local EventManager = require("ingteb.EventManager"):new()
+require("ingteb.EventManager"):new()
 local y = 1 --/w
 

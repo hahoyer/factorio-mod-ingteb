@@ -42,11 +42,11 @@ function EventManager:OnMainKey(event)
     if target then self.Global.History:ResetTo(target) end
 end
 
-function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged() end
+function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged(self.Global) end
 
 function EventManager:OnStackChanged() Gui:OnStackChanged() end
 
-function EventManager:OnResearchChanged(event) Gui:OnResearchFinished(event.research) end
+function EventManager:OnResearchChanged(event) Gui:OnResearchFinished(self.Global, event.research) end
 
 function EventManager:OnForeClicked(event)
     if Gui.Active.Presentator then
@@ -82,6 +82,7 @@ if false then
 end
 
 function EventManager:OnGuiEvent(event)
+    local self = self:adopt{}
     self.Player = game.players[event.player_index]
     local message = gui.read_action(event)
     if message then
@@ -138,14 +139,28 @@ function EventManager:OnGuiEvent(event)
                 SelectRemindor.Target = nil
                 Gui:AddRemindor(self.Global, selection)
             elseif message.action == "Click" then
-                SelectRemindor:OnGuiClick(self.Global, Gui:GetObject(self.Global, event.element.name))
+                SelectRemindor:OnGuiClick(
+                    self.Global, Gui:GetObject(self.Global, event.element.name)
+                )
+            else
+                assert(release)
+            end
+        elseif message.gui == "ingteb" then
+            if message.action == "Click" then
+                if event.button == defines.mouse_button_type.left then
+                    Gui:OnMainButtonPressed(self.Global)
+                elseif event.button == defines.mouse_button_type.right then
+                    Gui:CreateRemindor(self.Global)
+                else
+                    assert(release)
+                end
             else
                 assert(release)
             end
         else
             assert(release)
         end
-    elseif event.element.tags then
+    elseif event.element and event.element.tags then
     else
         assert(
             release --
@@ -171,8 +186,21 @@ function EventManager:OnLoad()
     end
 end
 
+function EventManager:OnInitialisePlayer(player)
+    global.Players[player.index] = {
+        Index = player.index,
+        Links = {Presentator = {}, Remindor = {}},
+        Location = {},
+        History = History:new(),
+    }
+    Gui:EnsureMainButton(player)
+end
+
+local instance
+
 function EventManager:OnPlayerCreated(event)
-    self:OnInitializePlayer(game.players[event.player_index])
+    if instance then end
+    self:OnInitialisePlayer(game.players[event.player_index])
 end
 
 function EventManager:OnPlayerRemoved(event) self.Global.Players[event.player_index] = nil end
@@ -191,19 +219,15 @@ function EventManager:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
         global.Players[index] = {}
-        self:OnInitializePlayer(player)
+        self:OnInitialisePlayer(player)
     end
 end
 
 function EventManager:new()
-    local instance = core.EventManager:new()
-    self:adopt(instance)
-
-    self = instance
-    EventManager = self
+    local self = self:adopt{}
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
-    self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
+    self:SetHandler(defines.events.on_player_created, EventManager.OnPlayerCreated)
     self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)
@@ -215,6 +239,7 @@ function EventManager:new()
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
 
+    instance = self
     return self
 end
 

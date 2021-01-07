@@ -32,11 +32,6 @@ EventManager.property = {
     Global = {get = function(self) return global.Players[self.Player.index] end},
 }
 
-function EventManager:new()
-    local self = EventManager:adopt{}
-    return self
-end
-
 function EventManager:Watch(handler, eventId)
     return function(...)
         self:Enter(eventId, ...)

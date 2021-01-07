@@ -38,9 +38,9 @@ function Gui:GetInventoryData(inventory, result)
     end
 end
 
-function Gui:OnMainInventoryChanged()
+function Gui:OnMainInventoryChanged(global)
     Presentator:RefreshMainInventoryChanged(Database)
-    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
+    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(global, Database) end
 end
 
 function Gui:OnStackChanged()
@@ -49,7 +49,7 @@ function Gui:OnStackChanged()
 end
 
 function Gui:PresentSelected(global, name)
-    local target = self:GetObject(name)
+    local target = self:GetObject(global, name)
     if target then
         Gui:Close(global, "Selector")
         Gui:PresentTarget(global, target)
@@ -130,7 +130,7 @@ function Gui:FindTargets(global)
                 __DebugAdapter.breakpoint()
             end
 
-            return result:Select(function(_, key) return self:GetObject(key) end)
+            return result:Select(function(_, key) return self:GetObject(global, key) end)
         end
 
         __DebugAdapter.breakpoint()
@@ -175,9 +175,9 @@ function Gui:CloseRemindor(global)
     Remindor:Close()
 end
 
-function Gui:SelectTarget(player, targets)
-    Selector:new(player, targets)
-    self:ScanActiveGui(player)
+function Gui:SelectTarget(global, targets)
+    Selector:new(global, targets)
+    self:ScanActiveGui(game.players[global.Index])
 end
 
 function Gui:PresentTargetFromCommonKey(global, targetKey)
@@ -201,6 +201,11 @@ end
 function Gui:SelectRemindor(player, target) SelectRemindor:new(player, target) end
 
 function Gui:AddRemindor(global, selection)
+    self:CreateRemindor(global)
+    Remindor:SetTask(global, selection)
+end
+
+function Gui:CreateRemindor(global)
     local player = game.players[global.Index]
     if not self.Active.Remindor then
         local frame = mod_gui.get_frame_flow(player).add {
@@ -211,7 +216,6 @@ function Gui:AddRemindor(global, selection)
         self.Active.Remindor = frame
         Remindor:new(frame)
     end
-    Remindor:SetTask(global, selection)
 end
 
 function Gui:OnMainButtonPressed(global)
@@ -236,14 +240,20 @@ end
 function Gui:EnsureMainButton(player)
     if player then
         if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
-        if mod_gui.get_button_flow(player).ingteb == nil then
+        local frame = mod_gui.get_button_flow(player)
+        if frame.ingteb == nil then
             assert(release or not self.Active.ingteb)
-            mod_gui.get_button_flow(player).add {
-                type = "sprite-button",
-                name = "ingteb",
-                sprite = "ingteb",
-                tooltip = {"ingteb-utility.ingteb-button-description"},
-            }
+            gui.build(
+                frame, {
+                    {
+                        type = "sprite-button",
+                        name = "ingteb",
+                        sprite = "ingteb",
+                        tooltip = {"ingteb-utility.ingteb-button-description"},
+                        actions = {on_click = {gui = "ingteb", action = "Click"}},
+                    },
+                }
+            )
         end
         self:ScanActiveGui(player)
     else
@@ -318,19 +328,20 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
     tabOrder:Append(dropTabIndex)
 end
 
-function Gui:OnResearchRefresh(research)
+function Gui:OnResearchRefresh(global, research)
     if Database.IsInitialized then
-        Gui:EnsureDatabase()
+        Gui:EnsureDatabase(global)
         Gui.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
         if self.Active.Remindor then Remindor:RefreshResearchChanged() end
     end
 end
 
-function Gui:OnResearchFinished(research) Gui:OnResearchRefresh(research) end
+function Gui:OnResearchFinished(global, research) Gui:OnResearchRefresh(global, research) end
 function Gui:Print(player, text) player.print {"", "[ingteb]", text} end
 
-function Gui:DirectQueueResearch(player, research)
+function Gui:DirectQueueResearch(global, research)
+    local player = game.players[global.Index]
     local added = player.force.add_research(research.Name)
     if added then
         self:Print(
@@ -345,7 +356,8 @@ function Gui:DirectQueueResearch(player, research)
     end
 end
 
-function Gui:MulipleQueueResearch(player, research)
+function Gui:MulipleQueueResearch(global, research)
+    local player = game.players[global.Index]
     local queued = Array:new{}
     local message = "ingteb-utility.research-no-ready-prerequisite"
     repeat
@@ -362,7 +374,7 @@ function Gui:MulipleQueueResearch(player, research)
                 player,
                     {"ingteb-utility.added-to-research-queue", research.Prototype.localised_name}
             )
-            Gui:OnResearchRefresh(research.Prototype)
+            Gui:OnResearchRefresh(global, research.Prototype)
         end
     )
     if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end

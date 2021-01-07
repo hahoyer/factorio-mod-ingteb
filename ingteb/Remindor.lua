@@ -133,7 +133,7 @@ function Remindor:SetTask(global, selection)
     self:Refresh(global)
 end
 
-function Remindor:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
+function Remindor:RefreshMainInventoryChanged(global, dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
 
 function Remindor:RefreshStackChanged(dataBase) end
 
