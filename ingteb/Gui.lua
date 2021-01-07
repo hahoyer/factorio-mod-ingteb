@@ -149,9 +149,14 @@ end
 
 function Gui:Close(global, gui)
     local player = game.players[global.Index]
-    global.Location[gui]= self.Active[gui].location 
+    global.Location[gui] = self.Active[gui].location
     player.gui.screen[gui].destroy()
     self.Active[gui] = nil
+end
+
+function Gui:CloseRemindorTask(global, key)
+    Remindor:CloseTask(global, key)
+    if #global.Remindor.List == 0 then self:CloseRemindor(global) end
 end
 
 function Gui:ClosePresentator(global)
@@ -161,6 +166,13 @@ function Gui:ClosePresentator(global)
     self:Close(global, "Presentator")
     Presentator:OnClose()
     global.Links.Presentator = {}
+end
+
+function Gui:CloseRemindor(global)
+    local player = game.players[global.Index]
+    mod_gui.get_frame_flow(player).Remindor.destroy()
+    self.Active.Remindor = nil
+    Remindor:Close()
 end
 
 function Gui:SelectTarget(player, targets)
@@ -199,7 +211,7 @@ function Gui:AddRemindor(global, selection)
         self.Active.Remindor = frame
         Remindor:new(frame)
     end
-    Remindor:SetTask(global,selection)
+    Remindor:SetTask(global, selection)
 end
 
 function Gui:OnMainButtonPressed(global)

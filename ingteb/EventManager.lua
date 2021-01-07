@@ -95,7 +95,7 @@ function EventManager:OnGuiEvent(event)
             end
         elseif message.gui == "Remindor.Task" then
             if message.action == "Closed" then
-                Remindor:CloseTask(self.Global, event.element.name)
+                Gui:CloseRemindorTask(self.Global, event.element.name)
             else
                 assert(release)
             end

@@ -129,9 +129,8 @@ function Remindor:SetTask(global, selection)
         global.Remindor.List:Append(task)
         index = #global.Remindor.List
         global.Remindor.Dictionary[key] = index
-        task:CreatePanel(Remindor.Frame.Tasks, key)
     end
-
+    self:Refresh(global)
 end
 
 function Remindor:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
@@ -186,11 +185,15 @@ function Remindor:CloseTask(global, name)
     self:Refresh(global)
 end
 
+function Remindor:Close() self.Frame = nil end
+
 function Remindor:Refresh(global)
     self:EnsureGlobal(global)
     global.Remindor.Links = Dictionary:new{}
-    Remindor.Frame.Tasks.clear()
-    global.Remindor.List:Select(function(task) task:CreatePanel(Remindor.Frame.Tasks) end)
+    if self.Frame then self.Frame.Tasks.clear() end
+    global.Remindor.List:Select(
+        function(task) task:CreatePanel(self.Frame.Tasks, task:GetCommonKey()) end
+    )
 end
 
 function Remindor:RefreshResearchChanged(global) self:Refresh(global) end
@@ -198,9 +201,27 @@ function Remindor:RefreshResearchChanged(global) self:Refresh(global) end
 function Remindor:new(frame)
     Spritor = SpritorClass:new("Remindor")
     Remindor.Frame = frame
-    local head = frame.add {type = "flow", direction = "horizontal"}
-    head.add {type = "label", caption = {"ingteb-utility.reminder-tasks"}}
-    frame.add {type = "flow", name = "Tasks", direction = "vertical"}
+    gui.build(
+        frame, {
+            {
+                type = "flow",
+                direction = "horizontal",
+                children = {
+                    {type = "label", caption = {"ingteb-utility.reminder-tasks"}},
+                    {type = "empty-widget", style = "flib_titlebar_drag_handle"},
+                    {
+                        type = "sprite-button",
+                        sprite = "utility/close_white",
+                        tooltip = "press to hide.",
+                        actions = {on_click = {gui = "Remindor", action = "Closed"}},
+                        style = "frame_action_button",
+                    },
+                },
+            },
+            {type = "flow", name = "Tasks", direction = "vertical"},
+        }
+    )
+
 end
 
 return Remindor
