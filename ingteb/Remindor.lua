@@ -15,7 +15,7 @@ local Remindor = {}
 
 Spritor = {}
 
-function Task:CreateCloseButton(frame, functionData)
+function Task:CreateCloseButton(global, frame, functionData)
     local closeButton = frame.add {
         type = "sprite",
         sprite = "utility/close_black",
@@ -23,8 +23,6 @@ function Task:CreateCloseButton(frame, functionData)
     }
     global.Remindor.Links[closeButton.index] = functionData
 end
-
-function Task:RemoveOption(commonKey) self.Filter[commonKey] = true end
 
 function Task:GetLine(target, required, tooltip)
     return {
@@ -43,7 +41,7 @@ function Task:GetLine(target, required, tooltip)
     }
 end
 
-function Task:CreateLine(frame, target, required, functionData, tooltip)
+function Task:CreateLine(global, frame, target, required, functionData, tooltip)
     local data = gui.build(frame, self:GetLine(target, required, tooltip))
     global.Remindor.Links[data.Remindor.Task.CloseButton.index] = functionData
 end
@@ -53,7 +51,6 @@ function Task:GetRestructuredWorker(worker) return {Worker = worker, Required = 
 function Task:GetRestructuredRecipe(recipe)
     local result = {Recipe = recipe, Required = RequiredThings:new()}
     result.Workers = recipe.Category.Workers --
-    :Where(function(worker) return not self.Filter[worker.CommonKey] end) --
     :Select(
         function(worker)
             local workerData = self:GetRestructuredWorker(worker)
@@ -66,84 +63,21 @@ end
 
 function Task:GetRequired() return self.Worker.Required:Concat(self.Recipe.Required) end
 
-function Task:CreatePanel1(frame)
-    local vertical = frame.add {
-        type = "frame",
-        name = self.Target.CommonKey,
-        direction = "vertical",
-    }
-
-    local data = self:GetRestructuredData()
-
-    Task:CreateLine(
-        vertical, data.Target, data.Required, {type = "close-task", key = data.Target.CommonKey},
-            {"ingteb-utility.required-for-item"}
-    )
-
-    local recipes = data.Recipes
-    if not recipes:Any() then return end
-
-    local bodyFrame = vertical.add {type = "flow", direction = "horizontal"}
-    bodyFrame.add {type = "line", direction = "vertical"}
-    local body = bodyFrame.add {type = "flow", direction = "vertical"}
-    recipes:Select(function(recipe) self:CreateRecipeEntry(body, recipe) end)
-
-end
-
-function Task:CreateRecipeEntry(body, recipeData)
-    local headLine = body.add {type = "flow", direction = "horizontal"}
-
-    Task:CreateLine(
-        headLine, recipeData.Recipe, recipeData.Required, {
-            type = "remove-option",
-            key = self.Target.CommonKey,
-            subKey = recipeData.Recipe.CommonKey,
-        }, {"ingteb-utility.required-technologies-for-recipe"}
-    )
-
-    local bodyFrame = body.add {type = "flow", direction = "horizontal"}
-    bodyFrame.add {type = "line", direction = "vertical"}
-    body = bodyFrame.add {type = "flow", direction = "vertical"}
-
-    recipeData.Workers --
-    :Where(function(worker) return not self.Filter[worker.CommonKey] end) --
-    :Select(function(workerInformation) self:CreateWorkerEntry(body, workerInformation) end)
-    body.add {type = "line", direction = "horizontal"}
-end
-
-function Task:CreateWorkerEntry(frame, workerData)
-    local headLine = frame.add {type = "flow", direction = "horizontal"}
-
-    Task:CreateLine(
-        headLine, workerData.Worker, workerData.Required, {
-            type = "remove-option",
-            key = self.Target.CommonKey,
-            subKey = workerData.Worker.CommonKey,
-        }, {"ingteb-utility.required-technologies-for-worker"}
-    )
-
-    if true then return end
-
-    workerData.Recipes:Select(
-        function(recipeInformation) self:CreateRecipeEntry(frame, recipeInformation) end
-    )
-end
-
 function Task:new(selection)
     local instance = Task:adopt(selection)
     return instance
 end
 
-function Task:CreatePanel(frame)
-    local guiData = self:GetGui()
+function Task:CreatePanel(frame, key)
+    local guiData = self:GetGui(key)
     gui.build(frame, {guiData})
 end
 
-function Task:GetGui()
+function Task:GetGui(key)
     return {
         type = "frame",
-        name = self.Target.CommonKey,
         direction = "horizontal",
+        name = key,
         children = {
             Spritor:GetSpriteButtonAndRegister(self.Target),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
@@ -154,10 +88,8 @@ function Task:GetGui()
                 sprite = "utility/close_white",
                 style = "frame_action_button",
                 ref = {"Remindor", "Task", "CloseButton"},
-                name = self.Target.CommonKey,
-                actions = {
-                    on_click = {gui = "Remindor.Task", action = "Closed"},
-                },
+                actions = {on_click = {gui = "Remindor.Task", action = "Closed"}},
+                name = key,
                 tooltip = "press to close.",
             },
 
@@ -165,14 +97,14 @@ function Task:GetGui()
     }
 end
 
-function Remindor:EnsureGlobal()
+function Remindor:EnsureGlobal(global)
     if not global.Remindor then
         global.Remindor = {Dictionary = {}, List = Array:new{}, Links = Dictionary:new{}}
     end
 end
 
-function Remindor:RefreshClasses(frame, database)
-    self:EnsureGlobal()
+function Remindor:RefreshClasses(global, frame, database)
+    self:EnsureGlobal(global)
     if getmetatable(global.Remindor.List) then return end
 
     Remindor.Frame = frame
@@ -188,15 +120,16 @@ function Remindor:RefreshClasses(frame, database)
     )
 end
 
-function Remindor:SetTask(selection)
-    self:EnsureGlobal()
-    local index = global.Remindor.Dictionary[selection:GetCommonKey()]
+function Remindor:SetTask(global, selection)
+    self:EnsureGlobal(global)
+    local key = selection:GetCommonKey()
+    local index = global.Remindor.Dictionary[key]
     if not index then
         local task = Task:new(selection)
         global.Remindor.List:Append(task)
         index = #global.Remindor.List
-        global.Remindor.Dictionary[selection:GetCommonKey()] = index
-        task:CreatePanel(Remindor.Frame.Tasks)
+        global.Remindor.Dictionary[key] = index
+        task:CreatePanel(Remindor.Frame.Tasks, key)
     end
 
 end
@@ -205,7 +138,7 @@ function Remindor:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInven
 
 function Remindor:RefreshStackChanged(dataBase) end
 
-function Remindor:AssertValidLinks()
+function Remindor:AssertValidLinks(global)
     global.Remindor.Links:Select(
         function(link, key)
             local element = self:GetGuiElement(self.Frame, key)
@@ -222,9 +155,9 @@ function Remindor:GetGuiElement(element, index)
     end
 end
 
-function Remindor:OnGuiClick(event)
+function Remindor:OnGuiClick(global, event)
     self:AssertValidLinks()
-    self:EnsureGlobal()
+    self:EnsureGlobal(global)
     local linkIndex = event.element.index
     local functionData = global.Remindor.Links[linkIndex]
     if not functionData then return end
@@ -240,17 +173,27 @@ function Remindor:OnGuiClick(event)
     else
         assert(release)
     end
-    self:Refresh()
+    self:Refresh(global)
 end
 
-function Remindor:Refresh()
-    self:EnsureGlobal()
+function Remindor:CloseTask(global, name)
+    self:AssertValidLinks(global)
+    self:EnsureGlobal(global)
+    local index = global.Remindor.Dictionary[name]
+    assert(release or index)
+    global.Remindor.Dictionary[name] = nil
+    global.Remindor.List:Remove(index)
+    self:Refresh(global)
+end
+
+function Remindor:Refresh(global)
+    self:EnsureGlobal(global)
     global.Remindor.Links = Dictionary:new{}
     Remindor.Frame.Tasks.clear()
     global.Remindor.List:Select(function(task) task:CreatePanel(Remindor.Frame.Tasks) end)
 end
 
-function Remindor:RefreshResearchChanged() self:Refresh() end
+function Remindor:RefreshResearchChanged(global) self:Refresh(global) end
 
 function Remindor:new(frame)
     Spritor = SpritorClass:new("Remindor")

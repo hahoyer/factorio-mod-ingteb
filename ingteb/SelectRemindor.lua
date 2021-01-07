@@ -52,12 +52,12 @@ function SelectRemindor:OnGuiClick(global, target)
         end
     else
         self.Worker = target
-        __DebugAdapter.print(indent.."------------------------------------------------------")
-        __DebugAdapter.print(indent.."SelectRemindor:OnGuiClick worker = {target.CommonKey}")
+        __DebugAdapter.print(indent .. "------------------------------------------------------")
+        __DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
         local old = AddIndent()
         local recipes = self:GetBelongingRecipes(self.Worker)
         indent = old
-        __DebugAdapter.print(indent.."------------------------------------------------------")
+        __DebugAdapter.print(indent .. "------------------------------------------------------")
         if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
     end
     local player = game.players[global.Index]
@@ -85,48 +85,48 @@ function SelectRemindor:GetLinePart(children)
 end
 
 function SelectRemindor:GetBelongingWorkers(recipe)
-    __DebugAdapter.print(indent.."SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
+    __DebugAdapter.print(indent .. "SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
     local old = AddIndent()
     local results = self.Workers:Where(
         function(worker)
-            __DebugAdapter.print(indent.."worker = {worker.CommonKey}")
+            __DebugAdapter.print(indent .. "worker = {worker.CommonKey}")
             local old = AddIndent()
             local result = worker.RecipeList:Any(
-                function(category)
-                    __DebugAdapter.print(indent.."category = {category.CommonKey}")
+                function(category, name)
+                    __DebugAdapter.print(indent .. "category = {name}")
                     local old = AddIndent()
                     local result = category:Contains(recipe)
                     indent = old
-                    __DebugAdapter.print(indent.."result = {result}")
+                    __DebugAdapter.print(indent .. "result = {result}")
                     return result
                 end
             )
             indent = old
-            __DebugAdapter.print(indent.."result = {result}")
+            __DebugAdapter.print(indent .. "result = {result}")
             return result
         end
     )
     indent = old
-    __DebugAdapter.print(indent.."results = {results}")
+    __DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 
 function SelectRemindor:GetBelongingRecipes(worker)
-    __DebugAdapter.print(indent.."SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
+    __DebugAdapter.print(indent .. "SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
     local old = AddIndent()
     local results = self.Recipes:Where(
         function(recipe)
-            __DebugAdapter.print(indent.."recipe = {recipe.CommonKey}")
+            __DebugAdapter.print(indent .. "recipe = {recipe.CommonKey}")
             local old = AddIndent()
             local workers = self:GetBelongingWorkers(recipe)
             local result = workers:Contains(worker)
             indent = old
-            __DebugAdapter.print(indent.."result = {result}")
-            return result 
+            __DebugAdapter.print(indent .. "result = {result}")
+            return result
         end
     )
     indent = old
-    __DebugAdapter.print(indent.."results = {results}")
+    __DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 

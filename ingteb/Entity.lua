@@ -47,7 +47,7 @@ Entity.property = {
     Categories = {
         cache = true,
         get = function(self)
-            --if self.Name == "character" then __DebugAdapter.breakpoint() end
+            --if self.Name == "big-processing-machine" then __DebugAdapter.breakpoint() end
             local xreturn = self.Database.Proxies.Category -- 
             :Where(
                 function(category)

@@ -10,6 +10,7 @@ local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}
 local SelectRemindor = require("ingteb.SelectRemindor")
+local Remindor = require("ingteb.Remindor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -92,6 +93,12 @@ function EventManager:OnGuiEvent(event)
             else
                 assert(release)
             end
+        elseif message.gui == "Remindor.Task" then
+            if message.action == "Closed" then
+                Remindor:CloseTask(self.Global, event.element.name)
+            else
+                assert(release)
+            end
         elseif message.gui == "Presentator" then
             if message.action == "Closed" then
                 Gui:ClosePresentator(self.Global)
@@ -121,17 +128,17 @@ function EventManager:OnGuiEvent(event)
             end
         elseif message.gui == "SelectRemindor" then
             if message.action == "Closed" then
-                SelectRemindor:OnClose(self.Global)
+                SelectRemindor:OnClose(self.Player)
                 SelectRemindor.Target = nil
             elseif message.action == "Moved" then
                 self.Global.Location.SelectRemindor = event.element.location
             elseif message.action == "Enter" then
                 local selection = SelectRemindor:GetSelection()
-                SelectRemindor:OnClose(self.Global)
+                SelectRemindor:OnClose(self.Player)
                 SelectRemindor.Target = nil
                 Gui:AddRemindor(self.Global, selection)
             elseif message.action == "Click" then
-                SelectRemindor:OnGuiClick(self.Global, Gui:GetObject(event.element.name))
+                SelectRemindor:OnGuiClick(self.Global, Gui:GetObject(self.Global, event.element.name))
             else
                 assert(release)
             end

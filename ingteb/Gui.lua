@@ -15,9 +15,9 @@ local Entity = require("ingteb.Entity")
 
 local Gui = {Active = {}}
 
-function Gui:EnsureDatabase()
+function Gui:EnsureDatabase(global)
     self.Database = Database:Ensure()
-    Remindor:RefreshClasses(self.Active.Remindor, self.Database)
+    Remindor:RefreshClasses(global, self.Active.Remindor, self.Database)
 end
 
 function Gui:GetRecipeData(recipePrototype, result)
@@ -59,7 +59,7 @@ end
 
 function Gui:FindTargets(global)
     local player = game.players[global.Index]
-    self:EnsureDatabase()
+    self:EnsureDatabase(global)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector)
     assert(release or not self.Active.Presentator)
@@ -169,7 +169,7 @@ function Gui:SelectTarget(player, targets)
 end
 
 function Gui:PresentTargetFromCommonKey(global, targetKey)
-    local target = self:GetObject(targetKey)
+    local target = self:GetObject(global, targetKey)
     self:PresentTarget(global, target)
 end
 
@@ -188,7 +188,8 @@ end
 
 function Gui:SelectRemindor(player, target) SelectRemindor:new(player, target) end
 
-function Gui:AddRemindor(player, selection)
+function Gui:AddRemindor(global, selection)
+    local player = game.players[global.Index]
     if not self.Active.Remindor then
         local frame = mod_gui.get_frame_flow(player).add {
             type = "frame",
@@ -198,7 +199,7 @@ function Gui:AddRemindor(player, selection)
         self.Active.Remindor = frame
         Remindor:new(frame)
     end
-    Remindor:SetTask(selection)
+    Remindor:SetTask(global,selection)
 end
 
 function Gui:OnMainButtonPressed(global)
@@ -238,8 +239,8 @@ function Gui:EnsureMainButton(player)
     end
 end
 
-function Gui:GetObject(commonKey)
-    self:EnsureDatabase()
+function Gui:GetObject(global, commonKey)
+    self:EnsureDatabase(global)
     return self.Database:GetProxyFromCommonKey(commonKey)
 end
 
@@ -257,7 +258,7 @@ function Gui:OnGuiClick(global, event, site)
         return
     end
 
-    local target = self:GetObject(event.element.name)
+    local target = self:GetObject(global, event.element.name)
     if target and target.Prototype then
         local action = target:GetAction(event)
         if not action then return end
