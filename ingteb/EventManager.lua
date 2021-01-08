@@ -106,9 +106,14 @@ function EventManager:OnGuiEvent(event)
             elseif message.action == "Moved" then
                 self.Global.Location.Selector = event.element.location
             elseif message.action == "Click" then
-                local target = Gui:PresentSelected(self.Global, event.element.name)
-                if target then self.Global.History:ResetTo(target) end
-                return true
+                if event.button == defines.mouse_button_type.left then
+                    local target = Gui:PresentSelected(self.Global, event.element.name)
+                    if target then self.Global.History:ResetTo(target) end
+                else
+                    Gui:RemindSelected(
+                        self.Global, event.element.name, Helper.GetLocation(event.element)
+                    )
+                end
             else
                 assert(release)
             end

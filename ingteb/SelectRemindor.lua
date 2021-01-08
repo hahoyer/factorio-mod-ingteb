@@ -130,7 +130,9 @@ function SelectRemindor:GetBelongingRecipes(worker)
     return results
 end
 
-function SelectRemindor:Refresh(global)
+---@param global table Global data for player
+---@param location table GuiLocation (optional)
+function SelectRemindor:Refresh(global, location)
     assert(release or self.Recipe)
     assert(release or self.Worker)
 
@@ -139,7 +141,9 @@ function SelectRemindor:Refresh(global)
 
     result.DragBar.drag_target = result.Main
 
-    if global.Location.SelectRemindor then
+    if location then 
+        result.Main.location = location
+    elseif global.Location.SelectRemindor then
         result.Main.location = global.Location.SelectRemindor
     else
         result.Main.force_auto_center()
@@ -161,7 +165,11 @@ function SelectRemindor:GetSelection()
     }
 end
 
-function SelectRemindor:new(player, target)
+---@param global table Global data for player
+---@param target table Common
+---@param location table GuiLocation (optional)
+---@return table
+function SelectRemindor:new(global, target, location)
     assert(release or not self.Target)
     self.Target = target
     self.Recipes = self.Target.Recipes
@@ -169,7 +177,7 @@ function SelectRemindor:new(player, target)
     self.Recipe = self.Recipes[1]
     self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
 
-    self:Refresh(player)
+    self:Refresh(global, location)
     return self
 end
 

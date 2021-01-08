@@ -6,6 +6,18 @@ local Dictionary = Table.Dictionary
 
 local Helper = {}
 
+---@param guiElement table LuaGuiElement
+---@return table GuiLocation
+function Helper.GetLocation(guiElement)
+    if not guiElement then
+        return
+    elseif guiElement.location then
+        return guiElement.location
+    else
+        return Helper.GetLocation(guiElement.parent)
+    end
+end
+
 function Helper.GetActualType(type)
     if type == "item" or type == "fluid" or type == "technology" or type == "entity" or type
         == "recipe" then return type end
@@ -29,7 +41,12 @@ function Helper.ShowFrame(player, name, create)
     if main then
         main.clear()
     else
-        main = frame.add {type = "frame", name = name, direction = "vertical", style = "ingteb-main-frame"}
+        main = frame.add {
+            type = "frame",
+            name = name,
+            direction = "vertical",
+            style = "ingteb-main-frame",
+        }
     end
     create(main)
     player.opened = main

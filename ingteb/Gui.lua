@@ -52,7 +52,21 @@ function Gui:PresentSelected(global, name)
     local target = self:GetObject(global, name)
     if target then
         Gui:Close(global, "Selector")
-        Gui:PresentTarget(global, target)
+        Gui:Presentarget(global, target)
+        return target.CommonKey
+    end
+end
+
+---comment
+---@param global table Global for player
+---@param name string CommonKey
+---@param location table GuiLocation
+---@return string CommonKey
+function Gui:RemindSelected(global, name, location)
+    local target = self:GetObject(global, name)
+    if target then
+        Gui:Close(global, "Selector")
+        Gui:SelectRemindor(global, target, location)
         return target.CommonKey
     end
 end
@@ -198,7 +212,10 @@ function Gui:PresentTarget(global, target)
     return target.CommonKey
 end
 
-function Gui:SelectRemindor(player, target) SelectRemindor:new(player, target) end
+---@param global table Global data for player
+---@param target table Common
+---@param location table GuiLocation (optional)
+function Gui:SelectRemindor(global, target, location) SelectRemindor:new(global, target, location) end
 
 function Gui:AddRemindor(global, selection)
     self:CreateRemindor(global)
@@ -300,7 +317,9 @@ function Gui:OnGuiClick(global, event, site)
             end
         end
 
-        if action.ReminderTask then self:SelectRemindor(global, action.ReminderTask) end
+        if action.ReminderTask then
+            self:SelectRemindor(global, action.ReminderTask, Helper.GetLocation(event.element))
+        end
 
         if action.Presenting then
             local result = self:PresentTarget(global, action.Presenting)
