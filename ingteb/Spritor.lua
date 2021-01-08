@@ -9,7 +9,9 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Spritor = class:new("Spritor")
 
-function Spritor:new(site) return self:adopt{DynamicElements = Dictionary:new(), DynamicElementsIndex = 1, Site = site} end
+function Spritor:new(site)
+    return self:adopt{DynamicElements = Dictionary:new(), DynamicElementsIndex = 1, Site = site}
+end
 
 function Spritor:GetSpriteButton(target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
@@ -24,7 +26,7 @@ function Spritor:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        actions = {on_click = {gui = self.Site ..".SpriteButton", action = "Click"}},
+        actions = {on_click = {gui = self.Site .. ".SpriteButton", action = "Click"}},
         name = target.ClickTarget,
         style = style,
     }
@@ -50,15 +52,19 @@ function Spritor:CollectForGuiClick(result, target)
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         result.ref = {"DynamicElements", self.DynamicElementsIndex}
         self.DynamicTargets:Append(target)
-        self.DynamicElementsIndex = self.DynamicElementsIndex +1
+        self.DynamicElementsIndex = self.DynamicElementsIndex + 1
     end
     return result
 end
 
 function Spritor:RegisterDynamicTargets(guiElements)
-    self.DynamicTargets:Select(function(target, index)
-        self.DynamicElements:AppendForKey(target, guiElements[index])
-    end)
+    if guiElements then
+        self.DynamicTargets:Select(
+            function(target, index)
+                self.DynamicElements:AppendForKey(target, guiElements[index])
+            end
+        )
+    end
 end
 
 function Spritor:GetSpriteButtonAndRegister(target, sprite)

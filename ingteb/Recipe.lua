@@ -205,11 +205,11 @@ Recipe.property = {
                         return {Research = self.Technology, Multiple = true}
                     end,
                 },
-                {
-                    UICode = "--- r",
-                    HelpText = "ingteb-utility.create-reminder-task",
-                    Action = function(self) return {ReminderTask = self} end,
-                },
+                -- {
+                --     UICode = "--- r",
+                --     HelpText = "ingteb-utility.create-reminder-task",
+                --     Action = function(self) return {ReminderTask = self} end,
+                -- },
             }
         end,
     },

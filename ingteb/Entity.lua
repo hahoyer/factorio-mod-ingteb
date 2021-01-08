@@ -85,15 +85,16 @@ Entity.property = {
     SpecialFunctions = {
         get = function(self)
             local result = self.inherited.Entity.SpecialFunctions.get(self)
-            return result:Concat{
-                {
-                    UICode = "--- r",
-                    IsRestricedTo = {Presentator = true},
-                    HelpText = "ingteb-utility.create-reminder-task",
-                    IsAvailable = function(self) return self.Item end,
-                    Action = function(self) return {ReminderTask = self.Item} end,
-                },
-            }
+            return result
+            -- :Concat{
+            --     {
+            --         UICode = "--- r",
+            --         IsRestricedTo = {Presentator = true},
+            --         HelpText = "ingteb-utility.create-reminder-task",
+            --         IsAvailable = function(self) return self.Item end,
+            --         Action = function(self) return {ReminderTask = self.Item} end,
+            --     },
+            -- }
         end,
     },
 

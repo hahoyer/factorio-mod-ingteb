@@ -93,7 +93,7 @@ function EventManager:OnGuiEvent(event)
             else
                 assert(release)
             end
-        elseif message.gui == "Presentator.SpriteButton" then
+        elseif message.gui == "Presentator.SpriteButton" or message.gui == "Remindor.SpriteButton" then
             if message.action == "Click" then
                 local target = Gui:OnGuiClick(self.Global, event, "Presentator")
                 if target then self.Global.History:AdvanceWith(target) end

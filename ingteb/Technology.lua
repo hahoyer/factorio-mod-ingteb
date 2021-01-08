@@ -208,12 +208,12 @@ local Technology = class:new(
                             return {Research = self, Multiple = true}
                         end,
                     },
-                    {
-                        UICode = "--- r",
-                        IsRestricedTo = {Presentator = true},
-                        HelpText = "ingteb-utility.create-reminder-task",
-                        Action = function(self) return {ReminderTask = self} end,
-                    },
+                    -- {
+                    --     UICode = "--- r",
+                    --     IsRestricedTo = {Presentator = true},
+                    --     HelpText = "ingteb-utility.create-reminder-task",
+                    --     Action = function(self) return {ReminderTask = self} end,
+                    -- },
                 }
             end,
         },
