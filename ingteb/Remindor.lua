@@ -69,8 +69,10 @@ function Task:new(selection)
 end
 
 function Task:CreatePanel(frame, key)
+    Spritor:StartCollecting()
     local guiData = self:GetGui(key)
-    gui.build(frame, {guiData})
+    local result = gui.build(frame, {guiData})
+    Spritor:RegisterDynamicTargets(result.DynamicElements)
 end
 
 function Task:GetGui(key)
@@ -87,6 +89,7 @@ function Task:GetGui(key)
                 type = "sprite-button",
                 sprite = "utility/close_white",
                 style = "frame_action_button",
+                style_mods = {size = 17},
                 ref = {"Remindor", "Task", "CloseButton"},
                 actions = {on_click = {gui = "Remindor.Task", action = "Closed"}},
                 name = key,
