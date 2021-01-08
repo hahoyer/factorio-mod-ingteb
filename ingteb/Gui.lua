@@ -235,6 +235,15 @@ function Gui:CreateRemindor(global)
     end
 end
 
+function Gui:ToggleRemindor(global)
+    if self.Active.Remindor then
+        self:CloseRemindor(global)
+    else
+        self:CreateRemindor(global)
+        Remindor:Refresh(global)
+    end
+end
+
 function Gui:OnMainButtonPressed(global)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector or not self.Active.Presentator)

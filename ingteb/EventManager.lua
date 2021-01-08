@@ -81,7 +81,7 @@ function EventManager:OnGuiEvent(event)
             end
         elseif message.gui == "Remindor.Task" then
             if message.action == "Closed" then
-                Gui:CloseRemindorTask(self.Global, event.element.name)
+                Gui:CloseRemindorTask(self.Global, event.element.parent.name)
             else
                 assert(release)
             end
@@ -140,7 +140,7 @@ function EventManager:OnGuiEvent(event)
                 if event.button == defines.mouse_button_type.left then
                     Gui:OnMainButtonPressed(self.Global)
                 elseif event.button == defines.mouse_button_type.right then
-                    Gui:CreateRemindor(self.Global)
+                    Gui:ToggleRemindor(self.Global)
                 else
                     assert(release)
                 end

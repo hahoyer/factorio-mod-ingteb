@@ -84,18 +84,32 @@ function Task:GetGui(key)
             Spritor:GetSpriteButtonAndRegister(self.Target),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
-            Spritor:GetLine(self:GetRequired(), "tooltip"),
             {
-                type = "sprite-button",
-                sprite = "utility/close_white",
-                style = "frame_action_button",
-                style_mods = {size = 17},
-                ref = {"Remindor", "Task", "CloseButton"},
-                actions = {on_click = {gui = "Remindor.Task", action = "Closed"}},
+                type = "flow",
+                direction = "vertical",
                 name = key,
-                tooltip = "press to close.",
+                children = {
+                    {
+                        type = "sprite-button",
+                        sprite = "utility/close_white",
+                        style = "frame_action_button",
+                        style_mods = {size = 17},
+                        ref = {"Remindor", "Task", "CloseButton"},
+                        actions = {on_click = {gui = "Remindor.Task", action = "Closed"}},
+                        tooltip = "press to close.",
+                    },
+                    {
+                        type = "sprite-button",
+                        sprite = "ingteb_settings_white",
+                        style = "frame_action_button",
+                        style_mods = {size = 17},
+                        ref = {"Remindor", "Task", "Settings"},
+                        actions = {on_click = {gui = "Remindor.Task", action = "Settings"}},
+                    },
+                },
             },
 
+            Spritor:GetLine(self:GetRequired(), "tooltip"),
         },
     }
 end
@@ -136,7 +150,9 @@ function Remindor:SetTask(global, selection)
     self:Refresh(global)
 end
 
-function Remindor:RefreshMainInventoryChanged(global, dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
+function Remindor:RefreshMainInventoryChanged(global, dataBase)
+    Spritor:RefreshMainInventoryChanged(dataBase)
+end
 
 function Remindor:RefreshStackChanged(dataBase) end
 

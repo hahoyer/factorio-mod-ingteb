@@ -1,8 +1,10 @@
+local data_util = require('__flib__.data-util')
 local Constants = require("Constants")
 
 local big_size = 64
 local small_size = 32
 local tiny_size = 24
+local frame_action_icons = Constants.GraphicsPath .. "frame-action-icons.png"
 
 data:extend(
     {
@@ -38,10 +40,19 @@ data:extend(
             size = 64,
             scale = 0.5,
         },
+        data_util.build_sprite("ingteb_settings_black", {0, 96}, frame_action_icons, 32),
+        data_util.build_sprite("ingteb_settings_white", {32, 96}, frame_action_icons, 32),
     }
 )
 
 data.raw["utility-sprites"].default.factorio = {
+    filename = "__core__/graphics/factorio.icon",
+    priority = "medium",
+    size = 32,
+    flags = {"icon"},
+}
+
+data.raw["utility-sprites"].default.settings = data_util.build_sprite {
     filename = "__core__/graphics/factorio.icon",
     priority = "medium",
     size = 32,
@@ -58,7 +69,7 @@ data.raw["gui-style"].default["ingteb-scroll-6x1"] =
         width = 43 * 6,
     }
 
-    data.raw["gui-style"].default["ingteb-main-frame"] =
+data.raw["gui-style"].default["ingteb-main-frame"] =
     {
         type = "frame_style", --
         scalable = true,
