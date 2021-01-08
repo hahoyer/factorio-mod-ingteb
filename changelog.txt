@@ -3,8 +3,11 @@ Version: 0.3.3
 Date: 2021-01-07
   Changes:
     - Remindor frame management 
+  Bugfixes:
+    - fixing gui update on inventory changes
   Refactor:
     - [tech] using flib-gui-beta
+
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
 Date: 2021-01-05

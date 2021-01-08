@@ -9,7 +9,7 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Spritor = class:new("Spritor")
 
-function Spritor:new(site) return self:adopt{DynamicElements = Dictionary:new(), Site = site} end
+function Spritor:new(site) return self:adopt{DynamicElements = Dictionary:new(), DynamicElementsIndex = 1, Site = site} end
 
 function Spritor:GetSpriteButton(target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
@@ -30,6 +30,12 @@ function Spritor:GetSpriteButton(target, sprite)
     }
 end
 
+function Spritor:StartCollecting()
+    self.DynamicElementsIndex = 1
+    self.DynamicTargets = Array:new()
+    self.DynamicElements = Dictionary:new()
+end
+
 function Spritor:CreateSprite(frame, target, sprite)
     return gui.build(frame, self:GetSpriteButton(target, sprite))
 end
@@ -39,17 +45,25 @@ function Spritor:GetHelperText(target)
     return target.HelperText
 end
 
-function Spritor:RegisterTargetForGuiClick(result, target)
+function Spritor:CollectForGuiClick(result, target)
     --    global.Links[self.Site][result.index] = target and target.ClickTarget
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
-        self.DynamicElements:AppendForKey(target, result)
+        result.ref = {"DynamicElements", self.DynamicElementsIndex}
+        self.DynamicTargets:Append(target)
+        self.DynamicElementsIndex = self.DynamicElementsIndex +1
     end
     return result
 end
 
+function Spritor:RegisterDynamicTargets(guiElements)
+    self.DynamicTargets:Select(function(target, index)
+        self.DynamicElements:AppendForKey(target, guiElements[index])
+    end)
+end
+
 function Spritor:GetSpriteButtonAndRegister(target, sprite)
     local result = self:GetSpriteButton(target, sprite)
-    if target then self:RegisterTargetForGuiClick(result, target) end
+    if target then self:CollectForGuiClick(result, target) end
     return result
 end
 

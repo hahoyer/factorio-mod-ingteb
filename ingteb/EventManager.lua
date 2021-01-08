@@ -66,21 +66,6 @@ end
 
 function EventManager:OnClose(event) assert(release) end
 
-if false then
-    gui.add_handlers {
-        Selector = {
-            Goods = {
-                on_gui_click = function(event)
-                    local player = game.players[event.player_index]
-                    local target = Gui:PresentSelected(player, event.element.name)
-                    if target then self.Global.History:ResetTo(target) end
-                    return true
-                end,
-            },
-        },
-    }
-end
-
 function EventManager:OnGuiEvent(event)
     local self = self:adopt{}
     self.Player = game.players[event.player_index]
@@ -166,6 +151,7 @@ function EventManager:OnGuiEvent(event)
             release --
             or event.name == defines.events.on_gui_opened --
             or event.name == defines.events.on_gui_selected_tab_changed --
+            or event.name == defines.events.on_gui_closed --
         )
     end
 end

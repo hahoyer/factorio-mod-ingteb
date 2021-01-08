@@ -174,31 +174,35 @@ end
 local function GetTechnologyEffectsPanel(target)
     if not target or not target.Effects then return {} end
 
-    return GetContentPanel(
-        {"", target.RichTextName, " ", {"gui-technology-preview.effects"}}, {
+    return {
+        GetContentPanel(
+            {"", target.RichTextName, " "}, --
+            {"gui-technology-preview.effects"}, --
             {
-                type = "flow",
-                name = "GetTechnologyEffectsPanel " .. GetNextId(),
-                direction = "horizontal",
-                children = {
-                    {type = "sprite", sprite = "utility/change_recipe"},
-                    {
-                        type = "flow",
-                        name = "GetTechnologyEffectsPanel inner " .. GetNextId(),
-                        direction = "horizontal",
-                        style = "ingteb-flow-centered",
-                        children = target.Ingredients:Select(
-                            function(stack)
-                                Spritor:GetSpriteButton(stack)
-                            end
-                        ),
+                {
+                    type = "flow",
+                    name = "GetTechnologyEffectsPanel " .. GetNextId(),
+                    direction = "horizontal",
+                    children = {
+                        {type = "sprite", sprite = "utility/change_recipe"},
+                        {
+                            type = "flow",
+                            name = "GetTechnologyEffectsPanel inner " .. GetNextId(),
+                            direction = "horizontal",
+                            style = "ingteb-flow-centered",
+                            children = target.Ingredients:Select(
+                                function(stack)
+                                    Spritor:GetSpriteButton(stack)
+                                end
+                            ),
+                        },
                     },
                 },
-            },
-            {type = "line", direction = "horizontal"},
-            GetTechnologyEffectsData(target),
-        }
-    )
+                {type = "line", direction = "horizontal"},
+                GetTechnologyEffectsData(target),
+            }
+        ),
+    }
 
 end
 
@@ -539,23 +543,10 @@ function Presentator:RefreshResearchChanged(dataBase) Spritor:RefreshResearchCha
 function Presentator:new(global, target)
     local player = game.players[global.Index]
     global.Links.Presentator = {}
-    local result = gui.build(
-        player.gui.screen, {
-            {
-                type = "frame",
-                caption = target.LocalisedName,
-                name = "Presentator",
-                ref = {"Main"},
-                actions = {
-                    on_location_changed = {gui = "Presentator", action = "Moved"},
-                    on_closed = {gui = "Presentator", action = "Closed"},
-                },
-                direction = "vertical",
-                style = "ingteb-main-frame",
-                children = {self:GetGui(target)},
-            },
-        }
-    )
+    Spritor:StartCollecting()
+    local guiStructure = self:GetGui(target)
+    local result = gui.build(player.gui.screen, {guiStructure})
+    Spritor:RegisterDynamicTargets(result.DynamicElements)
     if global.Location.Presentator then
         result.Main.location = global.Location.Presentator
     else
@@ -566,7 +557,6 @@ function Presentator:new(global, target)
 end
 
 function Presentator:GetGui(target)
-    Spritor.DynamicElements = Dictionary:new() --
 
     target:SortAll()
     assert(
@@ -593,8 +583,9 @@ function Presentator:GetGui(target)
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
 
+    local children
     if columnCount == 0 then
-        return {
+        children = {
             type = "frame",
             direction = "horizontal",
             children = {
@@ -609,51 +600,67 @@ function Presentator:GetGui(target)
                 },
             },
         }
+    else
+        children = {
+            {
+                type = "scroll-pane",
+                horizontal_scroll_policy = "never",
+                direction = "vertical",
+                name = "frame",
+                children = {
+                    {
+                        type = columnCount > 1 and "frame" or "flow",
+                        direction = "horizontal",
+                        name = "frame",
+                        children = Array:new{
+                            GetTechnologiesPanel(
+                                target.Prerequisites,
+                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                        .. target.RichTextName, true
+                            ),
+                            GetTechnologyEffectsPanel(target),
+                            GetRecipePanel(target),
+                            GetTechnologiesPanel(
+                                target.Enables, target.RichTextName
+                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.RecipeList,
+                                    target.RichTextName .. "[img=utility/change_recipe]",
+                                    "Recipes this machine can handle"
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.CreatedBy,
+                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                        .. target.RichTextName, "Recipes that produces this item."
+                            ),
+                            GetCraftingGroupsPanel(
+                                target.UsedBy, target.RichTextName
+                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
+                                    "Recipes this item uses a ingredience."
+                            ),
+                        }:ConcatMany(),
 
+                    },
+                },
+
+            },
+        }
     end
 
     return {
-
-        type = "scroll-pane",
-        horizontal_scroll_policy = "never",
-        direction = "vertical",
-        name = "frame",
-        children = {
-            {
-                type = columnCount > 1 and "frame" or "flow",
-                direction = "horizontal",
-                name = "frame",
-                children = Array:new{
-                    GetTechnologiesPanel(
-                        target.Prerequisites, "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                            .. target.RichTextName, true
-                    ),
-                    GetTechnologyEffectsPanel(target),
-                    GetRecipePanel(target),
-                    GetTechnologiesPanel(
-                        target.Enables, target.RichTextName
-                            .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
-                    ),
-                    GetCraftingGroupsPanel(
-                        target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]",
-                            "Recipes this machine can handle"
-                    ),
-                    GetCraftingGroupsPanel(
-                        target.CreatedBy, "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                            .. target.RichTextName, "Recipes that produces this item."
-                    ),
-                    GetCraftingGroupsPanel(
-                        target.UsedBy, target.RichTextName
-                            .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
-                            "Recipes this item uses a ingredience."
-                    ),
-                }:ConcatMany(),
-
-            },
+        type = "frame",
+        caption = target.LocalisedName,
+        name = "Presentator",
+        ref = {"Main"},
+        actions = {
+            on_location_changed = {gui = "Presentator", action = "Moved"},
+            on_closed = {gui = "Presentator", action = "Closed"},
         },
-
+        direction = "vertical",
+        style = "ingteb-main-frame",
+        children = children,
     }
-
 end
 
 return Presentator
