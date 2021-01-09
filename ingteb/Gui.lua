@@ -51,8 +51,8 @@ end
 function Gui:PresentSelected(global, name)
     local target = self:GetObject(global, name)
     if target then
-        Gui:Close(global, "Selector")
-        Gui:Presentarget(global, target)
+        self:Close(global, "Selector")
+        self:PresentTarget(global, target)
         return target.CommonKey
     end
 end
@@ -173,9 +173,16 @@ function Gui:CloseRemindorTask(global, key)
     if #global.Remindor.List == 0 then self:CloseRemindor(global) end
 end
 
+function Gui:SettingsRemindorTask(global, key)
+    Remindor:SettingsTask(global, key)
+end
+
+function Gui:SettingsRemindor(global)
+    Remindor:Settings(global)
+end
+
 function Gui:ClosePresentator(global)
-    local player = game.players[global.Index]
-    if player.gui.screen.SelectRemindor then return end
+    if global.IsPopup then return end
     if not self.Active.Presentator then return end
     self:Close(global, "Presentator")
     Presentator:OnClose()
@@ -339,7 +346,8 @@ function Gui:OnGuiClick(global, event, site)
     end
 
     if site == "Remindor" then
-        return Remindor:OnGuiClick(event, self.Active.Remindor, self.Database)
+        assert(release)
+        --return Remindor:OnGuiClick(event, self.Active.Remindor, self.Database)
     end
 
     if true then return end

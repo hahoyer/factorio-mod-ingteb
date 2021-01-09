@@ -10,7 +10,6 @@ local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}
 local SelectRemindor = require("ingteb.SelectRemindor")
-local Remindor = require("ingteb.Remindor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -76,12 +75,16 @@ function EventManager:OnGuiEvent(event)
                 Gui:CloseRemindor(self.Global)
             elseif message.action == "Moved" then
                 self.Global.Location.Remindor = event.element.location
+            elseif message.action == "Settings" then
+                Gui:SettingsRemindor(self.Global)
             else
                 assert(release)
             end
         elseif message.gui == "Remindor.Task" then
             if message.action == "Closed" then
                 Gui:CloseRemindorTask(self.Global, event.element.parent.name)
+            elseif message.action == "Settings" then
+                Gui:SettingsRemindorTask(self.Global, event.element.parent.name)
             else
                 assert(release)
             end

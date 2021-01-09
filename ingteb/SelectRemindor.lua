@@ -151,7 +151,9 @@ function SelectRemindor:Refresh(global, location)
     end
 
     self.Parent = player.opened
+    global.IsPopup = true
     player.opened = result.Main
+    global.IsPopup = nil
 end
 
 function SelectRemindor:GetSelection()

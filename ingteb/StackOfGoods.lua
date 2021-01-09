@@ -126,7 +126,7 @@ function StackOfGoods:AddOption(other)
 end
 
 function StackOfGoods:Clone()
-    local amounts = Dictionary:new(self.Amounts):Clone()
+    local amounts = self.Amounts and Dictionary:new(self.Amounts):Clone() or nil
     return StackOfGoods:new(self.Goods, amounts, self.Database)
 end
 
@@ -140,8 +140,9 @@ function StackOfGoods:new(goods, amounts, database)
 
     self.Goods = goods
     self.Amounts = amounts
+    assert(release or not amounts or amounts.value or amounts.probability)
     self.SpriteType = goods.SpriteType
-    self.UsePercentage = self.Amounts.probability ~= nil
+    self.UsePercentage = self.Amounts and self.Amounts.probability ~= nil
 
     return self
 
