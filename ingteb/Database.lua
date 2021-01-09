@@ -264,6 +264,8 @@ function Database:GetStackOfGoods(target)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
+function Database:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
+
 function Database:Get(target)
     local className, Name
     if not target or target == "" then

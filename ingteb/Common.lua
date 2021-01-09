@@ -63,20 +63,27 @@ function Common:GetHandCraftingRequest(event) end
 function Common:GetResearchRequest(event) end
 
 function Common:GetFunctionalHelp(site)
-    return self.SpecialFunctions --
+    local lines = Dictionary:new{}
+    self.SpecialFunctions --
     :Select(
         function(specialFunction)
-            return --
+            if --
             (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --        
                 and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) --
-                and specialFunction.HelpText --
-                and UI.GetHelpTextForButtons(specialFunction.HelpText, specialFunction.UICode) or nil
+                and specialFunction.HelpText then
+                local key = specialFunction.UICode
+                if not lines[key] then
+                    lines[key] = UI.GetHelpTextForButtons(
+                        specialFunction.HelpText, specialFunction.UICode
+                    )
+                end
+            end --
         end
     )
+    return lines:ToArray()
 end
 
 function Common:GetHelperText(site)
-
     local name = self.LocalisedName
     local lines = Array:new{}
     local function append(line)
@@ -97,8 +104,7 @@ function Common:GetHelperText(site)
     return name
 end
 
-function Common:AssertValid()
-end
+function Common:AssertValid() end
 
 function Common:SealUp()
     self:SortAll()

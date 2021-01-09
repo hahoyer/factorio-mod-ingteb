@@ -45,12 +45,12 @@ local StackOfGoods = class:new(
                 local amounts = self.Amounts
                 local results = Array:new{}
                 if amounts then
-                    results:Append(
-                        (amounts.min and "min: " .. amounts.min .. ", " or "")
-                            .. (amounts.max and "max: " .. amounts.max .. ", " or "")
-                            .. (amounts.probability and amounts.probability ~= 1 and "probability: "
-                                .. amounts.probability .. "%" or "")
-                    )
+                    local line --
+                    = (amounts.min and "min: " .. amounts.min .. ", " or "")
+                          .. (amounts.max and "max: " .. amounts.max .. ", " or "")
+                          .. (amounts.probability and amounts.probability ~= 1 and "probability: "
+                              .. amounts.probability .. "%" or "")
+                    if line ~= "" then results:Append(line) end
                 end
                 return results
             end,
@@ -73,7 +73,16 @@ local StackOfGoods = class:new(
 
         SpecialFunctions = {
             get = function(self)
-                local result = self.inherited.StackOfGoods.SpecialFunctions.get(self)
+                local result = Array:new{
+                    {
+                        UICode = "--- r",
+                        IsRestricedTo = {Presentator = true},
+                        HelpText = "ingteb-utility.create-reminder-task",
+                        Action = function(self) return {ReminderTask = self.Goods, Amounts = self.Amounts} end,
+                    },
+                }
+    
+                result:AppendMany(self.inherited.StackOfGoods.SpecialFunctions.get(self))
                 if self.Goods and self.Goods.SpecialFunctions then
                     result:AppendMany(self.Goods.SpecialFunctions)
                 end

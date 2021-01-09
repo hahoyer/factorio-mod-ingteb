@@ -135,6 +135,8 @@ function EventManager:OnGuiEvent(event)
                 SelectRemindor:OnGuiClick(
                     self.Global, Gui:GetObject(self.Global, event.element.name)
                 )
+            elseif message.action == "CountChanged" then
+                SelectRemindor:OnTextChanged(self.Global, event.element.text)
             else
                 assert(release)
             end

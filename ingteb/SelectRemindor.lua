@@ -44,6 +44,8 @@ function SelectRemindor:GetSpriteButton(target)
     }
 end
 
+function SelectRemindor:OnTextChanged(global, value) self.Count = tonumber(value) end
+
 function SelectRemindor:OnGuiClick(global, target)
     if target.IsRecipe then
         self.Recipe = target
@@ -52,12 +54,12 @@ function SelectRemindor:OnGuiClick(global, target)
         end
     else
         self.Worker = target
-        --DebugAdapter.print(indent .. "------------------------------------------------------")
-        --DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
+        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
         local old = AddIndent()
         local recipes = self:GetBelongingRecipes(self.Worker)
         indent = old
-        --DebugAdapter.print(indent .. "------------------------------------------------------")
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
         if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
     end
     local player = game.players[global.Index]
@@ -85,48 +87,48 @@ function SelectRemindor:GetLinePart(children)
 end
 
 function SelectRemindor:GetBelongingWorkers(recipe)
-    --DebugAdapter.print(indent .. "SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
+    -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
     local old = AddIndent()
     local results = self.Workers:Where(
         function(worker)
-            --DebugAdapter.print(indent .. "worker = {worker.CommonKey}")
+            -- DebugAdapter.print(indent .. "worker = {worker.CommonKey}")
             local old = AddIndent()
             local result = worker.RecipeList:Any(
                 function(category, name)
-                    --DebugAdapter.print(indent .. "category = {name}")
+                    -- DebugAdapter.print(indent .. "category = {name}")
                     local old = AddIndent()
                     local result = category:Contains(recipe)
                     indent = old
-                    --DebugAdapter.print(indent .. "result = {result}")
+                    -- DebugAdapter.print(indent .. "result = {result}")
                     return result
                 end
             )
             indent = old
-            --DebugAdapter.print(indent .. "result = {result}")
+            -- DebugAdapter.print(indent .. "result = {result}")
             return result
         end
     )
     indent = old
-    --DebugAdapter.print(indent .. "results = {results}")
+    -- DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 
 function SelectRemindor:GetBelongingRecipes(worker)
-    --DebugAdapter.print(indent .. "SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
+    -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
     local old = AddIndent()
     local results = self.Recipes:Where(
         function(recipe)
-            --DebugAdapter.print(indent .. "recipe = {recipe.CommonKey}")
+            -- DebugAdapter.print(indent .. "recipe = {recipe.CommonKey}")
             local old = AddIndent()
             local workers = self:GetBelongingWorkers(recipe)
             local result = workers:Contains(worker)
             indent = old
-            --DebugAdapter.print(indent .. "result = {result}")
+            -- DebugAdapter.print(indent .. "result = {result}")
             return result
         end
     )
     indent = old
-    --DebugAdapter.print(indent .. "results = {results}")
+    -- DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 
@@ -141,7 +143,7 @@ function SelectRemindor:Refresh(global, location)
 
     result.DragBar.drag_target = result.Main
 
-    if location then 
+    if location then
         result.Main.location = location
     elseif global.Location.SelectRemindor then
         result.Main.location = global.Location.SelectRemindor
@@ -158,22 +160,23 @@ end
 
 function SelectRemindor:GetSelection()
     return {
-        Target = self.Target,
+        Target = self.Target:CreateStack{value = self.Count},
         Worker = self.Worker,
         Recipe = self.Recipe,
         GetCommonKey = function(self)
-            return self.Target.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
+            return self.Target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
         end,
     }
 end
 
 ---@param global table Global data for player
----@param target table Common
+---@param action table Common
 ---@param location table GuiLocation (optional)
 ---@return table
-function SelectRemindor:new(global, target, location)
+function SelectRemindor:new(global, action, location)
     assert(release or not self.Target)
-    self.Target = target
+    self.Target = action.ReminderTask
+    self.Count = action.Count
     self.Recipes = self.Target.Recipes
     self.Workers = self.Target.Workers
     self.Recipe = self.Recipes[1]
@@ -256,6 +259,15 @@ function SelectRemindor:GetGui()
                         type = "sprite",
                         sprite = self.Target.SpriteName,
                         tooltip = self.Target:GetHelperText("SelectRemindor"),
+                    },
+                    {
+                        type = "textfield",
+                        numeric = true,
+                        text = self.Count,
+                        style_mods = {maximal_width = 100},
+                        actions = {
+                            on_text_changed = {gui = "SelectRemindor", action = "CountChanged"},
+                        },
                     },
                 },
             },

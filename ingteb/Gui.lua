@@ -334,7 +334,7 @@ function Gui:OnGuiClick(global, event, site)
         end
 
         if action.ReminderTask then
-            self:SelectRemindor(global, action.ReminderTask, Helper.GetLocation(event.element))
+            self:SelectRemindor(global, action, Helper.GetLocation(event.element))
         end
 
         if action.Presenting then

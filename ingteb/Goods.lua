@@ -1,5 +1,6 @@
 local Constants = require("Constants")
 local Table = require("core.Table")
+local StackOfGoods = require "ingteb.stackofgoods"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
@@ -71,7 +72,9 @@ Goods.property = {
                     UICode = "--- r",
                     IsRestricedTo = {Presentator = true},
                     HelpText = "ingteb-utility.create-reminder-task",
-                    Action = function(self) return {ReminderTask = self} end,
+                    Action = function(self, event)
+                        return {ReminderTask = self, Count = event.element.number}
+                    end,
                 },
             }
 
@@ -147,6 +150,8 @@ function Goods:SortAll()
     self.CreatedBy = Sort(self.CreatedBy)
     self.UsedBy = Sort(self.UsedBy)
 end
+
+function Goods:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
 
 function Goods:new(prototype, database)
     local self = self:adopt(self.base:new(prototype, database))

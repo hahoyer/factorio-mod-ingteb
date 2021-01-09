@@ -27,12 +27,12 @@ end
 
 function Task:EnsureInventory(global, goods, data)
     local key = goods.CommonKey
-    if data.Inventory[key] then return end
+    if data[key] then return end
     if goods.class == Item then
         local player = game.players[global.Index]
-        data.Inventory[key] = player.get_item_count(goods.Name)
+        data[key] = player.get_item_count(goods.Name)
     else
-        data.Inventory[key] = 0
+        data[key] = 0
     end
 end
 
@@ -44,12 +44,12 @@ function Task:GetRequired(global, data)
         :Select(
             function(stack, key)
                 local result = stack:Clone()
-                Task:EnsureInventory(global, stack.Goods, data)
-                local inventory = data.Inventory[key]
-                local count = data.Count * stack.Amounts.value - inventory
+                self:EnsureInventory(global, stack.Goods, data)
+                local inventory = data[key]
+                local count = self.Target.Amounts.value * stack.Amounts.value - inventory
                 result.Amounts.value = math.max(count, 0)
-                if result.Amounts.value == 0 then result.Amounts = nil end 
-                data.Inventory[key] = math.max(-count, 0)
+                if result.Amounts.value == 0 then result.Amounts = nil end
+                data[key] = math.max(-count, 0)
                 return result
             end
         ) --
@@ -140,10 +140,10 @@ end
 function Remindor:SetTask(global, selection)
     self:EnsureGlobal(global)
     local key = selection:GetCommonKey()
-    if not Remindor:GetTaskIndex(global, key) then
-        local task = Task:new(selection)
-        global.Remindor.List:InsertAt(1, task)
-    end
+    local index = Remindor:GetTaskIndex(global, key)
+    local task = index and global.Remindor.List[index] or Task:new(selection)
+    if index then global.Remindor.List:Remove(index) end
+    global.Remindor.List:InsertAt(1, task)
     self:Refresh(global)
 end
 
@@ -209,7 +209,7 @@ function Remindor:Refresh(global)
     self:EnsureGlobal(global)
     global.Remindor.Links = Dictionary:new{}
     if self.Frame then self.Frame.Tasks.clear() end
-    local data = {Count = 1, Inventory = {}}
+    local data = {}
     global.Remindor.List:Select(
         function(task) task:CreatePanel(global, self.Frame.Tasks, task:GetCommonKey(), data) end
     )
