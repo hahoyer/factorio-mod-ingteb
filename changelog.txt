@@ -1,8 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.3
 Date: 2021-01-07
-  Changes:
+  Changes
     - Remindor frame management 
+    - Remindor settings and automatic things
   Bugfixes:
     - fixing gui update on inventory/research changes
   Refactor:

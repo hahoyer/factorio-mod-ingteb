@@ -71,10 +71,18 @@ Recipe.property = {
         end,
     },
 
+    CraftableCount = {
+        get = function(self)
+            if self.HandCrafter then
+                return UI.Player.get_craftable_count(self.Prototype.name)
+            end
+            return 0
+        end,
+    },
+
     NumberOnSprite = {
         get = function(self)
-            if not self.HandCrafter then return end
-            local result = UI.Player.get_craftable_count(self.Prototype.name)
+            local result = self.CraftableCount
             if result > 0 then return result end
         end,
     },

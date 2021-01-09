@@ -17,7 +17,7 @@ local Gui = {Active = {}}
 
 function Gui:EnsureDatabase(global)
     self.Database = Database:Ensure()
-    Remindor:RefreshClasses(global, self.Active.Remindor, self.Database)
+    Remindor:RefreshClasses(self.Active.Remindor, self.Database, global)
 end
 
 function Gui:GetRecipeData(recipePrototype, result)
@@ -40,7 +40,7 @@ end
 
 function Gui:OnMainInventoryChanged(global)
     Presentator:RefreshMainInventoryChanged(Database)
-    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(global, Database) end
+    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
 end
 
 function Gui:OnStackChanged()
@@ -66,7 +66,7 @@ function Gui:RemindSelected(global, name, location)
     local target = self:GetObject(global, name)
     if target then
         Gui:Close(global, "Selector")
-        Gui:SelectRemindor(global, target, location)
+        Gui:SelectRemindor(global, {ReminderTask = target, Count = 1}, location)
         return target.CommonKey
     end
 end
@@ -158,7 +158,6 @@ function Gui:ScanActiveGui(player)
     self.Active.Selector = player.gui.screen.Selector
     self.Active.Presentator = player.gui.screen.Presentator
     self.Active.Remindor = mod_gui.get_frame_flow(player).Remindor
-
 end
 
 function Gui:Close(global, gui)
@@ -169,16 +168,18 @@ function Gui:Close(global, gui)
 end
 
 function Gui:CloseRemindorTask(global, key)
-    Remindor:CloseTask(global, key)
+    Remindor:CloseTask(key)
     if #global.Remindor.List == 0 then self:CloseRemindor(global) end
 end
 
-function Gui:SettingsRemindorTask(global, key)
-    Remindor:SettingsTask(global, key)
-end
+function Gui:SettingsRemindorTask(key) Remindor:SettingsTask(key) end
 
 function Gui:SettingsRemindor(global)
-    Remindor:Settings(global)
+    if self.Active.RemindorSettings then
+        self:CloseRemindorSettings(global)
+    else
+        self.Active.RemindorSettings = Remindor:OpenSettings()
+    end
 end
 
 function Gui:ClosePresentator(global)
@@ -195,6 +196,17 @@ function Gui:CloseRemindor(global)
     self.Active.Remindor = nil
     Remindor:Close()
 end
+
+function Gui:CloseRemindorSettings(global)
+    self:Close(global, "RemindorSettings")
+    Remindor:CloseSettings()
+end
+
+function Gui:RemindorToggleRemoveTask(value) Remindor:ToggleRemoveTask(value) end
+
+function Gui:RemindorToggleAutoResearch(value) Remindor:ToggleAutoResearch(value) end
+
+function Gui:RemindorUpdateAutoCrafting(value) Remindor:UpdateAutoCrafting(value) end
 
 function Gui:SelectTarget(global, targets)
     Selector:new(global, targets)
@@ -220,26 +232,19 @@ function Gui:PresentTarget(global, target)
 end
 
 ---@param global table Global data for player
----@param target table Common
+---@param reminderTask table Common
 ---@param location table GuiLocation (optional)
-function Gui:SelectRemindor(global, target, location) SelectRemindor:new(global, target, location) end
+function Gui:SelectRemindor(global, reminderTask, location)
+    SelectRemindor:new(global, reminderTask, location)
+end
 
 function Gui:AddRemindor(global, selection)
     self:CreateRemindor(global)
-    Remindor:SetTask(global, selection)
+    Remindor:SetTask(selection)
 end
 
 function Gui:CreateRemindor(global)
-    local player = game.players[global.Index]
-    if not self.Active.Remindor then
-        local frame = mod_gui.get_frame_flow(player).add {
-            type = "frame",
-            name = "Remindor",
-            direction = "vertical",
-        }
-        self.Active.Remindor = frame
-        Remindor:new(frame)
-    end
+    if not self.Active.Remindor then self.Active.Remindor = Remindor:new(global) end
 end
 
 function Gui:ToggleRemindor(global)
@@ -247,7 +252,7 @@ function Gui:ToggleRemindor(global)
         self:CloseRemindor(global)
     else
         self:CreateRemindor(global)
-        Remindor:Refresh(global)
+        Remindor:Refresh()
     end
 end
 
@@ -347,7 +352,7 @@ function Gui:OnGuiClick(global, event, site)
 
     if site == "Remindor" then
         assert(release)
-        --return Remindor:OnGuiClick(event, self.Active.Remindor, self.Database)
+        -- return Remindor:OnGuiClick(event, self.Active.Remindor, self.Database)
     end
 
     if true then return end

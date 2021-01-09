@@ -84,7 +84,21 @@ function EventManager:OnGuiEvent(event)
             if message.action == "Closed" then
                 Gui:CloseRemindorTask(self.Global, event.element.parent.name)
             elseif message.action == "Settings" then
-                Gui:SettingsRemindorTask(self.Global, event.element.parent.name)
+                Gui:SettingsRemindorTask(event.element.parent.name)
+            else
+                assert(release)
+            end
+        elseif message.gui == "Remindor.Settings" then
+            if message.action == "Closed" then
+                Gui:CloseRemindorSettings(self.Global)
+            elseif message.action == "Moved" then
+                self.Global.Location.RemindorSettings = event.element.location
+            elseif message.action == "ToggleAutoResearch" then
+                Gui:RemindorToggleAutoResearch(event.element.state)
+            elseif message.action == "ToggleRemoveTask" then
+                Gui:RemindorToggleRemoveTask(event.element.state)
+            elseif message.action == "AutoCrafting" then
+                Gui:RemindorUpdateAutoCrafting(event.element.selected_index)
             else
                 assert(release)
             end
