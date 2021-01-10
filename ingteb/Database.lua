@@ -1,11 +1,8 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
-local BoilingRecipe = require "ingteb.BoilingRecipe"
-local MiningRecipe = require "ingteb.MiningRecipe"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCacheContainer = require("core.ValueCacheContainer")
 local class = require("core.class")
 local Proxy = {
     BoilingRecipe = require("ingteb.BoilingRecipe"),
@@ -22,9 +19,9 @@ local Proxy = {
 
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local DatabaseClass = class:new("Database")
-local Database = DatabaseClass:adopt{}
-Database.class = DatabaseClass
+local Class = class:new("Database")
+
+function Class:new(parent) return Class:adopt{Parent = parent} end
 
 local function EnsureKey(data, key, value)
     local result = data[key]
@@ -35,7 +32,7 @@ local function EnsureKey(data, key, value)
     return result
 end
 
-function Database:Ensure()
+function Class:Ensure()
     if self.IsInitialized then return self end
     self.Order = {
         Recipe = 1,
@@ -101,13 +98,13 @@ function Database:Ensure()
     return self
 end
 
-function Database:GetProxyFromCommonKey(targetKey)
-    Database:Ensure()
+function Class:GetProxyFromCommonKey(targetKey)
+    Class:Ensure()
     local _, _, className, prototypeName = targetKey:find("^(.+)%.(.*)$")
-    return Database:GetProxy(className, prototypeName)
+    return Class:GetProxy(className, prototypeName)
 end
 
-function Database:GetProxy(className, name, prototype)
+function Class:GetProxy(className, name, prototype)
     local data = self.Proxies[className]
     local key = name or prototype.name
 
@@ -124,23 +121,23 @@ function Database:GetProxy(className, name, prototype)
     return result
 end
 
-function Database:GetFluid(name, prototype) return self:GetProxy("Fluid", name, prototype) end
-function Database:GetItem(name, prototype) return self:GetProxy("Item", name, prototype) end
-function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
-function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
-function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
-function Database:GetMiningRecipe(name, prototype)
+function Class:GetFluid(name, prototype) return self:GetProxy("Fluid", name, prototype) end
+function Class:GetItem(name, prototype) return self:GetProxy("Item", name, prototype) end
+function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
+function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
+function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
+function Class:GetMiningRecipe(name, prototype)
     return self:GetProxy("MiningRecipe", name, prototype)
 end
-function Database:GetBoilingRecipe(name, prototype)
+function Class:GetBoilingRecipe(name, prototype)
     return self:GetProxy("BoilingRecipe", name, prototype)
 end
-function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
-function Database:GetFuelCategory(name, prototype)
+function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+function Class:GetFuelCategory(name, prototype)
     return self:GetProxy("FuelCategory", name, prototype)
 end
 
-function Database:GetBonusFromEffect(target)
+function Class:GetBonusFromEffect(target)
     local type = target.type
     local prototype = {
         name = (type .. "-modifier-icon"):gsub("-", "_"),
@@ -156,7 +153,7 @@ end
 ---@param domain string
 ---@param category string
 ---@param prototype table LuaEntityPrototype
-function Database:AddWorkerForCategory(domain, category, prototype)
+function Class:AddWorkerForCategory(domain, category, prototype)
     EnsureKey(self.WorkersForCategory, domain .. "." .. category, Array:new{}):Append(prototype)
 end
 
@@ -167,7 +164,7 @@ local function EnsureRecipeCategory(result, side, name, category)
     return categoryData
 end
 
-function Database:ScanEntity(prototype)
+function Class:ScanEntity(prototype)
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting", category, prototype)
     end
@@ -206,15 +203,15 @@ function Database:ScanEntity(prototype)
     end
 end
 
-function Database:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
+function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
 
-function Database:CreateBoilerRecipe()
+function Class:CreateBoilerRecipe()
     local prototype = game.entity_prototypes.boiler
     self:AddWorkerForCategory("boiling", "steam", prototype)
     self:GetBoilingRecipe("steam", prototype)
 end
 
-function Database:ScanTechnology(prototype)
+function Class:ScanTechnology(prototype)
     for _, value in pairs(prototype.effects or {}) do
         if value.type == "unlock-recipe" then
             EnsureKey(self.TechnologiesForRecipe, value.recipe, Array:new()):Append(prototype)
@@ -226,13 +223,13 @@ function Database:ScanTechnology(prototype)
 
 end
 
-function Database:ScanItem(prototype)
+function Class:ScanItem(prototype)
     if prototype.fuel_category then
         EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
     end
 end
 
-function Database:ScanRecipe(prototype)
+function Class:ScanRecipe(prototype)
 
     if prototype.hidden then return end
 
@@ -251,7 +248,7 @@ function Database:ScanRecipe(prototype)
 
 end
 
-function Database:GetStackOfGoods(target)
+function Class:GetStackOfGoods(target)
     local amounts = {
         value = target.amount,
         probability = target.probability,
@@ -264,9 +261,9 @@ function Database:GetStackOfGoods(target)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
-function Database:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
+function Class:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
 
-function Database:Get(target)
+function Class:Get(target)
     local className, Name
     if not target or target == "" then
         return
@@ -292,7 +289,8 @@ function Database:Get(target)
     return self:GetProxy(className, Name, Prototype)
 end
 
-function Database:RefreshTechnology(target) self:GetTechnology(target.name):Refresh() end
+function Class:RefreshTechnology(target) self:GetTechnology(target.name):Refresh() end
+function Class:Print(player, text) player.print {"", "[ingteb]", text} end
 
-return Database
+return Class
 

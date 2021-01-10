@@ -5,49 +5,76 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Helper = require("ingteb.Helper")
-local Gui = require("ingteb.Gui")
 local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}
-local SelectRemindor = require("ingteb.SelectRemindor")
+local Gui = require("ingteb.Gui")
+local Selector = require("ingteb.Selector")
+local Presentator = require("ingteb.Presentator")
+local Database = require("ingteb.Database")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
 
-local EventManager = class:new("EventManager", core.EventManager)
+local Class = class:new(
+    "EventManager", core.EventManager, {
+        Current = {
+            get = function(self)
+                if self.Modules.Selector.Current then
+                    return self.Modules.Selector
+                elseif self.Modules.Presentator.Current then
+                    return self.Modules.Presentator
+                end
+            end,
+        },
+    }
+)
+local self
 
-function EventManager:OnSelectorForeOrBackClick(event)
+function Class:EnsureRemindor()
+    Gui:EnsureRemindor(self.Global)
+    Remindor = Gui.Remindor
+end
+
+function Class:OnSelectorForeOrBackClick(event)
     self.Player = event.player_index
     Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
 end
 
-function EventManager:OnPresentatorForeClick(event)
+function Class:OnPresentatorForeClick(event)
     self.Player = event.player_index
     self.Global.History:Fore()
     Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
 end
 
-function EventManager:OnPresentatorBackClick(event)
+function Class:OnPresentatorBackClick(event)
     self.Player = event.player_index
     self.Global.History:Back()
     Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
 end
 
-function EventManager:DoNothing(event) self.Player = event.player_index end
-
-function EventManager:OnMainKey(event)
+function Class:OnMainKey(event)
     self.Player = event.player_index
-    local target = Gui:OnMainButtonPressed(self.Global)
-    if target then self.Global.History:ResetTo(target) end
+    if self.Current then return self.Current:Close() end
+    self.Modules.Database:Ensure()
+    local targets = self.Modules.Gui:FindTargets()
+    if #targets == 1 then
+        self.Modules.Presentator:Open(targets[1])
+    else
+        self.Modules.Selector:Open(targets)
+    end
 end
 
-function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged(self.Global) end
+function Class:OnMainInventoryChanged(event)
+    self.Player = event.player_index
+    --    Gui:OnMainInventoryChanged(self.Global)
+end
 
-function EventManager:OnStackChanged() Gui:OnStackChanged() end
+function Class:OnStackChanged() Gui:OnStackChanged() end
 
-function EventManager:OnResearchChanged(event) Gui:OnResearchFinished(self.Global, event.research) end
+function Class:OnResearchChanged(event) Gui:OnResearchFinished(self.Global, event.research) end
 
-function EventManager:OnForeClicked(event)
+function Class:OnForeClicked(event)
     if Gui.Active.Presentator then
         if self.Global.History.IsForePossible then self:OnPresentatorForeClick(event) end
     else
@@ -55,7 +82,7 @@ function EventManager:OnForeClicked(event)
     end
 end
 
-function EventManager:OnBackClicked(event)
+function Class:OnBackClicked(event)
     if Gui.Active.Presentator then
         if self.Global.History.IsBackPossible then self:OnPresentatorBackClick(event) end
     else
@@ -63,54 +90,22 @@ function EventManager:OnBackClicked(event)
     end
 end
 
-function EventManager:OnClose(event) assert(release) end
+function Class:OnClose(event) assert(release) end
 
-function EventManager:OnGuiEvent(event)
+function Class:OnGuiEvent(event)
     local self = self:adopt{}
     self.Player = game.players[event.player_index]
     local message = gui.read_action(event)
     if message then
-        if message.gui == "Remindor" then
-            if message.action == "Closed" then
-                Gui:CloseRemindor(self.Global)
-            elseif message.action == "Moved" then
-                self.Global.Location.Remindor = event.element.location
-            elseif message.action == "Settings" then
-                Gui:SettingsRemindor(self.Global)
-            else
-                assert(release)
-            end
-        elseif message.gui == "Remindor.Task" then
-            if message.action == "Closed" then
-                Gui:CloseRemindorTask(self.Global, event.element.parent.name)
-            elseif message.action == "Settings" then
-                Gui:SettingsRemindorTask(event.element.parent.name)
-            else
-                assert(release)
-            end
-        elseif message.gui == "Remindor.Settings" then
-            if message.action == "Closed" then
-                Gui:CloseRemindorSettings(self.Global)
-            elseif message.action == "Moved" then
-                self.Global.Location.RemindorSettings = event.element.location
-            elseif message.action == "ToggleAutoResearch" then
-                Gui:RemindorToggleAutoResearch(event.element.state)
-            elseif message.action == "ToggleRemoveTask" then
-                Gui:RemindorToggleRemoveTask(event.element.state)
-            elseif message.action == "AutoCrafting" then
-                Gui:RemindorUpdateAutoCrafting(event.element.selected_index)
-            else
-                assert(release)
-            end
-        elseif message.gui == "Presentator" then
-            if message.action == "Closed" then
-                Gui:ClosePresentator(self.Global)
-            elseif message.action == "Moved" then
-                self.Global.Location.Presentator = event.element.location
-            else
-                assert(release)
-            end
-        elseif message.gui == "Presentator.SpriteButton" or message.gui == "Remindor.SpriteButton" then
+        if message.action == "Moved" then
+            self.Global.Location[message.gui] = event.element.location
+            return
+        end
+        if message.action == "Closed" then return Gui:Close(self.Global, message.gui) end
+
+        if message.module == "Remindor" then return Remindor:OnGuiEvent(event) end
+
+        if message.gui == "Presentator.SpriteButton" or message.gui == "Remindor.SpriteButton" then
             if message.action == "Click" then
                 local target = Gui:OnGuiClick(self.Global, event, "Presentator")
                 if target then self.Global.History:AdvanceWith(target) end
@@ -118,11 +113,7 @@ function EventManager:OnGuiEvent(event)
                 assert(release)
             end
         elseif message.gui == "Selector" then
-            if message.action == "Closed" then
-                Gui:Close(self.Global, message.gui)
-            elseif message.action == "Moved" then
-                self.Global.Location.Selector = event.element.location
-            elseif message.action == "Click" then
+            if message.action == "Click" then
                 if event.button == defines.mouse_button_type.left then
                     local target = Gui:PresentSelected(self.Global, event.element.name)
                     if target then self.Global.History:ResetTo(target) end
@@ -135,15 +126,9 @@ function EventManager:OnGuiEvent(event)
                 assert(release)
             end
         elseif message.gui == "SelectRemindor" then
-            if message.action == "Closed" then
-                SelectRemindor:OnClose(self.Player)
-                SelectRemindor.Target = nil
-            elseif message.action == "Moved" then
-                self.Global.Location.SelectRemindor = event.element.location
-            elseif message.action == "Enter" then
+            if message.action == "Enter" then
                 local selection = SelectRemindor:GetSelection()
-                SelectRemindor:OnClose(self.Player)
-                SelectRemindor.Target = nil
+                SelectRemindor:OnClose(self.Global)
                 Gui:AddRemindor(self.Global, selection)
             elseif message.action == "Click" then
                 SelectRemindor:OnGuiClick(
@@ -180,14 +165,12 @@ function EventManager:OnGuiEvent(event)
     end
 end
 
-gui.hook_events(function(event) return EventManager:OnGuiEvent(event) end)
-
-function EventManager:OnTickInitial()
-    for index in pairs(global.Players) do Gui:EnsureMainButton(game.players[index]) end
+function Class:OnTickInitial()
+    self.Modules.Gui:EnsureMainButtons()
     self:SetHandler(defines.events.on_tick)
 end
 
-function EventManager:OnLoad()
+function Class:OnLoad()
     assert(global.Players)
     for _, player in pairs(global.Players) do
         assert(player.History)
@@ -196,36 +179,23 @@ function EventManager:OnLoad()
     end
 end
 
-function EventManager:OnInitialisePlayer(player)
+function Class:EnsureMainButton(player) self.Modules.Gui:EnsureMainButton(player) end
+
+function Class:OnPlayerCreated(event) self:OnInitialisePlayer(game.players[event.player_index]) end
+
+function Class:OnPlayerRemoved(event) self.Global.Players[event.player_index] = nil end
+
+function Class:OnInitialisePlayer(player)
     global.Players[player.index] = {
         Index = player.index,
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
     }
-    Gui:EnsureMainButton(player)
+    self:EnsureMainButton(player)
 end
 
-local instance
-
-function EventManager:OnPlayerCreated(event)
-    if instance then end
-    self:OnInitialisePlayer(game.players[event.player_index])
-end
-
-function EventManager:OnPlayerRemoved(event) self.Global.Players[event.player_index] = nil end
-
-function EventManager:OnInitialisePlayer(player)
-    global.Players[player.index] = {
-        Index = player.index,
-        Links = {Presentator = {}, Remindor = {}},
-        Location = {},
-        History = History:new(),
-    }
-    Gui:EnsureMainButton(player)
-end
-
-function EventManager:OnInitialise()
+function Class:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
         global.Players[index] = {}
@@ -233,11 +203,18 @@ function EventManager:OnInitialise()
     end
 end
 
-function EventManager:new()
-    local self = self:adopt{}
+function Class:new()
+    local self = Class:adopt{}
+    self.Modules = {
+        Selector = Selector:new(self),
+        Presentator = Presentator:new(self),
+        Gui = Gui:new(self),
+        Database = Database:new(self),
+    }
+
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
-    self:SetHandler(defines.events.on_player_created, EventManager.OnPlayerCreated)
+    self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
     self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)
@@ -249,9 +226,34 @@ function EventManager:new()
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
 
-    instance = self
+    gui.hook_events(
+        function(event)
+            if event.element and event.element.get_mod() ~= script.mod_name then return end
+            local message = gui.read_action(event)
+            if event.name == defines.events.on_gui_location_changed then
+                self.Global.Location[event.element.name] = event.element.location
+                return
+            elseif message then
+                if message.module then
+                    return self.Modules[message.module]:OnGuiEvent(event)
+                else
+                    assert(release)
+                end
+            elseif event.element and event.element.tags then
+            else
+                assert(
+                    release --
+                    or event.name == defines.events.on_gui_opened --
+                    or event.name == defines.events.on_gui_selected_tab_changed --
+                    or event.name == defines.events.on_gui_closed --
+                )
+            end
+            return self:OnGuiEvent(event)
+        end
+    )
+
     return self
 end
 
-return EventManager
+Class:new()
 

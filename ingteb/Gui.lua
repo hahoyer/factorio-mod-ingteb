@@ -3,80 +3,59 @@ local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local class = require("core.class")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local UI = require("core.UI")
-local Presentator = require("ingteb.Presentator")
-local Selector = require("ingteb.Selector")
-local Remindor = require("ingteb.Remindor")
-local SelectRemindor = require("ingteb.SelectRemindor")
 local Database = require("ingteb.Database")
-local Entity = require("ingteb.Entity")
 
-local Gui = {Active = {}}
+local Class = class:new(
+    "Gui", nil, {
+        Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+        Database = {get = function(self) return self.Parent.Modules.Database end},
+    }
+)
 
-function Gui:EnsureDatabase(global)
-    self.Database = Database:Ensure()
-    Remindor:RefreshClasses(self.Active.Remindor, self.Database, global)
+function Class:new(parent) return Class:adopt{Parent = parent} end
+
+function Class:EnsureMainButton(player)
+    local frame = mod_gui.get_button_flow(player)
+    if frame.ingteb then return end
+    gui.build(
+        frame, {
+            {
+                type = "sprite-button",
+                name = "ingteb",
+                sprite = "ingteb",
+                tooltip = {"ingteb-utility.ingteb-button-description"},
+                actions = {on_click = {module = self.class.name, action = "Click"}},
+            },
+        }
+    )
 end
 
-function Gui:GetRecipeData(recipePrototype, result)
-    if recipePrototype then
-        local recipe = self.Database:GetRecipe(nil, recipePrototype)
-        result["Recipe." .. recipePrototype.name] = true
-        local inoutItems = recipe.Input:Concat(recipe.Output) --
-        inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
-    end
-end
-
-function Gui:GetInventoryData(inventory, result)
-    if inventory then
-        for index = 1, #inventory do
-            local stack = inventory[index]
-            if stack.valid_for_read then result["Item." .. stack.prototype.name] = true end
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Click" then
+        if event.button == defines.mouse_button_type.left then
+            return self.Parent:OnMainKey(event)
+        elseif event.button == defines.mouse_button_type.right then
+            return self.Parent:ToggleRemindor(event)
+        else
+            assert(release)
         end
+    else
+        assert(release)
     end
 end
 
-function Gui:OnMainInventoryChanged(global)
-    Presentator:RefreshMainInventoryChanged(Database)
-    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
+function Class:EnsureMainButtons()
+    for _, player in pairs(game.players) do self:EnsureMainButton(player) end
 end
 
-function Gui:OnStackChanged()
-    Presentator:RefreshStackChanged(Database)
-    if self.Active.Remindor then Remindor:RefreshStackChanged(Database) end
-end
-
-function Gui:PresentSelected(global, name)
-    local target = self:GetObject(global, name)
-    if target then
-        self:Close(global, "Selector")
-        self:PresentTarget(global, target)
-        return target.CommonKey
-    end
-end
-
----comment
----@param global table Global for player
----@param name string CommonKey
----@param location table GuiLocation
----@return string CommonKey
-function Gui:RemindSelected(global, name, location)
-    local target = self:GetObject(global, name)
-    if target then
-        Gui:Close(global, "Selector")
-        Gui:SelectRemindor(global, {ReminderTask = target, Count = 1}, location)
-        return target.CommonKey
-    end
-end
-
-function Gui:FindTargets(global)
-    local player = game.players[global.Index]
-    self:EnsureDatabase(global)
-    assert(release or self.Active.ingteb)
-    assert(release or not self.Active.Selector)
-    assert(release or not self.Active.Presentator)
+function Class:FindTargets()
+    local player = self.Player
+    local global = self.Global
 
     local cursor = player.cursor_stack
     if cursor and cursor.valid and cursor.valid_for_read then
@@ -122,14 +101,14 @@ function Gui:FindTargets(global)
                 end
             end
             if cursor.type == "container" then
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
             elseif cursor.type == "storage-tank" then
             elseif cursor.type == "assembling-machine" then
-                Gui:GetRecipeData(cursor.get_recipe(), result)
+                Class:GetRecipeData(cursor.get_recipe(), result)
             elseif cursor.type == "lab" then
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
-                Gui:GetRecipeData(player.force.current_research, result)
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
+                Class:GetRecipeData(player.force.current_research, result)
             elseif cursor.type == "mining-drill" then
                 result["Entity." .. cursor.mining_target.name] = true
                 if cursor.burner and cursor.burner.fuel_categories then
@@ -137,9 +116,9 @@ function Gui:FindTargets(global)
                         result["FuelCategory." .. category] = true
                     end
                 end
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
+                Class:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
                 __DebugAdapter.breakpoint()
             end
@@ -153,168 +132,183 @@ function Gui:FindTargets(global)
     return {}
 end
 
-function Gui:ScanActiveGui(player)
-    self.Active.ingteb = mod_gui.get_button_flow(player).ingteb
-    self.Active.Selector = player.gui.screen.Selector
-    self.Active.Presentator = player.gui.screen.Presentator
-    self.Active.Remindor = mod_gui.get_frame_flow(player).Remindor
+function Class:GetInventoryData(inventory, result)
+    if not inventory then return end
+    for index = 1, #inventory do
+        local stack = inventory[index]
+        if stack.valid_for_read then result["Item." .. stack.prototype.name] = true end
+    end
 end
 
-function Gui:Close(global, gui)
-    local player = game.players[global.Index]
+function Class:GetRecipeData(recipePrototype, result)
+    if not recipePrototype then return end
+    local recipe = self.Database:GetRecipe(nil, recipePrototype)
+    result["Recipe." .. recipePrototype.name] = true
+    local inoutItems = recipe.Input:Concat(recipe.Output) --
+    inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
+end
+
+
+
+
+
+function Class:EnsureDatabase(global)
+    assert(release)
+    self.Database = Database:Ensure()
+    self.Database.OnResearchRefresh = function(self, technology)
+        Class:OnResearchRefresh(global, technology.Prototype)
+    end
+    Remindor:RefreshClasses(self.Active.Remindor, self.Database, global)
+end
+
+function Class:OnMainInventoryChanged(global)
+    assert(release)
+    Presentator:RefreshMainInventoryChanged(Database)
+    if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
+end
+
+function Class:OnStackChanged()
+    assert(release)
+    Presentator:RefreshStackChanged(Database)
+    if self.Active.Remindor then Remindor:RefreshStackChanged(Database) end
+end
+
+function Class:PresentSelected(global, name)
+    assert(release)
+    local target = self:GetObject(global, name)
+    if target then
+        self:Close(global, "Selector")
+        self:PresentTarget(global, target)
+        return target.CommonKey
+    end
+end
+
+---comment
+---@param global table Global for player
+---@param name string CommonKey
+---@param location table GuiLocation
+---@return string CommonKey
+function Class:RemindSelected(global, name, location)
+    assert(release)
+    local target = self:GetObject(global, name)
+    if target then
+        Class:Close(global, "Selector")
+        Class:SelectRemindor(global, {ReminderTask = target, Count = 1}, location)
+        return target.CommonKey
+    end
+end
+
+function Class:Close(global, gui)
+    assert(release)
+    if not self.Active[gui] then return end
+
     global.Location[gui] = self.Active[gui].location
-    player.gui.screen[gui].destroy()
+
+    if global.IsPopup then return end
+
+    if gui == "Remindor" then
+        Remindor:OnClose()
+    elseif gui == "Remindor.Settings" then
+        self.Player.opened = Remindor.ParentScreen
+    elseif gui == "Presentator" then
+        Presentator:OnClose(global)
+    elseif gui == "Selector" then
+        Selector:OnClose(global)
+    elseif gui == "SelectRemindor" then
+        SelectRemindor:OnClose(global)
+    end
+
+    self:Player(gui)[gui].destroy()
+
     self.Active[gui] = nil
 end
 
-function Gui:CloseRemindorTask(global, key)
-    Remindor:CloseTask(key)
-    if #global.Remindor.List == 0 then self:CloseRemindor(global) end
-end
-
-function Gui:SettingsRemindorTask(key) Remindor:SettingsTask(key) end
-
-function Gui:SettingsRemindor(global)
+function Class:SettingsRemindor(global)
+    assert(release)
     if self.Active.RemindorSettings then
-        self:CloseRemindorSettings(global)
+        self:Close(global, "RemindorSettings")
     else
         self.Active.RemindorSettings = Remindor:OpenSettings()
     end
 end
 
-function Gui:ClosePresentator(global)
-    if global.IsPopup then return end
-    if not self.Active.Presentator then return end
-    self:Close(global, "Presentator")
-    Presentator:OnClose()
-    global.Links.Presentator = {}
+function Class:RemindorToggleRemoveTask(value)
+    assert(release)
+    Remindor:ToggleRemoveTask(value)
 end
 
-function Gui:CloseRemindor(global)
-    local player = game.players[global.Index]
-    mod_gui.get_frame_flow(player).Remindor.destroy()
-    self.Active.Remindor = nil
-    Remindor:Close()
+function Class:RemindorToggleAutoResearch(value)
+    assert(release)
+    Remindor:ToggleAutoResearch(value)
 end
 
-function Gui:CloseRemindorSettings(global)
-    self:Close(global, "RemindorSettings")
-    Remindor:CloseSettings()
+function Class:RemindorUpdateAutoCrafting(value)
+    assert(release)
+    Remindor:UpdateAutoCrafting(value)
 end
 
-function Gui:RemindorToggleRemoveTask(value) Remindor:ToggleRemoveTask(value) end
-
-function Gui:RemindorToggleAutoResearch(value) Remindor:ToggleAutoResearch(value) end
-
-function Gui:RemindorUpdateAutoCrafting(value) Remindor:UpdateAutoCrafting(value) end
-
-function Gui:SelectTarget(global, targets)
+function Class:SelectTarget(global, targets)
+    assert(release)
     Selector:new(global, targets)
     self:ScanActiveGui(game.players[global.Index])
 end
 
-function Gui:PresentTargetFromCommonKey(global, targetKey)
+function Class:PresentTargetFromCommonKey(global, targetKey)
+    assert(release)
     local target = self:GetObject(global, targetKey)
     self:PresentTarget(global, target)
-end
-
-function Gui:PresentTarget(global, target)
-    local player = game.players[global.Index]
-    local actualTarget = target
-    if target.class == Entity and target.Item then actualTarget = target.Item end
-
-    assert(release or actualTarget.Prototype)
-
-    self:ClosePresentator(global)
-    Presentator:new(global, actualTarget)
-    self:ScanActiveGui(player)
-    return target.CommonKey
 end
 
 ---@param global table Global data for player
 ---@param reminderTask table Common
 ---@param location table GuiLocation (optional)
-function Gui:SelectRemindor(global, reminderTask, location)
+function Class:SelectRemindor(global, reminderTask, location)
+    assert(release)
     SelectRemindor:new(global, reminderTask, location)
 end
 
-function Gui:AddRemindor(global, selection)
-    self:CreateRemindor(global)
+function Class:AddRemindor(global, selection)
+    assert(release)
+    self:EnsureRemindor(global)
+    if not self.Active.Remindor then self.Active.Remindor = self.Remindor:Open() end
     Remindor:SetTask(selection)
 end
 
-function Gui:CreateRemindor(global)
-    if not self.Active.Remindor then self.Active.Remindor = Remindor:new(global) end
+function Class:EnsureRemindor(global)
+    assert(release)
+    if self.Remindor then return end
+    self.Remindor = Remindor:new(global)
+    Remindor = self.Remindor
 end
 
-function Gui:ToggleRemindor(global)
+function Class:ToggleRemindor(global)
+    assert(release)
+    self:EnsureRemindor(global)
     if self.Active.Remindor then
-        self:CloseRemindor(global)
+        self:Close(global, "Remindor")
     else
-        self:CreateRemindor(global)
-        Remindor:Refresh()
+        self.Remindor:Open()
     end
 end
 
-function Gui:OnMainButtonPressed(global)
-    assert(release or self.Active.ingteb)
-    assert(release or not self.Active.Selector or not self.Active.Presentator)
-
-    if self.Active.Selector then
-        self:Close(global, "Selector")
-    elseif self.Active.Presentator then
-        self:ClosePresentator(global)
-    else
-        local targets = self:FindTargets(global)
-        game.players[global.Index].opened = nil
-        if #targets == 1 then
-            return self:PresentTarget(global, targets[1])
-        else
-            self:SelectTarget(global, targets)
-        end
-    end
-end
-
-function Gui:EnsureMainButton(player)
-    if player then
-        if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
-        local frame = mod_gui.get_button_flow(player)
-        if frame.ingteb == nil then
-            assert(release or not self.Active.ingteb)
-            gui.build(
-                frame, {
-                    {
-                        type = "sprite-button",
-                        name = "ingteb",
-                        sprite = "ingteb",
-                        tooltip = {"ingteb-utility.ingteb-button-description"},
-                        actions = {on_click = {gui = "ingteb", action = "Click"}},
-                    },
-                }
-            )
-        end
-        self:ScanActiveGui(player)
-    else
-        for _, player in pairs(game.players) do self:EnsureMainButton(player) end
-    end
-end
-
-function Gui:GetObject(global, commonKey)
+function Class:GetObject(global, commonKey)
+    assert(release)
     self:EnsureDatabase(global)
     return self.Database:GetProxyFromCommonKey(commonKey)
 end
 
-function Gui:OnGuiClick(global, event, site)
+function Class:OnGuiClick(global, event, site)
+    assert(release)
     local player = game.players[global.Index]
 
     local element = event.element
-    if element == Gui.Active.ingteb then
+    if element == Class.Active.ingteb then
         return self:OnMainButtonPressed(global)
-    elseif element == Gui.Active.Selector then
+    elseif element == Class.Active.Selector then
         return
-    elseif element == Gui.Active.Presentator then
+    elseif element == Class.Active.Presentator then
         return
-    elseif element == Gui.Active.Remindor then
+    elseif element == Class.Active.Remindor then
         return
     end
 
@@ -331,10 +325,11 @@ function Gui:OnGuiClick(global, event, site)
         if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
 
         if action.Research then
-            if action.Research.IsReady then
-                self:DirectQueueResearch(global, action.Research)
-            elseif action.Multiple then
-                self:MulipleQueueResearch(global, action.Research)
+            if action.Multiple then
+                local message = action.Research:BeginMulipleQueueResearch()
+                if message then self:Print(player, message) end
+            elseif action.Research.IsReady then
+                action.Research:BeginDirectQueueResearch()
             end
         end
 
@@ -363,63 +358,31 @@ function Gui:OnGuiClick(global, event, site)
     end
 end
 
-function Gui:UpdateTabOrder(tabOrder, dropIndex)
+function Class:UpdateTabOrder(tabOrder, dropIndex)
+    assert(release)
     local dropTabIndex = tabOrder[tonumber(dropIndex)]
     tabOrder:Remove(dropIndex)
     tabOrder:Append(dropTabIndex)
 end
 
-function Gui:OnResearchRefresh(global, research)
+function Class:OnResearchRefresh(global, research)
+    assert(release)
     if Database.IsInitialized then
-        Gui:EnsureDatabase(global)
-        Gui.Database:RefreshTechnology(research)
+        Class:EnsureDatabase(global)
+        Class.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
         if self.Active.Remindor then Remindor:RefreshResearchChanged() end
     end
 end
 
-function Gui:OnResearchFinished(global, research) Gui:OnResearchRefresh(global, research) end
-function Gui:Print(player, text) player.print {"", "[ingteb]", text} end
-
-function Gui:DirectQueueResearch(global, research)
-    local player = game.players[global.Index]
-    local added = player.force.add_research(research.Name)
-    if added then
-        self:Print(
-            player, {"ingteb-utility.added-to-research-queue", research.Prototype.localised_name}
-        )
-        Gui:OnResearchRefresh(research.Prototype)
-    else
-        self:Print(
-            player,
-                {"ingteb-utility.not-added-to-research-queue", research.Prototype.localised_name}
-        )
-    end
+function Class:OnResearchFinished(global, research)
+    assert(release)
+    Class:OnResearchRefresh(global, research)
 end
 
-function Gui:MulipleQueueResearch(global, research)
-    local player = game.players[global.Index]
-    local queued = Array:new{}
-    local message = "ingteb-utility.research-no-ready-prerequisite"
-    repeat
-        local ready = research.TopReadyPrerequisite
-        if ready then message = "ingteb-utility.not-added-to-research-queue" end
-        local added = ready and player.force.add_research(ready.Name)
-        if added then queued:Append(ready) end
-
-    until not added
-
-    queued:Select(
-        function(research)
-            self:Print(
-                player,
-                    {"ingteb-utility.added-to-research-queue", research.Prototype.localised_name}
-            )
-            Gui:OnResearchRefresh(global, research.Prototype)
-        end
-    )
-    if not queued:Any() then self:Print(player, {message, research.Prototype.localised_name}) end
-
+function Class:Print(player, text)
+    assert(release)
+    Database:Print(player, text)
 end
 
-return Gui
+return Class

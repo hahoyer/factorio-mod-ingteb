@@ -15,6 +15,7 @@ local Task = class:new("Task")
 
 Task.property = {
     Global = {cache = true, get = function(self) return self.Parent.Global end},
+    Player = {cache = true, get = function(self) return self.Parent.Player end},
     AutoResearch = {
         get = function(self)
             if self.Settings.AutoResearch ~= nil then return self.Settings.AutoResearch end
@@ -54,16 +55,192 @@ Task.property = {
     },
 }
 
-local Remindor = {
-    Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFullfilled = true},
+local Remindor = class:new("Remindor")
+Remindor.property = {
+    AutoResearch = {
+        get = function(self)
+            if self.Settings.AutoResearch ~= nil then return self.Settings.AutoResearch end
+            return self.Parent.Settings.AutoResearch
+        end,
+    },
+    AutoCrafting = {
+        get = function(self)
+            if self.Settings.AutoCrafting ~= nil then return self.Settings.AutoCrafting end
+            return self.Parent.Settings.AutoCrafting
+        end,
+    },
+    RemoveTaskWhenFullfilled = {
+        get = function(self)
+            if self.Settings.RemoveTaskWhenFullfilled ~= nil then
+                return self.Settings.RemoveTaskWhenFullfilled
+            end
+            return self.Parent.Settings.RemoveTaskWhenFullfilled
+        end,
+    },
 }
+
+function GetCommonSettingsGui(self)
+    local guiName = "Remindor.Settings." .. self.class.name
+    return {
+        type = "frame",
+        name = guiName,
+        direction = "vertical",
+        ref = {"Main"},
+        children = {
+            {
+                type = "flow",
+                direction = "horizontal",
+                children = {
+                    {type = "label", caption = {"ingteb-utility.reminder-settings"}},
+                    {type = "empty-widget", style = "flib_titlebar_drag_handle", ref = {"DragBar"}},
+                    {
+                        type = "sprite-button",
+                        sprite = "utility/close_white",
+                        tooltip = "press to hide.",
+                        style = "frame_action_button",
+                        actions = {on_click = {gui = guiName, action = "Closed"}},
+                    },
+                },
+            },
+            {
+                type = "flow",
+                direction = "horizontal",
+                children = {
+                    {
+                        type = "checkbox",
+                        caption = "override",
+                        state = self.Settings.AutoResearch ~= nil,
+                        actions = {
+                            on_checked_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "UpdateOverride",
+                                control = "AutoResearch",
+                            },
+                        },
+                    },
+                    {
+                        type = "checkbox",
+                        caption = "AutoResearch",
+                        state = self.AutoResearch,
+                        ignored_by_interaction = self.Settings.AutoResearch == nil,
+                        actions = {
+                            on_checked_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "Update",
+                                control = "AutoResearch",
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                type = "flow",
+                direction = "horizontal",
+                children = {
+                    {
+                        type = "checkbox",
+                        caption = "override",
+                        state = self.Settings.AutoCrafting ~= nil,
+                        actions = {
+                            on_checked_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "UpdateOverride",
+                                control = "AutoCrafting",
+                            },
+                        },
+                    },
+                    {
+                        type = "drop-down",
+                        items = {
+                            "no auto-crafting",
+                            "craft when 1 is possible",
+                            "craft when 5 are possible",
+                            "craft when requested are possible",
+                        },
+                        selected_index = self.AutoCrafting,
+                        caption = "AutoCrafting",
+                        ignored_by_interaction = self.Settings.AutoCrafting == nil,
+                        actions = {
+                            on_selection_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "Update",
+                                control = "AutoCrafting",
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                type = "flow",
+                direction = "horizontal",
+                children = {
+                    {
+                        type = "checkbox",
+                        caption = "override",
+                        state = self.Settings.RemoveTaskWhenFullfilled ~= nil,
+                        actions = {
+                            on_checked_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "UpdateOverride",
+                                control = "RemoveTaskWhenFullfilled",
+                            },
+                        },
+                    },
+                    {
+                        type = "checkbox",
+                        caption = "Remove task when fullfiled",
+                        state = self.RemoveTaskWhenFullfilled,
+                        ignored_by_interaction = self.Settings.RemoveTaskWhenFullfilled == nil,
+                        actions = {
+                            on_checked_state_changed = {
+                                module = "Remindor",
+                                subModule = self.class.name,
+                                action = "Update",
+                                control = "RemoveTaskWhenFullfilled",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+end
+
+function UpdateCommonSettings(self)
+    self.Player.opened.destroy()
+    OpenCommonSettings(self)
+end
+
+function OpenCommonSettings(self)
+    local guiData = GetCommonSettingsGui(self)
+    local result = gui.build(self.Player.gui.screen, {guiData})
+    result.DragBar.drag_target = result.Main
+
+    if not self.Global.Location.RemindorTaskSettings then
+        self.Global.Location.RemindorTaskSettings = {x = 200, y = 100}
+    end
+
+    result.Main.location = self.Global.Location.RemindorTaskSettings
+
+    self.ParentScreen = self.Player.opened
+    self.Global.IsPopup = true
+    self.Player.opened = result.Main
+    self.Global.IsPopup = nil
+    return result.Main
+end
 
 Spritor = {}
 
 function Task:CheckAutoResearch()
     if not self.AutoResearch then return end
     if not self.Recipe.Required.Technologies:Any() then return end
-    assert(release)
+
+    self.Recipe.Technology:BeginMulipleQueueResearch()
 end
 
 function Task:CheckAutoCrafting()
@@ -162,7 +339,13 @@ function Task:GetGui(key, data)
                         style = "frame_action_button",
                         style_mods = {size = 17},
                         ref = {"Remindor", "Task", "CloseButton"},
-                        actions = {on_click = {gui = "Remindor.Task", action = "Closed"}},
+                        actions = {
+                            on_click = {
+                                gui = "Remindor.Task",
+                                module = "Remindor",
+                                action = "Remove",
+                            },
+                        },
                         tooltip = "press to close.",
                     },
                     {
@@ -171,7 +354,13 @@ function Task:GetGui(key, data)
                         style = "frame_action_button",
                         style_mods = {size = 17},
                         ref = {"Remindor", "Task", "Settings"},
-                        actions = {on_click = {gui = "Remindor.Task", action = "Settings"}},
+                        actions = {
+                            on_click = {
+                                gui = "Remindor.Task",
+                                module = "Remindor",
+                                action = "Settings",
+                            },
+                        },
                     },
                 },
             },
@@ -239,82 +428,20 @@ function Remindor:GetGuiElement(element, index)
     end
 end
 
-function Remindor:CloseTask(name)
+function Remindor:CloseTask(index)
     self:AssertValidLinks()
     self:EnsureGlobal()
-    local index = self:GetTaskIndex(name)
     assert(release or index)
     self.Global.Remindor.List:Remove(index)
     self:Refresh()
+    if self.Global.Remindor.List == 0 then self:CloseRemindor(global) end
 end
 
-function Remindor:Close() self.Frame = nil end
+function Remindor:OnClose() self.Frame = nil end
 
-function Remindor:SettingsTask(name) assert(release) end
-
-function Remindor:GetSettingsGui()
-    return {
-        type = "frame",
-        name = "RemindorSettings",
-        direction = "vertical",
-        ref = {"Main"},
-        children = {
-            {
-                type = "flow",
-                direction = "horizontal",
-                children = {
-                    {type = "label", caption = {"ingteb-utility.reminder-settings"}},
-                    {type = "empty-widget", style = "flib_titlebar_drag_handle", ref = {"DragBar"}},
-                    {
-                        type = "sprite-button",
-                        sprite = "utility/close_white",
-                        tooltip = "press to hide.",
-                        style = "frame_action_button",
-                        actions = {on_click = {gui = "Remindor.Settings", action = "Closed"}},
-                    },
-                },
-            },
-            {
-                type = "checkbox",
-                caption = "AutoResearch",
-                state = self.Settings.AutoResearch,
-                actions = {
-                    on_checked_state_changed = {
-                        gui = "Remindor.Settings",
-                        action = "ToggleAutoResearch",
-                    },
-                },
-            },
-            {
-                type = "drop-down",
-                items = {
-                    "no auto-crafting",
-                    "craft when 1 is possible",
-                    "craft when 5 are possible",
-                    "craft when requested are possible",
-                },
-                selected_index = self.Settings.AutoCrafting,
-                caption = "AutoCrafting",
-                actions = {
-                    on_selection_state_changed = {
-                        gui = "Remindor.Settings",
-                        action = "AutoCrafting",
-                    },
-                },
-            },
-            {
-                type = "checkbox",
-                caption = "Remove task when fullfiled",
-                state = self.Settings.RemoveTaskWhenFullfilled,
-                actions = {
-                    on_checked_state_changed = {
-                        gui = "Remindor.Settings",
-                        action = "ToggleRemoveTask",
-                    },
-                },
-            },
-        },
-    }
+function Remindor:SettingsTask(name)
+    OpenCommonSettings(self.Global.Remindor.List[Remindor:GetTaskIndex(name)])
+    assert(true)
 end
 
 function Remindor:ToggleRemoveTask(value)
@@ -334,26 +461,6 @@ function Remindor:UpdateAutoCrafting(value)
     self.Settings.AutoCrafting = value
     self:Refresh()
 end
-
-function Remindor:OpenSettings()
-    local guiData = self:GetSettingsGui()
-    local result = gui.build(self.Player.gui.screen, {guiData})
-    result.DragBar.drag_target = result.Main
-
-    if not self.Global.Location.RemindorSettings then
-        self.Global.Location.RemindorSettings = {x = 200, y = 100}
-    end
-
-    result.Main.location = self.Global.Location.RemindorSettings
-
-    self.Parent = self.Player.opened
-    self.Global.IsPopup = true
-    self.Player.opened = result.Main
-    self.Global.IsPopup = nil
-    return result.Main
-end
-
-function Remindor:CloseSettings() self.Player.opened = self.Parent end
 
 function Remindor:Refresh()
     self:EnsureGlobal()
@@ -392,7 +499,9 @@ function Remindor:GetGui()
                         type = "sprite-button",
                         sprite = "ingteb_settings_white",
                         style = "frame_action_button",
-                        actions = {on_click = {gui = "Remindor", action = "Settings"}},
+                        actions = {
+                            on_click = {gui = "Remindor", module = "Remindor", action = "Settings"},
+                        },
                     },
                     {
                         type = "sprite-button",
@@ -408,14 +517,78 @@ function Remindor:GetGui()
     }
 end
 
-function Remindor:new(global)
-    self.Player = game.players[global.Index]
-    self.Global = global
-
+function Remindor:Open(global)
+    self = Remindor:adopt{
+        Parent = {
+            Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFullfilled = true},
+        },
+        Settings = {},
+        Player = game.players[global.Index],
+        Global = global,
+    }
     Spritor = SpritorClass:new("Remindor")
+    return self
+end
+
+function Remindor:Open()
     local result = gui.build(mod_gui.get_frame_flow(self.Player), {self:GetGui()})
-    Remindor.Tasks = result.Tasks
+    self.Tasks = result.Tasks
+    self:Refresh()
     return result.Main
+end
+
+function Remindor:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    assert(release or message and message.module == "Remindor")
+
+    if message.gui == "Remindor" then
+        if message.action == "Settings" then
+            return OpenCommonSettings(self)
+        else
+            assert(release)
+        end
+    end
+
+    local subModule
+    if message.subModule == "Remindor" then
+        subModule = self
+    else
+        assert(release)
+    end
+
+    if message.action == "UpdateOverride" then
+        subModule.Settings[message.control] = subModule[message.control]
+        UpdateCommonSettings(subModule)
+        return
+    elseif message.action == "Update" then
+        subModule.Settings[message.control] = event.element.selected_index or event.element.state
+        UpdateCommonSettings(subModule)
+        return
+    end
+
+    if message.gui == "Remindor.Task" then
+        local index = self:GetTaskIndex(event.element.parent.name)
+        if message.action == "Remove" then
+            self:CloseTask(index)
+        elseif message.action == "Settings" then
+            local task = self.Global.Remindor.List[index]
+            OpenCommonSettings(task)
+        else
+            assert(release)
+        end
+    elseif message.gui == "Remindor" then
+        if message.action == "ToggleAutoResearch" then
+            self:ToggleAutoResearch(event.element.state)
+        elseif message.action == "ToggleRemoveTask" then
+            self:ToggleRemoveTask(event.element.state)
+        elseif message.action == "AutoCrafting" then
+            self:UpdateAutoCrafting(event.element.selected_index)
+        else
+            assert(release)
+        end
+    else
+        assert(release)
+    end
 end
 
 return Remindor

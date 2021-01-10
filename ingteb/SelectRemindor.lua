@@ -8,9 +8,10 @@ local class = require("core.class")
 
 local SelectRemindor = class:new("SelectRemindor")
 
-function SelectRemindor:OnClose(player)
-    player.gui.screen.SelectRemindor.destroy()
+function SelectRemindor:OnClose(global)
+    local player = game.players[global.Index]
     player.opened = SelectRemindor.Parent
+    self.Target = nil
 end
 
 function SelectRemindor:GetWorkerSpriteStyle(target)
@@ -152,7 +153,7 @@ function SelectRemindor:Refresh(global, location)
         global.Location.SelectRemindor = result.Main.location
     end
 
-    self.Parent = player.opened
+    self.ParentScreen = player.opened
     global.IsPopup = true
     player.opened = result.Main
     global.IsPopup = nil
@@ -173,7 +174,7 @@ end
 ---@param action table Common
 ---@param location table GuiLocation (optional)
 ---@return table
-function SelectRemindor:new(global, action, location)
+function SelectRemindor:Open(global, action, location)
     assert(release or not self.Target)
     self.Target = action.ReminderTask
     self.Count = action.Count
@@ -225,8 +226,8 @@ function SelectRemindor:GetGui()
         name = "SelectRemindor",
         ref = {"Main"},
         actions = {
-            on_location_changed = {gui = "SelectRemindor", action = "Moved"},
-            on_closed = {gui = "SelectRemindor", action = "Closed"},
+            on_location_changed = {action = "Moved"},
+            on_closed = {module = "SelectRemindor", action = "Closed"},
         },
         children = {
             {

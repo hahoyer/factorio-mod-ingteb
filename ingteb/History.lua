@@ -55,6 +55,4 @@ function History:Fore() --
     self:Log("History:Fore")
 end
 
-function History:Save() return {} end
-
 return History

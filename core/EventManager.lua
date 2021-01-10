@@ -7,7 +7,7 @@ local class = require("core.class")
 local UI = require("core.UI")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
-local EventManager = class:new("EventManager")
+local EventManager = class:new("core.EventManager")
 
 EventManager.EventDefinesByIndex = Dictionary:new(defines.events) --
 :ToDictionary(function(value, key) return {Key = value, Value = key} end) --
@@ -33,10 +33,11 @@ EventManager.property = {
 }
 
 function EventManager:Watch(handler, eventId)
+    local instance = self
     return function(...)
-        self:Enter(eventId, ...)
-        local result = handler(self, ...)
-        self:Leave(eventId)
+        instance :Enter(eventId, ...)
+        local result = handler(instance , ...)
+        instance :Leave(eventId)
         return result
     end
 end

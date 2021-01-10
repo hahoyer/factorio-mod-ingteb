@@ -11,8 +11,18 @@ local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
 local SpritorClass = require("ingteb.Spritor")
 local Bonus = require("ingteb.Bonus")
+local Entity= require("ingteb.Entity")
 
-local Presentator = {}
+local Class = {}
+
+local Class = class:new(
+    "Presentator", nil, {
+        Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+    }
+)
+
+function Class:new(parent) return Class:adopt{Parent = parent} end
 
 local Spritor = SpritorClass:new("Presentator")
 local nextId = 0
@@ -530,20 +540,25 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 
 end
 
-function Presentator:OnClose() Spritor:Close() end
+function Class:OnClose(global)
+    Spritor:Close()
+    global.Links.Presentator = {}
+end
 
-function Presentator:RefreshMainInventoryChanged(dataBase)
+function Class:RefreshMainInventoryChanged(dataBase)
     Spritor:RefreshMainInventoryChanged(dataBase)
 end
 
-function Presentator:RefreshStackChanged(dataBase) end
+function Class:RefreshStackChanged(dataBase) end
 
-function Presentator:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
+function Class:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
 
-function Presentator:new(global, target)
-    local player = game.players[global.Index]
+function Class:Open(target)
+    local player = self.Player
+    local global = self.Global
     global.Links.Presentator = {}
     Spritor:StartCollecting()
+    if target.class == Entity and target.Item then target = target.Item end
     local guiStructure = self:GetGui(target)
     local result = gui.build(player.gui.screen, {guiStructure})
     Spritor:RegisterDynamicTargets(result.DynamicElements)
@@ -556,7 +571,7 @@ function Presentator:new(global, target)
     player.opened = result.Main
 end
 
-function Presentator:GetGui(target)
+function Class:GetGui(target)
 
     target:SortAll()
     assert(
@@ -654,7 +669,7 @@ function Presentator:GetGui(target)
         name = "Presentator",
         ref = {"Main"},
         actions = {
-            on_location_changed = {gui = "Presentator", action = "Moved"},
+            on_location_changed = {action = "Moved"},
             on_closed = {gui = "Presentator", action = "Closed"},
         },
         direction = "vertical",
@@ -663,4 +678,4 @@ function Presentator:GetGui(target)
     }
 end
 
-return Presentator
+return Class

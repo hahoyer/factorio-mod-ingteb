@@ -54,8 +54,10 @@ function class:new(name, base, properties)
 
     --- "Adopts" any table as instance of a class by providing metatable and property setup
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
+    --- @param isMinimal boolean (optional) do change anything. For use in on_load.
     --- @return table instance ... but patched 
     function classInstance:adopt(instance, isMinimal)
+        if not instance then instance = {} end
         if not isMinimal then instance.class = self end
         setmetatable(instance, self.metatable)
         if not isMinimal then

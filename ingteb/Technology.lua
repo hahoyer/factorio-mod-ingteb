@@ -220,6 +220,47 @@ local Technology = class:new(
     }
 )
 
+function Technology:BeginMulipleQueueResearch()
+    local player = UI.Player
+    local queued = Array:new{}
+    local message = "ingteb-utility.research-no-ready-prerequisite"
+    repeat
+        local ready = self.TopReadyPrerequisite
+        if ready then message = "ingteb-utility.not-added-to-research-queue" end
+        local added = ready and player.force.add_research(ready.Name)
+        if added then queued:Append(ready) end
+
+    until not added
+
+    queued:Select(
+        function(technology)
+            self.Database:Print(
+                player,
+                    {"ingteb-utility.added-to-research-queue", technology.Prototype.localised_name}
+            )
+            self.Database:OnResearchRefresh(technology)
+        end
+    )
+    if not queued:Any() then return{message, self.Prototype.localised_name} end
+end
+
+function Technology:BeginDirectQueueResearch()
+    local player = UI.Player
+    local added = player.force.add_research(self.Name)
+    if added then
+        self.Database:Print(
+            player, {"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}
+        )
+        self.Database:OnResearchRefresh(self)
+    else
+        self.Database:Print(
+            player,
+                {"ingteb-utility.not-added-to-research-queue", self.Prototype.localised_name}
+        )
+    end
+end
+
+
 function Technology:Refresh() self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end) end
 
 function Technology:IsBefore(other)

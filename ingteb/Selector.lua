@@ -4,7 +4,7 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local UI = require("core.UI")
+local class = require("core.class")
 
 ColumnCount = 12
 
@@ -21,47 +21,94 @@ local function EnsureKey(data, key, value)
     return result
 end
 
-local Selector = {}
---- @param global table global data for current player
+local Class = class:new(
+    "Selector", nil, {
+        Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+    }
+)
+
+function Class:new(parent) return Class:adopt{Parent = parent} end
+
 --- @param targets table Array | nil
-function Selector:new(global, targets)
-    local player = game.players[global.Index]
-    local children = {self:Show(targets)}
+function Class:Open(targets)
+    local player = self.Player
+    local global = self.Global
+    local content = self:GetGui(targets)
     local result = gui.build(
         player.gui.screen, {
             {
                 type = "frame",
-                caption = {"ingteb-utility.selector"},
+                direction = "vertical",
                 name = "Selector",
                 ref = {"Main"},
                 actions = {
-                    on_location_changed = {gui = "Selector", action = "Moved"},
-                    on_closed = {gui = "Selector", action = "Closed"},
+                    on_location_changed = {action = "Moved"},
+                    on_closed = {module = self.class.name, action = "Closed"},
                 },
-                direction = "vertical",
-                style = "ingteb-main-frame",
-                children = children,
+                children = {
+                    {
+                        type = "flow",
+                        direction = "horizontal",
+                        children = {
+                            {type = "label", caption = {"ingteb-utility.selector"}},
+                            {
+                                type = "empty-widget",
+                                style = "flib_titlebar_drag_handle",
+                                ref = {"DragBar"},
+                            },
+                            {
+                                type = "sprite-button",
+                                sprite = "utility/close_white",
+                                tooltip = "press to hide.",
+                                actions = {on_click = {module = self.class.name, action = "Closed"}},
+                                style = "frame_action_button",
+                            },
+                        },
+                    },
+                    content,
+                },
             },
         }
     )
+
+    self.Current = result.Main
+    result.DragBar.drag_target = result.Main
+    player.opened = result.Main
+
     if global.Location.Selector then
         result.Main.location = global.Location.Selector
     else
         result.Main.force_auto_center()
         global.Location.Selector = result.Main.location
     end
-    player.opened = result.Main
 end
 
-function Selector:Show(targets)
-    if #targets > 0 then
-        return self:ShowTargets(Array:new{targets})
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Closed" then
+        self:Close()
     else
-        return self:ShowAllItems()
+        assert(release)
     end
 end
 
-function Selector:GetTargets(targets)
+function Class:GetGui(targets)
+    if #targets > 0 then
+        return self:GetTargetsGui(Array:new{targets})
+    else
+        return self:GetAllItemsGui()
+    end
+end
+
+function Class:Close()
+    if self.Current then
+        self.Current.destroy()
+        self.Current = nil
+    end
+end
+
+function Class:GetTargets(targets)
     return targets:Select(
         function(target)
             if target.SpriteType == "fuel-category" then
@@ -84,12 +131,12 @@ function Selector:GetTargets(targets)
 
 end
 
-function Selector:ShowTargets(targets)
+function Class:GetTargetsGui(targets)
     return {
         type = "flow",
         direction = "vertical",
         children = {
-            {type = "table", column_count = ColumnCount, children = Selector:GetTargets(targets)},
+            {type = "table", column_count = ColumnCount, children = Class:GetTargets(targets)},
             {type = "line", direction = "horizontal"},
             {type = "table", column_count = ColumnCount},
         },
@@ -122,7 +169,7 @@ function SelectorCache.EnsureGroups()
     return self.Groups
 end
 
-function Selector:GetGoodsPanel(goods)
+function Class:GetGoodsPanel(goods)
     local name =
         (goods.object_name == "LuaItemPrototype" and "Item" or "Fluid") .. "." .. goods.name
     return {
@@ -130,13 +177,11 @@ function Selector:GetGoodsPanel(goods)
         sprite = (goods.object_name == "LuaItemPrototype" and "item" or "fluid") .. "." .. goods.name,
         name = name,
         tooltip = goods.localised_name,
-        actions = {
-            on_click = {gui = "Selector", action = "Click"},
-        },
+        actions = {on_click = {gui = "Selector", action = "Click"}},
     }
 end
 
-function Selector:GetSubGroupPanel(group)
+function Class:GetSubGroupPanel(group)
     return group:ToArray():Select(
         function(subgroup)
             return {
@@ -150,7 +195,7 @@ function Selector:GetSubGroupPanel(group)
     )
 end
 
-function Selector:ShowAllItems()
+function Class:GetAllItemsGui()
     local groups = SelectorCache:EnsureGroups()
 
     return {
@@ -190,8 +235,8 @@ function Selector:ShowAllItems()
     }
 end
 
-function Selector:ShowSelectionForAllItems()
+function Class:ShowSelectionForAllItems()
     return self.Frame.add {type = "choose-elem-button", elem_type = "signal"}
 end
 
-return Selector
+return Class

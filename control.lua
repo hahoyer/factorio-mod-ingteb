@@ -1,3 +1,3 @@
-require("ingteb.EventManager"):new()
+require("ingteb.EventManager")
 local y = 1 --/w
 
