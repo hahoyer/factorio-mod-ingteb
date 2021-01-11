@@ -553,9 +553,9 @@ function Class:Close()
     end
 end
 
-function Class:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
+function Class:RefreshMainInventoryChanged() Spritor:RefreshMainInventoryChanged() end
 
-function Class:RefreshStackChanged(dataBase) end
+function Class:RefreshStackChanged() end
 
 function Class:RefreshResearchChanged() Spritor:RefreshResearchChanged() end
 

@@ -90,9 +90,10 @@ function Class:OnMainKey(event)
     end
 end
 
-function Class:OnMainInventoryChanged(event)
-    self.Player = event.player_index
-    --    Gui:OnMainInventoryChanged(self.Global)
+function Class:OnMainInventoryChanged()
+    if not self.Current then return end
+    self.Current:RefreshMainInventoryChanged()
+    --if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
 end
 
 function Class:OnStackChanged() Gui:OnStackChanged() end

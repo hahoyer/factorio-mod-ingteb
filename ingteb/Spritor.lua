@@ -156,10 +156,10 @@ function Class:Close()
     self.DynamicElements = Dictionary:new() --
 end
 
-function Class:RefreshMainInventoryChanged(dataBase)
+function Class:RefreshMainInventoryChanged()
     self.DynamicElements --
     :Where(function(_, target) return target.IsRefreshRequired.MainInventory end) --
-    :Select(function(list, target) self:UpdateGui(list, target, dataBase) end) --
+    :Select(function(list, target) self:UpdateGui(list, target) end) --
 end
 
 function Class:RefreshStackChanged(dataBase) end
