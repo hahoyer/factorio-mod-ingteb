@@ -30,50 +30,16 @@ local Class = class:new(
 
 function Class:new(parent) return Class:adopt{Parent = parent} end
 
---- @param targets table Array | nil
 function Class:Open(targets)
     local player = self.Player
     local global = self.Global
     local content = self:GetGui(targets)
-    local result = gui.build(
-        player.gui.screen, {
-            {
-                type = "frame",
-                direction = "vertical",
-                name = "Selector",
-                ref = {"Main"},
-                actions = {
-                    on_location_changed = {action = "Moved"},
-                    on_closed = {module = self.class.name, action = "Closed"},
-                },
-                children = {
-                    {
-                        type = "flow",
-                        direction = "horizontal",
-                        children = {
-                            {type = "label", caption = {"ingteb-utility.selector"}},
-                            {
-                                type = "empty-widget",
-                                style = "flib_titlebar_drag_handle",
-                                ref = {"DragBar"},
-                            },
-                            {
-                                type = "sprite-button",
-                                sprite = "utility/close_white",
-                                tooltip = "press to hide.",
-                                actions = {on_click = {module = self.class.name, action = "Closed"}},
-                                style = "frame_action_button",
-                            },
-                        },
-                    },
-                    content,
-                },
-            },
-        }
+
+    local result = Helper.CreateFrameWithContent(
+        self.class.name, player.gui.screen, content, {"ingteb-utility.selector"}
     )
 
     self.Current = result.Main
-    result.DragBar.drag_target = result.Main
     player.opened = result.Main
 
     if global.Location.Selector then

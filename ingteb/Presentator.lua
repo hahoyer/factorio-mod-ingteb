@@ -11,9 +11,7 @@ local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
 local SpritorClass = require("ingteb.Spritor")
 local Bonus = require("ingteb.Bonus")
-local Entity= require("ingteb.Entity")
-
-local Class = {}
+local Entity = require("ingteb.Entity")
 
 local Class = class:new(
     "Presentator", nil, {
@@ -540,14 +538,12 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 
 end
 
-function Class:OnClose(global)
+function Class:Close()
     Spritor:Close()
     global.Links.Presentator = {}
 end
 
-function Class:RefreshMainInventoryChanged(dataBase)
-    Spritor:RefreshMainInventoryChanged(dataBase)
-end
+function Class:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
 
 function Class:RefreshStackChanged(dataBase) end
 
@@ -559,8 +555,10 @@ function Class:Open(target)
     global.Links.Presentator = {}
     Spritor:StartCollecting()
     if target.class == Entity and target.Item then target = target.Item end
-    local guiStructure = self:GetGui(target)
-    local result = gui.build(player.gui.screen, {guiStructure})
+    local result = Helper.CreateFrameWithContent(
+        self.class.name, player.gui.screen, self:GetGui(target), target.LocalisedName
+    )
+
     Spritor:RegisterDynamicTargets(result.DynamicElements)
     if global.Location.Presentator then
         result.Main.location = global.Location.Presentator
@@ -572,7 +570,6 @@ function Class:Open(target)
 end
 
 function Class:GetGui(target)
-
     target:SortAll()
     assert(
         release or not target.RecipeList or not next(target.RecipeList)
@@ -663,19 +660,16 @@ function Class:GetGui(target)
         }
     end
 
-    return {
-        type = "frame",
-        caption = target.LocalisedName,
-        name = "Presentator",
-        ref = {"Main"},
-        actions = {
-            on_location_changed = {action = "Moved"},
-            on_closed = {gui = "Presentator", action = "Closed"},
-        },
-        direction = "vertical",
-        style = "ingteb-main-frame",
-        children = children,
-    }
+    return {type = "flow", direction = "vertical", children = children}
+end
+
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Closed" then
+        self:Close()
+    else
+        assert(release)
+    end
 end
 
 return Class

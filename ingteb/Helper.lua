@@ -1,6 +1,6 @@
 local event = require("__flib__.event")
+local gui = require("__flib__.gui-beta")
 local Table = require("core.Table")
-local gui = require "core.gui"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 
@@ -83,6 +83,55 @@ function Helper.SpriteStyleFromCode(code)
     return code == true and "ingteb-light-button" --
     or code == false and "red_slot_button" --
     or "slot_button"
+end
+
+---Create frame and add content
+--- Provided actions: location_changed and closed
+---@param moduleName string
+---@param frame table LuaGuiElement where gui will be added
+---@param content table flib.GuiBuildStructure
+---@param caption any LocalisedString
+---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
+function Helper.CreateFrameWithContent(moduleName, frame, content, caption)
+    local result = gui.build(
+        frame, {
+            {
+                type = "frame",
+                direction = "vertical",
+                name = moduleName,
+                ref = {"Main"},
+                actions = {
+                    on_location_changed = {action = "Moved"},
+                    on_closed = {module = moduleName, action = "Closed"},
+                },
+                children = {
+                    {
+                        type = "flow",
+                        direction = "horizontal",
+                        children = {
+                            {type = "label", caption = caption},
+                            {
+                                type = "empty-widget",
+                                style = "flib_titlebar_drag_handle",
+                                ref = {"DragBar"},
+                            },
+                            {
+                                type = "sprite-button",
+                                sprite = "utility/close_white",
+                                tooltip = "press to hide.",
+                                actions = {on_click = {module = moduleName, action = "Closed"}},
+                                style = "frame_action_button",
+                            },
+                        },
+                    },
+                    content,
+                },
+            },
+        }
+    )
+
+    result.DragBar.drag_target = result.Main
+    return result
 end
 
 return Helper
