@@ -31,29 +31,20 @@ local Class = class:new(
 function Class:new(parent) return Class:adopt{Parent = parent} end
 
 function Class:Open(targets)
-    local player = self.Player
-    local global = self.Global
-    local content = self:GetGui(targets)
-
-    local result = Helper.CreateFrameWithContent(
-        self.class.name, player.gui.screen, content, {"ingteb-utility.selector"}
+    local result = Helper.CreateFloatingFrameWithContent(
+        self, self:GetGui(targets), {"ingteb-utility.selector"}
     )
-
     self.Current = result.Main
-    player.opened = result.Main
-
-    if global.Location.Selector then
-        result.Main.location = global.Location.Selector
-    else
-        result.Main.force_auto_center()
-        global.Location.Selector = result.Main.location
-    end
 end
 
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
         self:Close()
+    elseif message.action == "Click" then
+        local commonKey = event.element.name
+        self:Close()
+        self.Parent:PresentTargetByCommonKey(commonKey )
     else
         assert(release)
     end
@@ -143,7 +134,7 @@ function Class:GetGoodsPanel(goods)
         sprite = (goods.object_name == "LuaItemPrototype" and "item" or "fluid") .. "." .. goods.name,
         name = name,
         tooltip = goods.localised_name,
-        actions = {on_click = {gui = "Selector", action = "Click"}},
+        actions = {on_click = {module = self.class.name, action = "Click"}},
     }
 end
 

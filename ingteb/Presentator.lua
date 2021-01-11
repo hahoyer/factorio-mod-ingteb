@@ -17,12 +17,18 @@ local Class = class:new(
     "Presentator", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
+        Database = {get = function(self) return self.Parent.Database end},
     }
 )
 
-function Class:new(parent) return Class:adopt{Parent = parent} end
+local Spritor
 
-local Spritor = SpritorClass:new("Presentator")
+function Class:new(parent)
+    local self = Class:adopt{Parent = parent}
+    Spritor = SpritorClass:new(self)
+    return self
+end
+
 local nextId = 0
 local function GetNextId()
     nextId = nextId + 1
@@ -539,34 +545,29 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 function Class:Close()
-    Spritor:Close()
-    global.Links.Presentator = {}
+    if self.Current then
+        self.Current.destroy()
+        self.Current = nil
+        Spritor:Close()
+        self.Global.Links.Presentator = {}
+    end
 end
 
 function Class:RefreshMainInventoryChanged(dataBase) Spritor:RefreshMainInventoryChanged(dataBase) end
 
 function Class:RefreshStackChanged(dataBase) end
 
-function Class:RefreshResearchChanged(dataBase) Spritor:RefreshResearchChanged(dataBase) end
+function Class:RefreshResearchChanged() Spritor:RefreshResearchChanged() end
 
 function Class:Open(target)
-    local player = self.Player
-    local global = self.Global
-    global.Links.Presentator = {}
+    self.Global.Links.Presentator = {}
     Spritor:StartCollecting()
     if target.class == Entity and target.Item then target = target.Item end
-    local result = Helper.CreateFrameWithContent(
-        self.class.name, player.gui.screen, self:GetGui(target), target.LocalisedName
+    local result = Helper.CreateFloatingFrameWithContent(
+        self, self:GetGui(target), target.LocalisedName
     )
-
     Spritor:RegisterDynamicTargets(result.DynamicElements)
-    if global.Location.Presentator then
-        result.Main.location = global.Location.Presentator
-    else
-        result.Main.force_auto_center()
-        global.Location.Presentator = result.Main.location
-    end
-    player.opened = result.Main
+    self.Current = result.Main
 end
 
 function Class:GetGui(target)
@@ -667,6 +668,8 @@ function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
         self:Close()
+    elseif message.subModule == "Spritor" then
+        Spritor:OnGuiEvent(event)
     else
         assert(release)
     end

@@ -126,16 +126,14 @@ function Class:GetItem(name, prototype) return self:GetProxy("Item", name, proto
 function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
-function Class:GetMiningRecipe(name, prototype)
-    return self:GetProxy("MiningRecipe", name, prototype)
-end
+function Class:GetMiningRecipe(name, prototype) return
+    self:GetProxy("MiningRecipe", name, prototype) end
 function Class:GetBoilingRecipe(name, prototype)
     return self:GetProxy("BoilingRecipe", name, prototype)
 end
 function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
-function Class:GetFuelCategory(name, prototype)
-    return self:GetProxy("FuelCategory", name, prototype)
-end
+function Class:GetFuelCategory(name, prototype) return
+    self:GetProxy("FuelCategory", name, prototype) end
 
 function Class:GetBonusFromEffect(target)
     local type = target.type
@@ -289,7 +287,22 @@ function Class:Get(target)
     return self:GetProxy(className, Name, Prototype)
 end
 
-function Class:RefreshTechnology(target) self:GetTechnology(target.name):Refresh() end
+function Class:BeginMulipleQueueResearch(target)
+    Class.IsMulipleQueueResearch = true
+    local result = target:BeginMulipleQueueResearch()
+    Class.IsMulipleQueueResearch = nil
+    if class.IsRefreshResearchChangedRequired then
+        class.IsRefreshResearchChangedRequired = nil
+        local current = self.Parent.Current
+        if current then current:RefreshResearchChanged() end
+    end
+
+    return result
+end
+
+function Class:RefreshTechnology(target) 
+    assert(release or target.object_name == "LuaTechnology")
+    self:GetTechnology(target.name):Refresh() end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
 
 return Class

@@ -220,6 +220,12 @@ local Technology = class:new(
     }
 )
 
+local function AddResearch(player, name)
+    if player.force.research_queue_enabled or #player.force.research_queue == 0 then
+        return player.force.add_research(name)
+    end
+end
+
 function Technology:BeginMulipleQueueResearch()
     local player = UI.Player
     local queued = Array:new{}
@@ -227,7 +233,7 @@ function Technology:BeginMulipleQueueResearch()
     repeat
         local ready = self.TopReadyPrerequisite
         if ready then message = "ingteb-utility.not-added-to-research-queue" end
-        local added = ready and player.force.add_research(ready.Name)
+        local added = ready and AddResearch(player, ready.Name)
         if added then queued:Append(ready) end
 
     until not added
@@ -238,28 +244,26 @@ function Technology:BeginMulipleQueueResearch()
                 player,
                     {"ingteb-utility.added-to-research-queue", technology.Prototype.localised_name}
             )
-            self.Database:OnResearchRefresh(technology)
+            technology:Refresh()
         end
     )
-    if not queued:Any() then return{message, self.Prototype.localised_name} end
+    if not queued:Any() then return {message, self.Prototype.localised_name} end
 end
 
 function Technology:BeginDirectQueueResearch()
     local player = UI.Player
-    local added = player.force.add_research(self.Name)
+    local added = AddResearch(player, self.Name)
     if added then
         self.Database:Print(
             player, {"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}
         )
-        self.Database:OnResearchRefresh(self)
+        self:Refresh()
     else
         self.Database:Print(
-            player,
-                {"ingteb-utility.not-added-to-research-queue", self.Prototype.localised_name}
+            player, {"ingteb-utility.not-added-to-research-queue", self.Prototype.localised_name}
         )
     end
 end
-
 
 function Technology:Refresh() self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end) end
 

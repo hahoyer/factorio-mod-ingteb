@@ -41,6 +41,8 @@ function class:new(name, base, properties)
         end
     end
 
+    if __DebugAdapter then __DebugAdapter.stepIgnore(metatable.__index) end
+
     function metatable:__newindex(key, value)
         local accessors = classInstance.property[key]
         if accessors then

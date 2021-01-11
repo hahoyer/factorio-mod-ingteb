@@ -12,7 +12,7 @@ local Class = class:new(
     "Gui", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Modules.Database end},
+        Database = {get = function(self) return self.Parent.Database end},
     }
 )
 
@@ -254,7 +254,6 @@ function Class:SelectTarget(global, targets)
 end
 
 function Class:PresentTargetFromCommonKey(global, targetKey)
-    assert(release)
     local target = self:GetObject(global, targetKey)
     self:PresentTarget(global, target)
 end

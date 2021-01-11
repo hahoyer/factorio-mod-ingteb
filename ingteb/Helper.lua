@@ -134,4 +134,27 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption)
     return result
 end
 
+---Create floating frame and add content
+--- Provided actions: location_changed and closed
+---@param self table ingteb-module
+---@param content table flib.GuiBuildStructure
+---@param caption any LocalisedString
+---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
+function Helper.CreateFloatingFrameWithContent(self, content, caption)
+    local moduleName = self.class.name
+    local player = self.Player
+    local global = self.Global
+
+    local result = Helper.CreateFrameWithContent(moduleName, player.gui.screen, content, caption)
+    player.opened = result.Main
+
+    if global.Location[moduleName] then
+        result.Main.location = global.Location[moduleName]
+    else
+        result.Main.force_auto_center()
+        global.Location[moduleName] = result.Main.location
+    end
+    return result
+end
+
 return Helper

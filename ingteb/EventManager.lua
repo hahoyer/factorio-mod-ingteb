@@ -12,6 +12,7 @@ local Gui = require("ingteb.Gui")
 local Selector = require("ingteb.Selector")
 local Presentator = require("ingteb.Presentator")
 local Database = require("ingteb.Database")
+local Spritor = require("ingteb.Spritor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -27,8 +28,17 @@ local Class = class:new(
                 end
             end,
         },
+        Database = {
+            cache = true,
+            get = function(self)
+                local result = self.Modules.Database
+                result:Ensure()
+                return result
+            end,
+        },
     }
 )
+
 local self
 
 function Class:EnsureRemindor()
@@ -36,30 +46,45 @@ function Class:EnsureRemindor()
     Remindor = Gui.Remindor
 end
 
+function Class:PresentCurrentTargetFromHistory()
+    local target = self.Database:GetProxyFromCommonKey(self.Global.History.Current)
+    self.Modules.Presentator:Open(target)
+end
+
 function Class:OnSelectorForeOrBackClick(event)
     self.Player = event.player_index
-    Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
+    self:PresentCurrentTargetFromHistory()
 end
 
 function Class:OnPresentatorForeClick(event)
     self.Player = event.player_index
     self.Global.History:Fore()
-    Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
+    self:PresentCurrentTargetFromHistory()
 end
 
 function Class:OnPresentatorBackClick(event)
     self.Player = event.player_index
     self.Global.History:Back()
-    Gui:PresentTargetFromCommonKey(self.Global, self.Global.History.Current)
+    self:PresentCurrentTargetFromHistory()
+end
+
+function Class:PresentTarget(target)
+    if self.Current then self.Current:Close() end
+    self.Modules.Presentator:Open(target)
+    self.Global.History:ResetTo(target.CommonKey)
+end
+
+function Class:PresentTargetByCommonKey(targetKey)
+    local target = self.Database:GetProxyFromCommonKey(targetKey)
+    self:PresentTarget(target)
 end
 
 function Class:OnMainKey(event)
     self.Player = event.player_index
     if self.Current then return self.Current:Close() end
-    self.Modules.Database:Ensure()
     local targets = self.Modules.Gui:FindTargets()
     if #targets == 1 then
-        self.Modules.Presentator:Open(targets[1])
+        self:PresentTarget(targets[1])
     else
         self.Modules.Selector:Open(targets)
     end
@@ -72,10 +97,19 @@ end
 
 function Class:OnStackChanged() Gui:OnStackChanged() end
 
-function Class:OnResearchChanged(event) Gui:OnResearchFinished(self.Global, event.research) end
+function Class:OnResearchChanged(event)
+    if not self.Modules.Database.IsInitialized then return end
+    self.Database:RefreshTechnology(event.research)
+    if not self.Current then return end
+    if self.Database.IsMulipleQueueResearch then
+        self.Database.IsRefreshResearchChangedRequired = true
+    else
+        self.Current:RefreshResearchChanged()
+    end
+end
 
 function Class:OnForeClicked(event)
-    if Gui.Active.Presentator then
+    if self.Current and self.Current.class == Presentator then
         if self.Global.History.IsForePossible then self:OnPresentatorForeClick(event) end
     else
         if self.Global.History.Current then self:OnSelectorForeOrBackClick(event) end
@@ -83,14 +117,12 @@ function Class:OnForeClicked(event)
 end
 
 function Class:OnBackClicked(event)
-    if Gui.Active.Presentator then
+    if self.Current and self.Current.class == Presentator then
         if self.Global.History.IsBackPossible then self:OnPresentatorBackClick(event) end
     else
         if self.Global.History.Current then self:OnSelectorForeOrBackClick(event) end
     end
 end
-
-function Class:OnClose(event) assert(release) end
 
 function Class:OnGuiEvent(event)
     local self = self:adopt{}
@@ -210,6 +242,7 @@ function Class:new()
         Presentator = Presentator:new(self),
         Gui = Gui:new(self),
         Database = Database:new(self),
+        Spritor = Spritor:new(self),
     }
 
     self:SetHandler("on_init", self.OnInitialise)

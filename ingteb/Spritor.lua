@@ -1,19 +1,26 @@
+local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
-local gui = require "core.gui"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local Spritor = class:new("Spritor")
+local Class = class:new(
+    "Spritor", nil, {
+        Site = {get = function(self) return self.Parent.class.name end},
+        Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+        Database = {get = function(self) return self.Parent.Database end},
+    }
+)
 
-function Spritor:new(site)
-    return self:adopt{DynamicElements = Dictionary:new(), DynamicElementsIndex = 1, Site = site}
+function Class:new(parent)
+    return self:adopt{Parent = parent, DynamicElements = Dictionary:new(), DynamicElementsIndex = 1}
 end
 
-function Spritor:GetSpriteButton(target, sprite)
+function Class:GetSpriteButton(target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
     if not target then return {type = "sprite-button", sprite = sprite, style = style} end
@@ -26,28 +33,77 @@ function Spritor:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        actions = {on_click = {gui = self.Site .. ".SpriteButton", action = "Click"}},
+        actions = {on_click = {module = self.Site, subModule = self.class.name, action = "Click"}},
         name = target.ClickTarget,
         style = style,
     }
 end
 
-function Spritor:StartCollecting()
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Click" then
+        return self:OnGuiClick(event)
+    else
+        assert(release)
+        local commonKey = event.element.name
+        self:Close()
+        self.Parent:PresentTargetByCommonKey(commonKey)
+    end
+end
+
+function Class:OnGuiClick(event)
+    local global = self.Global
+    local player = self.Player
+
+    local target = self.Database:GetProxyFromCommonKey(event.element.name)
+    if not target or not target.Prototype then return end
+
+    local action = target:GetAction(event)
+    if not action then return end
+
+    if action.Selecting then
+        if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
+            player.cursor_ghost = action.Selecting.Prototype
+        end
+    end
+
+    if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
+
+    if action.Research then
+        if action.Multiple then
+            local message = self.Database:BeginMulipleQueueResearch(action.Research)
+            if message then self:Print(player, message) end
+        elseif action.Research.IsReady then
+            action.Research:BeginDirectQueueResearch()
+        end
+    end
+
+    if action.ReminderTask then
+        self.Parent.Parent:SelectRemindor(global, action, Helper.GetLocation(event.element))
+    end
+
+    if action.Presenting then
+        local result = self.Parent.Parent:PresentTarget(action.Presenting)
+        return result
+    end
+end
+
+function Class:StartCollecting()
     self.DynamicElementsIndex = 1
     self.DynamicTargets = Array:new()
     self.DynamicElements = Dictionary:new()
 end
 
-function Spritor:CreateSprite(frame, target, sprite)
+function Class:CreateSprite(frame, target, sprite)
     return gui.build(frame, self:GetSpriteButton(target, sprite))
 end
 
-function Spritor:GetHelperText(target)
+function Class:GetHelperText(target)
     if target.GetHelperText then return target:GetHelperText(self.Site) end
     return target.HelperText
 end
 
-function Spritor:CollectForGuiClick(result, target)
+function Class:CollectForGuiClick(result, target)
     --    global.Links[self.Site][result.index] = target and target.ClickTarget
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         result.ref = {"DynamicElements", self.DynamicElementsIndex}
@@ -57,7 +113,7 @@ function Spritor:CollectForGuiClick(result, target)
     return result
 end
 
-function Spritor:RegisterDynamicTargets(guiElements)
+function Class:RegisterDynamicTargets(guiElements)
     if guiElements then
         self.DynamicTargets:Select(
             function(target, index)
@@ -67,21 +123,21 @@ function Spritor:RegisterDynamicTargets(guiElements)
     end
 end
 
-function Spritor:GetSpriteButtonAndRegister(target, sprite)
+function Class:GetSpriteButtonAndRegister(target, sprite)
     local result = self:GetSpriteButton(target, sprite)
     if target then self:CollectForGuiClick(result, target) end
     return result
 end
 
-function Spritor:CreateSpriteAndRegister(frame, target, sprite)
+function Class:CreateSpriteAndRegister(frame, target, sprite)
     return gui.build(frame, self:GetSpriteButtonAndRegister(target, sprite))
 end
 
-function Spritor:UpdateGui(list, target, dataBase)
+function Class:UpdateGui(list, target)
     if target.class == StackOfGoods then
-        target = StackOfGoods:new(target.Goods, target.Amounts, dataBase)
+        target = StackOfGoods:new(target.Goods, target.Amounts, self.Database)
     else
-        target = dataBase:GetProxy(target.class.name, target.Name)
+        target = self.Database:GetProxy(target.class.name, target.Name)
     end
     local helperText = self:GetHelperText(target)
     local number = target.NumberOnSprite
@@ -96,30 +152,30 @@ function Spritor:UpdateGui(list, target, dataBase)
     end
 end
 
-function Spritor:Close()
+function Class:Close()
     self.DynamicElements = Dictionary:new() --
 end
 
-function Spritor:RefreshMainInventoryChanged(dataBase)
+function Class:RefreshMainInventoryChanged(dataBase)
     self.DynamicElements --
     :Where(function(_, target) return target.IsRefreshRequired.MainInventory end) --
     :Select(function(list, target) self:UpdateGui(list, target, dataBase) end) --
 end
 
-function Spritor:RefreshStackChanged(dataBase) end
+function Class:RefreshStackChanged(dataBase) end
 
-function Spritor:RefreshResearchChanged(dataBase)
+function Class:RefreshResearchChanged()
     self.DynamicElements --
     :Where(function(_, target) return target.IsRefreshRequired.Research end) --
-    :Select(function(list, target) self:UpdateGui(list, target, dataBase) end) --
+    :Select(function(list, target) self:UpdateGui(list, target) end) --
 end
 
-function Spritor:GetTiles(count)
+function Class:GetTiles(count)
     return Array:FromNumber(count) --
     :Select(function() return {type = "sprite", style = "ingteb-un-button"} end)
 end
 
-function Spritor:GetLinePart(target, count, isRightAligned)
+function Class:GetLinePart(target, count, isRightAligned)
     if not count then count = math.min(6, target:Count()) end
 
     local children = Array:new()
@@ -146,7 +202,7 @@ function Spritor:GetLinePart(target, count, isRightAligned)
 
 end
 
-function Spritor:GetLine(target, tooltip)
+function Class:GetLine(target, tooltip)
     local count = target:Count()
     local children = Array:new()
     if target.Technologies then
@@ -173,4 +229,4 @@ function Spritor:GetLine(target, tooltip)
 
 end
 
-return Spritor
+return Class

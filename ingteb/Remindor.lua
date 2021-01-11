@@ -16,6 +16,7 @@ local Task = class:new("Task")
 Task.property = {
     Global = {cache = true, get = function(self) return self.Parent.Global end},
     Player = {cache = true, get = function(self) return self.Parent.Player end},
+    Database = {get = function(self) return self.Parent.Database end},
     AutoResearch = {
         get = function(self)
             if self.Settings.AutoResearch ~= nil then return self.Settings.AutoResearch end
@@ -57,6 +58,7 @@ Task.property = {
 
 local Remindor = class:new("Remindor")
 Remindor.property = {
+    Database = {get = function(self) return self.Parent.Database end},
     AutoResearch = {
         get = function(self)
             if self.Settings.AutoResearch ~= nil then return self.Settings.AutoResearch end
@@ -234,13 +236,11 @@ function OpenCommonSettings(self)
     return result.Main
 end
 
-Spritor = {}
-
 function Task:CheckAutoResearch()
     if not self.AutoResearch then return end
     if not self.Recipe.Required.Technologies:Any() then return end
 
-    self.Recipe.Technology:BeginMulipleQueueResearch()
+    self.Database:BeginMulipleQueueResearch(self.Recipe.Technology)
 end
 
 function Task:CheckAutoCrafting()
@@ -383,7 +383,7 @@ function Remindor:RefreshClasses(frame, database, global)
     if getmetatable(self.Global.Remindor.List) then return end
 
     self.Frame = frame.Tasks
-    Spritor = SpritorClass:new("Remindor")
+    Spritor = SpritorClass:new(self)
     Dictionary:new(self.Global.Remindor.Links)
     Array:new(self.Global.Remindor.List)
     self.Global.Remindor.List:Select(
