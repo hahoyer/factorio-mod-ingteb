@@ -1,3 +1,4 @@
+local mod_gui = require("mod-gui")
 local event = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local Table = require("core.Table")
@@ -91,8 +92,9 @@ end
 ---@param frame table LuaGuiElement where gui will be added
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
+---@param buttons table[] flib.GuiBuildStructure
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFrameWithContent(moduleName, frame, content, caption)
+function Helper.CreateFrameWithContent(moduleName, frame, content, caption, buttons)
     local result = gui.build(
         frame, {
             {
@@ -115,6 +117,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption)
                                 style = "flib_titlebar_drag_handle",
                                 ref = {"DragBar"},
                             },
+                            {type = "flow", direction = "horizontal", children = buttons},
                             {
                                 type = "sprite-button",
                                 sprite = "utility/close_white",
@@ -130,7 +133,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption)
         }
     )
 
-    result.DragBar.drag_target = result.Main
+    if not frame.parent and frame.name == "screen" then result.DragBar.drag_target = result.Main end
     return result
 end
 
@@ -139,13 +142,16 @@ end
 ---@param self table ingteb-module
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
+---@param buttons table[] flib.GuiBuildStructure
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFloatingFrameWithContent(self, content, caption)
+function Helper.CreateFloatingFrameWithContent(self, content, caption, buttons)
     local moduleName = self.class.name
     local player = self.Player
     local global = self.Global
 
-    local result = Helper.CreateFrameWithContent(moduleName, player.gui.screen, content, caption)
+    local result = Helper.CreateFrameWithContent(
+        moduleName, player.gui.screen, content, caption, buttons
+    )
     player.opened = result.Main
 
     if global.Location[moduleName] then
@@ -154,6 +160,21 @@ function Helper.CreateFloatingFrameWithContent(self, content, caption)
         result.Main.force_auto_center()
         global.Location[moduleName] = result.Main.location
     end
+    return result
+end
+
+---Create floating frame and add content
+--- Provided actions: closed
+---@param self table ingteb-module
+---@param content table flib.GuiBuildStructure
+---@param caption any LocalisedString
+---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
+function Helper.CreateLeftSideFrameWithContent(self, content, caption, buttons)
+    local moduleName = self.class.name
+    local player = self.Player
+    local result = Helper.CreateFrameWithContent(
+        moduleName, mod_gui.get_frame_flow(player), content, caption, buttons
+    )
     return result
 end
 

@@ -54,6 +54,8 @@ function class:new(name, base, properties)
         end
     end
 
+    if __DebugAdapter then __DebugAdapter.stepIgnore(metatable.__newindex) end
+
     --- "Adopts" any table as instance of a class by providing metatable and property setup
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
     --- @param isMinimal boolean (optional) do change anything. For use in on_load.

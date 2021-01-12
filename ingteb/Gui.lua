@@ -18,8 +18,8 @@ local Class = class:new(
 
 function Class:new(parent) return Class:adopt{Parent = parent} end
 
-function Class:EnsureMainButton(player)
-    local frame = mod_gui.get_button_flow(player)
+function Class:EnsureMainButton()
+    local frame = mod_gui.get_button_flow(self.Player)
     if frame.ingteb then return end
     gui.build(
         frame, {
@@ -38,19 +38,16 @@ function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Click" then
         if event.button == defines.mouse_button_type.left then
-            return self.Parent:OnMainKey(event)
+            self.Parent:ToggleFloating(event)
         elseif event.button == defines.mouse_button_type.right then
-            return self.Parent:ToggleRemindor(event)
+            self.Parent.Modules.Remindor:Toggle()
         else
             assert(release)
         end
     else
         assert(release)
     end
-end
-
-function Class:EnsureMainButtons()
-    for _, player in pairs(game.players) do self:EnsureMainButton(player) end
+    assert(true)
 end
 
 function Class:FindTargets()
@@ -147,10 +144,6 @@ function Class:GetRecipeData(recipePrototype, result)
     local inoutItems = recipe.Input:Concat(recipe.Output) --
     inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
 end
-
-
-
-
 
 function Class:EnsureDatabase(global)
     assert(release)
