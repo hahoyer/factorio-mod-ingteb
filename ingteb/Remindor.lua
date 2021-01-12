@@ -57,6 +57,17 @@ function Class:new(parent)
     return self
 end
 
+function Class:CloseSettings()
+    if not self.CurrentSettings then return end
+    self.CurrentSettings.destroy() 
+    self.CurrentSettings = nil
+end
+
+function Class:OpenSettings()
+    self:CloseSettings()
+    self.CurrentSettings = Settings.Open(self)
+end
+
 function Class:Toggle()
     if self.Current then
         self:Close()
@@ -67,7 +78,7 @@ end
 
 function Class:Close()
     assert(release or self.Current)
-    if self.CurrentSettings then self.CurrentSettings.destroy() end
+    self.CloseSettings() 
     self.Current.destroy()
     self.Current = nil
     Spritor:Close()
@@ -114,15 +125,22 @@ function Class:EnsureGlobal()
     end
 end
 
+function Class:GetSubModule(tag)
+    if tag == "Remindor" then
+        return self
+    else
+        assert(release)
+    end
+end
+
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Settings" then
-        if self.CurrentSettings then self.CurrentSettings.destroy() end
-        self.CurrentSettings = Settings.Open(self)
+        self:OpenSettings()
         return
     elseif message.action == "Closed" then
         if message.subModule == "Settings" then
-            self.CurrentSettings.destroy()
+            self:CloseSettings()
             return
         elseif not message.subModule then
             self:Close()
@@ -130,6 +148,20 @@ function Class:OnGuiEvent(event)
         else
             assert(release)
         end
+    elseif message.action == "UpdateOverride" then
+        local subModule = self:GetSubModule(message.subModule)
+        if event.element.state then
+            subModule.Settings[message.control] = nil
+        else
+            subModule.Settings[message.control] = subModule[message.control]
+        end
+        subModule:OpenSettings()
+        return
+    elseif message.action == "Update" then
+        local subModule = self:GetSubModule(message.subModule)
+        subModule.Settings[message.control] = event.element.selected_index or event.element.state
+        subModule:OpenSettings()
+        return
     else
         assert(release)
     end
@@ -137,23 +169,6 @@ function Class:OnGuiEvent(event)
     -------------
 
     assert(release)
-
-    local subModule
-    if message.subModule == "Remindor" then
-        subModule = self
-    else
-        assert(release)
-    end
-
-    if message.action == "UpdateOverride" then
-        subModule.Settings[message.control] = subModule[message.control]
-        Settings.Update(subModule)
-        return
-    elseif message.action == "Update" then
-        subModule.Settings[message.control] = event.element.selected_index or event.element.state
-        Settings.Update(subModule)
-        return
-    end
 
     if message.gui == "Remindor.Task" then
         local index = self:GetTaskIndex(event.element.parent.name)

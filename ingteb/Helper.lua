@@ -161,6 +161,7 @@ end
 --- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
+    if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
     local global = self.Global
@@ -190,6 +191,7 @@ end
 --- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreateLeftSideFrameWithContent(self, content, caption, options)
+    if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
     local result = Helper.CreateFrameWithContent(

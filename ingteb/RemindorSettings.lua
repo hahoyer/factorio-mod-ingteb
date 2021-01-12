@@ -17,8 +17,8 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "override",
-                        state = self.Settings.AutoResearch ~= nil,
+                        caption = "default",
+                        state = self.Settings.AutoResearch == nil,
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
@@ -50,8 +50,8 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "override",
-                        state = self.Settings.AutoCrafting ~= nil,
+                        caption = "default",
+                        state = self.Settings.AutoCrafting == nil,
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
@@ -89,8 +89,8 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "override",
-                        state = self.Settings.RemoveTaskWhenFullfilled ~= nil,
+                        caption = "default",
+                        state = self.Settings.RemoveTaskWhenFullfilled == nil,
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
@@ -118,11 +118,6 @@ local function GetGui(self)
             },
         },
     }
-end
-
-function Class.Update(self)
-    self.Player.opened.destroy()
-    Class.Open(self)
 end
 
 function Class.Open(self)
