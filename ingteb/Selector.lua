@@ -28,7 +28,7 @@ local Class = class:new(
     }
 )
 
-function Class:new(parent) return Class:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt{Parent = parent} end
 
 function Class:Open(targets)
     local result = Helper.CreateFloatingFrameWithContent(
@@ -93,7 +93,7 @@ function Class:GetTargetsGui(targets)
         type = "flow",
         direction = "vertical",
         children = {
-            {type = "table", column_count = ColumnCount, children = Class:GetTargets(targets)},
+            {type = "table", column_count = ColumnCount, children = self:GetTargets(targets)},
             {type = "line", direction = "horizontal"},
             {type = "table", column_count = ColumnCount},
         },

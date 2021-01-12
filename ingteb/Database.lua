@@ -21,7 +21,7 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new("Database")
 
-function Class:new(parent) return Class:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt{Parent = parent} end
 
 local function EnsureKey(data, key, value)
     local result = data[key]
@@ -99,9 +99,9 @@ function Class:Ensure()
 end
 
 function Class:GetProxyFromCommonKey(targetKey)
-    Class:Ensure()
+    self:Ensure()
     local _, _, className, prototypeName = targetKey:find("^(.+)%.(.*)$")
-    return Class:GetProxy(className, prototypeName)
+    return self:GetProxy(className, prototypeName)
 end
 
 function Class:GetProxy(className, name, prototype)

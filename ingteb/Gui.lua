@@ -16,7 +16,7 @@ local Class = class:new(
     }
 )
 
-function Class:new(parent) return Class:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt{Parent = parent} end
 
 function Class:EnsureMainButton()
     local frame = mod_gui.get_button_flow(self.Player)
@@ -98,14 +98,14 @@ function Class:FindTargets()
                 end
             end
             if cursor.type == "container" then
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
             elseif cursor.type == "storage-tank" then
             elseif cursor.type == "assembling-machine" then
-                Class:GetRecipeData(cursor.get_recipe(), result)
+                self:GetRecipeData(cursor.get_recipe(), result)
             elseif cursor.type == "lab" then
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
-                Class:GetRecipeData(player.force.current_research, result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
+                self:GetRecipeData(player.force.current_research, result)
             elseif cursor.type == "mining-drill" then
                 result["Entity." .. cursor.mining_target.name] = true
                 if cursor.burner and cursor.burner.fuel_categories then
@@ -113,9 +113,9 @@ function Class:FindTargets()
                         result["FuelCategory." .. category] = true
                     end
                 end
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
-                Class:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
                 __DebugAdapter.breakpoint()
             end
@@ -145,11 +145,13 @@ function Class:GetRecipeData(recipePrototype, result)
     inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
 end
 
+------------------------------------
+
 function Class:EnsureDatabase(global)
     assert(release)
     self.Database = Database:Ensure()
     self.Database.OnResearchRefresh = function(self, technology)
-        Class:OnResearchRefresh(global, technology.Prototype)
+        self:OnResearchRefresh(global, technology.Prototype)
     end
     Remindor:RefreshClasses(self.Active.Remindor, self.Database, global)
 end
@@ -185,8 +187,8 @@ function Class:RemindSelected(global, name, location)
     assert(release)
     local target = self:GetObject(global, name)
     if target then
-        Class:Close(global, "Selector")
-        Class:SelectRemindor(global, {ReminderTask = target, Count = 1}, location)
+        self:Close(global, "Selector")
+        self:SelectRemindor(global, {ReminderTask = target, Count = 1}, location)
         return target.CommonKey
     end
 end
@@ -257,13 +259,6 @@ end
 function Class:SelectRemindor(global, reminderTask, location)
     assert(release)
     SelectRemindor:new(global, reminderTask, location)
-end
-
-function Class:AddRemindor(global, selection)
-    assert(release)
-    self:EnsureRemindor(global)
-    if not self.Active.Remindor then self.Active.Remindor = self.Remindor:Open() end
-    Remindor:SetTask(selection)
 end
 
 function Class:EnsureRemindor(global)
@@ -360,7 +355,7 @@ end
 function Class:OnResearchRefresh(global, research)
     assert(release)
     if Database.IsInitialized then
-        Class:EnsureDatabase(global)
+        self:EnsureDatabase(global)
         Class.Database:RefreshTechnology(research)
         Presentator:RefreshResearchChanged(Database)
         if self.Active.Remindor then Remindor:RefreshResearchChanged() end
@@ -369,7 +364,7 @@ end
 
 function Class:OnResearchFinished(global, research)
     assert(release)
-    Class:OnResearchRefresh(global, research)
+    self:OnResearchRefresh(global, research)
 end
 
 function Class:Print(player, text)

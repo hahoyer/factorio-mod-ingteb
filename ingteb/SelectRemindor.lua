@@ -14,7 +14,7 @@ local Class = class:new(
 )
 
 function Class:new(parent, action, location)
-    local self = Class:adopt{Parent = parent}
+    local self = self:adopt{Parent = parent}
     self.Target = action.ReminderTask
     self.Count = action.Count
     self.Recipes = self.Target.Recipes
@@ -23,7 +23,7 @@ function Class:new(parent, action, location)
     self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
 
     self.Current = Helper.CreatePopupFrameWithContent(
-        self, self:GetGui(), {"ingteb-utility.select-reminder"}, {
+                       self, self:GetGui(), {"ingteb-utility.select-reminder"}, {
             buttons = {
                 {
                     type = "sprite-button",
@@ -33,7 +33,7 @@ function Class:new(parent, action, location)
                 },
             },
         }
-    ).Main
+                   ).Main
 
     return self
 end
@@ -83,40 +83,20 @@ function Class:OnGuiEvent(event)
         local commonKey = event.element.name
         self:Close()
         self.Parent:PresentTargetByCommonKey(commonKey)
+    elseif message.action == "CountChanged" then
+        self:OnTextChanged(event.element.text)
+    elseif message.action == "Enter" then
+        local selection = self:GetSelection()
+        self:Close()
+        self.Parent:AddRemindor(selection)
     else
         assert(release)
     end
 end
 
-function Class:OnTextChanged(global, value)
-    assert(release)
-    self.Count = tonumber(value)
-end
-
-function Class:OnGuiClick(global, target)
-    assert(release)
-    if target.IsRecipe then
-        self.Recipe = target
-        if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
-            self.Worker = self:GetBelongingWorkers(self.Recipe):Top(false)
-        end
-    else
-        self.Worker = target
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
-        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
-        local old = AddIndent()
-        local recipes = self:GetBelongingRecipes(self.Worker)
-        indent = old
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
-        if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
-    end
-    local player = game.players[global.Index]
-    self:OnClose(player)
-    self:Refresh(global)
-end
+function Class:OnTextChanged(value) self.Count = tonumber(value) end
 
 function Class:GetSelection()
-    assert(release)
     return {
         Target = self.Target:CreateStack{value = self.Count},
         Worker = self.Worker,
@@ -253,6 +233,28 @@ function Class:GetGui()
             {type = "flow", direction = "vertical", children = self:GetWorkersAndRecipes()},
         },
     }
+end
+
+function Class:OnGuiClick(global, target)
+    assert(release)
+    if target.IsRecipe then
+        self.Recipe = target
+        if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
+            self.Worker = self:GetBelongingWorkers(self.Recipe):Top(false)
+        end
+    else
+        self.Worker = target
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
+        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
+        local old = AddIndent()
+        local recipes = self:GetBelongingRecipes(self.Worker)
+        indent = old
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
+        if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
+    end
+    local player = game.players[global.Index]
+    self:OnClose(player)
+    self:Refresh(global)
 end
 
 return Class

@@ -14,7 +14,7 @@ local Presentator = require("ingteb.Presentator")
 local Database = require("ingteb.Database")
 local Spritor = require("ingteb.Spritor")
 local Remindor = require("ingteb.Remindor")
-local SelectRemindor= require("ingteb.SelectRemindor")
+local SelectRemindor = require("ingteb.SelectRemindor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -42,11 +42,6 @@ local Class = class:new(
 )
 
 local self
-
-function Class:EnsureRemindor()
-    Gui:EnsureRemindor(self.Global)
-    Remindor = Gui.Remindor
-end
 
 function Class:SelectRemindor(reminderTask, location)
     self.Modules.SelectRemindor = SelectRemindor:new(self, reminderTask, location)
@@ -85,7 +80,7 @@ function Class:PresentTargetByCommonKey(targetKey)
     self:PresentTarget(target)
 end
 
-function Class:ToggleFloating(event)
+function Class:ToggleFloating()
     if self.CurrentFloating then return self.CurrentFloating:Close() end
     local targets = self.Modules.Gui:FindTargets()
     if #targets == 1 then
@@ -95,8 +90,14 @@ function Class:ToggleFloating(event)
     end
 end
 
-function Class:OnMainKey(event)     self.Player = event.player_index
-    self:ToggleFloating(event) end
+function Class:AddRemindor(selection)
+    self.Modules.Remindor:SetTask(selection)
+end
+
+function Class:OnMainKey(event)
+    self.Player = event.player_index
+    self:ToggleFloating()
+end
 
 function Class:OnMainInventoryChanged(event)
     self.Player = event.player_index
@@ -105,8 +106,10 @@ function Class:OnMainInventoryChanged(event)
     -- if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
 end
 
-function Class:OnStackChanged(event)     self.Player = event.player_index
-    Gui:OnStackChanged() end
+function Class:OnStackChanged(event)
+    self.Player = event.player_index
+    Gui:OnStackChanged()
+end
 
 function Class:OnResearchChanged(event)
     self.Player = event.player_index
@@ -138,31 +141,6 @@ function Class:OnBackClicked(event)
     end
 end
 
-function Class:OnGuiEvent(event)
-    assert(release)
-    self.Player = game.players[event.player_index]
-    local message = gui.read_action(event)
-    if message then
-        if message.gui == "SelectRemindor" then
-            if message.action == "Enter" then
-                local selection = SelectRemindor:GetSelection()
-                SelectRemindor:OnClose(self.Global)
-                Gui:AddRemindor(self.Global, selection)
-            elseif message.action == "Click" then
-                SelectRemindor:OnGuiClick(
-                    self.Global, Gui:GetObject(self.Global, event.element.name)
-                )
-            elseif message.action == "CountChanged" then
-                SelectRemindor:OnTextChanged(self.Global, event.element.text)
-            else
-                assert(release)
-            end
-        else
-            assert(release)
-        end
-    end
-end
-
 function Class:OnTickInitial()
     for _, player in pairs(game.players) do
         self.Player = player
@@ -182,12 +160,15 @@ end
 
 function Class:EnsureMainButton() self.Modules.Gui:EnsureMainButton() end
 
-function Class:OnPlayerCreated(event) 
+function Class:OnPlayerCreated(event)
     self.Player = event.player_index
-    self:OnInitialisePlayer(game.players[event.player_index]) end
+    self:OnInitialisePlayer(game.players[event.player_index])
+end
 
-function Class:OnPlayerRemoved(event)     self.Player = event.player_index
-    self.Global.Players[event.player_index] = nil end
+function Class:OnPlayerRemoved(event)
+    self.Player = event.player_index
+    self.Global.Players[event.player_index] = nil
+end
 
 function Class:OnInitialisePlayer(player)
     self.Player = event.player_index
@@ -209,7 +190,7 @@ function Class:OnInitialise()
 end
 
 function Class:new()
-    local self = Class:adopt{}
+    local self = self:adopt{}
     self.Modules = {
         Selector = Selector:new(self),
         Presentator = Presentator:new(self),
@@ -262,4 +243,23 @@ function Class:new()
 end
 
 Class:new()
+
+function Class:OnGuiEvent(event)
+    assert(release)
+    self.Player = game.players[event.player_index]
+    local message = gui.read_action(event)
+    if message then
+        if message.gui == "SelectRemindor" then
+            if message.action == "Click" then
+                SelectRemindor:OnGuiClick(
+                    self.Global, Gui:GetObject(self.Global, event.element.name)
+                )
+            else
+                assert(release)
+            end
+        else
+            assert(release)
+        end
+    end
+end
 

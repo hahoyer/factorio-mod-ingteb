@@ -54,6 +54,13 @@ Class.property = {
     },
 }
 
+function Class:new(selection, parent)
+    local self = self:adopt(selection)
+    self.Parent = parent
+    self.Settings = {}
+    return self
+end
+
 function Class:CheckAutoResearch()
     if not self.AutoResearch then return end
     if not self.Recipe.Required.Technologies:Any() then return end
@@ -80,6 +87,64 @@ function Class:CheckAutoCrafting()
     local craftable = self.Recipe.CraftableCount
     if toDo > craftable then return end
     player.begin_crafting {count = toDo, recipe = self.Recipe.Name}
+end
+
+function Class:CreatePanel(frame, key, data)
+    Spritor:StartCollecting()
+    local guiData = self:GetGui(key, data)
+    local result = gui.build(frame, {guiData})
+    Spritor:RegisterDynamicTargets(result.DynamicElements)
+end
+
+function Class:GetGui(key, data)
+    return {
+        type = "frame",
+        direction = "horizontal",
+        name = key,
+        children = {
+            Spritor:GetSpriteButtonAndRegister(self.Target),
+            Spritor:GetSpriteButtonAndRegister(self.Worker),
+            Spritor:GetSpriteButtonAndRegister(self.Recipe),
+            {
+                type = "flow",
+                direction = "vertical",
+                name = key,
+                children = {
+                    {
+                        type = "sprite-button",
+                        sprite = "utility/close_white",
+                        style = "frame_action_button",
+                        style_mods = {size = 17},
+                        ref = {"Remindor", "Task", "CloseButton"},
+                        actions = {
+                            on_click = {
+                                subModule = "Task",
+                                module = "Remindor",
+                                action = "Remove",
+                            },
+                        },
+                        tooltip = "press to close.",
+                    },
+                    {
+                        type = "sprite-button",
+                        sprite = "ingteb_settings_white",
+                        style = "frame_action_button",
+                        style_mods = {size = 17},
+                        ref = {"Remindor", "Task", "Settings"},
+                        actions = {
+                            on_click = {
+                                subModule = "Task",
+                                module = "Remindor",
+                                action = "Settings",
+                            },
+                        },
+                    },
+                },
+            },
+
+            Spritor:GetLine(self:GetRequired(data)),
+        },
+    }
 end
 
 function Class:CreateCloseButton(global, frame, functionData)
@@ -121,71 +186,6 @@ function Class:GetRequired(data)
         ) --
         or nil
     )
-end
-
-function Class:new(selection, parent)
-    local instance = Class:adopt(selection)
-    instance.Parent = parent
-    instance.Settings = {}
-    return instance
-end
-
-function Class:CreatePanel(frame, key, data)
-    Spritor:StartCollecting()
-    local guiData = self:GetGui(key, data)
-    local result = gui.build(frame, {guiData})
-    Spritor:RegisterDynamicTargets(result.DynamicElements)
-end
-
-function Class:GetGui(key, data)
-    return {
-        type = "frame",
-        direction = "horizontal",
-        name = key,
-        children = {
-            Spritor:GetSpriteButtonAndRegister(self.Target),
-            Spritor:GetSpriteButtonAndRegister(self.Worker),
-            Spritor:GetSpriteButtonAndRegister(self.Recipe),
-            {
-                type = "flow",
-                direction = "vertical",
-                name = key,
-                children = {
-                    {
-                        type = "sprite-button",
-                        sprite = "utility/close_white",
-                        style = "frame_action_button",
-                        style_mods = {size = 17},
-                        ref = {"Remindor", "Task", "CloseButton"},
-                        actions = {
-                            on_click = {
-                                gui = "Remindor.Task",
-                                module = "Remindor",
-                                action = "Remove",
-                            },
-                        },
-                        tooltip = "press to close.",
-                    },
-                    {
-                        type = "sprite-button",
-                        sprite = "ingteb_settings_white",
-                        style = "frame_action_button",
-                        style_mods = {size = 17},
-                        ref = {"Remindor", "Task", "Settings"},
-                        actions = {
-                            on_click = {
-                                gui = "Remindor.Task",
-                                module = "Remindor",
-                                action = "Settings",
-                            },
-                        },
-                    },
-                },
-            },
-
-            Spritor:GetLine(self:GetRequired(data)),
-        },
-    }
 end
 
 return Class

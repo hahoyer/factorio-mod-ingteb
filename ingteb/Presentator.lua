@@ -24,7 +24,7 @@ local Class = class:new(
 local Spritor
 
 function Class:new(parent)
-    local self = Class:adopt{Parent = parent}
+    local self = self:adopt{Parent = parent}
     Spritor = SpritorClass:new(self)
     return self
 end

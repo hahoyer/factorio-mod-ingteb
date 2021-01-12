@@ -46,20 +46,20 @@ local Class = class:new(
 )
 
 function Class:new(parent)
-    self = Class:adopt{
+    local self = self:adopt{
         Parent = parent,
         ParentData = {
             Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFullfilled = true},
         },
         Settings = {},
     }
-    Spritor = SpritorClass:new("Remindor")
+    Spritor = SpritorClass:new(self)
     return self
 end
 
 function Class:CloseSettings()
     if not self.CurrentSettings then return end
-    self.CurrentSettings.destroy() 
+    self.CurrentSettings.destroy()
     self.CurrentSettings = nil
 end
 
@@ -77,8 +77,8 @@ function Class:Toggle()
 end
 
 function Class:Close()
-    assert(release or self.Current)
-    self.CloseSettings() 
+    if not self.Current then return end
+    self.CloseSettings()
     self.Current.destroy()
     self.Current = nil
     Spritor:Close()
@@ -195,6 +195,27 @@ function Class:OnGuiEvent(event)
     end
 end
 
+function Class:SetTask(selection)
+    self:EnsureGlobal()
+    local key = selection:GetCommonKey()
+    local index = self:GetTaskIndex(key)
+    local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
+    if index then self.Global.Remindor.List:Remove(index) end
+    self.Global.Remindor.List:InsertAt(1, task)
+
+    if self.Current then
+        self:Refresh()
+    else
+        self:Open()
+    end
+end
+
+function Class:GetTaskIndex(key)
+    for index, task in ipairs(self.Global.Remindor.List) do
+        if task:GetCommonKey() == key then return index end
+    end
+end
+
 -------------------------
 
 function Class:RefreshClasses(frame, database, global)
@@ -215,24 +236,6 @@ function Class:RefreshClasses(frame, database, global)
             Task:adopt(task)
         end
     )
-end
-
-function Class:GetTaskIndex(key)
-    assert(release)
-    for index, task in ipairs(self.Global.Remindor.List) do
-        if task:GetCommonKey() == key then return index end
-    end
-end
-
-function Class:SetTask(selection)
-    assert(release)
-    self:EnsureGlobal()
-    local key = selection:GetCommonKey()
-    local index = Class:GetTaskIndex(key)
-    local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
-    if index then self.Global.Remindor.List:Remove(index) end
-    self.Global.Remindor.List:InsertAt(1, task)
-    self:Refresh()
 end
 
 function Class:AssertValidLinks()
@@ -266,7 +269,7 @@ end
 
 function Class:SettingsTask(name)
     assert(release)
-    Settings.Open(self.Global.Remindor.List[Class:GetTaskIndex(name)])
+    Settings.Open(self.Global.Remindor.List[self:GetTaskIndex(name)])
     assert(true)
 end
 
