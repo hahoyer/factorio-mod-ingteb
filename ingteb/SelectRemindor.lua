@@ -6,26 +6,56 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 
-local SelectRemindor = class:new("SelectRemindor")
+local Class = class:new(
+    "SelectRemindor", nil, {
+        Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+    }
+)
 
-function SelectRemindor:OnClose(global)
-    local player = game.players[global.Index]
-    player.opened = SelectRemindor.Parent
+function Class:new(parent, action, location)
+    local self = Class:adopt{Parent = parent}
+    self.Target = action.ReminderTask
+    self.Count = action.Count
+    self.Recipes = self.Target.Recipes
+    self.Workers = self.Target.Workers
+    self.Recipe = self.Recipes[1]
+    self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
+
+    self.Current = Helper.CreatePopupFrameWithContent(
+        self, self:GetGui(), {"ingteb-utility.select-reminder"}, {
+            buttons = {
+                {
+                    type = "sprite-button",
+                    sprite = "utility/check_mark_white",
+                    actions = {on_click = {module = self.class.name, action = "Enter"}},
+                    style = "frame_action_button",
+                },
+            },
+        }
+    ).Main
+
+    return self
+end
+
+function Class:Close()
+    self.Current.destroy()
+    self.ParentScreen.ignored_by_interaction = nil
+    self.Player.opened = self.ParentScreen
     self.Target = nil
 end
 
-function SelectRemindor:GetWorkerSpriteStyle(target)
+function Class:GetWorkerSpriteStyle(target)
     if target == self.Worker then return true end
     if not self:GetBelongingWorkers(self.Recipe):Contains(target) then return false end
 end
 
-function SelectRemindor:GetRecipeSpriteStyle(target)
+function Class:GetRecipeSpriteStyle(target)
     if target == self.Recipe then return true end
     if not self:GetBelongingRecipes(self.Worker):Contains(target) then return false end
 end
 
-function SelectRemindor:GetSpriteButton(target)
-
+function Class:GetSpriteButton(target)
     local styleCode
     if target.IsRecipe then
         styleCode = self:GetRecipeSpriteStyle(target)
@@ -40,14 +70,31 @@ function SelectRemindor:GetSpriteButton(target)
         type = "sprite-button",
         sprite = sprite,
         name = target.CommonKey,
-        actions = {on_click = {gui = "SelectRemindor", action = "Click"}},
+        actions = {on_click = {module = self.class.name, action = "Click"}},
         style = Helper.SpriteStyleFromCode(styleCode),
     }
 end
 
-function SelectRemindor:OnTextChanged(global, value) self.Count = tonumber(value) end
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Closed" then
+        self:Close()
+    elseif message.action == "Click" then
+        local commonKey = event.element.name
+        self:Close()
+        self.Parent:PresentTargetByCommonKey(commonKey)
+    else
+        assert(release)
+    end
+end
 
-function SelectRemindor:OnGuiClick(global, target)
+function Class:OnTextChanged(global, value)
+    assert(release)
+    self.Count = tonumber(value)
+end
+
+function Class:OnGuiClick(global, target)
+    assert(release)
     if target.IsRecipe then
         self.Recipe = target
         if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
@@ -68,11 +115,23 @@ function SelectRemindor:OnGuiClick(global, target)
     self:Refresh(global)
 end
 
-function SelectRemindor:CreateSelection(target)
+function Class:GetSelection()
+    assert(release)
+    return {
+        Target = self.Target:CreateStack{value = self.Count},
+        Worker = self.Worker,
+        Recipe = self.Recipe,
+        GetCommonKey = function(self)
+            return self.Target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
+        end,
+    }
+end
+
+function Class:CreateSelection(target)
     return target:Select(function(object) return self:GetSpriteButton(object) end)
 end
 
-function SelectRemindor:GetLinePart(children)
+function Class:GetLinePart(children)
     local count = math.min(6, children:Count())
 
     local result = {type = "flow", direction = "horizontal", children = children}
@@ -87,7 +146,7 @@ function SelectRemindor:GetLinePart(children)
     }
 end
 
-function SelectRemindor:GetBelongingWorkers(recipe)
+function Class:GetBelongingWorkers(recipe)
     -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
     local old = AddIndent()
     local results = self.Workers:Where(
@@ -114,7 +173,7 @@ function SelectRemindor:GetBelongingWorkers(recipe)
     return results
 end
 
-function SelectRemindor:GetBelongingRecipes(worker)
+function Class:GetBelongingRecipes(worker)
     -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
     local old = AddIndent()
     local results = self.Recipes:Where(
@@ -133,61 +192,7 @@ function SelectRemindor:GetBelongingRecipes(worker)
     return results
 end
 
----@param global table Global data for player
----@param location table GuiLocation (optional)
-function SelectRemindor:Refresh(global, location)
-    assert(release or self.Recipe)
-    assert(release or self.Worker)
-
-    local player = game.players[global.Index]
-    local result = gui.build(player.gui.screen, {self:GetGui()})
-
-    result.DragBar.drag_target = result.Main
-
-    if location then
-        result.Main.location = location
-    elseif global.Location.SelectRemindor then
-        result.Main.location = global.Location.SelectRemindor
-    else
-        result.Main.force_auto_center()
-        global.Location.SelectRemindor = result.Main.location
-    end
-
-    self.ParentScreen = player.opened
-    global.IsPopup = true
-    player.opened = result.Main
-    global.IsPopup = nil
-end
-
-function SelectRemindor:GetSelection()
-    return {
-        Target = self.Target:CreateStack{value = self.Count},
-        Worker = self.Worker,
-        Recipe = self.Recipe,
-        GetCommonKey = function(self)
-            return self.Target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
-        end,
-    }
-end
-
----@param global table Global data for player
----@param action table Common
----@param location table GuiLocation (optional)
----@return table
-function SelectRemindor:Open(global, action, location)
-    assert(release or not self.Target)
-    self.Target = action.ReminderTask
-    self.Count = action.Count
-    self.Recipes = self.Target.Recipes
-    self.Workers = self.Target.Workers
-    self.Recipe = self.Recipes[1]
-    self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
-
-    self:Refresh(global, location)
-    return self
-end
-
-function SelectRemindor:GetWorkersAndRecipes()
+function Class:GetWorkersAndRecipes()
     local result = Array:new{}
 
     if self.Workers:Count() > 1 then
@@ -219,38 +224,11 @@ function SelectRemindor:GetWorkersAndRecipes()
     return result
 end
 
-function SelectRemindor:GetGui()
+function Class:GetGui()
     return {
-        type = "frame",
+        type = "flow",
         direction = "vertical",
-        name = "SelectRemindor",
-        ref = {"Main"},
-        actions = {
-            on_location_changed = {action = "Moved"},
-            on_closed = {module = "SelectRemindor", action = "Closed"},
-        },
         children = {
-            {
-                type = "flow",
-                direction = "horizontal",
-                children = {
-                    {type = "label", caption = "Select:"},
-                    {type = "empty-widget", style = "flib_titlebar_drag_handle", ref = {"DragBar"}},
-                    {
-                        type = "sprite-button",
-                        sprite = "utility/check_mark_white",
-                        actions = {on_click = {gui = "SelectRemindor", action = "Enter"}},
-                        style = "frame_action_button",
-                    },
-                    {
-                        type = "sprite-button",
-                        sprite = "utility/close_white",
-                        tooltip = "press to close.",
-                        actions = {on_click = {gui = "SelectRemindor", action = "Closed"}},
-                        style = "frame_action_button",
-                    },
-                },
-            },
             {
                 type = "flow",
                 direction = "horizontal",
@@ -267,7 +245,7 @@ function SelectRemindor:GetGui()
                         text = self.Count,
                         style_mods = {maximal_width = 100},
                         actions = {
-                            on_text_changed = {gui = "SelectRemindor", action = "CountChanged"},
+                            on_text_changed = {module = self.class.name, action = "CountChanged"},
                         },
                     },
                 },
@@ -277,4 +255,4 @@ function SelectRemindor:GetGui()
     }
 end
 
-return SelectRemindor
+return Class

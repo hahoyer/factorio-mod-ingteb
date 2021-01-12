@@ -52,7 +52,6 @@ function Class:OnGuiEvent(event)
 end
 
 function Class:OnGuiClick(event)
-    local global = self.Global
     local player = self.Player
 
     local target = self.Database:GetProxyFromCommonKey(event.element.name)
@@ -79,7 +78,7 @@ function Class:OnGuiClick(event)
     end
 
     if action.ReminderTask then
-        self.Parent.Parent:SelectRemindor(global, action, Helper.GetLocation(event.element))
+        self.Parent.Parent:SelectRemindor(action, Helper.GetLocation(event.element))
     end
 
     if action.Presenting then

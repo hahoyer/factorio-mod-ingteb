@@ -667,7 +667,11 @@ end
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
+        if self.Global.IsPopup then
+            self.Current.ignored_by_interaction = true
+        else
         self:Close()
+        end
     elseif message.subModule == "Spritor" then
         Spritor:OnGuiEvent(event)
     else

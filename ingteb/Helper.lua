@@ -181,6 +181,24 @@ function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
     return result
 end
 
+---Create popup frame and add content
+--- Provided actions: location_changed and closed
+---@param self table ingteb-module
+---@param content table flib.GuiBuildStructure
+---@param caption any LocalisedString
+---@param options table
+--- buttons table[] flib.GuiBuildStructure
+--- subModule string name of the subModule for location and actions 
+---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
+function Helper.CreatePopupFrameWithContent(self, content, caption, options)
+    self.ParentScreen = self.Player.opened
+    local isPopup = self.Global.IsPopup
+    self.Global.IsPopup = true
+    local result = Helper.CreateFloatingFrameWithContent(self, content, caption, options)
+    self.Global.IsPopup = isPopup
+    return result
+end
+
 ---Create floating frame and add content
 --- Provided actions: closed
 ---@param self table ingteb-module

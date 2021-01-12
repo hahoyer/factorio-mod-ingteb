@@ -14,6 +14,7 @@ local Presentator = require("ingteb.Presentator")
 local Database = require("ingteb.Database")
 local Spritor = require("ingteb.Spritor")
 local Remindor = require("ingteb.Remindor")
+local SelectRemindor= require("ingteb.SelectRemindor")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -45,6 +46,10 @@ local self
 function Class:EnsureRemindor()
     Gui:EnsureRemindor(self.Global)
     Remindor = Gui.Remindor
+end
+
+function Class:SelectRemindor(reminderTask, location)
+    self.Modules.SelectRemindor = SelectRemindor:new(self, reminderTask, location)
 end
 
 function Class:PresentCurrentTargetFromHistory()
