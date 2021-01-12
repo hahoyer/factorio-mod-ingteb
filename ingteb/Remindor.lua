@@ -51,6 +51,7 @@ function Class:new(parent)
         ParentData = {
             Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFullfilled = true},
         },
+        Settings = {},
     }
     Spritor = SpritorClass:new("Remindor")
     return self
@@ -66,6 +67,7 @@ end
 
 function Class:Close()
     assert(release or self.Current)
+    if self.CurrentSettings then self.CurrentSettings.destroy() end
     self.Current.destroy()
     self.Current = nil
     Spritor:Close()
@@ -77,11 +79,13 @@ function Class:Open()
         {type = "flow", ref = {"Tasks"}, name = "Tasks", direction = "vertical"}, --
         {"ingteb-utility.reminder-tasks"}, --
         {
-            {
-                type = "sprite-button",
-                sprite = "ingteb_settings_white",
-                style = "frame_action_button",
-                actions = {on_click = {module = self.class.name, action = "Settings"}},
+            buttons = {
+                {
+                    type = "sprite-button",
+                    sprite = "ingteb_settings_white",
+                    style = "frame_action_button",
+                    actions = {on_click = {module = self.class.name, action = "Settings"}},
+                },
             },
         }
     )
@@ -110,12 +114,73 @@ function Class:EnsureGlobal()
     end
 end
 
---
---
---
---
---
---
+function Class:OnGuiEvent(event)
+    local message = gui.read_action(event)
+    if message.action == "Settings" then
+        if self.CurrentSettings then self.CurrentSettings.destroy() end
+        self.CurrentSettings = Settings.Open(self)
+        return
+    elseif message.action == "Closed" then
+        if message.subModule == "Settings" then
+            self.CurrentSettings.destroy()
+            return
+        elseif not message.subModule then
+            self:Close()
+            return
+        else
+            assert(release)
+        end
+    else
+        assert(release)
+    end
+
+    -------------
+
+    assert(release)
+
+    local subModule
+    if message.subModule == "Remindor" then
+        subModule = self
+    else
+        assert(release)
+    end
+
+    if message.action == "UpdateOverride" then
+        subModule.Settings[message.control] = subModule[message.control]
+        Settings.Update(subModule)
+        return
+    elseif message.action == "Update" then
+        subModule.Settings[message.control] = event.element.selected_index or event.element.state
+        Settings.Update(subModule)
+        return
+    end
+
+    if message.gui == "Remindor.Task" then
+        local index = self:GetTaskIndex(event.element.parent.name)
+        if message.action == "Remove" then
+            self:CloseTask(index)
+        elseif message.action == "Settings" then
+            local task = self.Global.Remindor.List[index]
+            Settings.Open(task)
+        else
+            assert(release)
+        end
+    elseif message.gui == "Remindor" then
+        if message.action == "ToggleAutoResearch" then
+            self:ToggleAutoResearch(event.element.state)
+        elseif message.action == "ToggleRemoveTask" then
+            self:ToggleRemoveTask(event.element.state)
+        elseif message.action == "AutoCrafting" then
+            self:UpdateAutoCrafting(event.element.selected_index)
+        else
+            assert(release)
+        end
+    else
+        assert(release)
+    end
+end
+
+-------------------------
 
 function Class:RefreshClasses(frame, database, global)
     assert(release)
@@ -221,61 +286,6 @@ function Class:RefreshStackChanged(dataBase) assert(release) end
 function Class:RefreshResearchChanged()
     assert(release)
     self:Refresh()
-end
-
-function Class:OnGuiEvent(event)
-    assert(release)
-    local message = gui.read_action(event)
-    assert(release or message and message.module == "Remindor")
-
-    if message.gui == "Remindor" then
-        if message.action == "Settings" then
-            return Settings.Open(self)
-        else
-            assert(release)
-        end
-    end
-
-    local subModule
-    if message.subModule == "Remindor" then
-        subModule = self
-    else
-        assert(release)
-    end
-
-    if message.action == "UpdateOverride" then
-        subModule.Settings[message.control] = subModule[message.control]
-        Settings.Update(subModule)
-        return
-    elseif message.action == "Update" then
-        subModule.Settings[message.control] = event.element.selected_index or event.element.state
-        Settings.Update(subModule)
-        return
-    end
-
-    if message.gui == "Remindor.Task" then
-        local index = self:GetTaskIndex(event.element.parent.name)
-        if message.action == "Remove" then
-            self:CloseTask(index)
-        elseif message.action == "Settings" then
-            local task = self.Global.Remindor.List[index]
-            Settings.Open(task)
-        else
-            assert(release)
-        end
-    elseif message.gui == "Remindor" then
-        if message.action == "ToggleAutoResearch" then
-            self:ToggleAutoResearch(event.element.state)
-        elseif message.action == "ToggleRemoveTask" then
-            self:ToggleRemoveTask(event.element.state)
-        elseif message.action == "AutoCrafting" then
-            self:UpdateAutoCrafting(event.element.selected_index)
-        else
-            assert(release)
-        end
-    else
-        assert(release)
-    end
 end
 
 return Class

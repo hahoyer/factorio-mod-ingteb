@@ -126,14 +126,14 @@ function Class.Update(self)
 end
 
 function Class.Open(self)
-    if not self.Global.Location.RemindorTaskSettings then
-        self.Global.Location.RemindorTaskSettings = {x = 200, y = 100}
+    if not self.Global.Location.RemindorSettings then
+        self.Global.Location.RemindorSettings = {x = 200, y = 100}
     end
     self.ParentScreen = self.Player.opened
     local isPopup = self.Global.IsPopup
     self.Global.IsPopup = true
     local result = Helper.CreateFloatingFrameWithContent(
-        self, GetGui(self), {"ingteb-utility.reminder-settings"}
+        self, GetGui(self), {"ingteb-utility.reminder-tasks-settings"}, {subModule = "Settings"}
     )
     self.Global.IsPopup = isPopup
     return result.Main

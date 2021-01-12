@@ -92,19 +92,27 @@ end
 ---@param frame table LuaGuiElement where gui will be added
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
----@param buttons table[] flib.GuiBuildStructure
+---@param options table
+--- buttons table[] flib.GuiBuildStructure
+--- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFrameWithContent(moduleName, frame, content, caption, buttons)
+function Helper.CreateFrameWithContent(moduleName, frame, content, caption, options)
+    if not options then options = {} end
+    local buttons = options.buttons or {}
     local result = gui.build(
         frame, {
             {
                 type = "frame",
                 direction = "vertical",
-                name = moduleName,
+                name = moduleName .. (options.subModule or ""),
                 ref = {"Main"},
                 actions = {
                     on_location_changed = {action = "Moved"},
-                    on_closed = {module = moduleName, action = "Closed"},
+                    on_closed = {
+                        module = moduleName,
+                        subModule = options.subModule,
+                        action = "Closed",
+                    },
                 },
                 children = {
                     {
@@ -122,7 +130,13 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, butt
                                 type = "sprite-button",
                                 sprite = "utility/close_white",
                                 tooltip = "press to hide.",
-                                actions = {on_click = {module = moduleName, action = "Closed"}},
+                                actions = {
+                                    on_click = {
+                                        module = moduleName,
+                                        subModule = options.subModule,
+                                        action = "Closed",
+                                    },
+                                },
                                 style = "frame_action_button",
                             },
                         },
@@ -142,23 +156,26 @@ end
 ---@param self table ingteb-module
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
----@param buttons table[] flib.GuiBuildStructure
+---@param options table
+--- buttons table[] flib.GuiBuildStructure
+--- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFloatingFrameWithContent(self, content, caption, buttons)
+function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
     local moduleName = self.class.name
     local player = self.Player
     local global = self.Global
 
     local result = Helper.CreateFrameWithContent(
-        moduleName, player.gui.screen, content, caption, buttons
+        moduleName, player.gui.screen, content, caption, options
     )
     player.opened = result.Main
 
-    if global.Location[moduleName] then
-        result.Main.location = global.Location[moduleName]
+    local locationTag = moduleName .. (options.subModule or "")
+    if global.Location[locationTag] then
+        result.Main.location = global.Location[locationTag]
     else
         result.Main.force_auto_center()
-        global.Location[moduleName] = result.Main.location
+        global.Location[locationTag] = result.Main.location
     end
     return result
 end
@@ -168,12 +185,15 @@ end
 ---@param self table ingteb-module
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
+---@param options table
+--- buttons table[] flib.GuiBuildStructure
+--- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateLeftSideFrameWithContent(self, content, caption, buttons)
+function Helper.CreateLeftSideFrameWithContent(self, content, caption, options)
     local moduleName = self.class.name
     local player = self.Player
     local result = Helper.CreateFrameWithContent(
-        moduleName, mod_gui.get_frame_flow(player), content, caption, buttons
+        moduleName, mod_gui.get_frame_flow(player), content, caption, options
     )
     return result
 end

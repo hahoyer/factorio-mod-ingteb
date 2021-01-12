@@ -5,6 +5,25 @@ local function GetInherited(self, key)
     return self.property[key] or GetInherited(self.base, key)
 end
 
+local function GetField(self, key, classInstance, base)
+    local accessors = classInstance.property[key]
+    if accessors then
+        if accessors.cache then
+            return self.cache[accessors.class][key].Value
+        else
+            return accessors.get(self)
+        end
+    elseif rawget(classInstance, key) ~= nil then
+        return classInstance[key]
+    elseif base then
+        return base.metatable.__index(self, key)
+    else
+        return nil
+    end
+end
+
+--if __DebugAdapter then __DebugAdapter.stepIgnore(GetField) end
+
 --- Defines a class
 --- @param name string the name of the class
 --- @param base table class the base class - optional
@@ -25,23 +44,9 @@ function class:new(name, base, properties)
     local metatable = classInstance.metatable
 
     function metatable:__index(key)
-        local accessors = classInstance.property[key]
-        if accessors then
-            if accessors.cache then
-                return self.cache[accessors.class][key].Value
-            else
-                return accessors.get(self)
-            end
-        elseif rawget(classInstance, key) ~= nil then
-            return classInstance[key]
-        elseif base then
-            return base.metatable.__index(self, key)
-        else
-            return nil
-        end
+        local result = GetField(self, key, classInstance, base)
+        return result
     end
-
-    if __DebugAdapter then __DebugAdapter.stepIgnore(metatable.__index) end
 
     function metatable:__newindex(key, value)
         local accessors = classInstance.property[key]

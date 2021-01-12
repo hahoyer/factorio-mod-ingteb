@@ -250,7 +250,6 @@ function Class:new()
                     or event.name == defines.events.on_gui_closed --
                 )
             end
-            assert(true)
         end
     )
 
