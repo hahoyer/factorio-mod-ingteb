@@ -9,50 +9,56 @@ local class = require("core.class")
 local RequiredThings = require("ingteb.RequiredThings")
 local Item = require("ingteb.Item")
 
-local Class = class:new("Task")
+local Class = class:new(
+    "Task", nil, {
+        Global = {cache = true, get = function(self) return self.Parent.Global end},
+        Player = {cache = true, get = function(self) return self.Parent.Player end},
+        Database = {get = function(self) return self.Parent.Database end},
+        AutoResearch = {
+            get = function(self)
+                if self.Settings.AutoResearch ~= nil then
+                    return self.Settings.AutoResearch
+                end
+                return self.Parent.AutoResearch
+            end,
+        },
+        AutoCrafting = {
+            get = function(self)
+                if self.Settings.AutoCrafting ~= nil then
+                    return self.Settings.AutoCrafting
+                end
+                return self.Parent.AutoCrafting
+            end,
+        },
+        RemoveTaskWhenFullfilled = {
+            get = function(self)
+                if self.Settings.RemoveTaskWhenFullfilled ~= nil then
+                    return self.Settings.RemoveTaskWhenFullfilled
+                end
+                return self.Parent.RemoveTaskWhenFullfilled
+            end,
+        },
+        IsRelevant = {
+            get = function(self)
+                self:CheckAutoResearch()
+                self:CheckAutoCrafting()
+                return not self.RemoveTaskWhenFullfilled or not self.IsFullfilled
+            end,
+        },
+        IsFullfilled = {
+            get = function(self)
+                return self.CountInInventory >= self.Target.Amounts.value
+            end,
+        },
 
-Class.property = {
-    Global = {cache = true, get = function(self) return self.Parent.Global end},
-    Player = {cache = true, get = function(self) return self.Parent.Player end},
-    Database = {get = function(self) return self.Parent.Database end},
-    AutoResearch = {
-        get = function(self)
-            if self.Settings.AutoResearch ~= nil then return self.Settings.AutoResearch end
-            return self.Parent.Settings.AutoResearch
-        end,
-    },
-    AutoCrafting = {
-        get = function(self)
-            if self.Settings.AutoCrafting ~= nil then return self.Settings.AutoCrafting end
-            return self.Parent.Settings.AutoCrafting
-        end,
-    },
-    RemoveTaskWhenFullfilled = {
-        get = function(self)
-            if self.Settings.RemoveTaskWhenFullfilled ~= nil then
-                return self.Settings.RemoveTaskWhenFullfilled
-            end
-            return self.Parent.Settings.RemoveTaskWhenFullfilled
-        end,
-    },
-    IsRelevant = {
-        get = function(self)
-            self:CheckAutoResearch()
-            self:CheckAutoCrafting()
-            return not self.RemoveTaskWhenFullfilled or not self.IsFullfilled
-        end,
-    },
-    IsFullfilled = {
-        get = function(self) return self.CountInInventory >= self.Target.Amounts.value end,
-    },
-
-    CountInInventory = {
-        get = function(self)
-            if self.Worker.Name ~= "character" then return 0 end
-            return game.players[self.Global.Index].get_item_count(self.Target.Goods.Name)
-        end,
-    },
-}
+        CountInInventory = {
+            get = function(self)
+                if self.Worker.Name ~= "character" then return 0 end
+                return game.players[self.Global.Index].get_item_count(self.Target.Goods.Name)
+            end,
+        },
+    }
+)
 
 function Class:new(selection, parent)
     local self = self:adopt(selection)
@@ -117,11 +123,7 @@ function Class:GetGui(key, data)
                         style_mods = {size = 17},
                         ref = {"Remindor", "Task", "CloseButton"},
                         actions = {
-                            on_click = {
-                                subModule = "Task",
-                                module = "Remindor",
-                                action = "Remove",
-                            },
+                            on_click = {target = "Task", module = "Remindor", action = "Remove"},
                         },
                         tooltip = "press to close.",
                     },
@@ -133,7 +135,7 @@ function Class:GetGui(key, data)
                         ref = {"Remindor", "Task", "Settings"},
                         actions = {
                             on_click = {
-                                subModule = "Task",
+                                target= "Task",
                                 module = "Remindor",
                                 action = "Settings",
                             },

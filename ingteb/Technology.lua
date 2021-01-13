@@ -4,7 +4,6 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
-local UI = require("core.UI")
 local class = require("core.class")
 
 local ignore
@@ -69,7 +68,7 @@ local Technology = class:new(
         },
         IsResearched = {
             get = function(self)
-                return UI.Player.force.technologies[self.Prototype.name].researched == true
+                return self.Database.Player.force.technologies[self.Prototype.name].researched == true
             end,
         },
         IsResearchedOrResearching = {
@@ -84,7 +83,7 @@ local Technology = class:new(
 
         IsResearching = {
             get = function(self)
-                local queue = UI.Player.force.research_queue
+                local queue = self.Database.Player.force.research_queue
                 for index = 1, #queue do
                     if queue[index].name == self.Prototype.name then return true end
                 end
@@ -227,7 +226,7 @@ local function AddResearch(player, name)
 end
 
 function Technology:BeginMulipleQueueResearch()
-    local player = UI.Player
+    local player = self.Database.Player
     local queued = Array:new{}
     local message = "ingteb-utility.research-no-ready-prerequisite"
     repeat
@@ -251,7 +250,7 @@ function Technology:BeginMulipleQueueResearch()
 end
 
 function Technology:BeginDirectQueueResearch()
-    local player = UI.Player
+    local player = self.Database.Player
     local added = AddResearch(player, self.Name)
     if added then
         self.Database:Print(

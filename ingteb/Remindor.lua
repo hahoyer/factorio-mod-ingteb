@@ -63,9 +63,9 @@ function Class:CloseSettings()
     self.CurrentSettings = nil
 end
 
-function Class:OpenSettings()
+function Class:OpenSettings(target)
     self:CloseSettings()
-    self.CurrentSettings = Settings.Open(self)
+    self.CurrentSettings = Settings.Open(target or self)
 end
 
 function Class:Toggle()
@@ -125,9 +125,11 @@ function Class:EnsureGlobal()
     end
 end
 
-function Class:GetSubModule(tag)
-    if tag == "Remindor" then
-        return self
+function Class:GetValueOfControl(element)
+    if element.type == "checkbox" then
+        return element.state
+    elseif element.type == "drop-down" then
+        return element.selected_index
     else
         assert(release)
     end
@@ -135,63 +137,31 @@ end
 
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
-    if message.action == "Settings" then
-        self:OpenSettings()
-        return
+
+    local taskIndex = message.target == "Task" and self:GetTaskIndex(event.element.parent.name)
+                          or nil
+    local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
+
+    if message.action == "Update" then
+        target.Settings[message.control] = self:GetValueOfControl(event.element)
+        target:OpenSettings()
+    elseif message.action == "UpdateOverride" then
+        target.Settings[message.control] = event.element.state and nil or target[message.control]
+        target:OpenSettings()
+    elseif message.action == "Settings" then
+        self:OpenSettings(target)
+    elseif message.target == "Task" then
+        if message.action == "Remove" then
+            self:CloseTask(taskIndex)
+        else
+            assert(release)
+        end
     elseif message.action == "Closed" then
         if message.subModule == "Settings" then
             self:CloseSettings()
-            return
         elseif not message.subModule then
             self:Close()
-            return
-        else
-            assert(release)
         end
-    elseif message.action == "UpdateOverride" then
-        local subModule = self:GetSubModule(message.subModule)
-        if event.element.state then
-            subModule.Settings[message.control] = nil
-        else
-            subModule.Settings[message.control] = subModule[message.control]
-        end
-        subModule:OpenSettings()
-        return
-    elseif message.action == "Update" then
-        local subModule = self:GetSubModule(message.subModule)
-        subModule.Settings[message.control] = event.element.selected_index or event.element.state
-        subModule:OpenSettings()
-        return
-    else
-        assert(release)
-    end
-
-    -------------
-
-    assert(release)
-
-    if message.gui == "Remindor.Task" then
-        local index = self:GetTaskIndex(event.element.parent.name)
-        if message.action == "Remove" then
-            self:CloseTask(index)
-        elseif message.action == "Settings" then
-            local task = self.Global.Remindor.List[index]
-            Settings.Open(task)
-        else
-            assert(release)
-        end
-    elseif message.gui == "Remindor" then
-        if message.action == "ToggleAutoResearch" then
-            self:ToggleAutoResearch(event.element.state)
-        elseif message.action == "ToggleRemoveTask" then
-            self:ToggleRemoveTask(event.element.state)
-        elseif message.action == "AutoCrafting" then
-            self:UpdateAutoCrafting(event.element.selected_index)
-        else
-            assert(release)
-        end
-    else
-        assert(release)
     end
 end
 

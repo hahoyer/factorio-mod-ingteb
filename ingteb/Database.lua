@@ -19,7 +19,9 @@ local Proxy = {
 
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local Class = class:new("Database")
+local Class = class:new(
+    "Database", nil, {Player = {get = function(self) return self.Parent.Player end}}
+)
 
 function Class:new(parent) return self:adopt{Parent = parent} end
 
@@ -300,9 +302,10 @@ function Class:BeginMulipleQueueResearch(target)
     return result
 end
 
-function Class:RefreshTechnology(target) 
+function Class:RefreshTechnology(target)
     assert(release or target.object_name == "LuaTechnology")
-    self:GetTechnology(target.name):Refresh() end
+    self:GetTechnology(target.name):Refresh()
+end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
 
 return Class

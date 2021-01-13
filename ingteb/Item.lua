@@ -64,13 +64,13 @@ Item.property = {
 
     PlayerCounts = {
         get = function(self)
-            local result = {Inventory = UI.Player.get_item_count(self.Name), Crafting = 0}
+            local result = {Inventory = self.Database.Player.get_item_count(self.Name), Crafting = 0}
             local recipes = self.CreatedBy["crafting.crafting"]
             if recipes then
                 recipes --
                 :Select(
                     function(recipe)
-                        local count = UI.Player.get_craftable_count(recipe.Name)
+                        local count = self.Database.Player.get_craftable_count(recipe.Name)
                         if result.Crafting < count then
                             result.Crafting = count
                             result.Recipe = recipe

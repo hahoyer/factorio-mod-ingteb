@@ -4,7 +4,6 @@ local RequiredThings = require "ingteb.RequiredThings"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
-local UI = require("core.UI")
 local class = require("core.class")
 
 local Recipe = class:new("Recipe", Common)
@@ -74,7 +73,7 @@ Recipe.property = {
     CraftableCount = {
         get = function(self)
             if self.HandCrafter then
-                return UI.Player.get_craftable_count(self.Prototype.name)
+                return self.Database.Player.get_craftable_count(self.Prototype.name)
             end
             return 0
         end,

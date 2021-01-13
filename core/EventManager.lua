@@ -25,6 +25,7 @@ EventManager.property = {
                 if acutalValue == UI.Player then return end
                 UI.Player = acutalValue
             else
+                assert(release) 
                 UI.Player = nil
             end
         end,

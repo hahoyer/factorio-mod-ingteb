@@ -22,7 +22,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target = self.class.name,
                                 action = "UpdateOverride",
                                 control = "AutoResearch",
                             },
@@ -36,7 +36,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target= self.class.name,
                                 action = "Update",
                                 control = "AutoResearch",
                             },
@@ -55,7 +55,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target= self.class.name,
                                 action = "UpdateOverride",
                                 control = "AutoCrafting",
                             },
@@ -75,7 +75,7 @@ local function GetGui(self)
                         actions = {
                             on_selection_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target= self.class.name,
                                 action = "Update",
                                 control = "AutoCrafting",
                             },
@@ -94,7 +94,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target= self.class.name,
                                 action = "UpdateOverride",
                                 control = "RemoveTaskWhenFullfilled",
                             },
@@ -108,7 +108,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                subModule = self.class.name,
+                                target= self.class.name,
                                 action = "Update",
                                 control = "RemoveTaskWhenFullfilled",
                             },

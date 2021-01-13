@@ -112,7 +112,6 @@ function Class:OnStackChanged(event)
 end
 
 function Class:OnResearchChanged(event)
-    self.Player = event.player_index
     if not self.Modules.Database.IsInitialized then return end
     self.Database:RefreshTechnology(event.research)
     if not self.CurrentFloating then return end
