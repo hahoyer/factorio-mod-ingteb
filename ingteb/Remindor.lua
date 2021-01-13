@@ -35,25 +35,34 @@ local Class = class:new(
                 return self.ParentData.Settings.AutoCrafting
             end,
         },
-        RemoveTaskWhenFullfilled = {
+        RemoveTaskWhenFulfilled = {
             get = function(self)
-                if self.Settings.RemoveTaskWhenFullfilled ~= nil then
-                    return self.Settings.RemoveTaskWhenFullfilled
+                if self.Settings.RemoveTaskWhenFulfilled ~= nil then
+                    return self.Settings.RemoveTaskWhenFulfilled
                 end
-                return self.ParentData.Settings.RemoveTaskWhenFullfilled
+                return self.ParentData.Settings.RemoveTaskWhenFulfilled
             end,
         },
         HelperTextSettings = {
             get = function(self)
-                local result = ""
-                if self.AutoResearch then result = result .. "\nAutoResearch" end
+                local result = Array:new{}
+                if self.AutoResearch then
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.auto-research"}
+                end
                 if self.AutoCrafting ~= 1 then
-                    result = result .. "\nAutocrafting" .. self.AutoCrafting
+                    local variants = {"off", "1", "5", "all"}
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.auto-crafting-" .. variants[self.AutoCrafting]}
                 end
-                if self.RemoveTaskWhenFullfilled then
-                    result = result .. "\nRemoveTaskWhenFullfilled"
+                if self.RemoveTaskWhenFulfilled then
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.remove-when-fulfilled"}
                 end
-                return result
+                if result:Any() then
+                    result[1] = ""
+                    return result
+                end
             end,
         },
     }
@@ -63,7 +72,7 @@ function Class:new(parent)
     local self = self:adopt{
         Parent = parent,
         ParentData = {
-            Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFullfilled = true},
+            Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFulfilled = true},
         },
         Settings = {},
     }
@@ -77,7 +86,6 @@ function Class:CloseSettings()
     self.ParentScreen.ignored_by_interaction = nil
     self.Player.opened = self.ParentScreen
     self.CurrentSettings = nil
-    self:Refresh()
 end
 
 function Class:OpenSettings(target)
@@ -85,20 +93,38 @@ function Class:OpenSettings(target)
     self.CurrentSettings = Settings.Open(self, target or self)
 end
 
+function Class:RefreshSettings(target)
+    self.CurrentSettings.destroy()
+    self.ParentScreen.ignored_by_interaction = nil
+    self.Player.opened = self.ParentScreen
+    self.CurrentSettings = Settings.Open(self, target or self)
+end
+
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    mod_gui.get_frame_flow(self.Player)[self.class.name].destroy()
+    local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
     local list = self.Global.Remindor.List
     self.Global.Remindor.List = Array:new()
     for _, task in ipairs(list) do
         self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
     end
-    self:Open()
+    if current then
+        current.destroy()
+        self:Open()
+        local currentSettings = self.Player.gui.screen.RemindorSettings
+        if currentSettings then 
+            local taskIndex = self:GetTaskIndex(currentSettings.children[2].name)
+            local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
+            currentSettings.destroy()
+            self:OpenSettings(target)
+        end
+    end
 end
 
 function Class:Toggle()
     if self.Current then
         self:Close()
+        self:CloseSettings()
     else
         self:Open()
     end
@@ -106,7 +132,6 @@ end
 
 function Class:Close()
     if not self.Current then return end
-    self.CloseSettings()
     self.Current.destroy()
     self.Current = nil
     Spritor:Close()
@@ -132,6 +157,12 @@ function Class:Open()
     self.Tasks = result.Tasks
     self.Current = result.Main
     self:Refresh()
+end
+
+function Class:Reopen(target)
+    if self.CurrentSettings then self:RefreshSettings(target) end
+    self:Close()
+    self:Open()
 end
 
 function Class:Refresh()
@@ -173,14 +204,14 @@ function Class:OnGuiEvent(event)
 
     if message.action == "Update" then
         target.Settings[message.control] = self:GetValueOfControl(event.element)
-        self:OpenSettings(target)
+        self:Reopen(target)
     elseif message.action == "UpdateOverride" then
         if event.element.state then
             target.Settings[message.control] = nil
         else
             target.Settings[message.control] = target[message.control]
         end
-        self:OpenSettings(target)
+        self:Reopen(target)
     elseif message.action == "Settings" then
         self:OpenSettings(target)
     elseif message.target == "Task" then
@@ -278,8 +309,8 @@ end
 
 function Class:ToggleRemoveTask(value)
     assert(release)
-    if value == self.Settings.RemoveTaskWhenFullfilled then return end
-    self.Settings.RemoveTaskWhenFullfilled = value
+    if value == self.Settings.RemoveTaskWhenFulfilled then return end
+    self.Settings.RemoveTaskWhenFulfilled = value
     self:Refresh()
 end
 

@@ -30,19 +30,19 @@ local Class = class:new(
                 return self.Parent.AutoCrafting
             end,
         },
-        RemoveTaskWhenFullfilled = {
+        RemoveTaskWhenFulfilled = {
             get = function(self)
-                if self.Settings.RemoveTaskWhenFullfilled ~= nil then
-                    return self.Settings.RemoveTaskWhenFullfilled
+                if self.Settings.RemoveTaskWhenFulfilled ~= nil then
+                    return self.Settings.RemoveTaskWhenFulfilled
                 end
-                return self.Parent.RemoveTaskWhenFullfilled
+                return self.Parent.RemoveTaskWhenFulfilled
             end,
         },
         IsRelevant = {
             get = function(self)
                 self:CheckAutoResearch()
                 self:CheckAutoCrafting()
-                return not self.RemoveTaskWhenFullfilled or not self.IsFullfilled
+                return not self.RemoveTaskWhenFulfilled or not self.IsFullfilled
             end,
         },
         IsFullfilled = {
@@ -55,6 +55,29 @@ local Class = class:new(
             get = function(self)
                 if self.Worker.Name ~= "character" then return 0 end
                 return game.players[self.Global.Index].get_item_count(self.Target.Goods.Name)
+            end,
+        },
+
+        HelperTextSettings = {
+            get = function(self)
+                local result = Array:new{}
+                if self.AutoResearch then
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.auto-research"}
+                end
+                if self.AutoCrafting ~= 1 then
+                    local variants = {"", "1", "5", "all"}
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.auto-crafting-" .. variants[self.AutoCrafting]}
+                end
+                if self.RemoveTaskWhenFulfilled then
+                    result:Append("\n")
+                    result:Append{"ingteb-utility.remove-when-fulfilled"}
+                end
+                if result:Any() then
+                    result[1] = ""
+                    return result
+                end
             end,
         },
     }

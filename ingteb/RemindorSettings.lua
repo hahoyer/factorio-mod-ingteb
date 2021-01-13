@@ -1,6 +1,7 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local RemindorTask = require "ingteb.remindortask"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 
@@ -10,6 +11,7 @@ local function GetGui(self)
     return {
         type = "flow",
         direction = "vertical",
+        name = self.CommonKey,
         children = {
             {
                 type = "flow",
@@ -37,7 +39,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                target= self.class.name,
+                                target = self.class.name,
                                 action = "Update",
                                 control = "AutoResearch",
                                 key = self.CommonKey,
@@ -57,7 +59,7 @@ local function GetGui(self)
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                target= self.class.name,
+                                target = self.class.name,
                                 action = "UpdateOverride",
                                 control = "AutoCrafting",
                                 key = self.CommonKey,
@@ -78,7 +80,7 @@ local function GetGui(self)
                         actions = {
                             on_selection_state_changed = {
                                 module = "Remindor",
-                                target= self.class.name,
+                                target = self.class.name,
                                 action = "Update",
                                 control = "AutoCrafting",
                                 key = self.CommonKey,
@@ -94,28 +96,28 @@ local function GetGui(self)
                     {
                         type = "checkbox",
                         caption = {"ingteb-utility.default"},
-                        state = self.Settings.RemoveTaskWhenFullfilled == nil,
+                        state = self.Settings.RemoveTaskWhenFulfilled == nil,
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                target= self.class.name,
+                                target = self.class.name,
                                 action = "UpdateOverride",
-                                control = "RemoveTaskWhenFullfilled",
+                                control = "RemoveTaskWhenFulfilled",
                                 key = self.CommonKey,
                             },
                         },
                     },
                     {
                         type = "checkbox",
-                        caption = {"ingteb-utility.remove-when-fullfilled"},
-                        state = self.RemoveTaskWhenFullfilled,
-                        ignored_by_interaction = self.Settings.RemoveTaskWhenFullfilled == nil,
+                        caption = {"ingteb-utility.remove-when-fulfilled"},
+                        state = self.RemoveTaskWhenFulfilled,
+                        ignored_by_interaction = self.Settings.RemoveTaskWhenFulfilled == nil,
                         actions = {
                             on_checked_state_changed = {
                                 module = "Remindor",
-                                target= self.class.name,
+                                target = self.class.name,
                                 action = "Update",
-                                control = "RemoveTaskWhenFullfilled",
+                                control = "RemoveTaskWhenFulfilled",
                                 key = self.CommonKey,
                             },
                         },
@@ -130,8 +132,12 @@ function Class.Open(remindor, self)
     if not self.Global.Location.RemindorSettings then
         self.Global.Location.RemindorSettings = {x = 200, y = 100}
     end
+    local caption = {"ingteb-utility.reminder-tasks-settings"}
+    if self.class.name  == "Task" then 
+        caption = {"", caption, self.Target.RichTextName,self.Worker.RichTextName,self.Recipe.RichTextName}
+    end
     local result = Helper.CreatePopupFrameWithContent(
-        remindor, GetGui(self), {"ingteb-utility.reminder-tasks-settings"}, {subModule = "Settings"}
+        remindor, GetGui(self), caption, {subModule = "Settings"}
     )
     return result.Main
 end
