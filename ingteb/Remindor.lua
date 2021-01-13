@@ -4,6 +4,7 @@ local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Gui = require "core.gui"
+local RemindorTask = require "ingteb.remindortask"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
@@ -42,6 +43,19 @@ local Class = class:new(
                 return self.ParentData.Settings.RemoveTaskWhenFullfilled
             end,
         },
+        HelperTextSettings = {
+            get = function(self)
+                local result = ""
+                if self.AutoResearch then result = result .. "\nAutoResearch" end
+                if self.AutoCrafting ~= 1 then
+                    result = result .. "\nAutocrafting" .. self.AutoCrafting
+                end
+                if self.RemoveTaskWhenFullfilled then
+                    result = result .. "\nRemoveTaskWhenFullfilled"
+                end
+                return result
+            end,
+        },
     }
 )
 
@@ -69,6 +83,17 @@ end
 function Class:OpenSettings(target)
     self:CloseSettings()
     self.CurrentSettings = Settings.Open(self, target or self)
+end
+
+function Class:RestoreFromSave(parent)
+    self.Parent = parent
+    mod_gui.get_frame_flow(self.Player)[self.class.name].destroy()
+    local list = self.Global.Remindor.List
+    self.Global.Remindor.List = Array:new()
+    for _, task in ipairs(list) do
+        self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
+    end
+    self:Open()
 end
 
 function Class:Toggle()
@@ -99,6 +124,7 @@ function Class:Open()
                     sprite = "ingteb_settings_white",
                     style = "frame_action_button",
                     actions = {on_click = {module = self.class.name, action = "Settings"}},
+                    tooltip = self.HelperTextSettings,
                 },
             },
         }

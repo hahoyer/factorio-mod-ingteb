@@ -129,7 +129,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                             {
                                 type = "sprite-button",
                                 sprite = "utility/close_white",
-                                tooltip = "press to hide.",
+                                tooltip = {"gui.close"},
                                 actions = {
                                     on_click = {
                                         module = moduleName,

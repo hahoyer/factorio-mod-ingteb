@@ -17,7 +17,7 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "default",
+                        caption = {"ingteb-utility.default"},
                         state = self.Settings.AutoResearch == nil,
                         actions = {
                             on_checked_state_changed = {
@@ -31,7 +31,7 @@ local function GetGui(self)
                     },
                     {
                         type = "checkbox",
-                        caption = "AutoResearch",
+                        caption = {"ingteb-utility.auto-research"},
                         state = self.AutoResearch,
                         ignored_by_interaction = self.Settings.AutoResearch == nil,
                         actions = {
@@ -52,7 +52,7 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "default",
+                        caption = {"ingteb-utility.default"},
                         state = self.Settings.AutoCrafting == nil,
                         actions = {
                             on_checked_state_changed = {
@@ -67,13 +67,13 @@ local function GetGui(self)
                     {
                         type = "drop-down",
                         items = {
-                            "no auto-crafting",
-                            "craft when 1 is possible",
-                            "craft when 5 are possible",
-                            "craft when requested are possible",
+                            {"ingteb-utility.auto-crafting-off"},
+                            {"ingteb-utility.auto-crafting-1"},
+                            {"ingteb-utility.auto-crafting-5"},
+                            {"ingteb-utility.auto-crafting-all"},
                         },
                         selected_index = self.AutoCrafting,
-                        caption = "AutoCrafting",
+                        caption = {"ingteb-utility.auto-crafting"},
                         ignored_by_interaction = self.Settings.AutoCrafting == nil,
                         actions = {
                             on_selection_state_changed = {
@@ -93,7 +93,7 @@ local function GetGui(self)
                 children = {
                     {
                         type = "checkbox",
-                        caption = "default",
+                        caption = {"ingteb-utility.default"},
                         state = self.Settings.RemoveTaskWhenFullfilled == nil,
                         actions = {
                             on_checked_state_changed = {
@@ -107,7 +107,7 @@ local function GetGui(self)
                     },
                     {
                         type = "checkbox",
-                        caption = "Remove task when fullfiled",
+                        caption = {"ingteb-utility.remove-when-fullfilled"},
                         state = self.RemoveTaskWhenFullfilled,
                         ignored_by_interaction = self.Settings.RemoveTaskWhenFullfilled == nil,
                         actions = {

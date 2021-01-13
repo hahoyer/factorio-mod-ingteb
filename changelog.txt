@@ -4,8 +4,10 @@ Date: 2021-01-07
   Changes:
     - Remindor frame management 
     - Remindor settings and automatic things
+    - localisations
   Bugfixes:
     - fixing gui update on inventory/research changes
+    - fixing crash when loading save file with Presentor and/or Remindor open
   Refactor:
     - [tech] using flib-gui-beta
     - [tech] ui-rework

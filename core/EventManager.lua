@@ -18,19 +18,23 @@ EventManager.property = {
         get = function() return UI.Player end,
         set = function(_, value)
             if value then
-                local acutalValue = --
-                type(value) == "number" and game.players[value] --
-                or type(value) == "table" and value.object_name == "LuaPlayer" and value --
-                    or assert(release)
-                if acutalValue == UI.Player then return end
-                UI.Player = acutalValue
+
+                if type(value) == "number" then 
+                    UI.PlayerIndex = value
+                elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
+                    UI.PlayerIndex = value.index
+                end
+
+                if game then UI.Player = game.players[UI.PlayerIndex] end
+
             else
                 assert(release) 
                 UI.Player = nil
+                UI.PlayerIndex = nil
             end
         end,
     },
-    Global = {get = function(self) return global.Players[self.Player.index] end},
+    Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
 }
 
 function EventManager:Watch(handler, eventId)

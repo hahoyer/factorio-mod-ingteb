@@ -97,12 +97,12 @@ end
 function Class:OnTextChanged(value) self.Count = tonumber(value) end
 
 function Class:GetSelection()
-local target = self.Target:CreateStack{value = self.Count}
     return {
-        Target = target,
-        Worker = self.Worker,
-        Recipe = self.Recipe,
-        CommonKey = target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
+        Target = self.Target.CommonKey,
+        Count = self.Count,
+        Worker = self.Worker.CommonKey,
+        Recipe = self.Recipe.CommonKey,
+        CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
     }
 end
 
@@ -179,9 +179,9 @@ function Class:GetWorkersAndRecipes()
             type = "flow",
             direction = "horizontal",
             children = {
-                {type = "label", caption = "Worker: "},
+                {type = "label", caption = {"ingteb-utility.select-worker"}},
                 {type = "sprite", sprite = self.Worker.SpriteName, ref = {"Worker"}},
-                {type = "label", caption = "Variants: "},
+                {type = "label", caption = {"ingteb-utility.select-variants"}},
                 self:GetLinePart(self:CreateSelection(self.Workers)),
             },
         }
@@ -192,9 +192,9 @@ function Class:GetWorkersAndRecipes()
             type = "flow",
             direction = "horizontal",
             children = {
-                {type = "label", caption = "Recipe: "},
+                {type = "label", caption = {"ingteb-utility.select-recipe"}},
                 {type = "sprite", sprite = self.Recipe.SpriteName, ref = {"Recipe"}},
-                {type = "label", caption = "Variants: "},
+                {type = "label", caption = {"ingteb-utility.select-variants"}},
                 self:GetLinePart(self:CreateSelection(self.Recipes)),
             },
         }
@@ -212,7 +212,7 @@ function Class:GetGui()
                 type = "flow",
                 direction = "horizontal",
                 children = {
-                    {type = "label", caption = "Target: "},
+                    {type = "label", caption = {"ingteb-utility.select-target"}},
                     {
                         type = "sprite",
                         sprite = self.Target.SpriteName,

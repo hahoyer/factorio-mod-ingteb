@@ -37,6 +37,12 @@ function Class:Open(targets)
     self.Current = result.Main
 end
 
+function Class:RestoreFromSave(parent)
+    self.Parent = parent
+    local current = self.Player.gui.screen[self.class.name]
+    assert(release or current == self.Current) 
+end
+
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
@@ -44,7 +50,7 @@ function Class:OnGuiEvent(event)
     elseif message.action == "Click" then
         local commonKey = event.element.name
         self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey )
+        self.Parent:PresentTargetByCommonKey(commonKey)
     else
         assert(release)
     end

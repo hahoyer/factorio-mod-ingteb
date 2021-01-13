@@ -31,7 +31,6 @@ local Class = class:new(
             end,
         },
         Database = {
-            cache = true,
             get = function(self)
                 local result = self.Modules.Database
                 result:Ensure()
@@ -90,9 +89,7 @@ function Class:ToggleFloating()
     end
 end
 
-function Class:AddRemindor(selection)
-    self.Modules.Remindor:SetTask(selection)
-end
+function Class:AddRemindor(selection) self.Modules.Remindor:SetTask(selection) end
 
 function Class:OnMainKey(event)
     self.Player = event.player_index
@@ -144,6 +141,7 @@ function Class:OnTickInitial()
     for _, player in pairs(game.players) do
         self.Player = player
         self:EnsureMainButton()
+        self:RestoreFromSave()
     end
     self:SetHandler(defines.events.on_tick)
 end
@@ -151,7 +149,7 @@ end
 function Class:OnLoad()
     assert(global.Players)
     for _, player in pairs(global.Players) do
-        assert(player.History)
+        assert(release or player.History)
         History:adopt(player.History, true)
         player.History:Log("OnLoad")
     end
@@ -161,7 +159,12 @@ function Class:EnsureMainButton() self.Modules.Gui:EnsureMainButton() end
 
 function Class:OnPlayerCreated(event)
     self.Player = event.player_index
-    self:OnInitialisePlayer(game.players[event.player_index])
+    self:OnInitialisePlayer()
+end
+
+function Class:OnPlayerJoined(event)
+    self.Player = event.player_index
+    self:OnInitialisePlayer()
 end
 
 function Class:OnPlayerRemoved(event)
@@ -169,10 +172,10 @@ function Class:OnPlayerRemoved(event)
     self.Global.Players[event.player_index] = nil
 end
 
-function Class:OnInitialisePlayer(player)
+function Class:OnInitialisePlayer()
     self.Player = event.player_index
-    global.Players[player.index] = {
-        Index = player.index,
+    self.Global = {
+        Index = event.player_index,
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
@@ -183,9 +186,16 @@ end
 function Class:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
+        self.Player = player
         global.Players[index] = {}
-        self:OnInitialisePlayer(player)
+        self:OnInitialisePlayer()
     end
+end
+
+function Class:RestoreFromSave()
+    self.Modules.Selector:RestoreFromSave(self)
+    self.Modules.Presentator:RestoreFromSave(self)
+    self.Modules.Remindor:RestoreFromSave(self)
 end
 
 function Class:new()
@@ -202,6 +212,7 @@ function Class:new()
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
+    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)

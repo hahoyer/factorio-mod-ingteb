@@ -679,4 +679,9 @@ function Class:OnGuiEvent(event)
     end
 end
 
+function Class:RestoreFromSave(parent)
+    self.Parent = parent
+    self.Current = self.Player.gui.screen[self.class.name]
+end
+
 return Class

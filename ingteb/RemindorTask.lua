@@ -11,8 +11,8 @@ local Item = require("ingteb.Item")
 
 local Class = class:new(
     "Task", nil, {
-        Global = {cache = true, get = function(self) return self.Parent.Global end},
-        Player = {cache = true, get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
+        Player = {get = function(self) return self.Parent.Player end},
         Database = {get = function(self) return self.Parent.Database end},
         AutoResearch = {
             get = function(self)
@@ -60,10 +60,24 @@ local Class = class:new(
     }
 )
 
+function Class:GetSelection()
+    return {
+        Target = self.Target.Goods.CommonKey,
+        Count = self.Target.Amounts.value,
+        Worker = self.Worker.CommonKey,
+        Recipe = self.Recipe.CommonKey,
+        CommonKey = self.CommonKey,
+    }
+end
+
 function Class:new(selection, parent)
-    local self = self:adopt(selection)
-    self.Parent = parent
-    self.Settings = {}
+    local self = self:adopt{Parent = parent, Settings = {}}
+    self.Target = self.Database:GetProxyFromCommonKey(selection.Target):CreateStack{
+        value = selection.Count,
+    }
+    self.Worker = self.Database:GetProxyFromCommonKey(selection.Worker)
+    self.Recipe = self.Database:GetProxyFromCommonKey(selection.Recipe)
+    self.CommonKey = selection.CommonKey
     return self
 end
 
@@ -125,7 +139,7 @@ function Class:GetGui(key, data)
                         actions = {
                             on_click = {target = "Task", module = "Remindor", action = "Remove"},
                         },
-                        tooltip = "press to close.",
+                        tooltip = {"gui.close"},
                     },
                     {
                         type = "sprite-button",
@@ -134,12 +148,9 @@ function Class:GetGui(key, data)
                         style_mods = {size = 17},
                         ref = {"Remindor", "Task", "Settings"},
                         actions = {
-                            on_click = {
-                                target= "Task",
-                                module = "Remindor",
-                                action = "Settings",
-                            },
+                            on_click = {target = "Task", module = "Remindor", action = "Settings"},
                         },
+                        tooltip = self.HelperTextSettings,
                     },
                 },
             },
@@ -153,7 +164,7 @@ function Class:CreateCloseButton(global, frame, functionData)
     local closeButton = frame.add {
         type = "sprite",
         sprite = "utility/close_black",
-        tooltip = "press to close.",
+        tooltip = {"gui.close"},
     }
     global.Remindor.Links[closeButton.index] = functionData
 end
