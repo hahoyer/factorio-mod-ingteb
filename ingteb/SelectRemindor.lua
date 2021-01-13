@@ -97,13 +97,12 @@ end
 function Class:OnTextChanged(value) self.Count = tonumber(value) end
 
 function Class:GetSelection()
+local target = self.Target:CreateStack{value = self.Count}
     return {
-        Target = self.Target:CreateStack{value = self.Count},
+        Target = target,
         Worker = self.Worker,
         Recipe = self.Recipe,
-        GetCommonKey = function(self)
-            return self.Target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name
-        end,
+        CommonKey = target.Goods.Name .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
     }
 end
 

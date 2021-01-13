@@ -65,7 +65,7 @@ end
 
 function Class:OpenSettings(target)
     self:CloseSettings()
-    self.CurrentSettings = Settings.Open(target or self)
+    self.CurrentSettings = Settings.Open(self, target or self)
 end
 
 function Class:Toggle()
@@ -87,7 +87,7 @@ end
 function Class:Open()
     local result = Helper.CreateLeftSideFrameWithContent(
         self, --
-        {type = "flow", ref = {"Tasks"}, name = "Tasks", direction = "vertical"}, --
+        {type = "flow", ref = {"Tasks"}, direction = "vertical"}, --
         {"ingteb-utility.reminder-tasks"}, --
         {
             buttons = {
@@ -115,7 +115,7 @@ function Class:Refresh()
         function(task) return task.IsRelevant end
     )
     self.Global.Remindor.List:Select(
-        function(task) task:CreatePanel(self.Tasks, task:GetCommonKey(), data) end
+        function(task) task:CreatePanel(self.Tasks, task.CommonKey, data) end
     )
 end
 
@@ -137,17 +137,21 @@ end
 
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
-
-    local taskIndex = message.target == "Task" and self:GetTaskIndex(event.element.parent.name)
-                          or nil
+    local key = message.key or event.element.parent.name
+    local taskIndex = message.target == "Task" and self:GetTaskIndex(key) or nil
+    assert(release or message.target ~= "Task" or taskIndex)
     local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
 
     if message.action == "Update" then
         target.Settings[message.control] = self:GetValueOfControl(event.element)
-        target:OpenSettings()
+        self:OpenSettings(target)
     elseif message.action == "UpdateOverride" then
-        target.Settings[message.control] = event.element.state and nil or target[message.control]
-        target:OpenSettings()
+        if event.element.state then
+            target.Settings[message.control] = nil
+        else
+            target.Settings[message.control] = target[message.control]
+        end
+        self:OpenSettings(target)
     elseif message.action == "Settings" then
         self:OpenSettings(target)
     elseif message.target == "Task" then
@@ -167,7 +171,7 @@ end
 
 function Class:SetTask(selection)
     self:EnsureGlobal()
-    local key = selection:GetCommonKey()
+    local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
     local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
     if index then self.Global.Remindor.List:Remove(index) end
@@ -182,7 +186,7 @@ end
 
 function Class:GetTaskIndex(key)
     for index, task in ipairs(self.Global.Remindor.List) do
-        if task:GetCommonKey() == key then return index end
+        if task.CommonKey == key then return index end
     end
 end
 

@@ -25,6 +25,7 @@ local function GetGui(self)
                                 target = self.class.name,
                                 action = "UpdateOverride",
                                 control = "AutoResearch",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -39,6 +40,7 @@ local function GetGui(self)
                                 target= self.class.name,
                                 action = "Update",
                                 control = "AutoResearch",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -58,6 +60,7 @@ local function GetGui(self)
                                 target= self.class.name,
                                 action = "UpdateOverride",
                                 control = "AutoCrafting",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -78,6 +81,7 @@ local function GetGui(self)
                                 target= self.class.name,
                                 action = "Update",
                                 control = "AutoCrafting",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -97,6 +101,7 @@ local function GetGui(self)
                                 target= self.class.name,
                                 action = "UpdateOverride",
                                 control = "RemoveTaskWhenFullfilled",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -111,6 +116,7 @@ local function GetGui(self)
                                 target= self.class.name,
                                 action = "Update",
                                 control = "RemoveTaskWhenFullfilled",
+                                key = self.CommonKey,
                             },
                         },
                     },
@@ -120,12 +126,12 @@ local function GetGui(self)
     }
 end
 
-function Class.Open(self)
+function Class.Open(remindor, self)
     if not self.Global.Location.RemindorSettings then
         self.Global.Location.RemindorSettings = {x = 200, y = 100}
     end
     local result = Helper.CreatePopupFrameWithContent(
-        self, GetGui(self), {"ingteb-utility.reminder-tasks-settings"}, {subModule = "Settings"}
+        remindor, GetGui(self), {"ingteb-utility.reminder-tasks-settings"}, {subModule = "Settings"}
     )
     return result.Main
 end
