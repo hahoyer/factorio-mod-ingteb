@@ -60,7 +60,10 @@ end
 function Class:CloseSettings()
     if not self.CurrentSettings then return end
     self.CurrentSettings.destroy()
+    self.ParentScreen.ignored_by_interaction = nil
+    self.Player.opened = self.ParentScreen
     self.CurrentSettings = nil
+    self:Refresh()
 end
 
 function Class:OpenSettings(target)
