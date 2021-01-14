@@ -217,6 +217,37 @@ function Class:OnGuiEvent(event)
     elseif message.target == "Task" then
         if message.action == "Remove" then
             self:CloseTask(taskIndex)
+        elseif message.action == "Drag" then
+            local up
+            if event.button == defines.mouse_button_type.left then
+                up = true
+            elseif event.button == defines.mouse_button_type.right then
+                up = false
+            else
+                return
+            end
+
+            local newIndex
+            if event.shift then
+                if up then
+                    newIndex = 1
+                else
+                    newIndex = #self.Global.Remindor.List
+                end
+            else
+                if up then
+                    newIndex = math.max(taskIndex - 1, 1)
+                else
+                    newIndex = math.min(taskIndex + 1, #self.Global.Remindor.List)
+                end
+            end
+
+            if newIndex ~= taskIndex then
+                self.Global.Remindor.List:Remove(taskIndex)
+                self.Global.Remindor.List:InsertAt(newIndex, target)
+            end
+            self:Reopen()
+            return
         else
             assert(release)
         end

@@ -116,6 +116,7 @@ end
 
 function Class:CheckAutoCrafting()
     if self.Worker.Name ~= "character" then return end
+    if self.Recipe.class.name ~= "Recipe" then return end
     local player = game.players[self.Global.Index]
     if player.crafting_queue_size > 0 then return end
 
@@ -148,6 +149,15 @@ function Class:GetGui(key, data)
         direction = "horizontal",
         name = key,
         children = {
+            {
+                type = "empty-widget",
+                style = "flib_titlebar_drag_handle",
+                ref = {"UpDownDragBar"},
+                style_mods = {width = 10, height=40, },
+                actions = {
+                    on_click = {target = "Task", module = "Remindor", action = "Drag"},
+                },
+    },
             Spritor:GetSpriteButtonAndRegister(self.Target),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
@@ -199,8 +209,7 @@ function Class:EnsureInventory(goods, data)
     local key = goods.CommonKey
     if data[key] then return end
     if goods.class == Item then
-        local player = game.players[self.Global.Index]
-        data[key] = player.get_item_count(goods.Name)
+        data[key] = self.Player.get_item_count(goods.Name)
     else
         data[key] = 0
     end

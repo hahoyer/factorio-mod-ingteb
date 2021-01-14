@@ -10,20 +10,38 @@ local Class = class:new(
     "SelectRemindor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
+        Database = {get = function(self) return self.Parent.Database end},
     }
 )
 
-function Class:new(parent, action, location)
-    local self = self:adopt{Parent = parent}
+function Class:new(parent) return self:adopt{Parent = parent} end
+
+function Class:Reopen()
+    self:DestroyGui()
+    self:CreateGui()
+end
+
+function Class:Open(action, location)
+    if action then self:Setup(action) end
+    if location then self.Global.Location.SelectRemindor = location end
+    self:CreateGui()
+end
+
+function Class:Setup(action)
     self.Target = action.ReminderTask
     self.Count = action.Count
     self.Recipes = self.Target.Recipes
     self.Workers = self.Target.Workers
     self.Recipe = self.Recipes[1]
     self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
+end
 
-    self.Current = Helper.CreatePopupFrameWithContent(
-                       self, self:GetGui(), {"ingteb-utility.select-reminder"}, {
+function Class:CreateGui()
+    self.Current = --
+    Helper.CreatePopupFrameWithContent(
+        self, self:GetGui(), --
+        {"ingteb-utility.select-reminder"}, --
+        {
             buttons = {
                 {
                     type = "sprite-button",
@@ -33,16 +51,33 @@ function Class:new(parent, action, location)
                 },
             },
         }
-                   ).Main
-
-    return self
+    ). --
+    Main
 end
 
 function Class:Close()
+    self:DestroyGui()
+    self:Clear()
+end
+
+function Class:DestroyGui()
     self.Current.destroy()
     self.ParentScreen.ignored_by_interaction = nil
     self.Player.opened = self.ParentScreen
+end
+
+function Class:Clear()
     self.Target = nil
+    self.Recipe = nil
+    self.Recipes = nil
+    self.Worker = nil
+    self.Workers = nil
+end
+
+function Class:RestoreFromSave(parent)
+    self.Parent = parent
+    local current = self.Player.gui.screen[self.class.name]
+    if current then current.destroy() end
 end
 
 function Class:GetWorkerSpriteStyle(target)
@@ -81,8 +116,7 @@ function Class:OnGuiEvent(event)
         self:Close()
     elseif message.action == "Click" then
         local commonKey = event.element.name
-        self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey)
+        self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
     elseif message.action == "CountChanged" then
         self:OnTextChanged(event.element.text)
     elseif message.action == "Enter" then
@@ -92,6 +126,25 @@ function Class:OnGuiEvent(event)
     else
         assert(release)
     end
+end
+
+function Class:OnGuiClick(target)
+    if target.IsRecipe then
+        self.Recipe = target
+        if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
+            self.Worker = self:GetBelongingWorkers(self.Recipe):Top(false)
+        end
+    else
+        self.Worker = target
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
+        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
+        local old = AddIndent()
+        local recipes = self:GetBelongingRecipes(self.Worker)
+        indent = old
+        -- DebugAdapter.print(indent .. "------------------------------------------------------")
+        if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
+    end
+    self:Reopen()
 end
 
 function Class:OnTextChanged(value) self.Count = tonumber(value) end
@@ -232,28 +285,6 @@ function Class:GetGui()
             {type = "flow", direction = "vertical", children = self:GetWorkersAndRecipes()},
         },
     }
-end
-
-function Class:OnGuiClick(global, target)
-    assert(release)
-    if target.IsRecipe then
-        self.Recipe = target
-        if not self:GetBelongingWorkers(self.Recipe):Contains(self.Worker) then
-            self.Worker = self:GetBelongingWorkers(self.Recipe):Top(false)
-        end
-    else
-        self.Worker = target
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
-        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
-        local old = AddIndent()
-        local recipes = self:GetBelongingRecipes(self.Worker)
-        indent = old
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
-        if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
-    end
-    local player = game.players[global.Index]
-    self:OnClose(player)
-    self:Refresh(global)
 end
 
 return Class

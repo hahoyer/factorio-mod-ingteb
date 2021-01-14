@@ -17,6 +17,9 @@ EventManager.property = {
     Player = {
         get = function() return UI.Player end,
         set = function(_, value)
+
+            local lastPlayerIndex = UI.PlayerIndex
+            local lastPlayer = UI.Player
             if value then
 
                 if type(value) == "number" then 
@@ -34,6 +37,9 @@ EventManager.property = {
                 UI.Player = nil
                 UI.PlayerIndex = nil
             end
+
+            assert(lastPlayerIndex == nil or lastPlayerIndex == UI.PlayerIndex)
+            assert(lastPlayer == nil or lastPlayer == UI.Player)
         end,
     },
     Global = {get = function(self) return global.Players[UI.PlayerIndex] end},

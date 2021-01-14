@@ -43,7 +43,7 @@ local Class = class:new(
 local self
 
 function Class:SelectRemindor(reminderTask, location)
-    self.Modules.SelectRemindor = SelectRemindor:new(self, reminderTask, location)
+    self.Modules.SelectRemindor:Open(reminderTask, location)
 end
 
 function Class:PresentCurrentTargetFromHistory()
@@ -137,11 +137,11 @@ function Class:OnBackClicked(event)
     end
 end
 
-function Class:OnTickInitial()
+function Class:OnTickInitial(event)
     for _, player in pairs(game.players) do
         self.Player = player
         self:EnsureMainButton()
-        self:RestoreFromSave()
+        if event.tick > 0 then self:RestoreFromSave() end
     end
     self:SetHandler(defines.events.on_tick)
 end
@@ -174,7 +174,7 @@ end
 
 function Class:OnInitialisePlayer()
     global.Players[self.Player.index] = {
-        Index = event.player_index,
+        Index = self.Player.index,
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
@@ -193,8 +193,10 @@ function Class:OnInitialise()
 end
 
 function Class:RestoreFromSave()
+    self.Global.Index = self.Player.index
     self.Modules.Selector:RestoreFromSave(self)
     self.Modules.Presentator:RestoreFromSave(self)
+    self.Modules.SelectRemindor:RestoreFromSave(self)
     self.Modules.Remindor:RestoreFromSave(self)
 end
 
@@ -207,6 +209,7 @@ function Class:new()
         Database = Database:new(self),
         Spritor = Spritor:new(self),
         Remindor = Remindor:new(self),
+        SelectRemindor = SelectRemindor:new(self),
     }
 
     self:SetHandler("on_init", self.OnInitialise)
