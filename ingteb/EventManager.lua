@@ -173,8 +173,7 @@ function Class:OnPlayerRemoved(event)
 end
 
 function Class:OnInitialisePlayer()
-    self.Player = event.player_index
-    self.Global = {
+    global.Players[self.Player.index] = {
         Index = event.player_index,
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
@@ -213,7 +212,7 @@ function Class:new()
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
-    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+--    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)

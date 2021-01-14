@@ -104,7 +104,7 @@ function Class:RestoreFromSave(parent)
     self.Parent = parent
     if not self.Global.Remindor.Settings then self.Global.Remindor.Settings = {} end
     local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
-    local list = self.Global.Remindor.List
+    local list = self.Global.Remindor.List or {}
     self.Global.Remindor.List = Array:new()
     for _, task in ipairs(list) do
         self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
