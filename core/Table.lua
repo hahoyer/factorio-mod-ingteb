@@ -124,6 +124,11 @@ function Array:Minimum()
     return result
 end
 
+function Array:IndexWhere(predicate, start)
+    if not start then start = 1 end
+    for index = start, #self do if predicate(self[index], index) then return index end end
+end
+
 function Dictionary:Count(predicate)
     local result = 0
     for key, value in pairs(self) do
@@ -264,8 +269,8 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
 
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ")."
-            , 1)
+                        .. #self .. ").", 1
+            )
         end
     end
     return self[1]
@@ -280,8 +285,8 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
 
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ")."
-          ,1  )
+                        .. #self .. ").", 1
+            )
         end
         result = {Key = key, Value = value}
     end
@@ -289,14 +294,14 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if result then return result end
 
     if allowEmpty == false or onEmpty then
-        error(onEmpty and onEmpty() or "Array contains no element.",1)
+        error(onEmpty and onEmpty() or "Array contains no element.", 1)
     end
 end
 
 function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
         if allowEmpty == false or onEmpty then
-            error(onEmpty and onEmpty() or "Array contains no element.",1)
+            error(onEmpty and onEmpty() or "Array contains no element.", 1)
         end
         return
     elseif #self > 1 then
@@ -305,7 +310,7 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
 
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ").",1
+                        .. #self .. ").", 1
             )
         end
     end

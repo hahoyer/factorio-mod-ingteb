@@ -8,9 +8,11 @@ local result = {
     ModName = modName,
     GlobalPrefix = modName .. "_" .. "GlobalPrefix",
     GraphicsPath = "__" .. modName .. "__/graphics/",
+    AutoCraftingVariants = {"off", "1", "5", "all"},
 }
 
 release = not (__DebugAdapter and __DebugAdapter.instrument)
+
 indent = ""
 
 function AddIndent()

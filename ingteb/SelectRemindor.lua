@@ -62,6 +62,7 @@ end
 
 function Class:DestroyGui()
     self.Current.destroy()
+    if not self.ParentScreen then return end
     self.ParentScreen.ignored_by_interaction = nil
     self.Player.opened = self.ParentScreen
 end

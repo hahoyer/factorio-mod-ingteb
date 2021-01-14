@@ -14,6 +14,7 @@ local Item = require("ingteb.Item")
 local Task = require("ingteb.RemindorTask")
 local Settings = require("ingteb.RemindorSettings")
 
+
 local Class = class:new(
     "Remindor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
@@ -51,10 +52,11 @@ local Class = class:new(
                     result:Append("\n")
                     result:Append{"ingteb-utility.auto-research"}
                 end
-                if self.AutoCrafting ~= 1 then
-                    local variants = {"off", "1", "5", "all"}
+                if self.AutoCrafting ~= "off" then
                     result:Append("\n")
-                    result:Append{"ingteb-utility.auto-crafting-" .. variants[self.AutoCrafting]}
+                    result:Append{
+                        "string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting,
+                    }
                 end
                 if self.RemoveTaskWhenFulfilled then
                     result:Append("\n")
@@ -66,16 +68,25 @@ local Class = class:new(
                 end
             end,
         },
+        ParentData = {
+            chache = true,
+            get = function(self)
+                local cr = settings.player["ingteb_reminder-task-autocrafting"].value
+                return {
+                    Settings = {
+                        AutoResearch = settings.player["ingteb_reminder-task-autoresearch"].value,
+                        AutoCrafting = settings.player["ingteb_reminder-task-autocrafting"].value,
+                        RemoveTaskWhenFulfilled = settings.player["ingteb_reminder-task-remove-when-fulfilled"]
+                            .value,
+                    },
+                }
+            end,
+        },
     }
 )
 
 function Class:new(parent)
-    local self = self:adopt{
-        Parent = parent,
-        ParentData = {
-            Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFulfilled = true},
-        },
-    }
+    local self = self:adopt{Parent = parent}
     Spritor = SpritorClass:new(self)
     return self
 end
@@ -83,8 +94,10 @@ end
 function Class:CloseSettings()
     if not self.CurrentSettings then return end
     self.CurrentSettings.destroy()
-    self.ParentScreen.ignored_by_interaction = nil
-    self.Player.opened = self.ParentScreen
+    if self.ParentScreen then
+        self.ParentScreen.ignored_by_interaction = nil
+        self.Player.opened = self.ParentScreen
+    end
     self.CurrentSettings = nil
 end
 
@@ -95,8 +108,10 @@ end
 
 function Class:RefreshSettings(target)
     self.CurrentSettings.destroy()
-    self.ParentScreen.ignored_by_interaction = nil
-    self.Player.opened = self.ParentScreen
+    if self.ParentScreen then
+        self.ParentScreen.ignored_by_interaction = nil
+        self.Player.opened = self.ParentScreen
+    end
     self.CurrentSettings = Settings.Open(self, target or self)
 end
 
@@ -193,7 +208,7 @@ function Class:GetValueOfControl(element)
     if element.type == "checkbox" then
         return element.state
     elseif element.type == "drop-down" then
-        return element.selected_index
+        return Constants.AutoCraftingVariants[element.selected_index]
     else
         assert(release)
     end
@@ -220,7 +235,7 @@ function Class:OnGuiEvent(event)
         self:OpenSettings(target)
     elseif message.target == "Task" then
         if message.action == "Remove" then
-            self:CloseTask(taskIndex)
+            self.Global.Remindor.List:Remove(taskIndex)
         elseif message.action == "Drag" then
             local up
             if event.button == defines.mouse_button_type.left then
@@ -246,15 +261,14 @@ function Class:OnGuiEvent(event)
                 end
             end
 
-            if newIndex ~= taskIndex then
-                self.Global.Remindor.List:Remove(taskIndex)
-                self.Global.Remindor.List:InsertAt(newIndex, target)
-            end
-            self:Reopen()
-            return
+            if newIndex == taskIndex then return end
+            self.Global.Remindor.List:Remove(taskIndex)
+            self.Global.Remindor.List:InsertAt(newIndex, target)
         else
             assert(release)
+            return
         end
+        self:Reopen()
     elseif message.action == "Closed" then
         if message.subModule == "Settings" then
             self:CloseSettings()
@@ -324,16 +338,6 @@ function Class:GetGuiElement(element, index)
         local result = self:GetGuiElement(child, index)
         if result then return result end
     end
-end
-
-function Class:CloseTask(index)
-    assert(release)
-    self:AssertValidLinks()
-    self:EnsureGlobal()
-    assert(release or index)
-    self.Global.Remindor.List:Remove(index)
-    self:Refresh()
-    if self.Global.Remindor.List == 0 then self:CloseRemindor(global) end
 end
 
 function Class:SettingsTask(name)

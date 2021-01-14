@@ -69,10 +69,9 @@ local Class = class:new(
                     result:Append("\n")
                     result:Append{"ingteb-utility.auto-research"}
                 end
-                if self.AutoCrafting and self.AutoCrafting ~= 1 then
-                    local variants = {"", "1", "5", "all"}
+                if self.AutoCrafting and self.AutoCrafting ~= "off" then
                     result:Append("\n")
-                    result:Append{"ingteb-utility.auto-crafting-" .. variants[self.AutoCrafting]}
+                    result:Append{"string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting}
                 end
                 if self.RemoveTaskWhenFulfilled then
                     result:Append("\n")
@@ -124,11 +123,11 @@ function Class:CheckAutoCrafting()
     local toDo = self.Target.Amounts.value - self.CountInInventory
     if toDo <= 0 then return end
 
-    if self.AutoCrafting == 1 then
+    if self.AutoCrafting == "off" then
         return
-    elseif self.AutoCrafting == 2 then
+    elseif self.AutoCrafting == "1" then
         toDo = math.min(toDo, 1)
-    elseif self.AutoCrafting == 3 then
+    elseif self.AutoCrafting == "5" then
         toDo = math.min(toDo, 5)
     end
 
@@ -169,12 +168,13 @@ function Class:GetGui(key, data, isTop, isBottom)
         type = "frame",
         direction = "horizontal",
         name = key,
+        style_mods = {left_padding = 0},
         children = {
             {
                 type = "empty-widget",
                 style = "flib_titlebar_drag_handle",
                 ref = {"UpDownDragBar"},
-                style_mods = {width = 10, height = 40},
+                style_mods = {width = 15, height = 40 },
                 actions = {on_click = {target = "Task", module = "Remindor", action = "Drag"}},
                 tooltip = GetDragTooltip(isTop, isBottom),
             },

@@ -24,7 +24,7 @@ local function GetGuiForDefaultCheckBox(self, controlName)
     }
 end
 
-local function GetGuiForControl(self, controlName, caption, values)
+local function GetGuiForControl(self, controlName, caption, values, textOfValues)
     local result = {
         type = values and "drop-down" or "checkbox",
         caption = caption,
@@ -37,18 +37,27 @@ local function GetGuiForControl(self, controlName, caption, values)
                 control = controlName,
                 key = self.CommonKey,
             },
+            on_selection_state_changed = {
+                module = "Remindor",
+                target = self.class.name,
+                action = "Update",
+                control = controlName,
+                key = self.CommonKey,
+            },
         },
     }
     if values then
-        result.items = values
-        result.selected_index = self[controlName]
+        result.items = textOfValues
+        result.selected_index = Array:new(values):IndexWhere(
+            function(value) return value == self[controlName] end
+        )
     else
         result.state = self[controlName]
     end
     return result
 end
 
-local function GetGuiForControlGroup(self, controlName, caption, values)
+local function GetGuiForControlGroup(self, controlName, caption, values, textOfValues)
     if self[controlName] == nil then return {} end
     return {
         {
@@ -56,7 +65,7 @@ local function GetGuiForControlGroup(self, controlName, caption, values)
             direction = "horizontal",
             children = {
                 GetGuiForDefaultCheckBox(self, controlName),
-                GetGuiForControl(self, controlName, caption, values),
+                GetGuiForControl(self, controlName, caption, values, textOfValues),
             },
         },
     }
@@ -67,11 +76,11 @@ local function GetGui(self)
     local children = Array:new{
         GetGuiForControlGroup(self, "AutoResearch", {"ingteb-utility.auto-research"}),
         GetGuiForControlGroup(
-            self, "AutoCrafting", {"ingteb-utility.auto-crafting"}, {
-                {"ingteb-utility.auto-crafting-off"},
-                {"ingteb-utility.auto-crafting-1"},
-                {"ingteb-utility.auto-crafting-5"},
-                {"ingteb-utility.auto-crafting-all"},
+            self, "AutoCrafting", {"ingteb-utility.auto-crafting"}, Constants.AutoCraftingVariants, {
+                {"string-mod-setting.ingteb_reminder-task-autocrafting-off"},
+                {"string-mod-setting.ingteb_reminder-task-autocrafting-1"},
+                {"string-mod-setting.ingteb_reminder-task-autocrafting-5"},
+                {"string-mod-setting.ingteb_reminder-task-autocrafting-all"},
             }
         ),
         GetGuiForControlGroup(
