@@ -681,7 +681,11 @@ end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    self.Current = self.Player.gui.screen[self.class.name]
+    local current = self.Player.gui.screen[self.class.name]
+    if current then 
+        current.destroy()
+        self:Open(self.Database:GetProxyFromCommonKey(self.Global.History.Current))
+    end
 end
 
 return Class

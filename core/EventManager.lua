@@ -23,6 +23,8 @@ EventManager.property = {
                     UI.PlayerIndex = value
                 elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
                     UI.PlayerIndex = value.index
+                else 
+                    assert(release) 
                 end
 
                 if game then UI.Player = game.players[UI.PlayerIndex] end

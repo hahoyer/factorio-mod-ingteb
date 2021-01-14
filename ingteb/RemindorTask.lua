@@ -16,6 +16,7 @@ local Class = class:new(
         Database = {get = function(self) return self.Parent.Database end},
         AutoResearch = {
             get = function(self)
+                if not self.Recipe.Required.Technologies:Any() then return end
                 if self.Settings.AutoResearch ~= nil then
                     return self.Settings.AutoResearch
                 end
@@ -24,6 +25,7 @@ local Class = class:new(
         },
         AutoCrafting = {
             get = function(self)
+                if self.Worker.Name ~= "character" then return end
                 if self.Settings.AutoCrafting ~= nil then
                     return self.Settings.AutoCrafting
                 end
@@ -32,6 +34,7 @@ local Class = class:new(
         },
         RemoveTaskWhenFulfilled = {
             get = function(self)
+                if self.IsFulfilled then return end
                 if self.Settings.RemoveTaskWhenFulfilled ~= nil then
                     return self.Settings.RemoveTaskWhenFulfilled
                 end
@@ -42,10 +45,10 @@ local Class = class:new(
             get = function(self)
                 self:CheckAutoResearch()
                 self:CheckAutoCrafting()
-                return not self.RemoveTaskWhenFulfilled or not self.IsFullfilled
+                return not self.RemoveTaskWhenFulfilled or not self.IsFulfilled
             end,
         },
-        IsFullfilled = {
+        IsFulfilled = {
             get = function(self)
                 return self.CountInInventory >= self.Target.Amounts.value
             end,
@@ -65,7 +68,7 @@ local Class = class:new(
                     result:Append("\n")
                     result:Append{"ingteb-utility.auto-research"}
                 end
-                if self.AutoCrafting ~= 1 then
+                if self.AutoCrafting and self.AutoCrafting ~= 1 then
                     local variants = {"", "1", "5", "all"}
                     result:Append("\n")
                     result:Append{"ingteb-utility.auto-crafting-" .. variants[self.AutoCrafting]}

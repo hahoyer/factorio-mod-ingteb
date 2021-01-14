@@ -43,6 +43,7 @@ local Class = class:new(
                 return self.ParentData.Settings.RemoveTaskWhenFulfilled
             end,
         },
+        Settings = {get = function(self) return self.Global.Remindor.Settings end},
         HelperTextSettings = {
             get = function(self)
                 local result = Array:new{}
@@ -74,7 +75,6 @@ function Class:new(parent)
         ParentData = {
             Settings = {AutoResearch = true, AutoCrafting = 2, RemoveTaskWhenFulfilled = true},
         },
-        Settings = {},
     }
     Spritor = SpritorClass:new(self)
     return self
@@ -102,22 +102,22 @@ end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
+    if not self.Global.Remindor.Settings then self.Global.Remindor.Settings = {} end
     local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
     local list = self.Global.Remindor.List
     self.Global.Remindor.List = Array:new()
     for _, task in ipairs(list) do
         self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
     end
-    if current then
-        current.destroy()
-        self:Open()
-        local currentSettings = self.Player.gui.screen.RemindorSettings
-        if currentSettings then 
-            local taskIndex = self:GetTaskIndex(currentSettings.children[2].name)
-            local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
-            currentSettings.destroy()
-            self:OpenSettings(target)
-        end
+    if not current then return end
+    current.destroy()
+    self:Open()
+    local currentSettings = self.Player.gui.screen.RemindorSettings
+    if currentSettings then
+        local taskIndex = self:GetTaskIndex(currentSettings.children[2].name)
+        local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
+        currentSettings.destroy()
+        self:OpenSettings(target)
     end
 end
 

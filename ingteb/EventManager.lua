@@ -179,6 +179,7 @@ function Class:OnInitialisePlayer()
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
+        Remindor = {Settings = {}}
     }
     self:EnsureMainButton()
 end
