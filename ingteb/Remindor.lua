@@ -175,7 +175,11 @@ function Class:Refresh()
         function(task) return task.IsRelevant end
     )
     self.Global.Remindor.List:Select(
-        function(task) task:CreatePanel(self.Tasks, task.CommonKey, data) end
+        function(task, index)
+            task:CreatePanel(
+                self.Tasks, task.CommonKey, data, index == 1, index == #self.Global.Remindor.List
+            )
+        end
     )
 end
 

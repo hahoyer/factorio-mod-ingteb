@@ -5,6 +5,7 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
+local UI = require("core.UI")
 local class = require("core.class")
 local RequiredThings = require("ingteb.RequiredThings")
 local Item = require("ingteb.Item")
@@ -136,14 +137,34 @@ function Class:CheckAutoCrafting()
     player.begin_crafting {count = toDo, recipe = self.Recipe.Name}
 end
 
-function Class:CreatePanel(frame, key, data)
+function Class:CreatePanel(frame, key, data, isTop, isBottom)
     Spritor:StartCollecting()
-    local guiData = self:GetGui(key, data)
+    local guiData = self:GetGui(key, data, isTop, isBottom)
     local result = gui.build(frame, {guiData})
     Spritor:RegisterDynamicTargets(result.DynamicElements)
 end
 
-function Class:GetGui(key, data)
+local function GetDragTooltip(isTop, isBottom)
+    if isTop and isBottom then return end
+    return {
+        "",
+        not isTop and {
+            "",
+            UI.GetHelpTextForButtons("ingteb-utility.moveTaskToTop", "--S l"),
+            "\n",
+            UI.GetHelpTextForButtons("ingteb-utility.moveTaskUp", "--- l"),
+        } or "",
+        not isTop and not isBottom and "\n" or "",
+        not isBottom and {
+            "",
+            UI.GetHelpTextForButtons("ingteb-utility.moveTaskDown", "--- r"),
+            "\n",
+            UI.GetHelpTextForButtons("ingteb-utility.moveTaskToBottom", "--S r"),
+        } or "",
+    }
+end
+
+function Class:GetGui(key, data, isTop, isBottom)
     return {
         type = "frame",
         direction = "horizontal",
@@ -153,11 +174,10 @@ function Class:GetGui(key, data)
                 type = "empty-widget",
                 style = "flib_titlebar_drag_handle",
                 ref = {"UpDownDragBar"},
-                style_mods = {width = 10, height=40, },
-                actions = {
-                    on_click = {target = "Task", module = "Remindor", action = "Drag"},
-                },
-    },
+                style_mods = {width = 10, height = 40},
+                actions = {on_click = {target = "Task", module = "Remindor", action = "Drag"}},
+                tooltip = GetDragTooltip(isTop, isBottom),
+            },
             Spritor:GetSpriteButtonAndRegister(self.Target),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
