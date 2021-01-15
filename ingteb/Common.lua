@@ -46,6 +46,8 @@ Common.property = {
     RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
 }
 
+Common.__debugline = "{self.CommonKey}"
+
 function Common:IsBefore(other)
     if self == other then return false end
     if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end

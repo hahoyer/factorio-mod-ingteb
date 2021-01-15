@@ -73,7 +73,7 @@ Goods.property = {
                     IsRestricedTo = {Presentator = true},
                     HelpText = "ingteb-utility.create-reminder-task",
                     Action = function(self, event)
-                        return {ReminderTask = self, Count = event.element.number}
+                        return {RemindorTask = self, Count = event.element.number}
                     end,
                 },
             }

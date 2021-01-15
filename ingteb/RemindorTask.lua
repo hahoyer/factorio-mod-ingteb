@@ -35,7 +35,6 @@ local Class = class:new(
         },
         RemoveTaskWhenFulfilled = {
             get = function(self)
-                if self.IsFulfilled then return end
                 if self.Settings.RemoveTaskWhenFulfilled ~= nil then
                     return self.Settings.RemoveTaskWhenFulfilled
                 end
@@ -44,13 +43,16 @@ local Class = class:new(
         },
         IsRelevant = {
             get = function(self)
-                self:CheckAutoResearch()
-                self:CheckAutoCrafting()
+                local RemoveTaskWhenFulfilled = self.RemoveTaskWhenFulfilled
+                local IsFulfilled = self.IsFulfilled
+                local IsRelevant = not self.RemoveTaskWhenFulfilled or not self.IsFulfilled
                 return not self.RemoveTaskWhenFulfilled or not self.IsFulfilled
             end,
         },
         IsFulfilled = {
             get = function(self)
+                local done = self.CountInInventory
+                local todo = self.Target.Amounts.value
                 return self.CountInInventory >= self.Target.Amounts.value
             end,
         },
@@ -58,7 +60,18 @@ local Class = class:new(
         CountInInventory = {
             get = function(self)
                 if self.Worker.Name ~= "character" then return 0 end
-                return game.players[self.Global.Index].get_item_count(self.Target.Goods.Name)
+                return game --
+                .players[self.Global.Index] --
+                .get_main_inventory() --
+                .get_item_count(self.Target.Goods.Name)
+            end,
+        },
+
+        CurrentTarget = {
+            get = function(self)
+                return self.Target.Goods:CreateStack{
+                    value = self.CountInInventory - self.Target.Amounts.value,
+                }
             end,
         },
 
@@ -71,7 +84,9 @@ local Class = class:new(
                 end
                 if self.AutoCrafting and self.AutoCrafting ~= "off" then
                     result:Append("\n")
-                    result:Append{"string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting}
+                    result:Append{
+                        "string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting,
+                    }
                 end
                 if self.RemoveTaskWhenFulfilled then
                     result:Append("\n")
@@ -94,6 +109,18 @@ function Class:GetSelection()
         Recipe = self.Recipe.CommonKey,
         CommonKey = self.CommonKey,
     }
+end
+
+function Class:AddSelection(selection)
+    assert(release or selection.Target == self.Target.Goods.CommonKey)
+    assert(release or selection.Worker == self.Worker.CommonKey)
+    assert(release or selection.Recipe == self.Recipe.CommonKey)
+    assert(release or selection.CommonKey == self.CommonKey)
+
+    local value--
+     = (self.Target.Amounts and self.Target.Amounts.value or 0)--
+     + (selection.Count or 0)
+    self.Target.Amounts = value ~= 0 and {value = value} or nil
 end
 
 function Class:new(selection, parent)
@@ -136,6 +163,11 @@ function Class:CheckAutoCrafting()
     player.begin_crafting {count = toDo, recipe = self.Recipe.Name}
 end
 
+function Class:AutomaticActions()
+    self:CheckAutoResearch()
+    self:CheckAutoCrafting()
+end
+
 function Class:CreatePanel(frame, key, data, isTop, isBottom)
     Spritor:StartCollecting()
     local guiData = self:GetGui(key, data, isTop, isBottom)
@@ -174,11 +206,11 @@ function Class:GetGui(key, data, isTop, isBottom)
                 type = "empty-widget",
                 style = "flib_titlebar_drag_handle",
                 ref = {"UpDownDragBar"},
-                style_mods = {width = 15, height = 40 },
+                style_mods = {width = 15, height = 40},
                 actions = {on_click = {target = "Task", module = "Remindor", action = "Drag"}},
                 tooltip = GetDragTooltip(isTop, isBottom),
             },
-            Spritor:GetSpriteButtonAndRegister(self.Target),
+            Spritor:GetSpriteButtonAndRegister(self.CurrentTarget),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
             {
@@ -229,7 +261,7 @@ function Class:EnsureInventory(goods, data)
     local key = goods.CommonKey
     if data[key] then return end
     if goods.class == Item then
-        data[key] = self.Player.get_item_count(goods.Name)
+        data[key] = self.Player.get_main_inventory().get_item_count(goods.Name)
     else
         data[key] = 0
     end
@@ -242,14 +274,21 @@ function Class:GetRequired(data)
         and self.Recipe.Required.StackOfGoods --
         :Select(
             function(stack, key)
-                local result = stack:Clone()
                 self:EnsureInventory(stack.Goods, data)
                 local inventory = data[key]
-                local count = self.Target.Amounts.value * stack.Amounts.value - inventory
-                result.Amounts.value = math.max(count, 0)
-                if result.Amounts.value == 0 then result.Amounts = nil end
-                data[key] = math.max(-count, 0)
-                return result
+
+                local countByRecipe --
+                = self.Recipe.Output --
+                :Where(function(stack) return stack.Goods == self.Target.Goods end) --
+                :Top().Amounts.value
+
+                local count = inventory --
+                - (self.Target.Amounts.value - self.CountInInventory) * stack.Amounts.value
+                                  / countByRecipe
+
+                local value = math.min(count, 0)
+                data[key] = math.max(count, 0)
+                return stack.Goods:CreateStack(value ~= 0 and {value = value} or nil)
             end
         ) --
         or nil

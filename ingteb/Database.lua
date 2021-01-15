@@ -302,6 +302,8 @@ function Class:BeginMulipleQueueResearch(target)
     return result
 end
 
+function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
+
 function Class:RefreshTechnology(target)
     assert(release or target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()

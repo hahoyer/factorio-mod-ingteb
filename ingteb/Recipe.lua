@@ -48,11 +48,11 @@ Recipe.property = {
 
             local researched = self.Technologies --
             :Where(function(technology) return technology.IsResearched end)
-            if researched:Count() > 0 then return researched:Top() end
+            if researched:Any() then return researched:Top() end
 
             local ready = self.Technologies --
             :Where(function(technology) return technology.IsReady end)
-            if ready:Count() > 0 then return researched:Top() end
+            if ready:Any() then return ready:Top() end
 
             return self.Technologies:Top()
         end,
@@ -215,7 +215,7 @@ Recipe.property = {
                 -- {
                 --     UICode = "--- r",
                 --     HelpText = "ingteb-utility.create-reminder-task",
-                --     Action = function(self) return {ReminderTask = self} end,
+                --     Action = function(self) return {RemindorTask = self} end,
                 -- },
             }
         end,

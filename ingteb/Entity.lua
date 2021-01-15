@@ -47,7 +47,7 @@ Entity.property = {
     Categories = {
         cache = true,
         get = function(self)
-            --if self.Name == "big-processing-machine" then __DebugAdapter.breakpoint() end
+            -- if self.Name == "big-processing-machine" then __DebugAdapter.breakpoint() end
             local xreturn = self.Database.Proxies.Category -- 
             :Where(
                 function(category)
@@ -92,7 +92,7 @@ Entity.property = {
             --         IsRestricedTo = {Presentator = true},
             --         HelpText = "ingteb-utility.create-reminder-task",
             --         IsAvailable = function(self) return self.Item end,
-            --         Action = function(self) return {ReminderTask = self.Item} end,
+            --         Action = function(self) return {RemindorTask = self.Item} end,
             --     },
             -- }
         end,

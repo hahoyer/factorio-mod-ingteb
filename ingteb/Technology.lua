@@ -68,7 +68,8 @@ local Technology = class:new(
         },
         IsResearched = {
             get = function(self)
-                return self.Database.Player.force.technologies[self.Prototype.name].researched == true
+                return self.Database.Player.force.technologies[self.Prototype.name].researched
+                           == true
             end,
         },
         IsResearchedOrResearching = {
@@ -211,7 +212,7 @@ local Technology = class:new(
                     --     UICode = "--- r",
                     --     IsRestricedTo = {Presentator = true},
                     --     HelpText = "ingteb-utility.create-reminder-task",
-                    --     Action = function(self) return {ReminderTask = self} end,
+                    --     Action = function(self) return {RemindorTask = self} end,
                     -- },
                 }
             end,

@@ -53,6 +53,7 @@ end
 
 function Class:OnGuiClick(event)
     local player = self.Player
+    local message = gui.read_action(event)
 
     local target = self.Database:GetProxyFromCommonKey(event.element.name)
     if not target or not target.Prototype then return end
@@ -77,7 +78,8 @@ function Class:OnGuiClick(event)
         end
     end
 
-    if action.ReminderTask then
+    if action.RemindorTask then
+        if message.module == "Remindor" and action.Count then action.Count = -action.Count end
         self.Parent.Parent:SelectRemindor(action, Helper.GetLocation(event.element))
     end
 
@@ -161,7 +163,7 @@ function Class:RefreshMainInventoryChanged()
     :Select(function(list, target) self:UpdateGui(list, target) end) --
 end
 
-function Class:RefreshStackChanged(dataBase) end
+function Class:OnStackChanged() end
 
 function Class:RefreshResearchChanged()
     self.DynamicElements --

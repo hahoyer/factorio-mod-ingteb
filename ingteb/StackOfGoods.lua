@@ -78,10 +78,12 @@ local StackOfGoods = class:new(
                         UICode = "--- r",
                         IsRestricedTo = {Presentator = true},
                         HelpText = "ingteb-utility.create-reminder-task",
-                        Action = function(self) return {ReminderTask = self.Goods, Amounts = self.Amounts} end,
+                        Action = function(self)
+                            return {RemindorTask = self.Goods, Amounts = self.Amounts}
+                        end,
                     },
                 }
-    
+
                 result:AppendMany(self.inherited.StackOfGoods.SpecialFunctions.get(self))
                 if self.Goods and self.Goods.SpecialFunctions then
                     result:AppendMany(self.Goods.SpecialFunctions)

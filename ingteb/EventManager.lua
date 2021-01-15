@@ -2,6 +2,7 @@ local event = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Table = require("core.Table")
+local RemindorTask = require "ingteb.remindortask"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Helper = require("ingteb.Helper")
@@ -42,8 +43,13 @@ local Class = class:new(
 
 local self
 
-function Class:SelectRemindor(reminderTask, location)
-    self.Modules.SelectRemindor:Open(reminderTask, location)
+function Class:SelectRemindorByCommonKey(commonKey, location)
+    local remindorTask = {RemindorTask = self.Database:GetProxyFromCommonKey(commonKey)}
+    self.Modules.SelectRemindor:Open(remindorTask, location)
+end
+
+function Class:SelectRemindor(remindorTask, location)
+    self.Modules.SelectRemindor:Open(remindorTask, location)
 end
 
 function Class:PresentCurrentTargetFromHistory()
@@ -89,7 +95,7 @@ function Class:ToggleFloating()
     end
 end
 
-function Class:AddRemindor(selection) self.Modules.Remindor:SetTask(selection) end
+function Class:AddRemindor(selection) self.Modules.Remindor:AddRemindorTask(selection) end
 
 function Class:OnMainKey(event)
     self.Player = event.player_index
@@ -98,19 +104,23 @@ end
 
 function Class:OnMainInventoryChanged(event)
     self.Player = event.player_index
-    if not self.CurrentFloating then return end
-    self.CurrentFloating:RefreshMainInventoryChanged()
-    -- if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
+    self.Modules.Presentator:OnMainInventoryChanged(event)
+    self.Modules.Remindor:OnMainInventoryChanged(event)
 end
 
 function Class:OnStackChanged(event)
     self.Player = event.player_index
-    Gui:OnStackChanged()
+    self.Modules.Presentator:OnStackChanged()
+    self.Modules.Remindor:OnStackChanged()
 end
 
 function Class:OnResearchChanged(event)
     if not self.Modules.Database.IsInitialized then return end
-    self.Database:RefreshTechnology(event.research)
+    self.Database:OnResearchChanged(event)
+    self.Modules.Presentator:OnResearchChanged(event)
+    self.Modules.Remindor:OnResearchChanged(event)
+
+    if true then return end
     if not self.CurrentFloating then return end
     if self.Database.IsMulipleQueueResearch then
         self.Database.IsRefreshResearchChangedRequired = true
@@ -178,7 +188,7 @@ function Class:OnInitialisePlayer()
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
-        Remindor = {Settings = {}}
+        Remindor = {Settings = {}},
     }
     self:EnsureMainButton()
 end
@@ -223,7 +233,7 @@ function Class:new()
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
---    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+    --    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)

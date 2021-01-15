@@ -251,7 +251,8 @@ local function GetSubGroupPanelContent(target, inCount, outCount)
 end
 
 function Class:GetGroupPanelContent(value, inCount, outCount)
-    if value:Count() < settings.get_player_settings(self.Player)["ingteb_subgroup-tab-threshold"].value then
+    if value:Count()
+        < settings.get_player_settings(self.Player)["ingteb_subgroup-tab-threshold"].value then
         return {
             type = "flow",
             direction = "vertical",
@@ -298,7 +299,8 @@ local function GetGroupTabPanel(value, content)
 end
 
 function Class:GetCraftigGroupData(target, inCount, outCount)
-    if target:Count() < settings.get_player_settings(self.Player)["ingteb_group-tab-threshold"].value then
+    if target:Count() < settings.get_player_settings(self.Player)["ingteb_group-tab-threshold"]
+        .value then
         return {
             type = "flow",
             direction = "vertical",
@@ -508,7 +510,8 @@ local function GetTechnologiesPanel(target, headerSprites, isPrerequisites)
 end
 
 function Class:CheckedTabifyColumns(frame, mainFrame, target, columnCount)
-    local maximalColumCount = settings.get_player_settings(self.Player)["ingteb_column-tab-threshold"].value
+    local maximalColumCount =
+        settings.get_player_settings(self.Player)["ingteb_column-tab-threshold"].value
     if maximalColumCount == 0 then maximalColumCount = columnCount end
 
     if columnCount > maximalColumCount then
@@ -553,11 +556,11 @@ function Class:Close()
     end
 end
 
-function Class:RefreshMainInventoryChanged() Spritor:RefreshMainInventoryChanged() end
+function Class:OnMainInventoryChanged(event) Spritor:RefreshMainInventoryChanged() end
 
-function Class:RefreshStackChanged() end
+function Class:OnStackChanged() end
 
-function Class:RefreshResearchChanged() Spritor:RefreshResearchChanged() end
+function Class:OnResearchChanged(event) Spritor:RefreshResearchChanged() end
 
 function Class:Open(target)
     self.Global.Links.Presentator = {}
@@ -680,7 +683,7 @@ function Class:OnGuiEvent(event)
 end
 
 function Class:OnSettingsChanged(event)
-    --assert(release)   
+    -- assert(release)   
 end
 
 function Class:RestoreFromSave(parent)

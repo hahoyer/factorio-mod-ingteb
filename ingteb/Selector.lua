@@ -49,8 +49,17 @@ function Class:OnGuiEvent(event)
         self:Close()
     elseif message.action == "Click" then
         local commonKey = event.element.name
+        local location = Helper.GetLocation(event.element)
         self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey)
+        if event.button == defines.mouse_button_type.left then
+            self.Parent:PresentTargetByCommonKey(commonKey)
+        elseif event.button == defines.mouse_button_type.right then
+            self.Parent:SelectRemindorByCommonKey(commonKey, location)
+        else
+            assert(release)
+        end
+
+
     else
         assert(release)
     end

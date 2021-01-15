@@ -28,8 +28,8 @@ function Class:Open(action, location)
 end
 
 function Class:Setup(action)
-    self.Target = action.ReminderTask
-    self.Count = action.Count
+    self.Target = action.RemindorTask
+    self.Count = action.Count or 1
     self.Recipes = self.Target.Recipes
     self.Workers = self.Target.Workers
     self.Recipe = self.Recipes[1]
@@ -61,10 +61,10 @@ function Class:Close()
 end
 
 function Class:OnSettingsChanged(event)
-    --assert(release)   
-    end
-    
-    function Class:DestroyGui()
+    -- assert(release)   
+end
+
+function Class:DestroyGui()
     self.Current.destroy()
     if not self.ParentScreen then return end
     self.ParentScreen.ignored_by_interaction = nil
