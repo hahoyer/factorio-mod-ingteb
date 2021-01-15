@@ -40,7 +40,7 @@ end
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     local current = self.Player.gui.screen[self.class.name]
-    assert(release or current == self.Current) 
+    assert(release or current == self.Current)
 end
 
 function Class:OnGuiEvent(event)
@@ -54,6 +54,10 @@ function Class:OnGuiEvent(event)
     else
         assert(release)
     end
+end
+
+function Class:OnSettingsChanged(event)
+    -- assert(release)   
 end
 
 function Class:GetGui(targets)

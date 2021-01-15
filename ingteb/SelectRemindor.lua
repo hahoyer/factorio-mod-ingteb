@@ -60,7 +60,11 @@ function Class:Close()
     self:Clear()
 end
 
-function Class:DestroyGui()
+function Class:OnSettingsChanged(event)
+    --assert(release)   
+    end
+    
+    function Class:DestroyGui()
     self.Current.destroy()
     if not self.ParentScreen then return end
     self.ParentScreen.ignored_by_interaction = nil

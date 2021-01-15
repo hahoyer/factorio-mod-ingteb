@@ -158,13 +158,13 @@ end
 
 function Class:OnMainInventoryChanged(global)
     assert(release)
-    Presentator:RefreshMainInventoryChanged(Database)
+    self.Presentator:RefreshMainInventoryChanged(Database)
     if self.Active.Remindor then Remindor:RefreshMainInventoryChanged(Database) end
 end
 
 function Class:OnStackChanged()
     assert(release)
-    Presentator:RefreshStackChanged(Database)
+    self.Presentator:RefreshStackChanged(Database)
     if self.Active.Remindor then Remindor:RefreshStackChanged(Database) end
 end
 
@@ -193,31 +193,6 @@ function Class:RemindSelected(global, name, location)
     end
 end
 
-function Class:Close(global, gui)
-    assert(release)
-    if not self.Active[gui] then return end
-
-    global.Location[gui] = self.Active[gui].location
-
-    if global.IsPopup then return end
-
-    if gui == "Remindor" then
-        Remindor:OnClose()
-    elseif gui == "Remindor.Settings" then
-        self.Player.opened = Remindor.ParentScreen
-    elseif gui == "Presentator" then
-        Presentator:OnClose(global)
-    elseif gui == "Selector" then
-        Selector:OnClose(global)
-    elseif gui == "SelectRemindor" then
-        SelectRemindor:OnClose(global)
-    end
-
-    self:Player(gui)[gui].destroy()
-
-    self.Active[gui] = nil
-end
-
 function Class:SettingsRemindor(global)
     assert(release)
     if self.Active.RemindorSettings then
@@ -244,7 +219,7 @@ end
 
 function Class:SelectTarget(global, targets)
     assert(release)
-    Selector:new(global, targets)
+    self.Selector:new(global, targets)
     self:ScanActiveGui(game.players[global.Index])
 end
 
@@ -258,7 +233,7 @@ end
 ---@param location table GuiLocation (optional)
 function Class:SelectRemindor(global, reminderTask, location)
     assert(release)
-    SelectRemindor:new(global, reminderTask, location)
+    self.SelectRemindor:new(global, reminderTask, location)
 end
 
 function Class:EnsureRemindor(global)
@@ -357,7 +332,7 @@ function Class:OnResearchRefresh(global, research)
     if Database.IsInitialized then
         self:EnsureDatabase(global)
         Class.Database:RefreshTechnology(research)
-        Presentator:RefreshResearchChanged(Database)
+        self.Presentator:RefreshResearchChanged(Database)
         if self.Active.Remindor then Remindor:RefreshResearchChanged() end
     end
 end

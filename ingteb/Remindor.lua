@@ -14,7 +14,6 @@ local Item = require("ingteb.Item")
 local Task = require("ingteb.RemindorTask")
 local Settings = require("ingteb.RemindorSettings")
 
-
 local Class = class:new(
     "Remindor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
@@ -69,14 +68,14 @@ local Class = class:new(
             end,
         },
         ParentData = {
-            chache = true,
+            cache = true,
             get = function(self)
-                local cr = settings.player["ingteb_reminder-task-autocrafting"].value
+                local playerSettings = settings.get_player_settings(self.Player)
                 return {
                     Settings = {
-                        AutoResearch = settings.player["ingteb_reminder-task-autoresearch"].value,
-                        AutoCrafting = settings.player["ingteb_reminder-task-autocrafting"].value,
-                        RemoveTaskWhenFulfilled = settings.player["ingteb_reminder-task-remove-when-fulfilled"]
+                        AutoResearch = playerSettings["ingteb_reminder-task-autoresearch"].value,
+                        AutoCrafting = playerSettings["ingteb_reminder-task-autocrafting"].value,
+                        RemoveTaskWhenFulfilled = playerSettings["ingteb_reminder-task-remove-when-fulfilled"]
                             .value,
                     },
                 }
@@ -186,16 +185,21 @@ function Class:Refresh()
     if self.Tasks then self.Tasks.clear() end
     local data = {}
 
-    self.Global.Remindor.List = self.Global.Remindor.List:Where(
-        function(task) return task.IsRelevant end
-    )
-    self.Global.Remindor.List:Select(
-        function(task, index)
-            task:CreatePanel(
-                self.Tasks, task.CommonKey, data, index == 1, index == #self.Global.Remindor.List
-            )
-        end
-    )
+    if self.Global.Remindor.List then
+        self.Global.Remindor.List = self.Global.Remindor.List:Where(
+            function(task) return task.IsRelevant end
+        )
+        self.Global.Remindor.List:Select(
+            function(task, index)
+                task:CreatePanel(
+                    self.Tasks, task.CommonKey, data, index == 1,
+                        index == #self.Global.Remindor.List
+                )
+            end
+        )
+    else
+        self.Global.Remindor.List = Array:new{}
+    end
 end
 
 function Class:EnsureGlobal()
@@ -276,6 +280,11 @@ function Class:OnGuiEvent(event)
             self:Close()
         end
     end
+end
+
+function Class:OnSettingsChanged(event)
+    self.cache[Class.name].ParentData.IsValid = false
+    self:Reopen()
 end
 
 function Class:SetTask(selection)

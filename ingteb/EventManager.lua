@@ -183,6 +183,14 @@ function Class:OnInitialisePlayer()
     self:EnsureMainButton()
 end
 
+function Class:OnSettingsChanged(event)
+    self.Player = event.player_index
+    self.Modules.Selector:OnSettingsChanged(event)
+    self.Modules.Presentator:OnSettingsChanged(event)
+    self.Modules.SelectRemindor:OnSettingsChanged(event)
+    self.Modules.Remindor:OnSettingsChanged(event)
+end
+
 function Class:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
@@ -224,6 +232,7 @@ function Class:new()
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged)
+    self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
 

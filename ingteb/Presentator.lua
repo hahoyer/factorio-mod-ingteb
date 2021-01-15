@@ -250,8 +250,8 @@ local function GetSubGroupPanelContent(target, inCount, outCount)
     }
 end
 
-local function GetGroupPanelContent(value, inCount, outCount)
-    if value:Count() < settings.player["ingteb_subgroup-tab-threshold"].value then
+function Class:GetGroupPanelContent(value, inCount, outCount)
+    if value:Count() < settings.get_player_settings(self.Player)["ingteb_subgroup-tab-threshold"].value then
         return {
             type = "flow",
             direction = "vertical",
@@ -297,8 +297,8 @@ local function GetGroupTabPanel(value, content)
     }
 end
 
-local function GetCraftigGroupData(target, inCount, outCount)
-    if target:Count() < settings.player["ingteb_group-tab-threshold"].value then
+function Class:GetCraftigGroupData(target, inCount, outCount)
+    if target:Count() < settings.get_player_settings(self.Player)["ingteb_group-tab-threshold"].value then
         return {
             type = "flow",
             direction = "vertical",
@@ -312,13 +312,13 @@ local function GetCraftigGroupData(target, inCount, outCount)
     local groups =
         target:ToGroup(function(value) return {Key = value.Group.name, Value = value} end):ToArray()
 
-    if groups:Count() == 1 then return GetGroupPanelContent(groups[1], inCount, outCount) end
+    if groups:Count() == 1 then return self:GetGroupPanelContent(groups[1], inCount, outCount) end
 
     return {
         type = "tabbed-pane",
         tabs = groups:Select(
             function(value)
-                local content = GetGroupPanelContent(value, inCount, outCount)
+                local content = self:GetGroupPanelContent(value, inCount, outCount)
                 return GetGroupTabPanel(value, content)
             end
         ),
@@ -326,7 +326,7 @@ local function GetCraftigGroupData(target, inCount, outCount)
 
 end
 
-local function GetCraftingGroupPanel(target, category, inCount, outCount)
+function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
     assert(release or type(category) == "string")
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
@@ -340,14 +340,14 @@ local function GetCraftingGroupPanel(target, category, inCount, outCount)
         children = {
             GetWorkersPanel(workers, inCount + outCount + 3),
             {type = "line", direction = "horizontal"},
-            GetCraftigGroupData(target, inCount, outCount),
+            self:GetCraftigGroupData(target, inCount, outCount),
             {type = "line", direction = "horizontal"},
         },
     }
     return result
 end
 
-local function GetCraftingGroupsPanel(target, headerSprites, tooltip)
+function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     if not target or not target:Any() then return {} end
     local sampleCategogy = target:Top()
     assert(release or type(sampleCategogy.Key) == "string")
@@ -375,7 +375,7 @@ local function GetCraftingGroupsPanel(target, headerSprites, tooltip)
             headerSprites, tooltip, target:Select(
                 function(recipes, category)
                     assert(release or type(category) == "string")
-                    return GetCraftingGroupPanel(recipes, category, inCount, outCount)
+                    return self:GetCraftingGroupPanel(recipes, category, inCount, outCount)
                 end
             ) --
             :ToArray()
@@ -507,8 +507,8 @@ local function GetTechnologiesPanel(target, headerSprites, isPrerequisites)
 
 end
 
-local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
-    local maximalColumCount = settings.player["ingteb_column-tab-threshold"].value
+function Class:CheckedTabifyColumns(frame, mainFrame, target, columnCount)
+    local maximalColumCount = settings.get_player_settings(self.Player)["ingteb_column-tab-threshold"].value
     if maximalColumCount == 0 then maximalColumCount = columnCount end
 
     if columnCount > maximalColumCount then
@@ -637,17 +637,17 @@ function Class:GetGui(target)
                                 target.Enables, target.RichTextName
                                     .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
                             ),
-                            GetCraftingGroupsPanel(
+                            self:GetCraftingGroupsPanel(
                                 target.RecipeList,
                                     target.RichTextName .. "[img=utility/change_recipe]",
                                     "Recipes this machine can handle"
                             ),
-                            GetCraftingGroupsPanel(
+                            self:GetCraftingGroupsPanel(
                                 target.CreatedBy,
                                     "[img=utility/missing_icon][img=utility/go_to_arrow]"
                                         .. target.RichTextName, "Recipes that produces this item."
                             ),
-                            GetCraftingGroupsPanel(
+                            self:GetCraftingGroupsPanel(
                                 target.UsedBy, target.RichTextName
                                     .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
                                     "Recipes this item uses a ingredience."
@@ -670,7 +670,7 @@ function Class:OnGuiEvent(event)
         if self.Global.IsPopup then
             self.Current.ignored_by_interaction = true
         else
-        self:Close()
+            self:Close()
         end
     elseif message.subModule == "Spritor" then
         Spritor:OnGuiEvent(event)
@@ -679,10 +679,14 @@ function Class:OnGuiEvent(event)
     end
 end
 
+function Class:OnSettingsChanged(event)
+    --assert(release)   
+end
+
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     local current = self.Player.gui.screen[self.class.name]
-    if current then 
+    if current then
         current.destroy()
         self:Open(self.Database:GetProxyFromCommonKey(self.Global.History.Current))
     end
