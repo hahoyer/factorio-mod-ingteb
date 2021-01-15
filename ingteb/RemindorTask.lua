@@ -108,6 +108,7 @@ function Class:GetSelection()
         Worker = self.Worker.CommonKey,
         Recipe = self.Recipe.CommonKey,
         CommonKey = self.CommonKey,
+        Settings = self.Settings,
     }
 end
 
@@ -124,7 +125,7 @@ function Class:AddSelection(selection)
 end
 
 function Class:new(selection, parent)
-    local self = self:adopt{Parent = parent, Settings = {}}
+    local self = self:adopt{Parent = parent, Settings = selection.Settings or {}}
     self.Target = self.Database:GetProxyFromCommonKey(selection.Target):CreateStack{
         value = selection.Count,
     }
