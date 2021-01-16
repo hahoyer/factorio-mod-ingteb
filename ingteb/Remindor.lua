@@ -295,9 +295,14 @@ function Class:AddRemindorTask(selection)
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
     local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
-    if index then self.Global.Remindor.List:Remove(index) end
+    if index then 
+        task = self.Global.Remindor.List[index] 
+        self.Global.Remindor.List:Remove(index) 
+        task:AddSelection(selection)
+    else
+        task = Task:new(selection, self)
+    end
     self.Global.Remindor.List:InsertAt(1, task)
-    task:AddSelection(selection)
 
     if self.Current then
         self:Refresh()
@@ -322,7 +327,7 @@ function Class:OnMainInventoryChanged(event)
     self:Refresh()
 end
 
-function Class:OnStackChanged() end
+function Class:OnStackChanged() self:Refresh() end
 
 function Class:OnResearchChanged(event)
     Spritor:RefreshResearchChanged()
@@ -333,7 +338,5 @@ function Class:RefreshMainInventoryChanged()
     assert(release)
     self:Refresh()
 end
-
-function Class:OnStackChanged() end
 
 return Class
