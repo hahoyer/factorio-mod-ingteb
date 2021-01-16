@@ -1,4 +1,4 @@
-local event = require("__flib__.event")
+local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -22,18 +22,18 @@ EventManager.property = {
             local lastPlayer = UI.Player
             if value then
 
-                if type(value) == "number" then 
+                if type(value) == "number" then
                     UI.PlayerIndex = value
                 elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
                     UI.PlayerIndex = value.index
-                else 
-                    assert(release) 
+                else
+                    assert(release)
                 end
 
                 if game then UI.Player = game.players[UI.PlayerIndex] end
 
             else
-                assert(release) 
+                assert(release)
                 UI.Player = nil
                 UI.PlayerIndex = nil
             end
@@ -45,13 +45,23 @@ EventManager.property = {
     Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
 }
 
-function EventManager:Watch(handler, eventId)
+function EventManager:Execute(eventId, eventName)
     local instance = self
     return function(...)
-        instance :Enter(eventId, ...)
-        local result = handler(instance , ...)
-        instance :Leave(eventId)
-        return result
+        local handlers = self.Handlers[eventName]
+        for identifier, handler in pairs(handlers) do
+            local result = handler(instance, ...)
+            if result == false then handlers[identifier] = nil end
+        end
+
+        if not next(handlers) then
+            local eventRegistrar = events[eventId]
+            if eventRegistrar then
+                eventRegistrar(nil)
+            else
+                events.register(eventId, nil)
+            end
+        end
     end
 end
 
@@ -59,26 +69,32 @@ function EventManager:Enter(name, event) self.Active = {name, self.Active} end
 
 function EventManager:Leave(name) self.Active = self.Active[2] end
 
-function EventManager:SetHandler(eventId, handler, register)
-    if not self.State then self.State = {} end
-    if not handler then register = false end
-    if register == nil then register = true end
+function EventManager:SetHandler(eventId, handler, identifier)
+    if not self.Handlers then self.Handlers = {} end
+    if not identifier then identifier = "default" end
 
-    local name = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
+    local eventName = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
 
-    self.State[name] = "activating..." .. tostring(register)
+    local handlers = self.Handlers[eventName]
+    assert(release or not handlers or identifier ~= "default")
 
-    if register == false then handler = nil end
-    local watchedEvent = handler and self:Watch(handler, name) or nil
+    if not handlers then
+        handlers = {}
+        self.Handlers[eventName] = handlers
 
-    local eventRegistrar = event[eventId]
-    if eventRegistrar then
-        eventRegistrar(watchedEvent)
-    else
-        event.register(eventId, watchedEvent)
+        local watchedEvent = self:Execute(eventId, eventName)
+        local eventRegistrar = events[eventId]
+        if eventRegistrar then
+            eventRegistrar(watchedEvent)
+        else
+            events.register(eventId, watchedEvent)
+        end
     end
 
-    self.State[name] = register
+    assert(release or not handlers[identifier])
+
+    handlers[identifier] = handler
+
 end
 
 return EventManager

@@ -1,5 +1,6 @@
-local event = require("__flib__.event")
+local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
+local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Table = require("core.Table")
 local RemindorTask = require "ingteb.remindortask"
@@ -147,13 +148,17 @@ function Class:OnBackClicked(event)
     end
 end
 
+function Class:OnTranslationBatch(event) 
+    local tick = event.tick --
+end
+
 function Class:OnTickInitial(event)
     for _, player in pairs(game.players) do
         self.Player = player
         self:EnsureMainButton()
         if event.tick > 0 then self:RestoreFromSave() end
     end
-    self:SetHandler(defines.events.on_tick)
+    return false
 end
 
 function Class:OnLoad()
@@ -196,6 +201,7 @@ end
 
 function Class:OnSettingsChanged(event)
     self.Player = event.player_index
+    translation.init()
     self:RestoreFromSave()
     self.Modules.Selector:OnSettingsChanged(event)
     self.Modules.Presentator:OnSettingsChanged(event)
@@ -211,6 +217,8 @@ function Class:OnInitialise()
         self:OnInitialisePlayer()
     end
 end
+
+function Class:OnConfigurationChanged() translation.init() end
 
 function Class:RestoreFromSave()
     if self.RestoreFromSaveDone then return end
@@ -236,10 +244,11 @@ function Class:new()
 
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
+    self:SetHandler("on_configuration_changed", self.OnConfigurationChanged)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
     --    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
-    self:SetHandler(defines.events.on_player_removed, self.OnPlayerRemoved)
-    self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
+    self:SetHandler(defines.events.on_tick, self.OnTickInitial, "OnTickInitial")
+    self:SetHandler(defines.events.on_tick, self.OnTranslationBatch, "OnTranslationBatch")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)
 
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
