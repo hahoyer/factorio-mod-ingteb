@@ -310,5 +310,21 @@ function Class:RefreshTechnology(target)
 end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
 
+function Class:CountInInventory(itemName)
+    return self.Player.get_main_inventory().get_item_count(itemName)
+end
+
+function Class:CountAvailable(itemName)
+    local inventory = self:CountInInventory(itemName)
+    local hand = self:CountInHand(itemName)
+    return inventory + hand
+end
+
+function Class:CountInHand(itemName)
+    local hand = self.Player.cursor_stack
+    if hand.valid_for_read and hand.prototype.name == itemName then return hand.count end
+    return 0
+end
+
 return Class
 

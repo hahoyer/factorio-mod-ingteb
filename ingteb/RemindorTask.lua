@@ -43,35 +43,39 @@ local Class = class:new(
         },
         IsRelevant = {
             get = function(self)
-                local RemoveTaskWhenFulfilled = self.RemoveTaskWhenFulfilled
-                local IsFulfilled = self.IsFulfilled
-                local IsRelevant = not self.RemoveTaskWhenFulfilled or not self.IsFulfilled
                 return not self.RemoveTaskWhenFulfilled or not self.IsFulfilled
             end,
         },
         IsFulfilled = {
+            get = function(self) return self.CountAvailable >= self.Target.Amounts.value end,
+        },
+
+        CountAvailable = {
             get = function(self)
-                local done = self.CountInInventory
-                local todo = self.Target.Amounts.value
-                return self.CountInInventory >= self.Target.Amounts.value
+                return self.Database:CountAvailable(self.Target.Goods.Name)
             end,
         },
 
-        CountInInventory = {
+        RemainingAmount = {
+            get = function(self) return self.Target.Amounts.value - self.CountAvailable end,
+        },
+
+        RemainingAmountForAutocrafting = {
             get = function(self)
                 if self.Worker.Name ~= "character" then return 0 end
-                return game --
-                .players[self.Global.Index] --
-                .get_main_inventory() --
-                .get_item_count(self.Target.Goods.Name)
+                return self.RemainingAmount
             end,
         },
 
         CurrentTarget = {
             get = function(self)
-                return self.Target.Goods:CreateStack{
-                    value = self.CountInInventory - self.Target.Amounts.value,
-                }
+                local value = -self.RemainingAmount
+                local result = self.Target.Goods:CreateStack(value ~= 0 and {value = value} or nil)
+                result.GetCustomHelp = function(result)
+                    return {{"", {"ingteb-utility.requested-amount"}, self.Target.Amounts.value}}
+                end
+
+                return result
             end,
         },
 
@@ -118,9 +122,9 @@ function Class:AddSelection(selection)
     assert(release or selection.Recipe == self.Recipe.CommonKey)
     assert(release or selection.CommonKey == self.CommonKey)
 
-    local value--
-     = (self.Target.Amounts and self.Target.Amounts.value or 0)--
-     + (selection.Count or 0)
+    local value --
+    = (self.Target.Amounts and self.Target.Amounts.value or 0) --
+    + (selection.Count or 0)
     self.Target.Amounts = value ~= 0 and {value = value} or nil
 end
 
@@ -148,7 +152,7 @@ function Class:CheckAutoCrafting()
     local player = game.players[self.Global.Index]
     if player.crafting_queue_size > 0 then return end
 
-    local toDo = self.Target.Amounts.value - self.CountInInventory
+    local toDo = self.RemainingAmountForAutocrafting
     if toDo <= 0 then return end
 
     if self.AutoCrafting == "off" then
@@ -284,8 +288,7 @@ function Class:GetRequired(data)
                 :Top().Amounts.value
 
                 local count = inventory --
-                - (self.Target.Amounts.value - self.CountInInventory) * stack.Amounts.value
-                                  / countByRecipe
+                - self.RemainingAmountForAutocrafting * stack.Amounts.value / countByRecipe
 
                 local value = math.min(count, 0)
                 data[key] = math.max(count, 0)

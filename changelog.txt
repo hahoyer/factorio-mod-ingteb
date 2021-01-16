@@ -2,8 +2,11 @@
 Version: 0.3.4
 Date: 2021-01-16
   Changes:
+    - Remindertask: show requestet amount as tooltip 
   Bugfixes:
     - fixing crash when loading save file after settings changed
+    - fixing only positive integers are allowed at select reminder count
+    - fixing count in reminder task is wrong when recipe creates any other amount than one
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.3
 Date: 2021-01-15

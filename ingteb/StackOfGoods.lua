@@ -9,7 +9,6 @@ local UI = require("core.UI")
 local StackOfGoods = class:new(
     "StackOfGoods", Common, {
         NumberOnSprite = {
-            cache = true,
             get = function(self)
                 local amounts = self.Amounts
                 if not amounts then return end
@@ -56,11 +55,22 @@ local StackOfGoods = class:new(
             end,
         },
 
+        CustomAdditionalHelp = {
+            get = function(self)
+                if self.GetCustomHelp then
+                    return self:GetCustomHelp()
+                else
+                    return {}
+                end
+            end,
+        },
+
         AdditionalHelp = {
             get = function(self)
                 local result = self.inherited.StackOfGoods.AdditionalHelp.get(self) --
                 if self.Goods then result:AppendMany(self.Goods.AdditionalHelp) end
                 result:AppendMany(self.AdditionalAmountsHelp)
+                result:AppendMany(self.CustomAdditionalHelp)
                 return result
             end,
         },
@@ -90,6 +100,10 @@ local StackOfGoods = class:new(
                 end
                 return result
             end,
+        },
+
+        UsePercentage = {
+            get = function(self) return self.Amounts and self.Amounts.probability ~= nil end,
         },
     }
 
@@ -153,7 +167,6 @@ function StackOfGoods:new(goods, amounts, database)
     self.Amounts = amounts
     assert(release or not amounts or amounts.value or amounts.probability)
     self.SpriteType = goods.SpriteType
-    self.UsePercentage = self.Amounts and self.Amounts.probability ~= nil
 
     return self
 
