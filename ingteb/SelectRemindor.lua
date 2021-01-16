@@ -279,6 +279,8 @@ function Class:GetGui()
                     {
                         type = "textfield",
                         numeric = true,
+                        allow_negative = true,
+                        allow_decimal = true,
                         text = self.Count,
                         style_mods = {maximal_width = 100},
                         actions = {
