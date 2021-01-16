@@ -191,10 +191,12 @@ function Class:OnInitialisePlayer()
         Remindor = {Settings = {}},
     }
     self:EnsureMainButton()
+    self.RestoreFromSaveDone = true
 end
 
 function Class:OnSettingsChanged(event)
     self.Player = event.player_index
+    self:RestoreFromSave()
     self.Modules.Selector:OnSettingsChanged(event)
     self.Modules.Presentator:OnSettingsChanged(event)
     self.Modules.SelectRemindor:OnSettingsChanged(event)
@@ -211,6 +213,8 @@ function Class:OnInitialise()
 end
 
 function Class:RestoreFromSave()
+    if self.RestoreFromSaveDone then return end
+    self.RestoreFromSaveDone = true
     self.Global.Index = self.Player.index
     self.Modules.Selector:RestoreFromSave(self)
     self.Modules.Presentator:RestoreFromSave(self)
