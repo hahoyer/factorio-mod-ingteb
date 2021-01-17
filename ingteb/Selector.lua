@@ -2,6 +2,7 @@ local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local Fluid = require "ingteb.fluid"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
@@ -31,10 +32,29 @@ local Class = class:new(
 function Class:new(parent) return self:adopt{Parent = parent} end
 
 function Class:Open(targets)
+    self.Targets = Array:new(targets)
     local result = Helper.CreateFloatingFrameWithContent(
-        self, self:GetGui(targets), {"ingteb-utility.selector"}
+        self, self:GetGui(), {"ingteb-utility.selector"}, {
+            buttons = {
+                self.Filter and {
+                    type = "textfield",
+                    text = self.Filter,
+                    style_mods = {maximal_width = 100, minimal_height = 28},
+                    actions = {on_text_changed = {module = self.class.name, action = "Update"}},
+                    ref = {"Filter"},
+                } or {type = "empty-widget"},
+                {
+                    type = "sprite-button",
+                    sprite = "utility/search_white",
+                    style = "frame_action_button",
+                    actions = {on_click = {module = self.class.name, action = "Search"}},
+                    tooltip = self.HelperTextSettings,
+                },
+            },
+        }
     )
     self.Current = result.Main
+    if result.Filter then result.Filter.focus() end
 end
 
 function Class:RestoreFromSave(parent)
@@ -46,10 +66,12 @@ end
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
+        self.Filter = nil
         self:Close()
     elseif message.action == "Click" then
         local commonKey = event.element.name
         local location = Helper.GetLocation(event.element)
+        self.Filter = nil
         self:Close()
         if event.button == defines.mouse_button_type.left then
             self.Parent:PresentTargetByCommonKey(commonKey)
@@ -58,8 +80,18 @@ function Class:OnGuiEvent(event)
         else
             assert(release)
         end
-
-
+    elseif message.action == "Search" then
+        if self.Filter then
+            self.Filter = nil
+        else
+            self.Filter = ""
+        end
+        self:Close()
+        self:Open(self.Targets)
+    elseif message.action == "Update" then
+        self.Filter = event.element.text
+        self:Close()
+        self:Open(self.Targets)
     else
         assert(release)
     end
@@ -69,9 +101,9 @@ function Class:OnSettingsChanged(event)
     -- assert(release)   
 end
 
-function Class:GetGui(targets)
-    if #targets > 0 then
-        return self:GetTargetsGui(Array:new{targets})
+function Class:GetGui()
+    if self.Targets:Count() > 0 then
+        return self:GetTargetsGui()
     else
         return self:GetAllItemsGui()
     end
@@ -84,8 +116,18 @@ function Class:Close()
     end
 end
 
-function Class:GetTargets(targets)
-    return targets:Select(
+function Class:IsVisible(target)
+    if self.Filter then
+        return target.Name:find(self.Filter)
+    else
+        return true
+    end
+end
+
+function Class:GetTargets()
+    return self.Targets --
+    :Where(function(goods) return self:IsVisible(goods) end) --
+    :Select(
         function(target)
             if target.SpriteType == "fuel-category" then
                 return {
@@ -107,12 +149,12 @@ function Class:GetTargets(targets)
 
 end
 
-function Class:GetTargetsGui(targets)
+function Class:GetTargetsGui()
     return {
         type = "flow",
         direction = "vertical",
         children = {
-            {type = "table", column_count = ColumnCount, children = self:GetTargets(targets)},
+            {type = "table", column_count = ColumnCount, children = self:GetTargets()},
             {type = "line", direction = "horizontal"},
             {type = "table", column_count = ColumnCount},
         },
@@ -123,17 +165,17 @@ end
 
 local SelectorCache = {}
 
-function SelectorCache.EnsureGroups()
+function SelectorCache:EnsureGroups(database)
     local self = SelectorCache
     if not self.Groups then
         local maximalColumns = 0
         self.Groups = Dictionary:new{}
-        local targets = {game.item_prototypes, game.fluid_prototypes}
-        for _, domain in pairs(targets) do
-            for _, goods in pairs(domain) do
+        local targets = {Item = game.item_prototypes, Fluid = game.fluid_prototypes}
+        for type, domain in pairs(targets) do
+            for name, goods in pairs(domain) do
                 local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
                 local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
-                subgroup:Append(goods)
+                subgroup:Append(database:GetProxy(type, name, goods))
                 if maximalColumns < subgroup:Count() then
                     maximalColumns = subgroup:Count()
                 end
@@ -146,13 +188,11 @@ function SelectorCache.EnsureGroups()
 end
 
 function Class:GetGoodsPanel(goods)
-    local name =
-        (goods.object_name == "LuaItemPrototype" and "Item" or "Fluid") .. "." .. goods.name
     return {
         type = "sprite-button",
-        sprite = (goods.object_name == "LuaItemPrototype" and "item" or "fluid") .. "." .. goods.name,
-        name = name,
-        tooltip = goods.localised_name,
+        sprite = goods.SpriteName,
+        name = goods.CommonKey,
+        tooltip = goods.LocalisedName,
         actions = {on_click = {module = self.class.name, action = "Click"}},
     }
 end
@@ -160,31 +200,34 @@ end
 function Class:GetSubGroupPanel(group)
     return group:ToArray():Select(
         function(subgroup)
-            return {
-                type = "table",
-                column_count = SelectorCache.ColumnCount,
-                children = subgroup:Select(
-                    function(goods) return self:GetGoodsPanel(goods) end
-                ),
-            }
+            local goods = subgroup --
+            :Where(function(goods) return self:IsVisible(goods) end) --
+            :Select(function(goods) return self:GetGoodsPanel(goods) end)
+            if not goods:Any() then return end
+            return {type = "table", column_count = SelectorCache.ColumnCount, children = goods}
         end
-    )
+    ) --
+    :Where(function(subgroup) return subgroup end)
 end
 
 function Class:GetAllItemsGui()
-    local groups = SelectorCache:EnsureGroups()
+    local groups = SelectorCache:EnsureGroups(self.Parent.Database)
 
     return {
         type = "tabbed-pane",
         tabs = groups:ToArray():Select(
             function(group)
-                local groupHeader = group[next(group)][1].group
+                local groupHeader = group[next(group)][1].Prototype.group
+                local subGroup = self:GetSubGroupPanel(group)
                 return {
                     tab = {
                         type = "tab",
                         caption = "[item-group=" .. groupHeader.name .. "]",
-                        style = "ingteb-big-tab",
+                        -- style = "filter_group_tab",
+                        style = subGroup:Any() and "ingteb-big-tab" or "ingteb-big-tab-disabled",
                         tooltip = groupHeader.localised_name,
+                        ignored_by_interaction = not subGroup:Any(),
+                        -- style_mods = {font = "ingteb-font32"}
                     },
                     content = {
                         type = "flow",

@@ -119,7 +119,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                         type = "flow",
                         direction = "horizontal",
                         children = {
-                            {type = "label", caption = caption},
+                            {type = "label", caption = caption, style="frame_title"},
                             {
                                 type = "empty-widget",
                                 style = "flib_titlebar_drag_handle",

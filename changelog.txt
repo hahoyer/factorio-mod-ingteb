@@ -1,11 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.4
-Date: 2021-01-16
+Date: 2021-01-17
   Changes:
     - Remindertask: show requestet amount as tooltip 
     - [tech] event handling allows more than one registration for any event
     - [tech] localisation service from flib implemented
     - Descriptions provided if available
+    - Filter button for selector
   Bugfixes:
     - fixing crash when loading save file after settings changed
     - fixing only positive integers are allowed at select reminder count

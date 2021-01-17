@@ -151,7 +151,17 @@ data:extend{{type = "font", name = "ingteb-font24", from = "default", size = 24}
 
 data:extend{{type = "font", name = "ingteb-font32", from = "default", size = 32}}
 
-data.raw["gui-style"].default["ingteb-big-tab"] = {type = "tab_style", font = "ingteb-font32"}
+data.raw["gui-style"].default["ingteb-big-tab"] = {
+    type = "tab_style", font = "ingteb-font32",
+}
+
+data.raw["gui-style"].default["ingteb-big-tab-disabled"] = {
+    type = "tab_style", font = "ingteb-font32",
+    default_graphical_set =
+    {
+      base = {position = {208, 17}, corner_size = 8},
+    },
+}
 
 data.raw["gui-style"].default["ingteb-medium-tab"] =
     {type = "tab_style", font = "ingteb-font18", size = 40}
