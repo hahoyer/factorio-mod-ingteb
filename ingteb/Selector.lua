@@ -60,7 +60,7 @@ end
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     local current = self.Player.gui.screen[self.class.name]
-    assert(release or current == self.Current)
+    assert(current == self.Current)
 end
 
 function Class:OnGuiEvent(event)
@@ -74,11 +74,11 @@ function Class:OnGuiEvent(event)
         self.Filter = nil
         self:Close()
         if event.button == defines.mouse_button_type.left then
-            self.Parent:PresentTargetByCommonKey(commonKey)
+            self.Parent:PresentTargetByCommonKey(commonKey, message.module)
         elseif event.button == defines.mouse_button_type.right then
             self.Parent:SelectRemindorByCommonKey(commonKey, location)
         else
-            assert(release)
+            assert()
         end
     elseif message.action == "Search" then
         if self.Filter then
@@ -93,12 +93,12 @@ function Class:OnGuiEvent(event)
         self:Close()
         self:Open(self.Targets)
     else
-        assert(release)
+        assert()
     end
 end
 
 function Class:OnSettingsChanged(event)
-    -- assert(release)   
+    -- assert()   
 end
 
 function Class:GetGui()

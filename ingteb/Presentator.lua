@@ -114,7 +114,11 @@ local function GetWorkersPanel(workers, columnCount)
         function(worker)
 
             if position == 0 then
-                workersPanelData:Append{type = "sprite", sprite = "utility/change_recipe"}
+                workersPanelData:Append{
+                    type = "sprite",
+                    sprite = "utility/change_recipe",
+                    tooltip = {"ingteb-utility.workers-for-recipes"},
+                }
             end
             if lines == 1 and position == 0 then
                 workersPanelData:AppendMany(Spritor:GetTiles(dummyColumnsLeft))
@@ -155,7 +159,7 @@ local function GetTechnologyEffectsData(target)
 
     end
 
-    assert(release or effects[1].class == Recipe or effects[1].class == Bonus)
+    assert(effects[1].class == Recipe or effects[1].class == Bonus)
 
     local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Maximum()
     local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Maximum()
@@ -329,7 +333,7 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
 end
 
 function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
-    assert(release or type(category) == "string")
+    assert(type(category) == "string")
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
 
@@ -352,10 +356,10 @@ end
 function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     if not target or not target:Any() then return {} end
     local sampleCategogy = target:Top()
-    assert(release or type(sampleCategogy.Key) == "string")
+    assert(type(sampleCategogy.Key) == "string")
     local sampleClient = sampleCategogy.Value[1]
     assert(
-        release or sampleClient.class == Recipe --
+        sampleClient.class == Recipe --
         or sampleClient.class == MiningRecipe --
         or sampleClient.class == Technology --
     )
@@ -376,7 +380,7 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
         GetContentPanel(
             headerSprites, tooltip, target:Select(
                 function(recipes, category)
-                    assert(release or type(category) == "string")
+                    assert(type(category) == "string")
                     return self:GetCraftingGroupPanel(recipes, category, inCount, outCount)
                 end
             ) --
@@ -481,9 +485,9 @@ local function GetTechnologyList(target)
     return result
 end
 
-local function GetTechnologiesPanel(target, headerSprites, isPrerequisites)
+local function GetTechnologiesExtendedPanel(target, headerSprites, isPrerequisites, tooltip)
     if not target or not target:Any() then return {} end
-    assert(release or target:Top().class == Technology)
+    assert(target:Top().class == Technology)
 
     local targetExtendend = Extend(
         target, function(technology)
@@ -498,13 +502,22 @@ local function GetTechnologiesPanel(target, headerSprites, isPrerequisites)
 
     return {
         GetContentPanel(
-            headerSprites, isPrerequisites and "Techonlogies required for this technology"
-                or "Techonlogies this technology enables", Array:new{
+            headerSprites, tooltip, Array:new{
                 GetTechnologyList(target),
                 {{type = "line", direction = "horizontal"}},
                 GetTechnologyList(targetExtendend),
             }:ConcatMany()
         ),
+    }
+
+end
+
+local function GetTechnologiesPanel(target, headerSprites, tooltip)
+    if not target or not target:Any() then return {} end
+    assert(target:Top().class == Technology)
+
+    return {
+        GetContentPanel(headerSprites, tooltip, Array:new{GetTechnologyList(target)}:ConcatMany()),
     }
 
 end
@@ -576,18 +589,14 @@ end
 function Class:GetGui(target)
     target:SortAll()
     assert(
-        release or not target.RecipeList or not next(target.RecipeList)
-            or type(next(target.RecipeList)) == "string"
-    )
-    assert(
-        release or not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy))
+        not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
             == "string"
     )
+    assert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
     assert(
 
-       
-            release or not target.CreatedBy or not next(target.CreatedBy)
-                or type(next(target.CreatedBy)) == "string"
+        not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy))
+            == "string"
     )
 
     local columnCount --
@@ -598,6 +607,7 @@ function Class:GetGui(target)
           + (target.Enables and target.Enables:Any() and 1 or 0) --
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
+          + (target.ResearchingTechnologies and target.ResearchingTechnologies:Any() and 1 or 0) --
 
     local children
     if columnCount == 0 then
@@ -630,30 +640,42 @@ function Class:GetGui(target)
                         name = "frame",
                         children = Array:new{
                             GetTechnologiesPanel(
+                                target.ResearchingTechnologies,
+                                    target.RichTextName
+                                        .. "[img=utility/go_to_arrow][img=entity/lab]",
+                                    {"ingteb-utility.researching-technologies-for-item"}
+                            ),
+                            GetTechnologiesExtendedPanel(
                                 target.Prerequisites,
                                     "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                                        .. target.RichTextName, true
+                                        .. target.RichTextName, true,
+                                    {"ingteb-utility.prerequisites-for-technology"}
+
                             ),
                             GetTechnologyEffectsPanel(target),
                             GetRecipePanel(target),
-                            GetTechnologiesPanel(
+                            GetTechnologiesExtendedPanel(
                                 target.Enables, target.RichTextName
-                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false
+                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false,
+                                    {"ingteb-utility.technologies-enabled"}
+
                             ),
                             self:GetCraftingGroupsPanel(
                                 target.RecipeList,
                                     target.RichTextName .. "[img=utility/change_recipe]",
-                                    "Recipes this machine can handle"
+                                    {"ingteb-utility.recipes-for-worker"}
                             ),
                             self:GetCraftingGroupsPanel(
                                 target.CreatedBy,
                                     "[img=utility/missing_icon][img=utility/go_to_arrow]"
-                                        .. target.RichTextName, "Recipes that produces this item."
+                                        .. target.RichTextName,
+                                    {"ingteb-utility.creating-recipes-for-item"}
+
                             ),
                             self:GetCraftingGroupsPanel(
                                 target.UsedBy, target.RichTextName
                                     .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
-                                    "Recipes this item uses a ingredience."
+                                    {"ingteb-utility.consuming-recipes-for-item"}
                             ),
                         }:ConcatMany(),
 
@@ -678,12 +700,12 @@ function Class:OnGuiEvent(event)
     elseif message.subModule == "Spritor" then
         Spritor:OnGuiEvent(event)
     else
-        assert(release)
+        assert()
     end
 end
 
 function Class:OnSettingsChanged(event)
-    -- assert(release)   
+    -- assert()   
 end
 
 function Class:RestoreFromSave(parent)

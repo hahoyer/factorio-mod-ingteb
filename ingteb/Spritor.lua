@@ -44,7 +44,7 @@ function Class:OnGuiEvent(event)
     if message.action == "Click" then
         return self:OnGuiClick(event)
     else
-        assert(release)
+        assert()
         local commonKey = event.element.name
         self:Close()
         self.Parent:PresentTargetByCommonKey(commonKey)
@@ -84,7 +84,7 @@ function Class:OnGuiClick(event)
     end
 
     if action.Presenting then
-        local result = self.Parent.Parent:PresentTarget(action.Presenting)
+        local result = self.Parent.Parent:PresentTarget(action.Presenting, message.module)
         return result
     end
 end

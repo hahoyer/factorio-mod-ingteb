@@ -55,6 +55,7 @@ end
 
 function Class:PresentCurrentTargetFromHistory()
     local target = self.Database:GetProxyFromCommonKey(self.Global.History.Current)
+    self.Modules.Presentator:Close()
     self.Modules.Presentator:Open(target)
 end
 
@@ -75,22 +76,29 @@ function Class:OnPresentatorBackClick(event)
     self:PresentCurrentTargetFromHistory()
 end
 
-function Class:PresentTarget(target)
+function Class:PresentTarget(target, requestor)
     if self.CurrentFloating then self.CurrentFloating:Close() end
     self.Modules.Presentator:Open(target)
-    self.Global.History:ResetTo(target.CommonKey)
+    if requestor == "Presentator" then
+        self.Global.History:AdvanceWith(target.CommonKey)
+    elseif requestor == "Selector" then
+        self.Global.History:ResetTo(target.CommonKey)
+    else
+        assert()
+    end
+
 end
 
-function Class:PresentTargetByCommonKey(targetKey)
+function Class:PresentTargetByCommonKey(targetKey, requestor)
     local target = self.Database:GetProxyFromCommonKey(targetKey)
-    self:PresentTarget(target)
+    self:PresentTarget(target, requestor)
 end
 
 function Class:ToggleFloating()
     if self.CurrentFloating then return self.CurrentFloating:Close() end
     local targets = self.Modules.Gui:FindTargets()
     if #targets == 1 then
-        self:PresentTarget(targets[1])
+        self:PresentTarget(targets[1], "Selector")
     else
         self.Modules.Selector:Open(targets)
     end
@@ -167,7 +175,7 @@ end
 function Class:OnLoad()
     assert(global.Players)
     for _, player in pairs(global.Players) do
-        assert(release or player.History)
+        assert(player.History)
         History:adopt(player.History, true)
         player.History:Log("OnLoad")
     end
@@ -281,13 +289,12 @@ function Class:new()
                 if message.module then
                     self.Modules[message.module]:OnGuiEvent(event)
                 else
-                    assert(release)
+                    assert()
                 end
             elseif event.element and event.element.tags then
             else
                 assert(
-                    release --
-                    or event.name == defines.events.on_gui_opened --
+                    event.name == defines.events.on_gui_opened --
                     or event.name == defines.events.on_gui_selected_tab_changed --
                     or event.name == defines.events.on_gui_closed --
                 )
@@ -301,7 +308,7 @@ end
 Class:new()
 
 function Class:OnGuiEvent(event)
-    assert(release)
+    assert()
     self.Player = game.players[event.player_index]
     local message = gui.read_action(event)
     if message then
@@ -311,10 +318,10 @@ function Class:OnGuiEvent(event)
                     self.Global, Gui:GetObject(self.Global, event.element.name)
                 )
             else
-                assert(release)
+                assert()
             end
         else
-            assert(release)
+            assert()
         end
     end
 end

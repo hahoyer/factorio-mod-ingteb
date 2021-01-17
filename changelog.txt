@@ -1,7 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.6
-Date: 2021-01-17
+Date: 2021-01-18
   Changes:
+    - localisation of column headers of presentator
+  Bugfixes:
+    - fixing freeze when clicking on research potion in technology panel
+    - fixing history buttons do not work anymore
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.5
 Date: 2021-01-17
