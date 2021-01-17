@@ -149,9 +149,7 @@ function Class:OnBackClicked(event)
 end
 
 function Class:OnTranslationBatch(event)
-    if not global.__flib or not global.__flib.translation then 
-        translation.init() 
-    end
+    if not global.__flib or not global.__flib.translation then translation.init() end
     -- if translation.translating_players_count() == 0 then return false end
     translation.iterate_batch(event)
 end
@@ -222,6 +220,7 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
+    translation.init()
     global.Players = {}
     for index, player in pairs(game.players) do
         self.Player = player

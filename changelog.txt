@@ -6,6 +6,7 @@ Date: 2021-01-17
     - default settings for reminder tasks are set to all off
   Bugfixes:
     - fixing crash when changing inventory while having tasks and remindor is hidden
+    - fixing crash when creating a new game
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.4
 Date: 2021-01-17
