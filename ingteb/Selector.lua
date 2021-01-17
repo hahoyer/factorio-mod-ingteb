@@ -43,8 +43,7 @@ function Class:Open(targets)
                     actions = {on_text_changed = {module = self.class.name, action = "Update"}},
                     ref = {"Filter"},
                 },
-                self.MissingSearchTexts and {type = "empty-widget"} --
-                or {
+                {
                     type = "sprite-button",
                     sprite = "utility/search_white",
                     style = "frame_action_button",
@@ -54,7 +53,6 @@ function Class:Open(targets)
             },
         }
     )
-    self.MissingSearchTexts = nil
     self.Current = result.Main
     if result.Filter then result.Filter.focus() end
 end
@@ -104,13 +102,14 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:GetGui()
+    local lastValue = self.MissingSearchTexts
+    self.MissingSearchTexts = nil
     local result = self:GetGuiInnerVariant()
 
-    if self.MissingSearchTexts then
+    if self.MissingSearchTexts and lastValue ~= self.MissingSearchTexts then
         self.Parent.Player.print(
             {"ingteb-utility.missing-text-for-search-1", self.MissingSearchTexts}
         )
-        self.Parent.Player.print({"ingteb-utility.missing-text-for-search-2"})
         self.Parent.Player.print({"ingteb-utility.missing-text-for-search-3"})
         log("self.MissingSearchTexts = " .. self.MissingSearchTexts)
         log("=============================================================")
@@ -137,7 +136,8 @@ end
 
 function Class:IsVisible(target)
     if self.Filter then
-        return target.SearchText:lower():find(self.Filter:lower())
+        local targetText = target.SearchText or target.Name
+        return targetText:lower():find(self.Filter:lower())
     else
         if not target.SearchText then
             log(target.CommonKey)
