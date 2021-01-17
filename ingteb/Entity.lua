@@ -126,6 +126,11 @@ function Entity:new(name, prototype, database)
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
 
+    if self.IsResource then
+        self.TypeStringForLocalisation = "ingteb-utility.title-resource"
+    else
+        self.TypeStringForLocalisation = "ingteb-utility.title-entity"
+    end
     return self
 
 end

@@ -67,7 +67,7 @@ end
 function Category:new(name, prototype, database)
     assert(release or name)
 
-    local _, _, domain, category = name:find("^(.+)%.(.*)$")
+    local _, _, domain, category = name:find("^(.-)%.(.*)$")
 
     local p = GetPrototype(domain, category)
     if not p then __DebugAdapter.breakpoint() end
@@ -75,6 +75,7 @@ function Category:new(name, prototype, database)
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName
+    self.TypeForLocalisation = "item-group"
     return self
 
 end

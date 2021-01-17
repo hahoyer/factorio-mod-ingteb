@@ -46,6 +46,7 @@ function MiningRecipe:new(name, prototype, database)
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
     self.IsRecipe = true
+    self.TypeStringForLocalisation = "ingteb-utility.title-mining-recipe"
 
     local configuration = self.Prototype.mineable_properties
     assert(release or configuration and configuration.minable)

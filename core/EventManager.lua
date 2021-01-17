@@ -50,24 +50,32 @@ function EventManager:Execute(eventId, eventName)
     return function(...)
         local handlers = self.Handlers[eventName]
         for identifier, handler in pairs(handlers) do
+            instance:Enter(eventName, eventId, identifier)
             local result = handler(instance, ...)
+            instance:Leave()
             if result == false then handlers[identifier] = nil end
         end
 
-        if not next(handlers) then
-            local eventRegistrar = events[eventId]
-            if eventRegistrar then
-                eventRegistrar(nil)
-            else
-                events.register(eventId, nil)
-            end
+        instance:RemoveIfEmpty(handlers, eventId)
+    end
+end
+
+function EventManager:RemoveIfEmpty(handlers, eventId)
+    if not next(handlers) then
+        local eventRegistrar = events[eventId]
+        if eventRegistrar then
+            eventRegistrar(nil)
+        else
+            events.register(eventId, nil)
         end
     end
 end
 
-function EventManager:Enter(name, event) self.Active = {name, self.Active} end
+function EventManager:Enter(eventName, eventId, identifier)
+    self.Active = {{eventName, eventId, identifier}, self.Active}
+end
 
-function EventManager:Leave(name) self.Active = self.Active[2] end
+function EventManager:Leave() self.Active = self.Active[2] end
 
 function EventManager:SetHandler(eventId, handler, identifier)
     if not self.Handlers then self.Handlers = {} end
@@ -76,7 +84,7 @@ function EventManager:SetHandler(eventId, handler, identifier)
     local eventName = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
 
     local handlers = self.Handlers[eventName]
-    assert(release or not handlers or identifier ~= "default")
+    assert(release or not handlers or identifier ~= "default") -- handler for event already registered. Use identifier
 
     if not handlers then
         handlers = {}
@@ -91,10 +99,11 @@ function EventManager:SetHandler(eventId, handler, identifier)
         end
     end
 
-    assert(release or not handlers[identifier])
+    assert(release or not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
     handlers[identifier] = handler
 
+    self:RemoveIfEmpty(handlers, eventId)
 end
 
 return EventManager

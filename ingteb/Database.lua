@@ -1,3 +1,4 @@
+local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -102,8 +103,9 @@ end
 
 function Class:GetProxyFromCommonKey(targetKey)
     self:Ensure()
-    local _, _, className, prototypeName = targetKey:find("^(.+)%.(.*)$")
-    return self:GetProxy(className, prototypeName)
+    local _, _, className, prototypeName = targetKey:find("^(.-)%.(.*)$")
+    local result = self:GetProxy(className, prototypeName)
+    return result
 end
 
 function Class:GetProxy(className, name, prototype)
@@ -324,6 +326,24 @@ function Class:CountInHand(itemName)
     local hand = self.Player.cursor_stack
     if hand.valid_for_read and hand.prototype.name == itemName then return hand.count end
     return 0
+end
+
+function Class:OnStringTranslated(event)
+    local names, finished = translation.process_result(event)
+    if names then
+        local result = event.translated and event.result
+        if result then
+            for tag, keys in pairs(names) do
+                for _, key in ipairs(keys) do
+                    local target = self:GetProxyFromCommonKey(key)
+                    target[tag] = result
+                end
+            end
+        end
+    end
+    if finished then
+        -- assert(release) 
+    end
 end
 
 return Class

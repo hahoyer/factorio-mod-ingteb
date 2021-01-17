@@ -1,3 +1,4 @@
+local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -16,10 +17,13 @@ Common.property = {
 
     LocalisedName = {
         get = function(self)
-            return {
-                "gui-text-tags.following-text-" .. (self.TypeForLocalisation or self.SpriteType),
-                self.Prototype.localised_name,
-            }
+            local type = self.TypeStringForLocalisation
+
+            if type then
+                return {"", self.Prototype.localised_name, " (", {type}, ")"}
+            else
+                return self.Prototype.localised_name
+            end
         end,
     },
 
@@ -35,8 +39,13 @@ Common.property = {
         end,
     },
 
-    AdditionalHelp = {get = function(self) return Array:new{} end},
-    HasLocalisedDescription = {get = function() end},
+    AdditionalHelp = {
+        get = function(self)
+            local result = Array:new{}
+            if self.Description then result:Append(self.LocalizedDescription) end
+            return result
+        end,
+    },
 
     SpriteName = {
         cache = true,
@@ -111,6 +120,15 @@ function Common:AssertValid() end
 function Common:SealUp()
     self:SortAll()
     self.CommonKey = self.class.name .. "." .. self.Name
+    translation.add_requests(
+        self.Database.Player.index, {
+            {
+                dictionary = "Description",
+                internal = self.CommonKey,
+                localised = self.LocalizedDescription,
+            },
+        }
+    )
     self:AssertValid()
     self.IsSealed = true
     return self

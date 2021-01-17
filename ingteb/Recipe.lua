@@ -265,10 +265,12 @@ function Recipe:new(name, prototype, database)
     assert(release or self.Prototype.object_name == "LuaRecipePrototype")
 
     self.SpriteType = "recipe"
+    self.TypeStringForLocalisation = "description.recipe"
     self.IsHidden = false
     self.Time = self.Prototype.energy
     self.IsRefreshRequired = {Research = true, MainInventory = true}
     self.IsRecipe = true
+
 
     return self
 

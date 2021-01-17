@@ -148,8 +148,10 @@ function Class:OnBackClicked(event)
     end
 end
 
-function Class:OnTranslationBatch(event) 
-    local tick = event.tick --
+function Class:OnTranslationBatch(event)
+    if not global.__flib or not global.__flib.translation then translation.init() end
+    -- if translation.translating_players_count() == 0 then return false end
+    translation.iterate_batch(event)
 end
 
 function Class:OnTickInitial(event)
@@ -185,6 +187,14 @@ end
 function Class:OnPlayerRemoved(event)
     self.Player = event.player_index
     self.Global.Players[event.player_index] = nil
+
+    if translation.is_translating(event.player_index) then translation.cancel(event.player_index) end
+
+end
+
+function Class:OnStringTranslated(event)
+    self.Player = event.player_index
+    self.Database:OnStringTranslated(event)
 end
 
 function Class:OnInitialisePlayer()
@@ -258,7 +268,7 @@ function Class:new()
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
-
+    self:SetHandler(defines.events.on_string_translated, self.OnStringTranslated)
     gui.hook_events(
         function(event)
             self.Player = event.player_index

@@ -35,6 +35,7 @@ function BoilingRecipe:new(name, prototype, database)
     self.Time = 1
     self.IsRecipe = true
     self.Category = GetCategoryAndRegister(self, "boiling", name)
+    self.TypeStringForLocalisation = "ingteb-utility.title-boiling-recipe"
 
     local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"}
     input.Source = {Recipe = self, ProductIndex = 1}

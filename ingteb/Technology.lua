@@ -288,6 +288,7 @@ function Technology:new(name, prototype, database)
     self.SpriteType = "technology"
     self.Time = self.Prototype.research_unit_energy
     self.IsRefreshRequired = {Research = true}
+    self.TypeStringForLocalisation = "ingteb-utility.title-technology"
 
     return self
 
