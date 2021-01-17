@@ -148,6 +148,7 @@ function Class:Close()
     if not self.Current then return end
     self.Current.destroy()
     self.Current = nil
+    self.Tasks = nil
     Spritor:Close()
 end
 
@@ -193,14 +194,16 @@ function Class:Refresh()
         self.Global.Remindor.List = self.Global.Remindor.List:Where(
             function(task) return task.IsRelevant end
         )
-        self.Global.Remindor.List:Select(
-            function(task, index)
-                task:CreatePanel(
-                    self.Tasks, task.CommonKey, data, index == 1,
-                        index == #self.Global.Remindor.List
-                )
-            end
-        )
+        if self.Current then
+            self.Global.Remindor.List:Select(
+                function(task, index)
+                    task:CreatePanel(
+                        self.Tasks, task.CommonKey, data, index == 1,
+                            index == #self.Global.Remindor.List
+                    )
+                end
+            )
+        end
         self.Global.Remindor.List:Select(function(task) task:AutomaticActions() end)
     else
         self.Global.Remindor.List = Array:new{}
@@ -295,9 +298,9 @@ function Class:AddRemindorTask(selection)
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
     local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
-    if index then 
-        task = self.Global.Remindor.List[index] 
-        self.Global.Remindor.List:Remove(index) 
+    if index then
+        task = self.Global.Remindor.List[index]
+        self.Global.Remindor.List:Remove(index)
         task:AddSelection(selection)
     else
         task = Task:new(selection, self)

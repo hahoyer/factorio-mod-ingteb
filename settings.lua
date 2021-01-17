@@ -29,7 +29,7 @@ data:extend{
         type = "bool-setting",
         name = "ingteb_reminder-task-autoresearch",
         setting_type = "runtime-per-user",
-		default_value = true,
+		default_value = false,
         order = "d1",
     },
     {
@@ -42,14 +42,14 @@ data:extend{
             "5",
             "all",
 		},
-		default_value = "1",
+		default_value = "off",
         order = "d2",
     },
     {
         type = "bool-setting",
         name = "ingteb_reminder-task-remove-when-fulfilled",
         setting_type = "runtime-per-user",
-		default_value = true,
+		default_value = false,
         order = "d3",
     },
 }
