@@ -29,21 +29,22 @@ local Class = class:new(
     }
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
-
 function Class:Open(targets)
     self.Targets = Array:new(targets)
+    local data = self:GetGui()
     local result = Helper.CreateFloatingFrameWithContent(
-        self, self:GetGui(), {"ingteb-utility.selector"}, {
+        self, data, {"ingteb-utility.selector"}, {
             buttons = {
-                self.Filter and {
+                self.Filter == nil and {type = "empty-widget"} --
+                or {
                     type = "textfield",
                     text = self.Filter,
                     style_mods = {maximal_width = 100, minimal_height = 28},
                     actions = {on_text_changed = {module = self.class.name, action = "Update"}},
                     ref = {"Filter"},
-                } or {type = "empty-widget"},
-                {
+                },
+                self.MissingSearchTexts and {type = "empty-widget"} --
+                or {
                     type = "sprite-button",
                     sprite = "utility/search_white",
                     style = "frame_action_button",
@@ -53,6 +54,7 @@ function Class:Open(targets)
             },
         }
     )
+    self.MissingSearchTexts = nil
     self.Current = result.Main
     if result.Filter then result.Filter.focus() end
 end
@@ -102,6 +104,23 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:GetGui()
+    local result = self:GetGuiInnerVariant()
+
+    if self.MissingSearchTexts then
+        self.Parent.Player.print(
+            {"ingteb-utility.missing-text-for-search-1", self.MissingSearchTexts}
+        )
+        self.Parent.Player.print({"ingteb-utility.missing-text-for-search-2"})
+        self.Parent.Player.print({"ingteb-utility.missing-text-for-search-3"})
+        log("self.MissingSearchTexts = " .. self.MissingSearchTexts)
+        log("=============================================================")
+    end
+
+    return result
+end
+
+function Class:GetGuiInnerVariant()
+
     if self.Targets:Count() > 0 then
         return self:GetTargetsGui()
     else
@@ -118,8 +137,12 @@ end
 
 function Class:IsVisible(target)
     if self.Filter then
-        return target.Name:find(self.Filter)
+        return target.SearchText:lower():find(self.Filter:lower())
     else
+        if not target.SearchText then
+            log(target.CommonKey)
+            self.MissingSearchTexts = (self.MissingSearchTexts or 0) + 1
+        end
         return true
     end
 end
@@ -173,11 +196,20 @@ function SelectorCache:EnsureGroups(database)
         local targets = {Item = game.item_prototypes, Fluid = game.fluid_prototypes}
         for type, domain in pairs(targets) do
             for name, goods in pairs(domain) do
-                local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
-                local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
-                subgroup:Append(database:GetProxy(type, name, goods))
-                if maximalColumns < subgroup:Count() then
-                    maximalColumns = subgroup:Count()
+                local isHidden
+                if type == "Item" then
+                    isHidden = goods.flags and goods.flags.hidden
+                elseif type == "Fluid" then
+                    isHidden = goods.hidden
+                end
+
+                if not isHidden then
+                    local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
+                    local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
+                    subgroup:Append(database:GetProxy(type, name, goods))
+                    if maximalColumns < subgroup:Count() then
+                        maximalColumns = subgroup:Count()
+                    end
                 end
             end
         end
@@ -242,7 +274,7 @@ function Class:GetAllItemsGui()
                                         type = "flow",
                                         direction = "vertical",
                                         style = "ingteb-flow-fill",
-                                        children = self:GetSubGroupPanel(group),
+                                        children = subGroup,
                                     },
                                 },
                             },
@@ -257,5 +289,9 @@ end
 function Class:ShowSelectionForAllItems()
     return self.Frame.add {type = "choose-elem-button", elem_type = "signal"}
 end
+
+function Class:EnsureData() SelectorCache:EnsureGroups(self.Parent.Database) end
+
+function Class:new(parent) return self:adopt{Parent = parent} end
 
 return Class

@@ -120,12 +120,19 @@ function Common:AssertValid() end
 function Common:SealUp()
     self:SortAll()
     self.CommonKey = self.class.name .. "." .. self.Name
+    
+    
     translation.add_requests(
         self.Database.Player.index, {
             {
                 dictionary = "Description",
                 internal = self.CommonKey,
                 localised = self.LocalizedDescription,
+            },
+            {
+                dictionary = "SearchText",
+                internal = self.CommonKey,
+                localised = self.Prototype.localised_name,
             },
         }
     )

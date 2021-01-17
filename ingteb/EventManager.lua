@@ -149,7 +149,9 @@ function Class:OnBackClicked(event)
 end
 
 function Class:OnTranslationBatch(event)
-    if not global.__flib or not global.__flib.translation then translation.init() end
+    if not global.__flib or not global.__flib.translation then 
+        translation.init() 
+    end
     -- if translation.translating_players_count() == 0 then return false end
     translation.iterate_batch(event)
 end
@@ -159,6 +161,7 @@ function Class:OnTickInitial(event)
         self.Player = player
         self:EnsureMainButton()
         if event.tick > 0 then self:RestoreFromSave() end
+        self.Modules.Selector:EnsureData()
     end
     return false
 end
@@ -211,7 +214,6 @@ end
 
 function Class:OnSettingsChanged(event)
     self.Player = event.player_index
-    translation.init()
     self:RestoreFromSave()
     self.Modules.Selector:OnSettingsChanged(event)
     self.Modules.Presentator:OnSettingsChanged(event)
