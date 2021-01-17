@@ -21,16 +21,25 @@ Goods.property = {
 
     OriginalUsedBy = {
         get = function(self)
-            local names = self.RecipesForItem.UsedBy
-            if not names then return Dictionary:new{} end
+            local result = Dictionary:new{}
 
-            return names --
-            :Select(
-                function(value)
-                    return value --
-                    :Select(function(value) return self.Database:GetRecipe(value) end)
-                end
-            )
+            local names = self.RecipesForItem.UsedBy
+            if names then
+
+                result = names --
+                :Select(
+                    function(value)
+                        return value --
+                        :Select(
+                            function(value)
+                                return self.Database:GetRecipe(value)
+                            end
+                        )
+                    end
+                )
+            end
+
+            return result
         end,
     },
 
@@ -105,7 +114,7 @@ Goods.property = {
             :Aggregate(
                 function(c, n)
                     if not c then return n end
-                    assert(release)
+                    assert()
                 end
             )
         end,

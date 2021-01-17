@@ -27,7 +27,7 @@ Entity.property = {
         get = function(self)
             local place = self.Prototype.items_to_place_this
             if not place or #place == 0 then return end
-            assert(release or #place == 1)
+            assert(#place == 1)
             return self.Database:GetItem(place[1].name)
         end,
     },
@@ -64,7 +64,7 @@ Entity.property = {
                     elseif domain == "boiling" then
                         return self.Prototype.type == "boiler"
                     else
-                        assert(release)
+                        assert()
                     end
                     return list and list[category.SubName]
                 end
@@ -101,7 +101,7 @@ Entity.property = {
     Required = {
         get = function(self)
             if self.Item then return self.Item.Required end
-            if self.Prototype.name ~= "character" then assert(release) end
+            if self.Prototype.name ~= "character" then assert() end
             return RequiredThings:new()
         end,
     },
@@ -116,7 +116,7 @@ function Entity:new(name, prototype, database)
 
     if self.Name == "character" then self.TypeSubOrder = -1 end
 
-    assert(release or self.Prototype.object_name == "LuaEntityPrototype")
+    assert(self.Prototype.object_name == "LuaEntityPrototype")
 
     self.NumberOnSprite --
     = self.Prototype.mining_speed --

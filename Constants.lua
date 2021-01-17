@@ -11,8 +11,6 @@ local result = {
     AutoCraftingVariants = {"off", "1", "5", "all"},
 }
 
-release = not (__DebugAdapter and __DebugAdapter.instrument)
-
 indent = ""
 
 function AddIndent()
@@ -20,5 +18,9 @@ function AddIndent()
     indent = indent .. "    "
     return result
 end
+
+function ConditionalBreak(condition) if condition then __DebugAdapter.breakpoint(2) end end
+
+if not (__DebugAdapter and __DebugAdapter.instrument) then function assert(condition) end end
 
 return result

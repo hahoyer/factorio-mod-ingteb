@@ -156,16 +156,16 @@ function StackOfGoods:Clone()
 end
 
 function StackOfGoods:new(goods, amounts, database)
-    assert(release or goods)
+    assert(goods)
     local self = self:adopt(self.base:new(goods.Prototype, database))
     assert(
-        release or self.Prototype.object_name == "LuaItemPrototype" --
+        self.Prototype.object_name == "LuaItemPrototype" --
         or self.Prototype.object_name == "LuaFluidPrototype"
     )
 
     self.Goods = goods
     self.Amounts = amounts
-    assert(release or not amounts or amounts.value or amounts.probability)
+    assert(not amounts or amounts.value or amounts.probability)
     self.SpriteType = goods.SpriteType
 
     return self

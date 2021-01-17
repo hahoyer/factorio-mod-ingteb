@@ -22,7 +22,7 @@ local function GetField(self, key, classInstance, base)
     end
 end
 
---if __DebugAdapter then __DebugAdapter.stepIgnore(GetField) end
+-- if __DebugAdapter then __DebugAdapter.stepIgnore(GetField) end
 
 --- Defines a class
 --- @param name string the name of the class
@@ -30,8 +30,8 @@ end
 --- @param properties table initial properties - optional
 --- @return table class new class 
 function class:new(name, base, properties)
-    assert(release or type(name) == "string")
-    if base then assert(release or base.class == class) end
+    assert(type(name) == "string")
+    if base then assert(base.class == class) end
 
     local classInstance = {
         name = name,
@@ -83,7 +83,7 @@ function class:new(name, base, properties)
                     instance.inherited[self.name][key] = inherited
                 end
                 if value.cache then
-                    assert(release or not value.set)
+                    assert(not value.set)
                     class.addCachedProperty(instance, self, key, value.get)
                 end
             end

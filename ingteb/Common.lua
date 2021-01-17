@@ -120,8 +120,7 @@ function Common:AssertValid() end
 function Common:SealUp()
     self:SortAll()
     self.CommonKey = self.class.name .. "." .. self.Name
-    
-    
+
     translation.add_requests(
         self.Database.Player.index, {
             {
@@ -152,8 +151,8 @@ function Common:GetAction(event)
 end
 
 function Common:new(prototype, database)
-    assert(release or prototype)
-    assert(release or database)
+    assert(prototype)
+    assert(database)
 
     local self = self:adopt{Prototype = prototype, Database = database}
     self.IsSealed = false

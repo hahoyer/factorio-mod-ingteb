@@ -24,12 +24,12 @@ local Technology = class:new(
         },
 
         Ingredients = {
+            cache = true,
             get = function(self) --
                 return Array:new(self.Prototype.research_unit_ingredients) --
                 :Select(
                     function(tag, index)
                         local result = self.Database:GetStackOfGoods(tag)
-                        result.Goods.UsedBy:AppendForKey(" researching", self)
                         result.Source = {Technology = self, IngredientIndex = index}
                         return result
                     end
@@ -39,6 +39,7 @@ local Technology = class:new(
         },
 
         Input = {
+            cache = true,
             get = function(self) --
                 return self.Ingredients:Select(
                     function(stack)

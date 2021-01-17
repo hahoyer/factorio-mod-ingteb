@@ -18,7 +18,7 @@ local function GetPrototype(domain, category)
     elseif domain == "boiling" then
         return game.fluid_prototypes[category]
     else
-        assert(release)
+        assert()
     end
 end
 
@@ -45,7 +45,7 @@ Category.property = {
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(recipeName)
                     else
-                        assert(release)
+                        assert()
                     end
                 end
             ) --
@@ -61,11 +61,10 @@ function Category:SortAll()
     self.Workers = result
 end
 
-function Category:AssertValid()
-end
+function Category:AssertValid() end
 
 function Category:new(name, prototype, database)
-    assert(release or name)
+    assert(name)
 
     local _, _, domain, category = name:find("^(.-)%.(.*)$")
 

@@ -223,7 +223,7 @@ function Class:GetValueOfControl(element)
     elseif element.type == "drop-down" then
         return Constants.AutoCraftingVariants[element.selected_index]
     else
-        assert(release)
+        assert()
     end
 end
 
@@ -231,7 +231,7 @@ function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     local key = message.key or event.element.parent.name
     local taskIndex = message.target == "Task" and self:GetTaskIndex(key) or nil
-    assert(release or message.target ~= "Task" or taskIndex)
+    assert(message.target ~= "Task" or taskIndex)
     local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
 
     if message.action == "Update" then
@@ -280,7 +280,7 @@ function Class:OnGuiEvent(event)
             self.Global.Remindor.List:Remove(taskIndex)
             self.Global.Remindor.List:InsertAt(newIndex, target)
         else
-            assert(release)
+            assert()
             return
         end
         self:Reopen()
@@ -338,7 +338,7 @@ function Class:OnResearchChanged(event)
 end
 
 function Class:RefreshMainInventoryChanged()
-    assert(release)
+    assert()
     self:Refresh()
 end
 

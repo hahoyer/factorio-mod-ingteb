@@ -13,7 +13,7 @@ function Fluid:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.fluid_prototypes[name], database))
     self.SpriteType = "fluid"
 
-    assert(release or self.Prototype.object_name == "LuaFluidPrototype")
+    assert(self.Prototype.object_name == "LuaFluidPrototype")
 
     return self
 

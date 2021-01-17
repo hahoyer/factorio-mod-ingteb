@@ -8,7 +8,7 @@ local class = require("core.class")
 
 local FuelCategory = class:new("FuelCategory", Common)
 
-FuelCategory.property= {
+FuelCategory.property = {
     Fuels = {
         cache = true,
         get = function(self)
@@ -19,11 +19,13 @@ FuelCategory.property= {
 }
 
 function FuelCategory:new(name, prototype, database)
-    assert(release or name)
+    assert(name)
 
-    local self = self:adopt(self.base:new(prototype or game.fuel_category_prototypes[name], database))
-    
-    assert(release or self.Prototype.object_name == "LuaFuelCategoryPrototype")
+    local self = self:adopt(
+        self.base:new(prototype or game.fuel_category_prototypes[name], database)
+    )
+
+    assert(self.Prototype.object_name == "LuaFuelCategoryPrototype")
 
     self.Workers = Array:new()
     self.SpriteType = "fuel-category"

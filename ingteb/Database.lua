@@ -59,6 +59,7 @@ function Class:Ensure()
 
     self.TechnologiesForRecipe = {}
     self.EnabledTechnologiesForTechnology = {}
+    self.ResearchingTechnologyForItems = {}
     for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
 
     self.ItemsForFuelCategory = {}
@@ -113,7 +114,7 @@ function Class:GetProxy(className, name, prototype)
     local key = name or prototype.name
 
     local result = data[key]
-    assert(release or result ~= "pending")
+    assert(result ~= "pending")
 
     if not result then
         data[key] = "pending"
@@ -223,6 +224,11 @@ function Class:ScanTechnology(prototype)
         EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()):Append(prototype)
     end
 
+    for _, item in pairs(prototype.research_unit_ingredients or {}) do
+        assert(item.type == "item")
+        EnsureKey(self.ResearchingTechnologyForItems, item.name, Array:new()):Append(prototype)
+    end
+
 end
 
 function Class:ScanItem(prototype)
@@ -277,7 +283,7 @@ function Class:Get(target)
         elseif target.type == "fluid" then
             className = "Fluid"
         else
-            assert(release)
+            assert()
         end
         Name = target.name
     else
@@ -286,8 +292,8 @@ function Class:Get(target)
         Prototype = target.Prototype
     end
     self:Ensure()
-    assert(release or className)
-    assert(release or Name or Prototype)
+    assert(className)
+    assert(Name or Prototype)
     return self:GetProxy(className, Name, Prototype)
 end
 
@@ -307,7 +313,7 @@ end
 function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
 
 function Class:RefreshTechnology(target)
-    assert(release or target.object_name == "LuaTechnology")
+    assert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
 end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
@@ -342,7 +348,7 @@ function Class:OnStringTranslated(event)
         end
     end
     if finished then
-        -- assert(release) 
+        -- assert() 
     end
 end
 

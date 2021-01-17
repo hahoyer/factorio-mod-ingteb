@@ -27,13 +27,13 @@ EventManager.property = {
                 elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
                     UI.PlayerIndex = value.index
                 else
-                    assert(release)
+                    assert()
                 end
 
                 if game then UI.Player = game.players[UI.PlayerIndex] end
 
             else
-                assert(release)
+                assert()
                 UI.Player = nil
                 UI.PlayerIndex = nil
             end
@@ -84,7 +84,7 @@ function EventManager:SetHandler(eventId, handler, identifier)
     local eventName = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
 
     local handlers = self.Handlers[eventName]
-    assert(release or not handlers or identifier ~= "default") -- handler for event already registered. Use identifier
+    assert(not handlers or identifier ~= "default") -- handler for event already registered. Use identifier
 
     if not handlers then
         handlers = {}
@@ -99,7 +99,7 @@ function EventManager:SetHandler(eventId, handler, identifier)
         end
     end
 
-    assert(release or not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
+    assert(not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
     handlers[identifier] = handler
 

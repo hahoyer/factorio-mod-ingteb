@@ -35,6 +35,19 @@ Item.property = {
         end,
     },
 
+    ResearchingTechnologies = {
+        cache = true,
+        get = function(self)
+            local list = self.Database.ResearchingTechnologyForItems[self.Prototype.name]
+            if not list then return end
+            return list:Select(
+                function(prototype)
+                    return self.Database:GetTechnology(nil, prototype)
+                end
+            )
+        end,
+    },
+
     AdditionalHelp = {
         get = function(self)
             local result = self.inherited.Item.AdditionalHelp.get(self) --
@@ -64,7 +77,10 @@ Item.property = {
 
     PlayerCounts = {
         get = function(self)
-            local result = {Inventory = self.Database.Player.get_item_count(self.Name), Crafting = 0}
+            local result = {
+                Inventory = self.Database.Player.get_item_count(self.Name),
+                Crafting = 0,
+            }
             local recipes = self.CreatedBy["crafting.crafting"]
             if recipes then
                 recipes --
@@ -96,15 +112,19 @@ Item.property = {
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
-                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
-                    Action = function(self,event)
+                    IsAvailable = function(self)
+                        return counts and counts.Crafting > 0
+                    end,
+                    Action = function(self, event)
                         return {HandCrafting = {count = 1, recipe = counts.Recipe.Name}}
                     end,
                 },
                 {
                     UICode = "A-- r",
                     HelpText = "controls.craft-5",
-                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
+                    IsAvailable = function(self)
+                        return counts and counts.Crafting > 0
+                    end,
                     Action = function(self)
                         return {HandCrafting = {count = 5, recipe = counts.Recipe.Name}}
                     end,
@@ -112,8 +132,10 @@ Item.property = {
                 {
                     UICode = "--S l",
                     HelpText = "controls.craft-all",
-                    IsAvailable = function(self) return counts and counts.Crafting > 0 end,
-                    Action = function(self,event)
+                    IsAvailable = function(self)
+                        return counts and counts.Crafting > 0
+                    end,
+                    Action = function(self, event)
                         local amount = game.players[event.player_index].get_craftable_count(
                             counts.Recipe.Name
                         )
@@ -131,7 +153,7 @@ function Item:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.item_prototypes[name], database))
     self.SpriteType = "item"
 
-    assert(release or self.Prototype.object_name == "LuaItemPrototype")
+    assert(self.Prototype.object_name == "LuaItemPrototype")
 
     if self.Prototype.fuel_category then
         self.Fuel = {

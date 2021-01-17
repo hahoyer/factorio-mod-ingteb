@@ -61,7 +61,7 @@ function Class:Close()
 end
 
 function Class:OnSettingsChanged(event)
-    -- assert(release)   
+    -- assert()   
 end
 
 function Class:DestroyGui()
@@ -129,7 +129,7 @@ function Class:OnGuiEvent(event)
         self:Close()
         self.Parent:AddRemindor(selection)
     else
-        assert(release)
+        assert()
     end
 end
 
