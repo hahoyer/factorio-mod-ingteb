@@ -33,7 +33,7 @@ function Class:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        actions = {on_click = {module = self.Site, subModule = self.class.name, action = "Click"}},
+        actions = target.ClickTarget and {on_click = {module = self.Site, subModule = self.class.name, action = "Click"}} or nil,
         name = target.ClickTarget,
         style = style,
     }
@@ -47,7 +47,7 @@ function Class:OnGuiEvent(event)
         dassert()
         local commonKey = event.element.name
         self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey)
+        self.Parent:PresentTargetByCommonKey(commonKey,self.class.name)
     end
 end
 
