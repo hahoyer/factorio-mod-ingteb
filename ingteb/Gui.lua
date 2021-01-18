@@ -40,12 +40,12 @@ function Class:OnGuiEvent(event)
         elseif event.button == defines.mouse_button_type.right then
             self.Parent.Modules.Remindor:Toggle()
         else
-            assert()
+            dassert()
         end
     else
-        assert()
+        dassert()
     end
-    assert(true)
+    dassert(true)
 end
 
 function Class:FindTargets()
@@ -74,9 +74,9 @@ function Class:FindTargets()
     if cursor then
 
         local t = player.opened_gui_type
-        if t == defines.gui_type.custom then assert() end
+        if t == defines.gui_type.custom then dassert() end
         if t == defines.gui_type.entity then
-            assert(cursor.object_name == "LuaEntity")
+            dassert(cursor.object_name == "LuaEntity")
 
             local inventories = Dictionary:new(defines.inventory) --
             :Select(

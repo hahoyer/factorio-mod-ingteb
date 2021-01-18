@@ -48,7 +48,7 @@ function MiningRecipe:new(name, prototype, database)
     self.TypeStringForLocalisation = "ingteb-utility.title-mining-recipe"
 
     local configuration = self.Prototype.mineable_properties
-    assert(configuration and configuration.minable)
+    dassert(configuration and configuration.minable)
 
     local domain = "mining"
     if not self.Prototype.resource_category then domain = "hand-mining" end

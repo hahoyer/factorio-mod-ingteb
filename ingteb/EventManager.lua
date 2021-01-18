@@ -82,7 +82,7 @@ function Class:PresentTarget(target, requestor)
     elseif requestor == "Selector" then
         self.Global.History:ResetTo(target.CommonKey)
     else
-        assert()
+        dassert()
     end
 
 end
@@ -171,9 +171,9 @@ function Class:OnTickInitial(event)
 end
 
 function Class:OnLoad()
-    assert(global.Players)
+    dassert(global.Players)
     for _, player in pairs(global.Players) do
-        assert(player.History)
+        dassert(player.History)
         History:adopt(player.History, true)
         player.History:Log("OnLoad")
     end
@@ -287,11 +287,11 @@ function Class:new()
                 if message.module then
                     self.Modules[message.module]:OnGuiEvent(event)
                 else
-                    assert()
+                    dassert()
                 end
             elseif event.element and event.element.tags then
             else
-                assert(
+                dassert(
                     event.name == defines.events.on_gui_opened --
                     or event.name == defines.events.on_gui_selected_tab_changed --
                     or event.name == defines.events.on_gui_closed --
@@ -304,23 +304,3 @@ function Class:new()
 end
 
 Class:new()
-
-function Class:OnGuiEvent(event)
-    assert()
-    self.Player = game.players[event.player_index]
-    local message = gui.read_action(event)
-    if message then
-        if message.gui == "SelectRemindor" then
-            if message.action == "Click" then
-                SelectRemindor:OnGuiClick(
-                    self.Global, Gui:GetObject(self.Global, event.element.name)
-                )
-            else
-                assert()
-            end
-        else
-            assert()
-        end
-    end
-end
-

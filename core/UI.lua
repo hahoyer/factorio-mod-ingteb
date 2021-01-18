@@ -58,4 +58,6 @@ function UI.GetHelpTextForButtons(helpTag, pattern)
     table.insert(result, {helpTag})
     return {"ingteb-utility.blue", result}
 end
+
 return UI
+

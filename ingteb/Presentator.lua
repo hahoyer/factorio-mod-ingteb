@@ -158,7 +158,7 @@ local function GetTechnologyEffectsData(target)
 
     end
 
-    assert(effects[1].class == Recipe or effects[1].class == Bonus)
+    dassert(effects[1].class == Recipe or effects[1].class == Bonus)
 
     local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Maximum()
     local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Maximum()
@@ -193,7 +193,7 @@ local function GetTechnologyEffectsPanel(target)
 
     return {
         GetContentPanel(
-            target.RichTextName.."[img=effects]", --
+            target.RichTextName .. "[img=effects]", --
             {"gui-technology-preview.effects"}, --
             {
                 {
@@ -204,7 +204,7 @@ local function GetTechnologyEffectsPanel(target)
                         {
                             type = "sprite",
                             sprite = "utility/change_recipe",
-                           tooltip =  {"ingteb-utility.technology-research-ingredients"},
+                            tooltip = {"ingteb-utility.technology-research-ingredients"},
                         },
                         {
                             type = "flow",
@@ -213,7 +213,7 @@ local function GetTechnologyEffectsPanel(target)
                             style = "ingteb-flow-centered",
                             children = target.Ingredients:Select(
                                 function(stack)
-                                   return Spritor:GetSpriteButton(stack)
+                                    return Spritor:GetSpriteButton(stack)
                                 end
                             ),
                         },
@@ -336,7 +336,7 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
 end
 
 function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
-    assert(type(category) == "string")
+    dassert(type(category) == "string")
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
 
@@ -359,9 +359,9 @@ end
 function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     if not target or not target:Any() then return {} end
     local sampleCategogy = target:Top()
-    assert(type(sampleCategogy.Key) == "string")
+    dassert(type(sampleCategogy.Key) == "string")
     local sampleClient = sampleCategogy.Value[1]
-    assert(
+    dassert(
         sampleClient.class == Recipe --
         or sampleClient.class == MiningRecipe --
         or sampleClient.class == Technology --
@@ -383,7 +383,7 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
         GetContentPanel(
             headerSprites, tooltip, target:Select(
                 function(recipes, category)
-                    assert(type(category) == "string")
+                    dassert(type(category) == "string")
                     return self:GetCraftingGroupPanel(recipes, category, inCount, outCount)
                 end
             ) --
@@ -490,7 +490,7 @@ end
 
 local function GetTechnologiesExtendedPanel(target, headerSprites, isPrerequisites, tooltip)
     if not target or not target:Any() then return {} end
-    assert(target:Top().class == Technology)
+    dassert(target:Top().class == Technology)
 
     local targetExtendend = Extend(
         target, function(technology)
@@ -517,7 +517,7 @@ end
 
 local function GetTechnologiesPanel(target, headerSprites, tooltip)
     if not target or not target:Any() then return {} end
-    assert(target:Top().class == Technology)
+    dassert(target:Top().class == Technology)
 
     return {
         GetContentPanel(headerSprites, tooltip, Array:new{GetTechnologyList(target)}:ConcatMany()),
@@ -579,24 +579,26 @@ function Class:OnStackChanged() end
 function Class:OnResearchChanged(event) Spritor:RefreshResearchChanged() end
 
 function Class:Open(target)
+    log("opening Target = " .. target.CommonKey .. "...")
     self.Global.Links.Presentator = {}
     Spritor:StartCollecting()
+    local guiData = self:GetGui(target)
+    --log("guiData= " .. serpent.block(guiData))
     if target.class == Entity and target.Item then target = target.Item end
-    local result = Helper.CreateFloatingFrameWithContent(
-        self, self:GetGui(target), target.LocalisedName
-    )
+    local result = Helper.CreateFloatingFrameWithContent(self, guiData, target.LocalisedName)
     Spritor:RegisterDynamicTargets(result.DynamicElements)
     self.Current = result.Main
+    log("opening Target = " .. target.CommonKey .. " ok.")
 end
 
 function Class:GetGui(target)
     target:SortAll()
-    assert(
+    dassert(
         not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
             == "string"
     )
-    assert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
-    assert(
+    dassert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
+    dassert(
 
         not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy))
             == "string"
@@ -703,12 +705,12 @@ function Class:OnGuiEvent(event)
     elseif message.subModule == "Spritor" then
         Spritor:OnGuiEvent(event)
     else
-        assert()
+        dassert()
     end
 end
 
 function Class:OnSettingsChanged(event)
-    -- assert()   
+    -- dassert()   
 end
 
 function Class:RestoreFromSave(parent)

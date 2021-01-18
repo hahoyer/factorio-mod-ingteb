@@ -44,13 +44,13 @@ function History:AdvanceWith(target)
 end
 
 function History:Back() --
-    assert(self.Index > 1)
+    dassert(self.Index > 1)
     self.Index = self.Index - 1
     self:Log("History:Back")
 end
 
 function History:Fore() --
-    assert(self.Index < #self.Data)
+    dassert(self.Index < #self.Data)
     self.Index = self.Index + 1
     self:Log("History:Fore")
 end

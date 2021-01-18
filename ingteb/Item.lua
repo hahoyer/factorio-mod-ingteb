@@ -151,7 +151,7 @@ function Item:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.item_prototypes[name], database))
     self.SpriteType = "item"
 
-    assert(self.Prototype.object_name == "LuaItemPrototype")
+    dassert(self.Prototype.object_name == "LuaItemPrototype")
 
     if self.Prototype.fuel_category then
         self.Fuel = {

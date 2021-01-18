@@ -18,13 +18,13 @@ FuelCategory.property = {
 }
 
 function FuelCategory:new(name, prototype, database)
-    assert(name)
+    dassert(name)
 
     local self = self:adopt(
         self.base:new(prototype or game.fuel_category_prototypes[name], database)
     )
 
-    assert(self.Prototype.object_name == "LuaFuelCategoryPrototype")
+    dassert(self.Prototype.object_name == "LuaFuelCategoryPrototype")
 
     self.Workers = Array:new()
     self.SpriteType = "fuel-category"

@@ -116,10 +116,10 @@ function Class:GetSelection()
 end
 
 function Class:AddSelection(selection)
-    assert(selection.Target == self.Target.Goods.CommonKey)
-    assert(selection.Worker == self.Worker.CommonKey)
-    assert(selection.Recipe == self.Recipe.CommonKey)
-    assert(selection.CommonKey == self.CommonKey)
+    dassert(selection.Target == self.Target.Goods.CommonKey)
+    dassert(selection.Worker == self.Worker.CommonKey)
+    dassert(selection.Recipe == self.Recipe.CommonKey)
+    dassert(selection.CommonKey == self.CommonKey)
 
     local value --
     = (self.Target.Amounts and self.Target.Amounts.value or 0) --

@@ -284,7 +284,7 @@ end
 function Technology:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.technology_prototypes[name], database))
 
-    assert(self.Prototype.object_name == "LuaTechnologyPrototype")
+    dassert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
     self.SpriteType = "technology"
     self.Time = self.Prototype.research_unit_energy

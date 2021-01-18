@@ -59,7 +59,7 @@ end
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     local current = self.Player.gui.screen[self.class.name]
-    assert(current == self.Current)
+    dassert(current == self.Current)
 end
 
 function Class:OnGuiEvent(event)
@@ -77,7 +77,7 @@ function Class:OnGuiEvent(event)
         elseif event.button == defines.mouse_button_type.right then
             self.Parent:SelectRemindorByCommonKey(commonKey, location)
         else
-            assert()
+            dassert()
         end
     elseif message.action == "Search" then
         if self.Filter then
@@ -92,12 +92,12 @@ function Class:OnGuiEvent(event)
         self:Close()
         self:Open(self.Targets)
     else
-        assert()
+        dassert()
     end
 end
 
 function Class:OnSettingsChanged(event)
-    -- assert()   
+    -- dassert()   
 end
 
 function Class:GetGui()
@@ -111,7 +111,6 @@ function Class:GetGui()
         )
         self.Parent.Player.print({"ingteb-utility.missing-text-for-search-3"})
         log("self.MissingSearchTexts = " .. self.MissingSearchTexts)
-        log("=============================================================")
     end
 
     return result

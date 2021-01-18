@@ -44,7 +44,7 @@ function Class:OnGuiEvent(event)
     if message.action == "Click" then
         return self:OnGuiClick(event)
     else
-        assert()
+        dassert()
         local commonKey = event.element.name
         self:Close()
         self.Parent:PresentTargetByCommonKey(commonKey)

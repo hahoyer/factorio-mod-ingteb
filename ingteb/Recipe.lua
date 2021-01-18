@@ -230,7 +230,7 @@ Recipe.property = {
 
 function Recipe:GetCheapestWorkers()
     if self.HandCrafter then return Array:new{self.HandCrafter} end
-    assert()
+    dassert()
 end
 
 function Recipe:GetWorkerCraftingQueue()
@@ -241,11 +241,11 @@ function Recipe:GetWorkerCraftingQueue()
                 local result = self.CreatedBy --
                 :ToArray(function(recipes) return recipes end) --
                 :ConcatMany()
-                assert()
+                dassert()
             end
         end
     )
-    assert()
+    dassert()
 end
 
 function Recipe:IsBefore(other)
@@ -262,7 +262,7 @@ function Recipe:SortAll() end
 function Recipe:new(name, prototype, database)
     local self = self:adopt(self.base:new(prototype or game.recipe_prototypes[name], database))
 
-    assert(self.Prototype.object_name == "LuaRecipePrototype")
+    dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
     self.SpriteType = "recipe"
     self.TypeStringForLocalisation = "description.recipe"

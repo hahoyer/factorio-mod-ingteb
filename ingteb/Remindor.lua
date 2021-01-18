@@ -104,7 +104,7 @@ end
 
 function Class:RefreshSettings(target)
     self.CurrentSettings.destroy()
-    if self.ParentScreen then
+    if self.ParentScreen and self.ParentScreen.valid then
         self.ParentScreen.ignored_by_interaction = nil
         self.Player.opened = self.ParentScreen
     end
@@ -229,7 +229,7 @@ function Class:GetValueOfControl(element)
     elseif element.type == "drop-down" then
         return Constants.AutoCraftingVariants[element.selected_index]
     else
-        assert()
+        dassert()
     end
 end
 
@@ -237,7 +237,7 @@ function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     local key = message.key or event.element.parent.name
     local taskIndex = message.target == "Task" and self:GetTaskIndex(key) or nil
-    assert(message.target ~= "Task" or taskIndex)
+    dassert(message.target ~= "Task" or taskIndex)
     local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
 
     if message.action == "Update" then
@@ -286,7 +286,7 @@ function Class:OnGuiEvent(event)
             self.Global.Remindor.List:Remove(taskIndex)
             self.Global.Remindor.List:InsertAt(newIndex, target)
         else
-            assert()
+            dassert()
             return
         end
         self:Reopen()
@@ -341,7 +341,7 @@ function Class:OnResearchChanged(event)
 end
 
 function Class:RefreshMainInventoryChanged()
-    assert()
+    dassert()
     self:Refresh()
 end
 

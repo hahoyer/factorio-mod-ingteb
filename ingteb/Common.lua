@@ -151,8 +151,8 @@ function Common:GetAction(event)
 end
 
 function Common:new(prototype, database)
-    assert(prototype)
-    assert(database)
+    dassert(prototype)
+    dassert(database)
 
     local self = self:adopt{Prototype = prototype, Database = database}
     self.IsSealed = false

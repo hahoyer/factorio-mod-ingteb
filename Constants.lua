@@ -21,6 +21,10 @@ end
 
 function ConditionalBreak(condition) if condition then __DebugAdapter.breakpoint(2) end end
 
-if not (__DebugAdapter and __DebugAdapter.instrument) then function assert(condition) end end
+if (__DebugAdapter and __DebugAdapter.instrument) then
+    dassert = assert
+else
+    dassert = function(condition) return condition end
+end
 
 return result

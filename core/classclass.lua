@@ -30,8 +30,8 @@ end
 --- @param properties table initial properties - optional
 --- @return table class new class 
 function class:new(name, base, properties)
-    assert(type(name) == "string")
-    if base then assert(base.class == class) end
+    dassert(type(name) == "string")
+    if base then dassert(base.class == class) end
 
     local classInstance = {
         name = name,
@@ -83,7 +83,7 @@ function class:new(name, base, properties)
                     instance.inherited[self.name][key] = inherited
                 end
                 if value.cache then
-                    assert(not value.set)
+                    dassert(not value.set)
                     class.addCachedProperty(instance, self, key, value.get)
                 end
             end

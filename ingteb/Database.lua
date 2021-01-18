@@ -114,7 +114,7 @@ function Class:GetProxy(className, name, prototype)
     local key = name or prototype.name
 
     local result = data[key]
-    assert(result ~= "pending")
+    dassert(result ~= "pending")
 
     if not result then
         data[key] = "pending"
@@ -225,7 +225,7 @@ function Class:ScanTechnology(prototype)
     end
 
     for _, item in pairs(prototype.research_unit_ingredients or {}) do
-        assert(item.type == "item")
+        dassert(item.type == "item")
         EnsureKey(self.ResearchingTechnologyForItems, item.name, Array:new()):Append(prototype)
     end
 
@@ -283,7 +283,7 @@ function Class:Get(target)
         elseif target.type == "fluid" then
             className = "Fluid"
         else
-            assert()
+            dassert()
         end
         Name = target.name
     else
@@ -292,8 +292,8 @@ function Class:Get(target)
         Prototype = target.Prototype
     end
     self:Ensure()
-    assert(className)
-    assert(Name or Prototype)
+    dassert(className)
+    dassert(Name or Prototype)
     return self:GetProxy(className, Name, Prototype)
 end
 
@@ -313,7 +313,7 @@ end
 function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
 
 function Class:RefreshTechnology(target)
-    assert(target.object_name == "LuaTechnology")
+    dassert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
 end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
@@ -348,7 +348,7 @@ function Class:OnStringTranslated(event)
         end
     end
     if finished then
-        -- assert() 
+        -- dassert() 
     end
 end
 

@@ -112,7 +112,7 @@ Goods.property = {
             :Aggregate(
                 function(c, n)
                     if not c then return n end
-                    assert()
+                    dassert()
                 end
             )
         end,
