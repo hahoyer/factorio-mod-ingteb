@@ -113,6 +113,7 @@ end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
+    if not self.Global.Remindor then self.Global.Remindor = {} end
     if not self.Global.Remindor.Settings then self.Global.Remindor.Settings = {} end
     local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
     local list = self.Global.Remindor.List or {}
@@ -120,9 +121,13 @@ function Class:RestoreFromSave(parent)
     for _, task in ipairs(list) do
         self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
     end
-    if not current then return end
-    current.destroy()
-    self:Open()
+
+    if current then
+        current.destroy()
+        self:Open()
+    end
+    self:Refresh()
+
     local currentSettings = self.Player.gui.screen.RemindorSettings
     if currentSettings then
         local taskIndex = self:GetTaskIndex(currentSettings.children[2].name)
@@ -138,6 +143,7 @@ function Class:Toggle()
         self:CloseSettings()
     else
         self:Open()
+        self:Refresh()
     end
 end
 
@@ -173,8 +179,11 @@ end
 
 function Class:Reopen(target)
     if self.CurrentSettings then self:RefreshSettings(target) end
-    self:Close()
-    self:Open()
+    if self.Current then
+        self:Close()
+        self:Open()
+    end
+    self:Refresh()
 end
 
 local isRefreshActive
@@ -304,11 +313,8 @@ function Class:AddRemindorTask(selection)
     end
     self.Global.Remindor.List:InsertAt(1, task)
 
-    if self.Current then
-        self:Refresh()
-    else
-        self:Open()
-    end
+    if not self.Current then self:Open() end
+    self:Refresh()
 end
 
 function Class:GetTaskIndex(key)
