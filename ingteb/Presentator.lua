@@ -213,9 +213,19 @@ local function GetTechnologyEffectsPanel(target)
                             style = "ingteb-flow-centered",
                             children = target.Ingredients:Select(
                                 function(stack)
-                                    return Spritor:GetSpriteButton(stack)
+                                    return Spritor:GetSpriteButton(
+                                        stack.Goods:CreateStack{
+                                            value = stack.Amounts.value
+                                                * target.Prototype.research_unit_count,
+                                        }
+                                    )
                                 end
-                            ),
+                            ):Concat{
+                                Spritor:GetSpriteButton{
+                                    SpriteName = "utility/clock",
+                                    NumberOnSprite = target.Time,
+                                },
+                            },
                         },
                     },
                 },
@@ -583,7 +593,7 @@ function Class:Open(target)
     self.Global.Links.Presentator = {}
     Spritor:StartCollecting()
     local guiData = self:GetGui(target)
-    --log("guiData= " .. serpent.block(guiData))
+    -- log("guiData= " .. serpent.block(guiData))
     if target.class == Entity and target.Item then target = target.Item end
     local result = Helper.CreateFloatingFrameWithContent(self, guiData, target.LocalisedName)
     Spritor:RegisterDynamicTargets(result.DynamicElements)
