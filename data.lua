@@ -35,6 +35,13 @@ data:extend(
         },
         {
             type = "sprite",
+            name = "effects",
+            filename = Constants.GraphicsPath .. "effects.png",
+            size = 32,
+            scale = 0.5,
+        },
+        {
+            type = "sprite",
             name = "hide-this-column",
             filename = "__core__/graphics/cancel.png",
             size = 64,

@@ -194,7 +194,7 @@ local function GetTechnologyEffectsPanel(target)
 
     return {
         GetContentPanel(
-            {"", target.RichTextName, " "}, --
+            target.RichTextName.."[img=effects]", --
             {"gui-technology-preview.effects"}, --
             {
                 {
@@ -202,7 +202,11 @@ local function GetTechnologyEffectsPanel(target)
                     name = "GetTechnologyEffectsPanel " .. GetNextId(),
                     direction = "horizontal",
                     children = {
-                        {type = "sprite", sprite = "utility/change_recipe"},
+                        {
+                            type = "sprite",
+                            sprite = "utility/change_recipe",
+                           tooltip =  {"ingteb-utility.technology-research-ingredients"},
+                        },
                         {
                             type = "flow",
                             name = "GetTechnologyEffectsPanel inner " .. GetNextId(),
@@ -210,7 +214,7 @@ local function GetTechnologyEffectsPanel(target)
                             style = "ingteb-flow-centered",
                             children = target.Ingredients:Select(
                                 function(stack)
-                                    Spritor:GetSpriteButton(stack)
+                                   return Spritor:GetSpriteButton(stack)
                                 end
                             ),
                         },

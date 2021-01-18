@@ -112,6 +112,7 @@ function Class:GetSpriteButton(target)
         name = target.CommonKey,
         actions = {on_click = {module = self.class.name, action = "Click"}},
         style = Helper.SpriteStyleFromCode(styleCode),
+        tooltip = target:GetHelperText(self.class.name),
     }
 end
 
@@ -238,7 +239,12 @@ function Class:GetWorkersAndRecipes()
             direction = "horizontal",
             children = {
                 {type = "label", caption = {"ingteb-utility.select-worker"}},
-                {type = "sprite", sprite = self.Worker.SpriteName, ref = {"Worker"}},
+                {
+                    type = "sprite",
+                    sprite = self.Worker.SpriteName,
+                    ref = {"Worker"},
+                    tooltip = self.Worker:GetHelperText(self.class.name),
+                },
                 {type = "label", caption = {"ingteb-utility.select-variants"}},
                 self:GetLinePart(self:CreateSelection(self.Workers)),
             },
@@ -251,7 +257,12 @@ function Class:GetWorkersAndRecipes()
             direction = "horizontal",
             children = {
                 {type = "label", caption = {"ingteb-utility.select-recipe"}},
-                {type = "sprite", sprite = self.Recipe.SpriteName, ref = {"Recipe"}},
+                {
+                    type = "sprite",
+                    sprite = self.Recipe.SpriteName,
+                    ref = {"Recipe"},
+                    tooltip = self.Worker:GetHelperText(self.class.name),
+                },
                 {type = "label", caption = {"ingteb-utility.select-variants"}},
                 self:GetLinePart(self:CreateSelection(self.Recipes)),
             },
@@ -274,7 +285,7 @@ function Class:GetGui()
                     {
                         type = "sprite",
                         sprite = self.Target.SpriteName,
-                        tooltip = self.Target:GetHelperText("SelectRemindor"),
+                        tooltip = self.Target:GetHelperText(self.class.name),
                     },
                     {
                         type = "textfield",
