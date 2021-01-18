@@ -2,6 +2,10 @@
 Version: 0.3.11
 Date: 2021-01-18
   Changes:
+    - localisation improved: text styles
+    - providing better information on technology effets panel
+  Bugfixes:
+    - fixing crash clicking on lab in technology panel header
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.10
 Date: 2021-01-18
