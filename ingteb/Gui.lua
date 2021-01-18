@@ -1,12 +1,10 @@
 local mod_gui = require("mod-gui")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
-local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local class = require("core.class")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Database = require("ingteb.Database")
 
 local Class = class:new(
     "Gui", nil, {

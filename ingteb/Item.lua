@@ -2,9 +2,7 @@ local Constants = require("Constants")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Common = require("ingteb.Common")
 local Goods = require("ingteb.Goods")
-local UI = require("core.UI")
 local class = require("core.class")
 
 function FormatEnergy(value)

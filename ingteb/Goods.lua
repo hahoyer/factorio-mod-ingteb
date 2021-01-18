@@ -1,11 +1,9 @@
 local Constants = require("Constants")
 local Table = require("core.Table")
-local StackOfGoods = require "ingteb.stackofgoods"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local class = require("core.class")
-local RequiredThings = require("ingteb.RequiredThings")
 
 local Goods = class:new("Goods", Common)
 

@@ -3,10 +3,8 @@ local gui = require("__flib__.gui-beta")
 local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Table = require("core.Table")
-local RemindorTask = require "ingteb.remindortask"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Helper = require("ingteb.Helper")
 local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}

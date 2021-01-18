@@ -3,14 +3,11 @@ local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
-local Gui = require "core.gui"
-local RemindorTask = require "ingteb.remindortask"
+local RemindorTask = require("ingteb.RemindorTask")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 local SpritorClass = require("ingteb.Spritor")
-local RequiredThings = require("ingteb.RequiredThings")
-local Item = require("ingteb.Item")
 local Task = require("ingteb.RemindorTask")
 local Settings = require("ingteb.RemindorSettings")
 

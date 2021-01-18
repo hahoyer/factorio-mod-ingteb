@@ -1,5 +1,3 @@
-local PropertyProvider = require("core.PropertyProvider")
-
 local FunctionCache = {object_name = "FunctionCache"}
 
 function FunctionCache:new(getValueFunction)

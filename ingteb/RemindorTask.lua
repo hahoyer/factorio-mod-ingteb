@@ -1,4 +1,3 @@
-local mod_gui = require("mod-gui")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")

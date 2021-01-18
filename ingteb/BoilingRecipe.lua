@@ -3,7 +3,6 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
 local class = require("core.class")
 

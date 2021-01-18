@@ -4,7 +4,6 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local UI = require("core.UI")
 
 local StackOfGoods = class:new(
     "StackOfGoods", Common, {

@@ -4,7 +4,6 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local UI = require("core.UI")
 local class = require("core.class")
 local MiningRecipe = require("ingteb.MiningRecipe")
 local Recipe = require("ingteb.Recipe")

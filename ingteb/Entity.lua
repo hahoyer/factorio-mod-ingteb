@@ -1,7 +1,7 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
-local RequiredThings = require "ingteb.RequiredThings"
+local RequiredThings = require("ingteb.RequiredThings")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")

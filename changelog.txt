@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.8
+Date: 2021-01-18
+  Bugfixes:
+    - fixing crash: "Error while applying migration: ingteb: 0.3.1.lua"
+---------------------------------------------------------------------------------------------------
+Version: 0.3.7
+Date: 2021-01-18
+  Bugfixes:
+    - fixing crash: " no such file ingteb/ingteb/ingteb/remindortask.lua no such file" (hopefully, since on Windows I cannot reproduce)
+---------------------------------------------------------------------------------------------------
 Version: 0.3.6
 Date: 2021-01-18
   Changes:
