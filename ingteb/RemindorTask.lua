@@ -51,7 +51,7 @@ local Class = class:new(
 
         CountAvailable = {
             get = function(self)
-                return self.Database:CountAvailable(self.Target.Goods.Name)
+                return self.Database:GetCountAvailable(self.Target.Goods)
             end,
         },
 

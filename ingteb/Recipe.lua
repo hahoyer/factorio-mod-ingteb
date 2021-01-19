@@ -72,9 +72,7 @@ Recipe.property = {
 
     CraftableCount = {
         get = function(self)
-            if self.HandCrafter then
-                return self.Database.Player.get_craftable_count(self.Prototype.name)
-            end
+            if self.HandCrafter then return self.Database:GetCraftableCount(self) end
             return 0
         end,
     },
@@ -113,6 +111,94 @@ Recipe.property = {
         get = function(self)
             if not self.IsResearched then return false end
             if self.NumberOnSprite then return true end
+        end,
+    },
+
+    AdditionalHelp = {
+        get = function(self)
+            local result = self.inherited.Recipe.AdditionalHelp.get(self) --
+            result:AppendMany(self.ComponentHelp)
+            result:AppendMany(self.ProductHelp)
+            if self.Description then result:Append(self.LocalizedDescription) end
+            return result
+        end,
+    },
+
+    ComponentHelp = {
+        get = function(self)
+            local result = Array:new{
+                {
+                    "",
+                    "[font=heading-1][color=#F8E1BC]",
+                    {"description.ingredients"},
+                    ":[/color][/font]",
+                },
+
+            }
+            result:AppendMany(
+                self.Input:Select(
+                    function(stack) return stack.HelpTextWhenUsedAsComponent end
+                )
+            )
+            result:Append{
+                "",
+                "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                {"description.crafting-time"},
+            }
+
+            return result
+        end,
+    },
+
+    ProductHelp = {
+        get = function(self)
+            if not self.Output or self.Output:Count() == 1 then return {} end
+
+            local result = Array:new{
+                {
+                    "",
+                    "[font=heading-1][color=#F8E1BC]",
+                    {"description.products"},
+                    ":[/color][/font]",
+                },
+
+            }
+            result:AppendMany(
+                self.Output:Select(
+                    function(stack) return stack.HelpTextWhenUsedAsProduct end
+                )
+            )
+
+            return result
+        end,
+    },
+
+    MainProductStack = {
+        cache = true,
+        get = function(self)
+            if self.Prototype.main_product then
+                return self.Database:GetStackOfGoods(self.Prototype.main_product)
+            end
+        end,
+    },
+
+    HelperHeaderText = {
+        get = function(self)
+
+            if self.Prototype.show_amount_in_title then
+                local outputAmount = self.MainProductStack and self.MainProductStack.value
+
+                if not outputAmount and self.Output and self.Output:Count() == 1
+                    and self.Output[1].Goods.Name == self.Name and self.Output[1].Amounts
+                    and self.Output[1].Amounts.value ~= 1 then
+                    outputAmount = self.Output[1].Amounts.value
+                end
+
+                if outputAmount then
+                    return {"", self.Output[1].Amounts.value .. " x ", self.LocalisedName}
+                end
+            end
+            return self.LocalisedName
         end,
     },
 
@@ -166,7 +252,7 @@ Recipe.property = {
                     IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
-                    Action = function(self, event)
+                    Action = function(self)
                         return {HandCrafting = {count = 1, recipe = self.Name}}
                     end,
                 },
@@ -187,11 +273,8 @@ Recipe.property = {
                         return self.HandCrafter and self.NumberOnSprite
                     end,
 
-                    Action = function(self, event)
-                        local amount = game.players[event.player_index].get_craftable_count(
-                            self.Prototype.name
-                        )
-                        return {HandCrafting = {count = amount, recipe = self.Name}}
+                    Action = function(self)
+                        return {HandCrafting = {count = self.CraftableCount, recipe = self.Name}}
                     end,
                 },
                 {

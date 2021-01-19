@@ -68,7 +68,7 @@ function Class:OnGuiEvent(event)
         self.Filter = nil
         self:Close()
     elseif message.action == "Click" then
-        local commonKey = event.element.name
+        local commonKey = message.key or event.element.name
         local location = Helper.GetLocation(event.element)
         self.Filter = nil
         self:Close()

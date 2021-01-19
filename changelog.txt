@@ -6,6 +6,8 @@ Date: 2021-01-18
     - providing better information on technology effets panel
   Bugfixes:
     - fixing crash clicking on lab in technology panel header
+    - fixing crash "Too many parameters for localised string: 22 > 20 (limit). in property tree at ROOT.tooltip[2]"
+    - fixing crash when for a recipe ingredients or products are not unique
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.10
 Date: 2021-01-18

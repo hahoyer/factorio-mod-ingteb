@@ -43,12 +43,37 @@ local StackOfGoods = class:new(
                 local amounts = self.Amounts
                 local results = Array:new{}
                 if amounts then
-                    local line --
-                    = (amounts.min and "min: " .. amounts.min .. ", " or "")
-                          .. (amounts.max and "max: " .. amounts.max .. ", " or "")
-                          .. (amounts.probability and amounts.probability ~= 1 and "probability: "
-                              .. amounts.probability .. "%" or "")
-                    if line ~= "" then results:Append(line) end
+                    local line = Array:new{}
+
+                    if amounts.min or amounts.max then
+                        line:AppendMany{
+                            ", ",
+                            (amounts.min or amounts.value) .. " - "
+                                .. (amounts.max or amounts.value),
+                        }
+                    end
+
+                    if amounts.probability and amounts.probability ~= 1 then
+                        line:AppendMany{
+                            ", ",
+                            {"description.probability"},
+                            ": " .. amounts.probability * 100 .. "%",
+                        }
+                    end
+                    if amounts.temperature then
+                        line:AppendMany{", ", {"description.temperature"}, ": " .. amounts.temperature}
+                    end
+                    if amounts.catalyst_amount then
+                        line:AppendMany{
+                            ", ",
+                            {"description.catalyst_amount"},
+                            ": " .. amounts.catalyst_amount,
+                        }
+                    end
+                    if line:Any() then
+                        line[1] = ""
+                        results:Append(line)
+                    end
                 end
                 return results
             end,
@@ -103,6 +128,41 @@ local StackOfGoods = class:new(
 
         UsePercentage = {
             get = function(self) return self.Amounts and self.Amounts.probability ~= nil end,
+        },
+
+        HelpTextWhenUsedAsComponent = {
+            get = function(self)
+                local color
+                local amounts = self.Amounts.value
+                local counts = self.Goods.PlayerCounts or {Available = 0, Crafting = 0}
+                if counts.Available >= self.Amounts.value then
+                    color = "white"
+                elseif counts.Crafting >= self.Amounts.value then
+                    color = "green"
+                else
+                    color = "red"
+                    amounts = counts.Available .. "/" .. amounts
+                end
+
+                return {
+                    "",
+                    self.Goods.RichTextName .. " [color=" .. color .. "][font=default-bold]"
+                        .. amounts .. " x[/font] ",
+                    self.Goods.Prototype.localised_name,
+                    "[/color]",
+                }
+            end,
+        },
+        HelpTextWhenUsedAsProduct = {
+            get = function(self)
+                return {
+                    "",
+                    self.Goods.RichTextName .. " [font=default-bold]" .. self.Amounts.value
+                        .. " x[/font] ",
+                    self.Goods.Prototype.localised_name,
+
+                }
+            end,
         },
     }
 

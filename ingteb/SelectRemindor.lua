@@ -109,8 +109,7 @@ function Class:GetSpriteButton(target)
     return {
         type = "sprite-button",
         sprite = sprite,
-        name = target.CommonKey,
-        actions = {on_click = {module = self.class.name, action = "Click"}},
+        actions = {on_click = {module = self.class.name, action = "Click", key = target.CommonKey}},
         style = Helper.SpriteStyleFromCode(styleCode),
         tooltip = target:GetHelperText(self.class.name),
     }
@@ -121,7 +120,7 @@ function Class:OnGuiEvent(event)
     if message.action == "Closed" then
         self:Close()
     elseif message.action == "Click" then
-        local commonKey = event.element.name
+        local commonKey = message.key or event.element.name
         self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
     elseif message.action == "CountChanged" then
         self:OnTextChanged(event.element.text)

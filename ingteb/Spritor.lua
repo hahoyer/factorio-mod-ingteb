@@ -33,8 +33,9 @@ function Class:GetSpriteButton(target, sprite)
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        actions = target.ClickTarget and {on_click = {module = self.Site, subModule = self.class.name, action = "Click"}} or nil,
-        name = target.ClickTarget,
+        actions = target.ClickTarget
+            and {on_click = {module = self.Site, subModule = self.class.name, action = "Click", key = target.ClickTarget }}
+            or nil,
         style = style,
     }
 end
@@ -45,9 +46,9 @@ function Class:OnGuiEvent(event)
         return self:OnGuiClick(event)
     else
         dassert()
-        local commonKey = event.element.name
+        local commonKey = message.key or event.element.name
         self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey,self.class.name)
+        self.Parent:PresentTargetByCommonKey(commonKey, self.class.name)
     end
 end
 
@@ -55,7 +56,7 @@ function Class:OnGuiClick(event)
     local player = self.Player
     local message = gui.read_action(event)
 
-    local target = self.Database:GetProxyFromCommonKey(event.element.name)
+    local target = self.Database:GetProxyFromCommonKey(message.key or event.element.name)
     if not target or not target.Prototype then return end
 
     local action = target:GetAction(event)

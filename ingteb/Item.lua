@@ -75,30 +75,23 @@ Item.property = {
 
     PlayerCounts = {
         get = function(self)
+            local crafting, recipe = self.Database:GetCraftableCount(self)
+
             local result = {
-                Inventory = self.Database.Player.get_item_count(self.Name),
-                Crafting = 0,
+                Inventory = self.Database:GetCountInInventory(self) or 0,
+                Hand = self.Database:GetCountInHand(self) or 0,
+                Crafting = crafting or 0,
+                Recipe = recipe,
             }
-            local recipes = self.CreatedBy["crafting.crafting"]
-            if recipes then
-                recipes --
-                :Select(
-                    function(recipe)
-                        local count = self.Database.Player.get_craftable_count(recipe.Name)
-                        if result.Crafting < count then
-                            result.Crafting = count
-                            result.Recipe = recipe
-                        end
-                    end
-                ) --
-            end
-            if result.Inventory > 0 or result.Crafting > 0 then return result end
+            result.Available = result.Inventory + result.Hand
+
+            return result
         end,
     },
 
     SpecialFunctions = {
         get = function(self) --
-            local counts = self.PlayerCounts
+            local count, recipe = self.Database:GetCraftableCount(self)
             local result = self.inherited.Item.SpecialFunctions.get(self)
             return result:Concat{
                 {
@@ -110,34 +103,25 @@ Item.property = {
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
-                    IsAvailable = function(self)
-                        return counts and counts.Crafting > 0
-                    end,
-                    Action = function(self, event)
-                        return {HandCrafting = {count = 1, recipe = counts.Recipe.Name}}
+                    IsAvailable = function(self) return count and count > 0 end,
+                    Action = function(self)
+                        return {HandCrafting = {count = 1, recipe = recipe.Name}}
                     end,
                 },
                 {
                     UICode = "A-- r",
                     HelpText = "controls.craft-5",
-                    IsAvailable = function(self)
-                        return counts and counts.Crafting > 0
-                    end,
+                    IsAvailable = function(self) return count and count > 0 end,
                     Action = function(self)
-                        return {HandCrafting = {count = 5, recipe = counts.Recipe.Name}}
+                        return {HandCrafting = {count = 5, recipe = recipe.Name}}
                     end,
                 },
                 {
                     UICode = "--S l",
                     HelpText = "controls.craft-all",
-                    IsAvailable = function(self)
-                        return counts and counts.Crafting > 0
-                    end,
-                    Action = function(self, event)
-                        local amount = game.players[event.player_index].get_craftable_count(
-                            counts.Recipe.Name
-                        )
-                        return {HandCrafting = {count = amount, recipe = counts.Recipe.Name}}
+                    IsAvailable = function(self) return count and count > 0 end,
+                    Action = function()
+                        return {HandCrafting = {count = count, recipe = recipe.Name}}
                     end,
                 },
             }

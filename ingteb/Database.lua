@@ -262,11 +262,30 @@ function Class:GetStackOfGoods(target)
         probability = target.probability,
         min = target.amount_min,
         max = target.amount_max,
+        temperature = target.temperature,
+        catalyst_amount = target.catalyst_amount,
     }
     local goods --
     = target.type == "item" and self:GetItem(target.name) --
     or target.type == "fluid" and self:GetFluid(target.name) --
     if goods then return StackOfGoods:new(goods, amounts, self) end
+end
+
+function Class:GetDecomposedStacksOfGoodsFromRecipe(recipe)
+    local result = Dictionary:new{}
+    result[recipe.Name] = {recipe = recipe, amount = 1}
+
+    local isReady = true
+    repeat
+        result --
+        :Where(function(value) return not value.isReady end) --
+        :Select(
+            function(value)
+                if recipe.HandCrafter then recipe.Output:Select(function() end) end
+            end
+        )
+    until isReady
+
 end
 
 function Class:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
@@ -318,20 +337,49 @@ function Class:RefreshTechnology(target)
 end
 function Class:Print(player, text) player.print {"", "[ingteb]", text} end
 
-function Class:CountInInventory(itemName)
-    return self.Player.get_main_inventory().get_item_count(itemName)
+function Class:GetCountInInventory(goods)
+    if goods.class == Proxy.Item then
+        return self.Player.get_main_inventory().get_item_count(goods.Name)
+    else
+        return 0
+    end
 end
 
-function Class:CountAvailable(itemName)
-    local inventory = self:CountInInventory(itemName)
-    local hand = self:CountInHand(itemName)
+function Class:GetCountAvailable(goods)
+    local inventory = self:GetCountInInventory(goods)
+    local hand = self:GetCountInHand(goods)
     return inventory + hand
 end
 
-function Class:CountInHand(itemName)
-    local hand = self.Player.cursor_stack
-    if hand.valid_for_read and hand.prototype.name == itemName then return hand.count end
+function Class:GetCountInHand(goods)
+    if goods.class == Proxy.Item then
+        local hand = self.Player.cursor_stack
+        if hand.valid_for_read and hand.prototype.name == goods.Name then return hand.count end
+    end
     return 0
+end
+
+function Class:GetCraftableCount(target)
+    if target.class == Proxy.Item then
+        local recipes = target.CreatedBy["crafting.crafting"]
+        local result = 0
+        local recipe
+        if recipes then
+            recipes --
+            :Select(
+                function(recipe)
+                    local count = self:GetCraftableCount(recipe)
+                    if result < count then
+                        result = count
+                        recipe = recipe
+                    end
+                end
+            ) --
+        end
+        return result, recipe
+    elseif target.class == Proxy.Recipe then
+        return self.Player.get_craftable_count(target.Name)
+    end
 end
 
 function Class:OnStringTranslated(event)

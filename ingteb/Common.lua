@@ -53,6 +53,8 @@ Common.property = {
     },
 
     RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
+    HelperHeaderText = {get = function(self) return self.LocalisedName end},
+    
 }
 
 Common.__debugline = "{self.CommonKey}"
@@ -95,7 +97,7 @@ function Common:GetFunctionalHelp(site)
 end
 
 function Common:GetHelperText(site)
-    local name = self.LocalisedName
+    local name = {"", "[font=default-large-bold]", self.HelperHeaderText, "[/font]"}
     local lines = Array:new{}
     local function append(line)
         if line then
@@ -110,7 +112,7 @@ function Common:GetHelperText(site)
     functionalHelp:Select(append)
     if lines:Any() then
         lines:InsertAt(1, "")
-        return {"", name, lines}
+        return {"", name, Helper.ScrutinizeLocalisationString(lines)}
     end
     return name
 end
@@ -126,7 +128,7 @@ function Common:SealUp()
             {
                 dictionary = "Description",
                 internal = self.CommonKey,
-                localised = self.LocalizedDescription,
+                localised = self.Prototype.localised_description,
             },
             {
                 dictionary = "SearchText",
@@ -158,7 +160,7 @@ function Common:new(prototype, database)
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
-    self.LocalizedDescription = self.Prototype.localised_description
+    self.LocalizedDescription = {"ingteb-utility.remark-style",self.Prototype.localised_description}
 
     return self
 
