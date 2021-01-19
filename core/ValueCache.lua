@@ -1,57 +1,49 @@
-local PropertyProvider = require("core.PropertyProvider")
+local class = require("core.classclass")
 
-local ValueCacheRaw = {class_name = "ValueCacheRaw"}
+local ValueCache = class:new("ValueCache")
 
-function ValueCacheRaw:new(getValueFunction)
-    local result = {getValueFunction = getValueFunction}
-    setmetatable(result, self)
-    self.__index = self
+ValueCache.property = {
+    IsValid = {
+        get = function(self) return self:get_IsValid(self.Client) end,
+        set = function(self, value) self:set_IsValid(self.Client, value) end,
+    },
+    Value = {get = function(self) return self:get_Value(self.Client) end},
+}
 
-    return result
+function ValueCache:new(client, getValueFunction)
+    local instance = self:adopt{getValueFunction = getValueFunction}
+    instance.Client = client
+    return instance
 end
 
-function ValueCacheRaw:get_Value()
-    self:Ensure()
+function ValueCache:get_Value(client)
+    self:Ensure(client)
     return self.value
 end
 
-function ValueCacheRaw:get_IsValid() return self.isValid end
+function ValueCache:get_IsValid() return self.isValid end
 
-function ValueCacheRaw:set_IsValid(value)
+function ValueCache:set_IsValid(client, value)
     if value == self:get_IsValid() then return end
     if value then
-        self:Ensure()
+        self:Ensure(client)
     else
         self:Reset()
     end
 end
 
-function ValueCacheRaw:Ensure()
+function ValueCache:Ensure(client)
     if not self.isValid then
-        self.value = self:getValueFunction()
+        self.value = rawget(self,"getValueFunction")(client)
         self.isValid = true
     end
 end
 
-function ValueCacheRaw:Reset()
+function ValueCache:Reset()
     if self.isValid then
         self.value = nil
         self.isValid = false
     end
-end
-
-local function ValueCache(getter)
-    local result = PropertyProvider:new{valueCache = ValueCacheRaw:new(getter)}
-    result.class_name = "ValueCache"
-
-    result.property.IsValid = {
-        get = function(self) return self.valueCache:get_IsValid() end,
-        set = function(self, value) self.valueCache:set_IsValid(value) end,
-    }
-
-    result.property.Value = {get = function(self) return self.valueCache:get_Value() end}
-
-    return result
 end
 
 return ValueCache

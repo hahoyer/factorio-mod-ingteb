@@ -1,5 +1,5 @@
 local class = require("core.classclass")
-local ValueCache = require("core.ValueCache2")
+local ValueCache = require("core.ValueCache")
 
 --- installs the cache for a cached property
 --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
