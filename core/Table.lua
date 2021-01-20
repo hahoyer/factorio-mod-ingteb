@@ -415,8 +415,11 @@ end
 function Table.AppendForKey(self, key, target)
     if key then
         local list = self[key]
-        if not list then self[key] = {} end
-        table.insert(self[key], target)
+        if not list then 
+            list = {} 
+            self[key] = list 
+        end
+        table.insert(list, target)
     end
 end
 

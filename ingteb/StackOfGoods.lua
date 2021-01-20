@@ -5,7 +5,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 
-local StackOfGoods = class:new(
+local Class = class:new(
     "StackOfGoods", Common, {
         NumberOnSprite = {
             get = function(self)
@@ -168,7 +168,7 @@ local StackOfGoods = class:new(
 
 )
 
-function StackOfGoods:GetAmountsKey()
+function Class:GetAmountsKey()
     local amounts = self.Amounts
     if not amounts then return end
 
@@ -191,7 +191,7 @@ function StackOfGoods:GetAmountsKey()
 
 end
 
-function StackOfGoods:AddOption(other)
+function Class:AddOption(other)
     local otherAmounts = other.Amounts
 
     if otherAmounts.value and self.Amounts.value and otherAmounts.value == self.Amounts.value then
@@ -209,12 +209,12 @@ function StackOfGoods:AddOption(other)
     self.Amounts.value = nil
 end
 
-function StackOfGoods:Clone()
+function Class:Clone()
     local amounts = self.Amounts and Dictionary:new(self.Amounts):Clone() or nil
-    return StackOfGoods:new(self.Goods, amounts, self.Database)
+    return Class:new(self.Goods, amounts, self.Database)
 end
 
-function StackOfGoods:new(goods, amounts, database)
+function Class:new(goods, amounts, database)
     dassert(goods)
     local self = self:adopt(self.base:new(goods.Prototype, database))
     dassert(
@@ -231,4 +231,4 @@ function StackOfGoods:new(goods, amounts, database)
 
 end
 
-return StackOfGoods
+return Class

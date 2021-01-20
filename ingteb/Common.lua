@@ -7,57 +7,59 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 
-local Common = class:new("Common")
+local Common = class:new(
+    "Common", nil, {
+        DebugLine = {get = function(self) return self.CommonKey end},
+        ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
+        Group = {cache = true, get = function(self) return self.Prototype.group end},
+        SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
+        TypeOrder = {
+            cache = true,
+            get = function(self) return self.Database.Order[self.class.name] end,
+        },
 
-Common.property = {
-    ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
-    Group = {cache = true, get = function(self) return self.Prototype.group end},
-    SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
-    TypeOrder = {cache = true, get = function(self) return self.Database.Order[self.class.name] end},
+        LocalisedName = {
+            get = function(self)
+                local type = self.TypeStringForLocalisation
 
-    LocalisedName = {
-        get = function(self)
-            local type = self.TypeStringForLocalisation
+                if type then
+                    return {"", self.Prototype.localised_name, " (", {type}, ")"}
+                else
+                    return self.Prototype.localised_name
+                end
+            end,
+        },
 
-            if type then
-                return {"", self.Prototype.localised_name, " (", {type}, ")"}
-            else
-                return self.Prototype.localised_name
-            end
-        end,
-    },
+        SpecialFunctions = {
+            get = function(self)
+                return Array:new{ --
+                    {
+                        UICode = "--- l", --
+                        Action = function(self) return {Presenting = self} end,
+                    },
+                }
 
-    SpecialFunctions = {
-        get = function(self)
-            return Array:new{ --
-                {
-                    UICode = "--- l", --
-                    Action = function(self) return {Presenting = self} end,
-                },
-            }
+            end,
+        },
 
-        end,
-    },
+        AdditionalHelp = {
+            get = function(self)
+                local result = Array:new{}
+                if self.Description then result:Append(self.LocalizedDescription) end
+                return result
+            end,
+        },
 
-    AdditionalHelp = {
-        get = function(self)
-            local result = Array:new{}
-            if self.Description then result:Append(self.LocalizedDescription) end
-            return result
-        end,
-    },
+        SpriteName = {
+            cache = true,
+            get = function(self) return self.SpriteType .. "/" .. self.Prototype.name end,
+        },
 
-    SpriteName = {
-        cache = true,
-        get = function(self) return self.SpriteType .. "/" .. self.Prototype.name end,
-    },
+        RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
+        HelperHeaderText = {get = function(self) return self.LocalisedName end},
 
-    RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
-    HelperHeaderText = {get = function(self) return self.LocalisedName end},
-    
-}
-
-Common.__debugline = "{self.CommonKey}"
+    }
+)
 
 function Common:IsBefore(other)
     if self == other then return false end
@@ -160,7 +162,10 @@ function Common:new(prototype, database)
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
-    self.LocalizedDescription = {"ingteb-utility.remark-style",self.Prototype.localised_description}
+    self.LocalizedDescription = {
+        "ingteb-utility.remark-style",
+        self.Prototype.localised_description,
+    }
 
     return self
 

@@ -271,23 +271,6 @@ function Class:GetStackOfGoods(target)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
-function Class:GetDecomposedStacksOfGoodsFromRecipe(recipe)
-    local result = Dictionary:new{}
-    result[recipe.Name] = {recipe = recipe, amount = 1}
-
-    local isReady = true
-    repeat
-        result --
-        :Where(function(value) return not value.isReady end) --
-        :Select(
-            function(value)
-                if recipe.HandCrafter then recipe.Output:Select(function() end) end
-            end
-        )
-    until isReady
-
-end
-
 function Class:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
 
 function Class:Get(target)
