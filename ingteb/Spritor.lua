@@ -40,56 +40,6 @@ function Class:GetSpriteButton(target, sprite)
     }
 end
 
-function Class:OnGuiEvent(event)
-    local message = gui.read_action(event)
-    if message.action == "Click" then
-        return self:OnGuiClick(event)
-    else
-        dassert()
-        local commonKey = message.key or event.element.name
-        self:Close()
-        self.Parent:PresentTargetByCommonKey(commonKey, self.class.name)
-    end
-end
-
-function Class:OnGuiClick(event)
-    local player = self.Player
-    local message = gui.read_action(event)
-
-    local target = self.Database:GetProxyFromCommonKey(message.key or event.element.name)
-    if not target or not target.Prototype then return end
-
-    local action = target:GetAction(event)
-    if not action then return end
-
-    if action.Selecting then
-        if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
-            player.cursor_ghost = action.Selecting.Prototype
-        end
-    end
-
-    if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
-
-    if action.Research then
-        if action.Multiple then
-            local message = self.Database:BeginMulipleQueueResearch(action.Research)
-            if message then self:Print(player, message) end
-        elseif action.Research.IsReady then
-            action.Research:BeginDirectQueueResearch()
-        end
-    end
-
-    if action.RemindorTask then
-        if message.module == "Remindor" and action.Count then action.Count = -action.Count end
-        self.Parent.Parent:SelectRemindor(action, Helper.GetLocation(event.element))
-    end
-
-    if action.Presenting then
-        local result = self.Parent.Parent:PresentTarget(action.Presenting, message.module)
-        return result
-    end
-end
-
 function Class:StartCollecting()
     self.DynamicElementsIndex = 1
     self.DynamicTargets = Array:new()

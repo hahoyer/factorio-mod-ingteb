@@ -11,6 +11,7 @@ local Technology = require("ingteb.Technology")
 local SpritorClass = require("ingteb.Spritor")
 local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
+local Settings = require("ingteb.PresentatorSettings")
 
 local Class = class:new(
     "Presentator", nil, {
@@ -99,7 +100,8 @@ local function GetRecipeLine(target, inCount, outCount)
 
 end
 
-local function GetWorkersPanel(workers, columnCount)
+function Class:GetWorkersPanel(category, columnCount)
+    local workers = category.Workers
     local workersCount = workers:Count()
     local lines = math.ceil(workersCount / columnCount)
     local potentialWorkerCount = lines * columnCount
@@ -116,7 +118,14 @@ local function GetWorkersPanel(workers, columnCount)
                 workersPanelData:Append{
                     type = "sprite",
                     sprite = "utility/change_recipe",
-                    tooltip = {"ingteb-utility.workers-for-recipes"},
+                    tooltip = category:GetHelperText("Presentator"),
+                    actions = {
+                        on_click = {
+                            module = self.class.name,
+                            action = "Click",
+                            key = category.CommonKey,
+                        },
+                    },
                 }
             end
             if lines == 1 and position == 0 then
@@ -350,14 +359,12 @@ function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
 
-    local workers = target[1].Database:GetCategory(category).Workers
-
     local result = {
         type = "flow",
         name = "GetCraftingGroupPanel " .. GetNextId(),
         direction = "vertical",
         children = {
-            GetWorkersPanel(workers, inCount + outCount + 3),
+            self:GetWorkersPanel(self.Database:GetCategory(category), inCount + outCount + 3),
             {type = "line", direction = "horizontal"},
             self:GetCraftigGroupData(target, inCount, outCount),
             {type = "line", direction = "horizontal"},
@@ -402,18 +409,19 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     }
 end
 
-local function GetRecipePanel(target)
+function Class:GetRecipePanel(target)
     if target.class.name ~= "Recipe" then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
     local outCount = math.min(target.Output:Count(), maximalCount)
-    local workers = target.Category.Workers
-    return GetContentPanel(
-        {"", target.RichTextName}, "Information about the recipe", {
-            GetWorkersPanel(workers, inCount + outCount + 3),
-            {type = "line", direction = "horizontal"},
-            GetRecipeLine(target, inCount, outCount),
-        }
-    )
+    return {
+        GetContentPanel(
+            {"", target.RichTextName}, "Information about the recipe", {
+                self:GetWorkersPanel(target.Category, inCount + outCount + 3),
+                {type = "line", direction = "horizontal"},
+                GetRecipeLine(target, inCount, outCount),
+            }
+        ),
+    }
 end
 
 local function Extend(items, nextItems)
@@ -668,7 +676,7 @@ function Class:GetGui(target)
 
                             ),
                             GetTechnologyEffectsPanel(target),
-                            GetRecipePanel(target),
+                            self:GetRecipePanel(target),
                             GetTechnologiesExtendedPanel(
                                 target.Enables, target.RichTextName
                                     .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false,
@@ -712,8 +720,8 @@ function Class:OnGuiEvent(event)
         else
             self:Close()
         end
-    elseif message.subModule == "Spritor" then
-        Spritor:OnGuiEvent(event)
+    elseif message.action == "Click" then
+        self.Parent:OnGuiClick(event)
     else
         dassert()
     end
@@ -730,6 +738,30 @@ function Class:RestoreFromSave(parent)
         current.destroy()
         self:Open(self.Database:GetProxyFromCommonKey(self.Global.History.Current))
     end
+end
+
+function Class:CloseSettings()
+    if not self.CurrentSettings then return end
+    self.CurrentSettings.destroy()
+    if self.ParentScreen then
+        self.ParentScreen.ignored_by_interaction = nil
+        self.Player.opened = self.ParentScreen
+    end
+    self.CurrentSettings = nil
+end
+
+function Class:OpenSettings(target)
+    self:CloseSettings()
+    self.CurrentSettings = Settings.Open(self, target)
+end
+
+function Class:RefreshSettings(target)
+    self.CurrentSettings.destroy()
+    if self.ParentScreen and self.ParentScreen.valid then
+        self.ParentScreen.ignored_by_interaction = nil
+        self.Player.opened = self.ParentScreen
+    end
+    self.CurrentSettings = Settings.Open(self, target)
 end
 
 return Class

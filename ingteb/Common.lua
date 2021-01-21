@@ -21,12 +21,25 @@ local Common = class:new(
         LocalisedName = {
             get = function(self)
                 local type = self.TypeStringForLocalisation
-
+                local name = self.Prototype.localised_name
+                if self.Translation.Name == false then name = "["..self.Name.."]" end
+                
                 if type then
-                    return {"", self.Prototype.localised_name, " (", {type}, ")"}
+                    return {"", name, " (", {type}, ")"}
                 else
-                    return self.Prototype.localised_name
+                    return name
                 end
+            end,
+        },
+
+        HasDescription = {
+            get = function(self) return type(self.Translation.Description) == "string" end,
+        },
+
+        SearchText = {
+            get = function(self)
+                return
+                    type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
             end,
         },
 
@@ -45,7 +58,7 @@ local Common = class:new(
         AdditionalHelp = {
             get = function(self)
                 local result = Array:new{}
-                if self.Description then result:Append(self.LocalizedDescription) end
+                if self.HasDescription then result:Append(self.LocalizedDescription) end
                 return result
             end,
         },
@@ -133,7 +146,7 @@ function Common:SealUp()
                 localised = self.Prototype.localised_description,
             },
             {
-                dictionary = "SearchText",
+                dictionary = "Name",
                 internal = self.CommonKey,
                 localised = self.Prototype.localised_name,
             },
@@ -166,6 +179,7 @@ function Common:new(prototype, database)
         "ingteb-utility.remark-style",
         self.Prototype.localised_description,
     }
+    self.Translation = {}
 
     return self
 

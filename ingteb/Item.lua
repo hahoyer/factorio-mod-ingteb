@@ -60,7 +60,7 @@ Item.property = {
             end
 
             local counts = self.PlayerCounts
-            if counts then
+            if counts and (counts.Inventory > 0 or counts.Crafting > 0) then
                 local craftingCountText = counts.Crafting > 0 and "(+" .. counts.Crafting .. ")"
                                               or ""
                 result:Append(

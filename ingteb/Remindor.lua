@@ -250,8 +250,8 @@ function Class:OnGuiEvent(event)
             target.Settings[message.control] = target[message.control]
         end
         self:Reopen(target)
-    elseif message.subModule == "Spritor" then
-        Spritor:OnGuiEvent(event)
+    elseif message.action == "Click" then
+        self.Parent:OnGuiClick(event)
     elseif message.action == "Settings" then
         self:OpenSettings(target)
     elseif message.target == "Task" then

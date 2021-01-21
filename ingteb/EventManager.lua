@@ -2,6 +2,7 @@ local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local translation = require("__flib__.translation")
 local Constants = require("Constants")
+local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
@@ -86,6 +87,8 @@ function Class:PresentTarget(target, requestor)
     end
 
 end
+
+function Class:PresentatorSettings(requestor) self.Modules.Presentator:OpenSettings(requestor) end
 
 function Class:PresentTargetByCommonKey(targetKey, requestor)
     local target = self.Database:GetProxyFromCommonKey(targetKey)
@@ -245,6 +248,49 @@ function Class:RestoreFromSave()
     self.Modules.Presentator:RestoreFromSave(self)
     self.Modules.SelectRemindor:RestoreFromSave(self)
     self.Modules.Remindor:RestoreFromSave(self)
+end
+
+function Class:OnGuiClick(event)
+    local player = self.Player
+    local message = gui.read_action(event)
+
+    local target = self.Database:GetProxyFromCommonKey(message.key or event.element.name)
+    if not target or not target.Prototype then return end
+
+    local action = target:GetAction(event)
+    if not action then return end
+
+    if action.Selecting then
+        if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
+            player.cursor_ghost = action.Selecting.Prototype
+        end
+    end
+
+    if action.HandCrafting then player.begin_crafting(action.HandCrafting) end
+
+    if action.Research then
+        if action.Multiple then
+            local message = self.Database:BeginMulipleQueueResearch(action.Research)
+            if message then self.Database:Print(player, message) end
+        elseif action.Research.IsReady then
+            action.Research:BeginDirectQueueResearch()
+        end
+    end
+
+    if action.RemindorTask then
+        if message.module == "Remindor" and action.Count then action.Count = -action.Count end
+        self:SelectRemindor(action, Helper.GetLocation(event.element))
+    end
+
+    if action.Presenting then
+        local result = self:PresentTarget(action.Presenting, message.module)
+        return result
+    end
+
+    if action.Settings then
+        local result = self:PresentatorSettings(action.Settings)
+        return result
+    end
 end
 
 function Class:new()

@@ -240,6 +240,7 @@ end
 function Class:ScanRecipe(prototype)
 
     if prototype.hidden then return end
+    -- if prototype.hidden_from_player_crafting then return end
 
     for _, itemSet in pairs(prototype.ingredients) do
         EnsureRecipeCategory(self.RecipesForItems, "UsedBy", itemSet.name, prototype.category) --
@@ -368,13 +369,11 @@ end
 function Class:OnStringTranslated(event)
     local names, finished = translation.process_result(event)
     if names then
-        local result = event.translated and event.result
-        if result then
-            for tag, keys in pairs(names) do
-                for _, key in ipairs(keys) do
-                    local target = self:GetProxyFromCommonKey(key)
-                    target[tag] = result
-                end
+        local result = event.translated and event.result or false
+        for tag, keys in pairs(names) do
+            for _, key in ipairs(keys) do
+                local target = self:GetProxyFromCommonKey(key)
+                target.Translation[tag] = result
             end
         end
     end

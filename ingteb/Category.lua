@@ -1,3 +1,4 @@
+local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -30,6 +31,39 @@ Category.property = {
         end,
     },
 
+    AdditionalHelp = {
+        get = function(self)
+            local result = Array:new{}
+            result:AppendMany(self.inherited.Category.AdditionalHelp.get(self))
+
+            result:Append{"ingteb-utility.workers-for-recipes"}
+            if self.Translation.DomainName then
+                local line = ("[font=heading-1][color=#F8E1BC]" .. self.Translation.DomainName
+                                 .. "[/color][/font]")
+                if self.Translation.DomainDescription then
+                    line = line
+                               + (": __REMARK_COLOR_BEGIN__" .. self.Translation.DomainDescription
+                                   .. "__REMARK_COLOR_END__")
+                end
+                result:Append(line)
+            end
+
+            return result
+        end,
+    },
+
+    SpecialFunctions = {
+        get = function(self) --
+            return Array:new{
+                -- {
+                --     UICode = "--- l",
+                --     HelpText = "ingteb-utility.category-settings",
+                --     Action = function(self) return {Settings = self} end,
+                -- },
+            }
+        end,
+    },
+
     RecipeList = {
         cache = true,
         get = function(self)
@@ -55,6 +89,26 @@ Category.property = {
     },
 }
 
+function Category:SealUp()
+    self.class.base.SealUp(self)
+
+    translation.add_requests(
+        self.Database.Player.index, {
+            {
+                dictionary = "DomainName",
+                internal = self.CommonKey,
+                localised = {"ingteb-recipe-category-domain-name." .. self.Domain},
+            },
+            {
+                dictionary = "DomainDescription",
+                internal = self.CommonKey,
+                localised = {"ingteb-recipe-category-domain-description." .. self.Domain},
+            },
+        }
+    )
+    return self
+end
+
 function Category:SortAll()
     local result = self.OriginalWorkers
     result:Sort(function(a, b) return a:IsBefore(b) end)
@@ -74,7 +128,6 @@ function Category:new(name, prototype, database)
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName
-    self.TypeForLocalisation = "item-group"
     return self
 
 end
