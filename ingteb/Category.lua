@@ -31,23 +31,25 @@ Category.property = {
         end,
     },
 
+    HelperHeaderText = {
+        get = function(self) return Array:new{"ingteb-utility.workers-for-recipes"} end,
+    },
+
     AdditionalHelp = {
         get = function(self)
             local result = Array:new{}
-            result:AppendMany(self.inherited.Category.AdditionalHelp.get(self))
-
-            result:Append{"ingteb-utility.workers-for-recipes"}
-            if self.Translation.DomainName then
-                local line = ("[font=heading-1][color=#F8E1BC]" .. self.Translation.DomainName
-                                 .. "[/color][/font]")
-                if self.Translation.DomainDescription then
-                    line = line
-                               + (": __REMARK_COLOR_BEGIN__" .. self.Translation.DomainDescription
-                                   .. "__REMARK_COLOR_END__")
-                end
-                result:Append(line)
+            local name = self.LocalisedName
+            if self.Domain ~= "crafting" then
+                name = {
+                    "",
+                    "[font=default-small]",
+                    {"ingteb-recipe-category-domain-name." .. self.Domain},
+                    ": ",
+                    name,
+                    "[/font]",
+                }
             end
-
+            result:Append(name)
             return result
         end,
     },
@@ -91,21 +93,6 @@ Category.property = {
 
 function Category:SealUp()
     self.class.base.SealUp(self)
-
-    translation.add_requests(
-        self.Database.Player.index, {
-            {
-                dictionary = "DomainName",
-                internal = self.CommonKey,
-                localised = {"ingteb-recipe-category-domain-name." .. self.Domain},
-            },
-            {
-                dictionary = "DomainDescription",
-                internal = self.CommonKey,
-                localised = {"ingteb-recipe-category-domain-description." .. self.Domain},
-            },
-        }
-    )
     return self
 end
 
