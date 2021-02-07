@@ -8,7 +8,10 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local History = require("ingteb.History")
 local class = require("core.class")
-local core = {EventManager = require("core.EventManager")}
+local core = {
+    EventManager = require("core.EventManager"),
+    OnResearchCanceled = require("core.OnResearchCanceled"),
+}
 local Gui = require("ingteb.Gui")
 local Selector = require("ingteb.Selector")
 local Presentator = require("ingteb.Presentator")
@@ -303,6 +306,7 @@ function Class:new()
         Spritor = Spritor:new(self),
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
+        OnResearchCanceled = core.OnResearchCanceled:new(self)
     }
 
     self:SetHandler("on_init", self.OnInitialise)
@@ -316,8 +320,9 @@ function Class:new()
 
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
-    self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged)
-    self:SetHandler(defines.events.on_research_started, self.OnResearchChanged)
+    self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
+    self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
+    self:SetHandler(core.OnResearchCanceled.EventId, self.OnResearchChanged)
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)

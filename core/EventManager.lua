@@ -7,13 +7,11 @@ local class = require("core.class")
 local UI = require("core.UI")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
-local EventManager = class:new("core.EventManager")
+local Class = class:new("core.EventManager")
 
-EventManager.EventDefinesByIndex = Dictionary:new(defines.events) --
-:ToDictionary(function(value, key) return {Key = value, Value = key} end) --
-:ToArray()
+Class.system.Abstract = true
 
-EventManager.property = {
+Class.property = {
     Player = {
         get = function() return UI.Player end,
         set = function(_, value)
@@ -45,22 +43,25 @@ EventManager.property = {
     Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
 }
 
-function EventManager:Execute(eventId, eventName)
-    local instance = self
+Class.EventDefinesByIndex = Dictionary:new(defines.events) --
+:ToDictionary(function(value, key) return {Key = value, Value = key} end) --
+:ToArray()
+
+function Class:Execute(eventId, eventName)
     return function(...)
         local handlers = self.Handlers[eventName]
         for identifier, handler in pairs(handlers) do
-            instance:Enter(eventName, eventId, identifier)
-            local result = handler(instance, ...)
-            instance:Leave()
+            self:Enter(eventName, eventId, identifier)
+            local result = handler.Handler(handler.Instance, ...)
+            self:Leave()
             if result == false then handlers[identifier] = nil end
         end
 
-        instance:RemoveIfEmpty(handlers, eventId)
+        self:RemoveIfEmpty(handlers, eventId)
     end
 end
 
-function EventManager:RemoveIfEmpty(handlers, eventId)
+function Class:RemoveIfEmpty(handlers, eventId)
     if not next(handlers) then
         local eventRegistrar = events[eventId]
         if eventRegistrar then
@@ -71,26 +72,29 @@ function EventManager:RemoveIfEmpty(handlers, eventId)
     end
 end
 
-function EventManager:Enter(eventName, eventId, identifier)
+function Class:Enter(eventName, eventId, identifier)
     self.Active = {{eventName, eventId, identifier}, self.Active}
 end
 
-function EventManager:Leave() self.Active = self.Active[2] end
+function Class:Leave() self.Active = self.Active[2] end
 
-function EventManager:SetHandler(eventId, handler, identifier)
-    if not self.Handlers then self.Handlers = {} end
+function Class:SetHandler(eventId, handler, identifier)
+    if not Class.Handlers then Class.Handlers = {} end
     if not identifier then identifier = "default" end
 
-    local eventName = type(eventId) == "number" and self.EventDefinesByIndex[eventId] or eventId
+    local eventName = type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or eventId
 
-    local handlers = self.Handlers[eventName]
-    dassert(not handlers or identifier ~= "default") -- handler for event already registered. Use identifier
+    local handlers = Class.Handlers[eventName]
+    dassert(
+        not handlers or identifier ~= "default",
+            "handler for event " .. eventName .. " already registered. Use identifier"
+    )
 
     if not handlers then
         handlers = {}
-        self.Handlers[eventName] = handlers
+        Class.Handlers[eventName] = handlers
 
-        local watchedEvent = self:Execute(eventId, eventName)
+        local watchedEvent = Class:Execute(eventId, eventName)
         local eventRegistrar = events[eventId]
         if eventRegistrar then
             eventRegistrar(watchedEvent)
@@ -101,10 +105,10 @@ function EventManager:SetHandler(eventId, handler, identifier)
 
     dassert(not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
-    handlers[identifier] = handler
+    handlers[identifier] = {Instance = self, Handler = handler}
 
-    self:RemoveIfEmpty(handlers, eventId)
+    Class:RemoveIfEmpty(handlers, eventId)
 end
 
-return EventManager
+return Class
 
