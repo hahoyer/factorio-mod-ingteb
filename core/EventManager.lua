@@ -11,7 +11,7 @@ local Class = class:new("core.EventManager")
 
 Class.system.Abstract = true
 
-Class.property = {
+Class.system.Properties = {
     Player = {
         get = function() return UI.Player end,
         set = function(_, value)

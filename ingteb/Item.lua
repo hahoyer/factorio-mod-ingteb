@@ -23,7 +23,7 @@ end
 
 local Item = class:new("Item", Goods)
 
-Item.property = {
+Item.system.Properties = {
     Entity = {
         cache = true,
         get = function(self)
@@ -132,7 +132,9 @@ Item.property = {
 }
 
 function Item:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype or game.item_prototypes[name], database))
+    local self = self:adopt(
+        self.system.BaseClass:new(prototype or game.item_prototypes[name], database)
+    )
     self.SpriteType = "item"
 
     dassert(self.Prototype.object_name == "LuaItemPrototype")

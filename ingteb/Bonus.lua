@@ -8,10 +8,12 @@ local class = require("core.class")
 
 local Bonus = class:new("Bonus", Common)
 
-Bonus.property = {NumberOnSprite = {get = function(self) return self.Prototype.modifier end}}
+Bonus.system.Properties = {
+    NumberOnSprite = {get = function(self) return self.Prototype.modifier end},
+}
 
 function Bonus:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype, database))
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
     self.SpriteType = "utility"
     self.UsedBy = Dictionary:new{}

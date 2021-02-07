@@ -7,7 +7,7 @@ local class = require("core.class")
 
 local FuelCategory = class:new("FuelCategory", Common)
 
-FuelCategory.property = {
+FuelCategory.system.Properties = {
     Fuels = {
         cache = true,
         get = function(self)
@@ -21,7 +21,7 @@ function FuelCategory:new(name, prototype, database)
     dassert(name)
 
     local self = self:adopt(
-        self.system.base:new(prototype or game.fuel_category_prototypes[name], database)
+        self.system.BaseClass:new(prototype or game.fuel_category_prototypes[name], database)
     )
 
     dassert(self.Prototype.object_name == "LuaFuelCategoryPrototype")

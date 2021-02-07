@@ -48,8 +48,7 @@ local Class = class:new(
                     if amounts.min or amounts.max then
                         line:AppendMany{
                             ", ",
-                            (amounts.min or amounts.value) .. " - "
-                                .. (amounts.max or amounts.value),
+                            (amounts.min or amounts.value) .. " - " .. (amounts.max or amounts.value),
                         }
                     end
 
@@ -61,7 +60,11 @@ local Class = class:new(
                         }
                     end
                     if amounts.temperature then
-                        line:AppendMany{", ", {"description.temperature"}, ": " .. amounts.temperature}
+                        line:AppendMany{
+                            ", ",
+                            {"description.temperature"},
+                            ": " .. amounts.temperature,
+                        }
                     end
                     if amounts.catalyst_amount then
                         line:AppendMany{
@@ -216,7 +219,7 @@ end
 
 function Class:new(goods, amounts, database)
     dassert(goods)
-    local self = self:adopt(self.system.base:new(goods.Prototype, database))
+    local self = self:adopt(self.system.BaseClass:new(goods.Prototype, database))
     dassert(
         self.Prototype.object_name == "LuaItemPrototype" --
         or self.Prototype.object_name == "LuaFluidPrototype"

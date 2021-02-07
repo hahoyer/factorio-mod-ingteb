@@ -7,7 +7,7 @@ local class = require("core.class")
 
 local Goods = class:new("Goods", Common)
 
-Goods.property = {
+Goods.system.Properties = {
     OriginalRecipeList = {
         get = function(self) return self.Entity and self.Entity.RecipeList or Array:new{} end,
     },
@@ -161,7 +161,7 @@ end
 function Goods:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
 
 function Goods:new(prototype, database)
-    local self = self:adopt(self.system.base:new(prototype, database))
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
 
     return self
 

@@ -23,7 +23,7 @@ local function GetPrototype(domain, category)
     end
 end
 
-Category.property = {
+Category.system.Properties = {
     OriginalWorkers = {
         get = function(self)
             return self.Database.WorkersForCategory[self.Name] --
@@ -94,7 +94,7 @@ Category.property = {
 }
 
 function Category:SealUp()
-    self.class.system.base.SealUp(self)
+    self.class.system.BaseClass.SealUp(self)
     return self
 end
 
@@ -113,7 +113,9 @@ function Category:new(name, prototype, database)
 
     local p = GetPrototype(domain, category)
     if not p then __DebugAdapter.breakpoint() end
-    local self = self:adopt(self.system.base:new(prototype or GetPrototype(domain, category), database))
+    local self = self:adopt(
+        self.system.BaseClass:new(prototype or GetPrototype(domain, category), database)
+    )
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName

@@ -2,11 +2,11 @@ local class = {name = "class"}
 
 local function GetInherited(self, key)
     if not self then return end
-    return self.property[key] or GetInherited(self.system.base, key)
+    return self.system.Properties[key] or GetInherited(self.system.BaseClass, key)
 end
 
 local function GetField(self, key, classInstance, base)
-    local accessors = classInstance.property[key]
+    local accessors = classInstance.system.Properties[key]
     if accessors then
         if accessors.cache then
             return self.cache[accessors.class][key].Value
@@ -16,7 +16,7 @@ local function GetField(self, key, classInstance, base)
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
     elseif base then
-        return base.metatable.__index(self, key)
+        return base.system.Metatable.__index(self, key)
     else
         return nil
     end
@@ -31,16 +31,23 @@ end
 --- @return table class new class 
 function class:new(name, base, properties)
     dassert(type(name) == "string")
-    if base then dassert(base.class == class) end
+    if base then
+        dassert(base.class == class)
+        dassert(
+            not base.system.InstantiationType --
+            or base.system.InstantiationType == "Base", -- 
+            name .. ": class " .. base.system.Name .. " cannot be used as base class."
+        )
+    end
 
     local metatable = {}
-    local classInstance = {
-        system = {name = name, metatable = metatable, base = base },
-        name = name,
-        metatable = metatable ,
-        property = (properties or {}),
-        class = class,
+    local systemValues = {
+        Name = name,
+        Metatable = metatable,
+        BaseClass = base,
+        Properties = properties or {},
     }
+    local classInstance = {system = systemValues, name = name, class = class}
 
     function metatable:__index(key)
         local result = GetField(self, key, classInstance, base)
@@ -48,11 +55,11 @@ function class:new(name, base, properties)
     end
 
     function metatable:__newindex(key, value)
-        local accessors = classInstance.property[key]
+        local accessors = classInstance.system.Properties[key]
         if accessors then
             return accessors.set(self, value)
         elseif base then
-            return base.metatable.__newindex(self, key, value)
+            return base.system.Metatable.__newindex(self, key, value)
         else
             rawset(self, key, value)
         end
@@ -70,16 +77,24 @@ function class:new(name, base, properties)
     --- @return table instance ... but patched 
     function classInstance:adopt(instance, isMinimal)
         if not instance then instance = {} end
-        if self.system.Singleton and self.system.Instance then
-            dassert(self.system.Instance == instance)
+        if self.system.InstantiationType == "Singleton" and self.system.Instance then
+            dassert(
+                self.system.Instance == instance,
+                    "Class " .. self.system.Name .. " has been intantiated already."
+            )
             return instance
         end
+        dassert(
+            self.system.InstantiationType ~= "Base",
+                "Instances of class " .. self.system.Name .. " are not allowed."
+        )
+
         if not isMinimal then instance.class = self end
-        setmetatable(instance, self.metatable)
+        setmetatable(instance, self.system.Metatable)
         if not isMinimal then
-            for key, value in pairs(self.property) do
+            for key, value in pairs(self.system.Properties) do
                 value.class = self.name
-                local inherited = GetInherited(self.system.base, key)
+                local inherited = GetInherited(self.system.BaseClass, key)
                 if inherited then
                     if not rawget(instance, "inherited") then
                         instance.inherited = {}
@@ -95,11 +110,15 @@ function class:new(name, base, properties)
                 end
             end
         end
-        if self.system.Singleton then self.system.Instance = instance end
+        if self.system.InstantiationType == "Singleton" then self.system.Instance = instance end
         return instance
     end
 
+    setmetatable(classInstance, {__debugline = "class[" .. name .. "]"})
+
     return classInstance
 end
+
+function class:__debugline() return self.system.Name end
 
 return class

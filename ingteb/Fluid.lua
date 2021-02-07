@@ -10,7 +10,9 @@ local class = require("core.class")
 local Fluid = class:new("Fluid", Goods)
 
 function Fluid:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype or game.fluid_prototypes[name], database))
+    local self = self:adopt(
+        self.system.BaseClass:new(prototype or game.fluid_prototypes[name], database)
+    )
     self.SpriteType = "fluid"
 
     dassert(self.Prototype.object_name == "LuaFluidPrototype")

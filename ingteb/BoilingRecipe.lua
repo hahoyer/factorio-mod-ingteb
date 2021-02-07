@@ -13,7 +13,7 @@ local function GetCategoryAndRegister(self, domain, category)
     return result
 end
 
-BoilingRecipe.property = {
+BoilingRecipe.system.Properties = {
     OrderValue = {
         cache = true,
         get = function(self)
@@ -28,7 +28,7 @@ BoilingRecipe.property = {
 }
 
 function BoilingRecipe:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype, database))
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
     self.SpriteType = "entity"
     self.Time = 1

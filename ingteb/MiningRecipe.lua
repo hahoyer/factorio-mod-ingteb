@@ -14,7 +14,7 @@ local function GetCategoryAndRegister(self, domain, category)
     return result
 end
 
-MiningRecipe.property = {
+MiningRecipe.system.Properties = {
     OrderValue = {
         cache = true,
         get = function(self)
@@ -40,7 +40,9 @@ MiningRecipe.property = {
 }
 
 function MiningRecipe:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype or game.entity_prototypes[name], database))
+    local self = self:adopt(
+        self.system.BaseClass:new(prototype or game.entity_prototypes[name], database)
+    )
 
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time

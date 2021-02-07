@@ -2,7 +2,7 @@ local class = require("core.classclass")
 
 local ValueCache = class:new("ValueCache")
 
-ValueCache.property = {
+ValueCache.system.Properties = {
     IsValid = {
         get = function(self) return self:get_IsValid(self.Client) end,
         set = function(self, value) self:set_IsValid(self.Client, value) end,
@@ -34,7 +34,7 @@ end
 
 function ValueCache:Ensure(client)
     if not self.isValid then
-        self.value = rawget(self,"getValueFunction")(client)
+        self.value = rawget(self, "getValueFunction")(client)
         self.isValid = true
     end
 end

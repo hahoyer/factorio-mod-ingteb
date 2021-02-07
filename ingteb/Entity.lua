@@ -9,7 +9,7 @@ local class = require("core.class")
 
 local Entity = class:new("Entity", Common)
 
-Entity.property = {
+Entity.system.Properties = {
     SpriteName = {
         get = function(self)
             -- special entity for handmining
@@ -110,7 +110,9 @@ Entity.property = {
 function Entity:SortAll() end
 
 function Entity:new(name, prototype, database)
-    local self = self:adopt(self.system.base:new(prototype or game.entity_prototypes[name], database))
+    local self = self:adopt(
+        self.system.BaseClass:new(prototype or game.entity_prototypes[name], database)
+    )
     self.SpriteType = "entity"
     if name then self.Name = name end
 

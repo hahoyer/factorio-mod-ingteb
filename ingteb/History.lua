@@ -2,7 +2,7 @@ local Constants = require("Constants")
 local class = require("core.class")
 
 local History = class:new("History")
-History.property = {
+History.system.Properties = {
     IsForePossible = {
         get = function(self)
             return self.Index < #self.Data --
