@@ -110,7 +110,7 @@ Entity.property = {
 function Entity:SortAll() end
 
 function Entity:new(name, prototype, database)
-    local self = self:adopt(self.base:new(prototype or game.entity_prototypes[name], database))
+    local self = self:adopt(self.system.base:new(prototype or game.entity_prototypes[name], database))
     self.SpriteType = "entity"
     if name then self.Name = name end
 

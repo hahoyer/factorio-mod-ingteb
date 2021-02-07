@@ -216,7 +216,7 @@ end
 
 function Class:new(goods, amounts, database)
     dassert(goods)
-    local self = self:adopt(self.base:new(goods.Prototype, database))
+    local self = self:adopt(self.system.base:new(goods.Prototype, database))
     dassert(
         self.Prototype.object_name == "LuaItemPrototype" --
         or self.Prototype.object_name == "LuaFluidPrototype"

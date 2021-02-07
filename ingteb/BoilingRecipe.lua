@@ -28,7 +28,7 @@ BoilingRecipe.property = {
 }
 
 function BoilingRecipe:new(name, prototype, database)
-    local self = self:adopt(self.base:new(prototype, database))
+    local self = self:adopt(self.system.base:new(prototype, database))
     self.Name = name
     self.SpriteType = "entity"
     self.Time = 1

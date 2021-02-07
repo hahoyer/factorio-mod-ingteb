@@ -21,7 +21,7 @@ function FuelCategory:new(name, prototype, database)
     dassert(name)
 
     local self = self:adopt(
-        self.base:new(prototype or game.fuel_category_prototypes[name], database)
+        self.system.base:new(prototype or game.fuel_category_prototypes[name], database)
     )
 
     dassert(self.Prototype.object_name == "LuaFuelCategoryPrototype")

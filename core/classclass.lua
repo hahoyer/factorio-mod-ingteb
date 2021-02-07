@@ -2,7 +2,7 @@ local class = {name = "class"}
 
 local function GetInherited(self, key)
     if not self then return end
-    return self.property[key] or GetInherited(self.base, key)
+    return self.property[key] or GetInherited(self.system.base, key)
 end
 
 local function GetField(self, key, classInstance, base)
@@ -33,15 +33,14 @@ function class:new(name, base, properties)
     dassert(type(name) == "string")
     if base then dassert(base.class == class) end
 
+    local metatable = {}
     local classInstance = {
+        system = {name = name, metatable = metatable, base = base },
         name = name,
-        metatable = {},
+        metatable = metatable ,
         property = (properties or {}),
         class = class,
-        base = base,
     }
-
-    local metatable = classInstance.metatable
 
     function metatable:__index(key)
         local result = GetField(self, key, classInstance, base)
@@ -59,7 +58,7 @@ function class:new(name, base, properties)
         end
     end
 
-    if GetInherited(classInstance,"DebugLine") then
+    if GetInherited(classInstance, "DebugLine") then
         function metatable:__debugline() return self.DebugLine end
     end
 
@@ -71,12 +70,16 @@ function class:new(name, base, properties)
     --- @return table instance ... but patched 
     function classInstance:adopt(instance, isMinimal)
         if not instance then instance = {} end
+        if self.system.Singleton and self.system.Instance then
+            dassert(self.system.Instance == instance)
+            return instance
+        end
         if not isMinimal then instance.class = self end
         setmetatable(instance, self.metatable)
         if not isMinimal then
             for key, value in pairs(self.property) do
                 value.class = self.name
-                local inherited = GetInherited(self.base, key)
+                local inherited = GetInherited(self.system.base, key)
                 if inherited then
                     if not rawget(instance, "inherited") then
                         instance.inherited = {}
@@ -92,6 +95,7 @@ function class:new(name, base, properties)
                 end
             end
         end
+        if self.system.Singleton then self.system.Instance = instance end
         return instance
     end
 

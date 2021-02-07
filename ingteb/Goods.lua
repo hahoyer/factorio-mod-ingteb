@@ -161,7 +161,7 @@ end
 function Goods:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
 
 function Goods:new(prototype, database)
-    local self = self:adopt(self.base:new(prototype, database))
+    local self = self:adopt(self.system.base:new(prototype, database))
 
     return self
 

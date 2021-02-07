@@ -38,6 +38,8 @@ Category.property = {
     AdditionalHelp = {
         get = function(self)
             local result = Array:new{}
+            if self.Name == "crafting.crafting" then return result end
+
             local name = self.LocalisedName
             if self.Domain ~= "crafting" then
                 name = {
@@ -92,7 +94,7 @@ Category.property = {
 }
 
 function Category:SealUp()
-    self.class.base.SealUp(self)
+    self.class.system.base.SealUp(self)
     return self
 end
 
@@ -111,7 +113,7 @@ function Category:new(name, prototype, database)
 
     local p = GetPrototype(domain, category)
     if not p then __DebugAdapter.breakpoint() end
-    local self = self:adopt(self.base:new(prototype or GetPrototype(domain, category), database))
+    local self = self:adopt(self.system.base:new(prototype or GetPrototype(domain, category), database))
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName

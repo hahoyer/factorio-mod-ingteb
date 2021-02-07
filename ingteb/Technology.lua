@@ -282,7 +282,7 @@ function Technology:SortAll()
 end
 
 function Technology:new(name, prototype, database)
-    local self = self:adopt(self.base:new(prototype or game.technology_prototypes[name], database))
+    local self = self:adopt(self.system.base:new(prototype or game.technology_prototypes[name], database))
 
     dassert(self.Prototype.object_name == "LuaTechnologyPrototype")
 

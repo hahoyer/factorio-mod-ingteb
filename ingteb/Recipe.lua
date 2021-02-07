@@ -343,7 +343,7 @@ function Recipe:Refresh() self.cache.Recipe.OrderValue.IsValid = false end
 function Recipe:SortAll() end
 
 function Recipe:new(name, prototype, database)
-    local self = self:adopt(self.base:new(prototype or game.recipe_prototypes[name], database))
+    local self = self:adopt(self.system.base:new(prototype or game.recipe_prototypes[name], database))
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 

@@ -7,7 +7,7 @@ local ValueCache = require("core.ValueCache")
 --- @param name string then property name
 --- @param getter function the function that calulates the actual value
 function class.addCachedProperty(instance, classInstance, name, getter)
-    local className = classInstance.name
+    local className = classInstance.system.name
     if not rawget(instance, "cache") then rawset(instance, "cache", {}) end
     if not instance.cache[className] then instance.cache[className] = {} end
     instance.cache[className][name] = ValueCache:new(instance, getter)

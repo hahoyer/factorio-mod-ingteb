@@ -22,8 +22,8 @@ local Common = class:new(
             get = function(self)
                 local type = self.TypeStringForLocalisation
                 local name = self.Prototype.localised_name
-                if self.Translation.Name == false then name = "["..self.Name.."]" end
-                
+                if self.Translation.Name == false then name = "[" .. self.Name .. "]" end
+
                 if type then
                     return {"", name, " (", {type}, ")"}
                 else
