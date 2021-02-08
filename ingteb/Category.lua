@@ -7,7 +7,7 @@ local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
-local Category = class:new("Category", Common)
+local Class = class:new("Category", Common)
 
 local function GetPrototype(domain, category)
     if domain == "crafting" then
@@ -23,7 +23,7 @@ local function GetPrototype(domain, category)
     end
 end
 
-Category.system.Properties = {
+Class.system.Properties = {
     OriginalWorkers = {
         get = function(self)
             return self.Database.WorkersForCategory[self.Name] --
@@ -93,20 +93,20 @@ Category.system.Properties = {
     },
 }
 
-function Category:SealUp()
+function Class:SealUp()
     self.class.system.BaseClass.SealUp(self)
     return self
 end
 
-function Category:SortAll()
+function Class:SortAll()
     local result = self.OriginalWorkers
     result:Sort(function(a, b) return a:IsBefore(b) end)
     self.Workers = result
 end
 
-function Category:AssertValid() end
+function Class:AssertValid() end
 
-function Category:new(name, prototype, database)
+function Class:new(name, prototype, database)
     dassert(name)
 
     local _, _, domain, category = name:find("^(.-)%.(.*)$")
@@ -123,5 +123,5 @@ function Category:new(name, prototype, database)
 
 end
 
-return Category
+return Class
 

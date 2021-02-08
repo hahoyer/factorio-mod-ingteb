@@ -5,7 +5,7 @@ local function GetInherited(self, key)
     return self.system.Properties[key] or GetInherited(self.system.BaseClass, key)
 end
 
-local function GetField(self, key, classInstance, base)
+local function GetField(self, key, classInstance)
     local accessors = classInstance.system.Properties[key]
     if accessors then
         if accessors.cache then
@@ -15,7 +15,10 @@ local function GetField(self, key, classInstance, base)
         end
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
-    elseif base then
+    end
+    
+    local base = classInstance.system.BaseClass
+    if base then
         return base.system.Metatable.__index(self, key)
     else
         return nil
@@ -50,7 +53,7 @@ function class:new(name, base, properties)
     local classInstance = {system = systemValues, name = name, class = class}
 
     function metatable:__index(key)
-        local result = GetField(self, key, classInstance, base)
+        local result = GetField(self, key, classInstance)
         return result
     end
 
@@ -114,7 +117,17 @@ function class:new(name, base, properties)
         return instance
     end
 
-    setmetatable(classInstance, {__debugline = "class[" .. name .. "]"})
+    setmetatable(
+        classInstance, {
+            __debugline = function(self)
+                local result --
+                = name .. "{" --
+                .. (base and "BaseClass=" .. base.system.Name .. "," or "") --
+                .. "}"
+                return result
+            end,
+        }
+    )
 
     return classInstance
 end
