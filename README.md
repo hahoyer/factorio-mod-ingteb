@@ -25,6 +25,7 @@ Unfortunately, the places where you can look up information about an item are no
   => by mod
   => by hidden/hidden_from_player_crafting 
   => ... *(I am open for suggestions)*
+- Reminder selector: Order things by technology level
 - Integrating with some other mods
   => sonaxaton-research-queue
   => ... *(I am open for suggestions)*
