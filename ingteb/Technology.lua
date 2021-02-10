@@ -7,7 +7,7 @@ local Common = require("ingteb.Common")
 local class = require("core.class")
 
 local ignore
-local Technology = class:new(
+local Class = class:new(
     "Technology", Common, {
         Amount = {
             cache = true,
@@ -146,10 +146,12 @@ local Technology = class:new(
         NotResearchedPrerequisites = {
             get = function(self)
                 return self.NotResearchedPrerequisitesRaw --
-                :ToArray(function (_, technologyName)
-                    return self.Database:GetTechnology(technologyName)    
-                    end) 
-                end,
+                :ToArray(
+                    function(_, technologyName)
+                        return self.Database:GetTechnology(technologyName)
+                    end
+                )
+            end,
         },
 
         Enables = {
@@ -236,7 +238,7 @@ local function AddResearch(player, name)
     end
 end
 
-function Technology:BeginMulipleQueueResearch()
+function Class:BeginMulipleQueueResearch()
     local player = self.Database.Player
     local queued = Array:new{}
     local message = "ingteb-utility.research-no-ready-prerequisite"
@@ -260,7 +262,7 @@ function Technology:BeginMulipleQueueResearch()
     if not queued:Any() then return {message, self.Prototype.localised_name} end
 end
 
-function Technology:BeginDirectQueueResearch()
+function Class:BeginDirectQueueResearch()
     local player = self.Database.Player
     local added = AddResearch(player, self.Name)
     if added then
@@ -275,9 +277,15 @@ function Technology:BeginDirectQueueResearch()
     end
 end
 
-function Technology:Refresh() self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end) end
+function Class:Refresh()
+    if self.cache.Technology.NotResearchedPrerequisitesRaw.IsValid then
+        self.cache.Technology.NotResearchedPrerequisitesRaw.IsValid = false
+        self.Enabled:Select(function(technology) technology:Refresh() end)
+    end
+    self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end)
+end
 
-function Technology:IsBefore(other)
+function Class:IsBefore(other)
     if self == other then return false end
     if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end
     if self.IsResearched ~= other.IsResearched then return self.IsResearched end
@@ -285,12 +293,12 @@ function Technology:IsBefore(other)
     return self.Prototype.order < other.Prototype.order
 end
 
-function Technology:SortAll()
+function Class:SortAll()
     if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
     if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
 end
 
-function Technology:new(name, prototype, database)
+function Class:new(name, prototype, database)
     local self = self:adopt(
         self.system.BaseClass:new(prototype or game.technology_prototypes[name], database)
     )
@@ -306,4 +314,4 @@ function Technology:new(name, prototype, database)
 
 end
 
-return Technology
+return Class
