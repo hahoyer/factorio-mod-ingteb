@@ -412,12 +412,18 @@ function Dictionary:AppendForKey(key, target)
     end
 end
 
+function Dictionary:AppendMany(values, combine)
+    for key, value in pairs(values) do
+        self[key] = self[key] and combine and combine(self[key], value, key) or value
+    end
+end
+
 function Table.AppendForKey(self, key, target)
     if key then
         local list = self[key]
-        if not list then 
-            list = {} 
-            self[key] = list 
+        if not list then
+            list = {}
+            self[key] = list
         end
         table.insert(list, target)
     end

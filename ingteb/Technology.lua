@@ -125,13 +125,20 @@ local Technology = class:new(
         },
 
         NotResearchedPrerequisitesRaw = {
+            cache = true,
             get = function(self)
-                local result = Array:new{}
+                dlog(self.CommonKey .. ">>>")
+                local oldIndent = AddIndent()
+                local result = Dictionary:new{}
                 if self.IsResearched then return result end
                 for _, technology in pairs(self.Prerequisites) do
-                    result:AppendMany(technology.NotResearchedPrerequisitesRaw)
+                    local prerequisites = technology.NotResearchedPrerequisitesRaw
+                    result:AppendMany(prerequisites)
                 end
-                result:Append(self)
+                result[self.Name] = true
+                dassert(string.len(indent) < 1000)
+                indent = oldIndent
+                dlog(self.CommonKey .. "<<<")
                 return result
             end,
         },
@@ -139,8 +146,10 @@ local Technology = class:new(
         NotResearchedPrerequisites = {
             get = function(self)
                 return self.NotResearchedPrerequisitesRaw --
-                :GetUniqueEntries(function(value) return value.Name end)
-            end,
+                :ToArray(function (_, technologyName)
+                    return self.Database:GetTechnology(technologyName)    
+                    end) 
+                end,
         },
 
         Enables = {

@@ -19,6 +19,12 @@ function AddIndent()
     return result
 end
 
+if (__DebugAdapter and __DebugAdapter.instrument) then
+    function dlog(text) log(indent .. text) end
+else
+    function dlog(text) end
+end
+
 function ConditionalBreak(condition) if condition then __DebugAdapter.breakpoint(2) end end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then

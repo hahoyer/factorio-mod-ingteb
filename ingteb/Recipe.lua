@@ -35,9 +35,13 @@ Recipe.system.Properties = {
 
     NotResearchedTechnologiesForRecipe = {
         get = function(self)
+            dlog(self.CommonKey .. ">>>")
+            local oldIndent = AddIndent()
             local result = self.Technologies --
             :Select(function(technology) return technology.NotResearchedPrerequisites end) --
             :GetShortest()
+            indent = oldIndent
+            dlog(self.CommonKey .. "<<<")
             return result
         end,
     },

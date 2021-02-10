@@ -216,7 +216,7 @@ function Class:OnInitialisePlayer()
         Links = {Presentator = {}, Remindor = {}},
         Location = {},
         History = History:new(),
-        Remindor = {Settings = {}},
+        Remindor = {Settings = {}, List = Array:new{}, Links = Dictionary:new{}},
     }
     self:EnsureMainButton()
     self.RestoreFromSaveDone = true

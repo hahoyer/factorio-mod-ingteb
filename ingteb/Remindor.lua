@@ -191,7 +191,6 @@ local isRefreshActive
 function Class:Refresh()
     if isRefreshActive then return end
     isRefreshActive = true
-    self:EnsureGlobal()
     self.Global.Remindor.Links = Dictionary:new{}
     if self.Tasks then self.Tasks.clear() end
     local data = {}
@@ -215,12 +214,6 @@ function Class:Refresh()
         self.Global.Remindor.List = Array:new{}
     end
     isRefreshActive = false
-end
-
-function Class:EnsureGlobal()
-    if not self.Global.Remindor then
-        self.Global.Remindor = {List = Array:new{}, Links = Dictionary:new{}}
-    end
 end
 
 function Class:GetValueOfControl(element)
@@ -300,7 +293,6 @@ function Class:OnGuiEvent(event)
 end
 
 function Class:AddRemindorTask(selection)
-    self:EnsureGlobal()
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
     local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)

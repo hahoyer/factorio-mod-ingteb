@@ -1,3 +1,5 @@
-local History = require("ingteb.History")
-global = {Links = {}, Location = {}, History = History:new()}
-game.print("[ingteb] migration 0.2.23")
+if not global.Players then
+    local EventManager = require("ingteb.EventManager")
+    EventManager:OnInitialize()
+    game.print("[ingteb] migration 0.2.23")
+end
