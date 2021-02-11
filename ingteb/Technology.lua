@@ -280,7 +280,7 @@ end
 function Class:Refresh()
     if self.cache.Technology.NotResearchedPrerequisitesRaw.IsValid then
         self.cache.Technology.NotResearchedPrerequisitesRaw.IsValid = false
-        self.Enabled:Select(function(technology) technology:Refresh() end)
+        self.Enables:Select(function(technology) technology:Refresh() end)
     end
     self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end)
 end
