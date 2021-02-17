@@ -5,6 +5,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local UI = require("core.UI")
 
 local Class = class:new(
     "SelectRemindor", nil, {
@@ -315,7 +316,7 @@ end
 function Class:GetSettingsNumber(tag)
     if tag == "AutoCrafting" and self.Global.SelectRemindor.Settings.AutoCrafting then
         local value = self.Global.SelectRemindor.Settings[tag] or self.Parent.Modules.Remindor[tag]
-        local result = tonumber(value) 
+        local result = tonumber(value)
         if result ~= 0 then return result end
     end
 end
@@ -348,15 +349,11 @@ function Class:OnSettingsClick(tag, isRightButton)
     local newValue
 
     if isRightButton then
-        if value == nil then
-            newValue = self.Parent.Modules.Remindor[tag]
-        end
+        if value == nil then newValue = self.Parent.Modules.Remindor[tag] end
     elseif self.Global.SelectRemindor.Settings[tag] ~= nil then
         if tag == "AutoCrafting" then
             local index = Array:new(Constants.AutoCraftingVariants):IndexWhere(
-                function(variant)
-                    return value == variant
-                end
+                function(variant) return value == variant end
             )
             local newIndex = index % #Constants.AutoCraftingVariants + 1
             newValue = Constants.AutoCraftingVariants[newIndex]
@@ -368,6 +365,50 @@ function Class:OnSettingsClick(tag, isRightButton)
     self.Global.SelectRemindor.Settings[tag] = newValue
 end
 
+function Class:GetSettingsHelp(tag)
+    local localisedNames = {
+        AutoResearch = "ingteb-utility.select-remindor-autoresearch-help",
+        AutoCrafting = "ingteb-utility.select-remindor-autocrafting-help",
+        RemoveTaskWhenFulfilled = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
+    }
+
+    local localisedNameForValues = {
+        [true] = "ingteb-utility.settings-switch-on",
+        [false] = "ingteb-utility.settings-switch-off",
+        off = "string-mod-setting.ingteb_reminder-task-autocrafting-off",
+        ["1"] = "string-mod-setting.ingteb_reminder-task-autocrafting-1",
+        ["5"] = "string-mod-setting.ingteb_reminder-task-autocrafting-5",
+        all = "string-mod-setting.ingteb_reminder-task-autocrafting-all",
+    }
+
+    local nextValue = {
+        [true] = false,
+        [false] = true,
+        off = "1",
+        ["1"] = "5",
+        ["5"] = "all",
+        all = "off",
+    }
+
+    local additionalLines = Array:new{}
+
+    local currentValue = self.Global.SelectRemindor.Settings[tag]
+    local valueByDefault = self.Parent.Modules.Remindor[tag]
+    local nextValue = nextValue[currentValue]
+    if nextValue ~= nil then
+        additionalLines:Append(UI.GetHelpTextForButtons({localisedNameForValues[nextValue]}, "--- l"))
+    end
+
+    local nextValueByDefault = {localisedNameForValues[valueByDefault]}
+    local defaultClick = currentValue == nil and "ingteb-utility.settings-activate"
+                             or "ingteb-utility.settings-deactivate"
+    additionalLines:Append(UI.GetHelpTextForButtons({defaultClick, nextValueByDefault}, "--- r"))
+
+    local actualValue = currentValue or valueByDefault
+    return Helper.ConcatLocalisedText({localisedNames[tag], {localisedNameForValues[actualValue]}}, additionalLines)
+
+end
+
 function Class:GetSettingsGui()
     return {
         type = "flow",
@@ -375,16 +416,16 @@ function Class:GetSettingsGui()
         children = {
             self:GetSettingsButton(
                 "AutoResearch", {"utility.technology_black", "utility.technology_white"},
-                    {"ingteb-utility.select-remindor-autoresearch-help"}
+                    self:GetSettingsHelp("AutoResearch")
             ),
             self:GetSettingsButton(
                 "AutoCrafting",
                     {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
-                    {"ingteb-utility.select-remindor-autocrafting-help"}
+                    self:GetSettingsHelp("AutoCrafting")
             ),
             self:GetSettingsButton(
                 "RemoveTaskWhenFulfilled", {"utility.trash", "utility.trash_white"},
-                    {"ingteb-utility.select-remindor-remove-when-fulfilled-help"}
+                    self:GetSettingsHelp("RemoveTaskWhenFulfilled")
             ),
         },
     }

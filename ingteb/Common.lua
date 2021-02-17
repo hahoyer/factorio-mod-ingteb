@@ -102,7 +102,7 @@ function Common:GetFunctionalHelp(site)
                 local key = specialFunction.UICode
                 if not lines[key] then
                     lines[key] = UI.GetHelpTextForButtons(
-                        specialFunction.HelpText, specialFunction.UICode
+                        {specialFunction.HelpText}, specialFunction.UICode
                     )
                 end
             end --
@@ -113,23 +113,11 @@ end
 
 function Common:GetHelperText(site)
     local name = {"", "[font=default-large-bold]", self.HelperHeaderText, "[/font]"}
-    local lines = Array:new{}
-    local function append(line)
-        if line then
-            lines:Append("\n")
-            lines:Append(line)
-        end
-    end
     -- append(self.LocalizedDescription)
     local additionalHelp = self.AdditionalHelp
     local functionalHelp = self:GetFunctionalHelp(site)
-    additionalHelp:Select(append)
-    functionalHelp:Select(append)
-    if lines:Any() then
-        lines:InsertAt(1, "")
-        return {"", name, Helper.ScrutinizeLocalisationString(lines)}
-    end
-    return name
+
+    return Helper.ConcatLocalisedText(name, additionalHelp:Concat(functionalHelp))
 end
 
 function Common:AssertValid() end

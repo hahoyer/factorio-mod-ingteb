@@ -246,4 +246,27 @@ function Helper.CreateLeftSideFrameWithContent(self, content, caption, options)
     return result
 end
 
+---create helper text from data lines as LocalisedString
+--- ensures that resulting lists do not have more than 20 parameters (a restriction from factorio mod lib: https://lua-api.factorio.com/latest/Concepts.html#LocalisedString)
+---@param top any LocalizedText that will be the head or then only result if there are no lines
+---@param tail table Array of LocalizedText
+---@return any LocalisedString
+function Helper.ConcatLocalisedText(top, tail)
+    local lines = Array:new{}
+    local function append(line)
+        if line then
+            lines:Append("\n")
+            lines:Append(line)
+        end
+    end
+    tail:Select(append)
+    if lines:Any() then
+        lines:InsertAt(1, "")
+        return {"", top, Helper.ScrutinizeLocalisationString(lines)}
+    end
+    return top
+end
+
+
 return Helper
+

@@ -185,16 +185,16 @@ local function GetDragTooltip(isTop, isBottom)
         "",
         not isTop and {
             "",
-            UI.GetHelpTextForButtons("ingteb-utility.move-task-to-top", "--S l"),
+            UI.GetHelpTextForButtons({"ingteb-utility.move-task-to-top"}, "--S l"),
             "\n",
-            UI.GetHelpTextForButtons("ingteb-utility.move-task-up", "--- l"),
+            UI.GetHelpTextForButtons({"ingteb-utility.move-task-up"}, "--- l"),
         } or "",
         not isTop and not isBottom and "\n" or "",
         not isBottom and {
             "",
-            UI.GetHelpTextForButtons("ingteb-utility.move-task-down", "--- r"),
+            UI.GetHelpTextForButtons({"ingteb-utility.move-task-down"}, "--- r"),
             "\n",
-            UI.GetHelpTextForButtons("ingteb-utility.move-task-to-bottom", "--S r"),
+            UI.GetHelpTextForButtons({"ingteb-utility.move-task-to-bottom"}, "--S r"),
         } or "",
     }
 end

@@ -39,7 +39,7 @@ function UI.IsMouseCode(event, pattern)
     return true
 end
 
-function UI.GetHelpTextForButtons(helpTag, pattern)
+function UI.GetHelpTextForButtons(helpText, pattern)
     local result = {""}
 
     local function append(key)
@@ -55,7 +55,7 @@ function UI.GetHelpTextForButtons(helpTag, pattern)
     if pattern:sub(5, 5) == "m" then append("mouse-button-3-alt-1") end
 
     table.insert(result, "- ")
-    table.insert(result, {helpTag})
+    table.insert(result, helpText)
     return {"ingteb-utility.control-style", result}
 end
 
