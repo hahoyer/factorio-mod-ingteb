@@ -21,9 +21,15 @@ function Class:Reopen()
     self:CreateGui()
 end
 
+function Class:EnsureGlobals()
+    if not self.Global.SelectRemindor then self.Global.SelectRemindor = {} end
+    if not self.Global.SelectRemindor.Settings then self.Global.SelectRemindor.Settings = {} end
+end
+
 function Class:Open(action, location)
     if action then self:Setup(action) end
     if location then self.Global.Location.SelectRemindor = location end
+    self:EnsureGlobals()
     self:CreateGui()
 end
 
@@ -120,8 +126,24 @@ function Class:OnGuiEvent(event)
     if message.action == "Closed" then
         self:Close()
     elseif message.action == "Click" then
-        local commonKey = message.key or event.element.name
-        self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
+        if message.control == "Settings" then
+            local isRightButton
+            if event.button == defines.mouse_button_type.left then
+                isRightButton = false
+            elseif event.button == defines.mouse_button_type.right then
+                isRightButton = true
+            else
+                dassert()
+            end
+
+            self:OnSettingsClick(message.tag, isRightButton)
+            self:Reopen()
+        else
+            local commonKey = message.key or event.element.name
+            if commonKey then
+                self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
+            end
+        end
     elseif message.action == "CountChanged" then
         self:OnTextChanged(event.element.text)
     elseif message.action == "Enter" then
@@ -161,6 +183,7 @@ function Class:GetSelection()
         Worker = self.Worker.CommonKey,
         Recipe = self.Recipe.CommonKey,
         CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
+        Settings = self.Global.SelectRemindor.Settings,
     }
 end
 
@@ -229,79 +252,153 @@ function Class:GetBelongingRecipes(worker)
     return results
 end
 
-function Class:GetWorkersAndRecipes()
-    local result = Array:new{}
-
-    if self.Workers:Count() > 1 then
-        result:Append{
-            type = "flow",
-            direction = "horizontal",
-            children = {
-                {type = "label", caption = {"ingteb-utility.select-worker"}},
-                {
-                    type = "sprite",
-                    sprite = self.Worker.SpriteName,
-                    ref = {"Worker"},
-                    tooltip = self.Worker:GetHelperText(self.class.name),
-                },
-                {type = "label", caption = {"ingteb-utility.select-variants"}},
-                self:GetLinePart(self:CreateSelection(self.Workers)),
+function Class:GetTargetGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {type = "label", caption = {"ingteb-utility.select-target"}},
+            {
+                type = "sprite",
+                sprite = self.Target.SpriteName,
+                tooltip = self.Target:GetHelperText(self.class.name),
             },
-        }
+            {
+                type = "textfield",
+                numeric = true,
+                allow_negative = true,
+                allow_decimal = true,
+                text = self.Count,
+                style_mods = {maximal_width = 100},
+                actions = {on_text_changed = {module = self.class.name, action = "CountChanged"}},
+            },
+        },
+    }
+end
+
+function Class:GetWorkersGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {type = "label", caption = {"ingteb-utility.select-worker"}},
+            {
+                type = "sprite",
+                sprite = self.Worker.SpriteName,
+                ref = {"Worker"},
+                tooltip = self.Worker:GetHelperText(self.class.name),
+            },
+            {type = "label", caption = {"ingteb-utility.select-variants"}},
+            self:GetLinePart(self:CreateSelection(self.Workers)),
+        },
+    }
+end
+
+function Class:GetRecipesGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {type = "label", caption = {"ingteb-utility.select-recipe"}},
+            {
+                type = "sprite",
+                sprite = self.Recipe.SpriteName,
+                ref = {"Recipe"},
+                tooltip = self.Worker:GetHelperText(self.class.name),
+            },
+            {type = "label", caption = {"ingteb-utility.select-variants"}},
+            self:GetLinePart(self:CreateSelection(self.Recipes)),
+        },
+    }
+end
+
+function Class:GetSettingsNumber(tag)
+    if tag == "AutoCrafting" and self.Global.SelectRemindor.Settings.AutoCrafting then
+        local value = self.Global.SelectRemindor.Settings[tag] or self.Parent.Modules.Remindor[tag]
+        local result = tonumber(value) 
+        if result ~= 0 then return result end
+    end
+end
+
+function Class:GetSettingsButton(tag, spriteList, help)
+    local value = self.Global.SelectRemindor.Settings[tag] or self.Parent.Modules.Remindor[tag]
+    local sprite = spriteList[(value == false or value == "off") and 1 or 2]
+
+    return {
+        type = "sprite-button",
+        sprite = sprite,
+        ref = {tag},
+        style = self.Global.SelectRemindor.Settings[tag] ~= nil and "ingteb-light-button"
+            or "slot_button",
+        tooltip = help,
+        number = self:GetSettingsNumber(tag),
+        actions = {
+            on_click = {
+                module = "SelectRemindor",
+                action = "Click",
+                control = "Settings",
+                tag = tag,
+            },
+        },
+    }
+end
+
+function Class:OnSettingsClick(tag, isRightButton)
+    local value = self.Global.SelectRemindor.Settings[tag]
+    local newValue
+
+    if isRightButton then
+        if value == nil then
+            newValue = self.Parent.Modules.Remindor[tag]
+        end
+    elseif self.Global.SelectRemindor.Settings[tag] ~= nil then
+        if tag == "AutoCrafting" then
+            local index = Array:new(Constants.AutoCraftingVariants):IndexWhere(
+                function(variant)
+                    return value == variant
+                end
+            )
+            local newIndex = index % #Constants.AutoCraftingVariants + 1
+            newValue = Constants.AutoCraftingVariants[newIndex]
+        else
+            newValue = not value
+        end
     end
 
-    if self.Recipes:Count() > 1 then
-        result:Append{
-            type = "flow",
-            direction = "horizontal",
-            children = {
-                {type = "label", caption = {"ingteb-utility.select-recipe"}},
-                {
-                    type = "sprite",
-                    sprite = self.Recipe.SpriteName,
-                    ref = {"Recipe"},
-                    tooltip = self.Worker:GetHelperText(self.class.name),
-                },
-                {type = "label", caption = {"ingteb-utility.select-variants"}},
-                self:GetLinePart(self:CreateSelection(self.Recipes)),
-            },
-        }
-    end
+    self.Global.SelectRemindor.Settings[tag] = newValue
+end
 
-    return result
+function Class:GetSettingsGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            self:GetSettingsButton(
+                "AutoResearch", {"utility.technology_black", "utility.technology_white"},
+                    {"ingteb-utility.select-remindor-autoresearch-help"}
+            ),
+            self:GetSettingsButton(
+                "AutoCrafting",
+                    {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
+                    {"ingteb-utility.select-remindor-autocrafting-help"}
+            ),
+            self:GetSettingsButton(
+                "RemoveTaskWhenFulfilled", {"utility.trash", "utility.trash_white"},
+                    {"ingteb-utility.select-remindor-remove-when-fulfilled-help"}
+            ),
+        },
+    }
+
 end
 
 function Class:GetGui()
-    return {
-        type = "flow",
-        direction = "vertical",
-        children = {
-            {
-                type = "flow",
-                direction = "horizontal",
-                children = {
-                    {type = "label", caption = {"ingteb-utility.select-target"}},
-                    {
-                        type = "sprite",
-                        sprite = self.Target.SpriteName,
-                        tooltip = self.Target:GetHelperText(self.class.name),
-                    },
-                    {
-                        type = "textfield",
-                        numeric = true,
-                        allow_negative = true,
-                        allow_decimal = true,
-                        text = self.Count,
-                        style_mods = {maximal_width = 100},
-                        actions = {
-                            on_text_changed = {module = self.class.name, action = "CountChanged"},
-                        },
-                    },
-                },
-            },
-            {type = "flow", direction = "vertical", children = self:GetWorkersAndRecipes()},
-        },
+    local children = Array:new{
+        {self:GetTargetGui()},
+        self.Workers:Count() > 1 and {self:GetWorkersGui()} or {},
+        self.Recipes:Count() > 1 and {self:GetRecipesGui()} or {},
+        {self:GetSettingsGui()},
     }
+    return {type = "flow", direction = "vertical", children = children:ConcatMany()}
 end
 
 return Class

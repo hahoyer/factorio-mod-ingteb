@@ -3,7 +3,8 @@ Version: 0.3.12
 Date: 2021-01-21
   Changes:
     - tooltip for categories
-    - settings for presentator
+    - settings for presentator^
+    - easier remindor settings
   Bugfixes:
     - fixing crash when clicking on steam
 ---------------------------------------------------------------------------------------------------
