@@ -18,29 +18,19 @@ local Class = class:new(
         Database = {get = function(self) return self.Parent.Database end},
         AutoResearch = {
             get = function(self)
-                if self.Settings.AutoResearch ~= nil then
-                    return self.Settings.AutoResearch
-                end
                 return self.ParentData.Settings.AutoResearch
             end,
         },
         AutoCrafting = {
             get = function(self)
-                if self.Settings.AutoCrafting ~= nil then
-                    return self.Settings.AutoCrafting
-                end
                 return self.ParentData.Settings.AutoCrafting
             end,
         },
         RemoveTaskWhenFulfilled = {
             get = function(self)
-                if self.Settings.RemoveTaskWhenFulfilled ~= nil then
-                    return self.Settings.RemoveTaskWhenFulfilled
-                end
                 return self.ParentData.Settings.RemoveTaskWhenFulfilled
             end,
         },
-        Settings = {get = function(self) return self.Global.Remindor.Settings end},
         HelperTextSettings = {
             get = function(self)
                 local result = Array:new{}
@@ -87,36 +77,9 @@ function Class:new(parent)
     return self
 end
 
-function Class:CloseSettings()
-    if not self.CurrentSettings then return end
-    self.CurrentSettings.destroy()
-    if self.ParentScreen then
-        self.ParentScreen.ignored_by_interaction = nil
-        self.Player.opened = self.ParentScreen
-        self.ParentScreen = nil
-
-    end
-    self.CurrentSettings = nil
-end
-
-function Class:OpenSettings(target)
-    self:CloseSettings()
-    self.CurrentSettings = Settings.Open(self, target or self)
-end
-
-function Class:RefreshSettings(target)
-    self.CurrentSettings.destroy()
-    if self.ParentScreen and self.ParentScreen.valid then
-        self.ParentScreen.ignored_by_interaction = nil
-        self.Player.opened = self.ParentScreen
-    end
-    self.CurrentSettings = Settings.Open(self, target or self)
-end
-
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     if not self.Global.Remindor then self.Global.Remindor = {} end
-    if not self.Global.Remindor.Settings then self.Global.Remindor.Settings = {} end
     local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
     local list = self.Global.Remindor.List or {}
     self.Global.Remindor.List = Array:new()
@@ -129,20 +92,11 @@ function Class:RestoreFromSave(parent)
         self:Open()
     end
     self:Refresh()
-
-    local currentSettings = self.Player.gui.screen.RemindorSettings
-    if currentSettings then
-        local taskIndex = self:GetTaskIndex(currentSettings.children[2].name)
-        local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
-        currentSettings.destroy()
-        self:OpenSettings(target)
-    end
 end
 
 function Class:Toggle()
     if self.Current then
         self:Close()
-        self:CloseSettings()
     else
         self:Open()
         self:Refresh()
@@ -166,26 +120,14 @@ function Class:Open()
             direction = "vertical",
             style_mods = {horizontally_stretchable = "on"},
         }, --
-        {"ingteb-utility.reminder-tasks"}, --
-        {
-            buttons = {
-                {
-                    type = "sprite-button",
-                    sprite = "ingteb_settings_white",
-                    style = "frame_action_button",
-                    actions = {on_click = {module = self.class.name, action = "Settings"}},
-                    tooltip = self.HelperTextSettings,
-                },
-            },
-        }
+        {"ingteb-utility.reminder-tasks"} --
     )
     self.Tasks = result.Tasks
     self.Current = result.Main
     self:Refresh()
 end
 
-function Class:Reopen(target)
-    if self.CurrentSettings then self:RefreshSettings(target) end
+function Class:Reopen()
     if self.Current then
         self:Close()
         self:Open()
@@ -245,19 +187,22 @@ function Class:OnGuiEvent(event)
     local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
 
     if message.action == "Update" then
-        target.Settings[message.control] = self:GetValueOfControl(event.element)
-        self:Reopen(target)
+        dassert(target == self)
+        self.Settings[message.control] = self:GetValueOfControl(event.element)
+        self:Reopen()
     elseif message.action == "UpdateOverride" then
+        dassert(target == self)
         if event.element.state then
-            target.Settings[message.control] = nil
+            self.Settings[message.control] = nil
         else
-            target.Settings[message.control] = target[message.control]
+            self.Settings[message.control] = self[message.control]
         end
-        self:Reopen(target)
+        self:Reopen()
     elseif message.action == "Click" then
         self.Parent:OnGuiClick(event)
     elseif message.action == "Settings" then
-        self:OpenSettings(target)
+        dassert(target == self)
+        self:OpenSettings()
     elseif message.action == "SettingsClick" then
         if message.target == "SelectRemindor" then
             self.Parent.Modules.SelectRemindor.Settings:OnClick(event)
