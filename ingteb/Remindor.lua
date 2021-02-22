@@ -93,6 +93,8 @@ function Class:CloseSettings()
     if self.ParentScreen then
         self.ParentScreen.ignored_by_interaction = nil
         self.Player.opened = self.ParentScreen
+        self.ParentScreen = nil
+
     end
     self.CurrentSettings = nil
 end
@@ -158,7 +160,12 @@ end
 function Class:Open()
     local result = Helper.CreateLeftSideFrameWithContent(
         self, --
-        {type = "flow", ref = {"Tasks"}, direction = "vertical"}, --
+        {
+            type = "flow",
+            ref = {"Tasks"},
+            direction = "vertical",
+            style_mods = {horizontally_stretchable = "on"},
+        }, --
         {"ingteb-utility.reminder-tasks"}, --
         {
             buttons = {
@@ -200,6 +207,10 @@ function Class:Refresh()
             function(task) return task.IsRelevant end
         )
         if self.Current then
+            self.MaximumRequiredCount = self.Global.Remindor.List:Select(
+                function(task) return task:GetRequiredCount() end
+            ):Maximum()
+
             self.Global.Remindor.List:Select(
                 function(task, index)
                     task:CreatePanel(
@@ -247,6 +258,17 @@ function Class:OnGuiEvent(event)
         self.Parent:OnGuiClick(event)
     elseif message.action == "Settings" then
         self:OpenSettings(target)
+    elseif message.action == "SettingsClick" then
+        if message.target == "SelectRemindor" then
+            self.Parent.Modules.SelectRemindor.Settings:OnClick(event)
+            self.Parent.Modules.SelectRemindor:Reopen()
+        elseif message.target == "Task" then
+            target.SettingsGui:OnClick(event)
+            self:Reopen()
+        else
+            dassert()
+        end
+
     elseif message.target == "Task" then
         if message.action == "Remove" then
             self.Global.Remindor.List:Remove(taskIndex)
@@ -289,6 +311,8 @@ function Class:OnGuiEvent(event)
         elseif not message.subModule then
             self:Close()
         end
+    else
+        dassert()
     end
 end
 

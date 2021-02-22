@@ -83,7 +83,7 @@ function Class:PresentTarget(target, requestor)
     self.Modules.Presentator:Open(target)
     if requestor == "Presentator" then
         self.Global.History:AdvanceWith(target.CommonKey)
-    elseif requestor == "Selector" then
+    elseif requestor == "Selector" or requestor== "Remindor" then
         self.Global.History:ResetTo(target.CommonKey)
     else
         dassert()

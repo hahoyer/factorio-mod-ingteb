@@ -77,7 +77,6 @@ Goods.system.Properties = {
             return result:Concat{
                 {
                     UICode = "--- r",
-                    IsRestricedTo = {Presentator = true},
                     HelpText = "ingteb-utility.create-reminder-task",
                     Action = function(self, event)
                         return {RemindorTask = self, Count = event.element.number}

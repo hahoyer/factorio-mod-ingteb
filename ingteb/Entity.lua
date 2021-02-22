@@ -18,9 +18,9 @@ Entity.system.Properties = {
         end,
     },
 
-    ClickTarget = {
-        get = function(self) return self.Item and self.Item.ClickTarget or self.CommonKey end,
-    },
+    -- ClickTarget = {
+    --    get = function(self) return self.Item and self.Item.ClickTarget or self.CommonKey end,
+    -- },
 
     Item = {
         cache = true,
@@ -84,17 +84,22 @@ Entity.system.Properties = {
 
     SpecialFunctions = {
         get = function(self)
-            local result = self.inherited.Entity.SpecialFunctions.get(self)
-            return result
-            -- :Concat{
-            --     {
-            --         UICode = "--- r",
-            --         IsRestricedTo = {Presentator = true},
-            --         HelpText = "ingteb-utility.create-reminder-task",
-            --         IsAvailable = function(self) return self.Item end,
-            --         Action = function(self) return {RemindorTask = self.Item} end,
-            --     },
-            -- }
+            local inherited = self.inherited.Entity.SpecialFunctions.get(self)
+            local result = Array:new{
+                {
+                    UICode = "--- l", --
+                    IsAvailable = function(self) return self.Item end,
+                    Action = function(self) return {Presenting = self.Item} end,
+                },
+                {
+                    UICode = "--- r",
+                    IsRestricedTo = {Presentator = true, Remindor = true},
+                    HelpText = "ingteb-utility.create-reminder-task",
+                    IsAvailable = function(self) return self.Item end,
+                    Action = function(self) return {RemindorTask = self.Item} end,
+                },
+            }
+            return result:Concat(inherited)
         end,
     },
 

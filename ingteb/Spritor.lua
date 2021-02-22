@@ -127,8 +127,8 @@ function Class:GetTiles(count)
     :Select(function() return {type = "sprite", style = "ingteb-un-button"} end)
 end
 
-function Class:GetLinePart(target, count, isRightAligned)
-    if not count then count = math.min(6, target:Count()) end
+function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
+    local count = math.min(6, maximumCount or target:Count())
 
     local children = Array:new()
     children:AppendMany(
@@ -140,6 +140,7 @@ function Class:GetLinePart(target, count, isRightAligned)
         type = "flow",
         direction = "horizontal",
         style = isRightAligned and "ingteb-flow-right" or nil,
+        tooltip = tooltip, 
         children = children,
     }
 

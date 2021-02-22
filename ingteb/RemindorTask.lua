@@ -8,12 +8,25 @@ local UI = require("core.UI")
 local class = require("core.class")
 local RequiredThings = require("ingteb.RequiredThings")
 local Item = require("ingteb.Item")
+local RemindorSettings = require "ingteb.RemindorSettings"
 
 local Class = class:new(
     "Task", nil, {
         Global = {get = function(self) return self.Parent.Global end},
         Player = {get = function(self) return self.Parent.Player end},
         Database = {get = function(self) return self.Parent.Database end},
+        LocalSettings = {get = function(self) return self.Settings end},
+        DefaultSettings = {get = function(self) return self.Parent end},
+
+        IsIrrelevantSettings = {
+            get = function(self)
+                return {
+                    AutoResearch = not self.Recipe.Required.Technologies:Any(),
+                    AutoCrafting = self.Worker.Name ~= "character",
+                }
+            end,
+        },
+
         AutoResearch = {
             get = function(self)
                 if not self.Recipe.Required.Technologies:Any() then return end
@@ -128,7 +141,8 @@ function Class:AddSelection(selection)
 end
 
 function Class:new(selection, parent)
-    local self = self:adopt{Parent = parent, Settings = selection.Settings or {}}
+    local self = self:adopt{Parent = parent, Settings = Dictionary:new(selection.Settings):Clone()}
+    self.SettingsGui = RemindorSettings:new(self, {ButtonSize = 30})
     self.Target = self.Database:GetProxyFromCommonKey(selection.Target):CreateStack{
         value = selection.Count,
     }
@@ -204,50 +218,39 @@ function Class:GetGui(key, data, isTop, isBottom)
         type = "frame",
         direction = "horizontal",
         name = key,
-        style_mods = {left_padding = 0},
+        style_mods = {left_padding = 0, right_padding = 2, top_padding = 1, bottom_padding = 1},
         children = {
             {
                 type = "empty-widget",
                 style = "flib_titlebar_drag_handle",
                 ref = {"UpDownDragBar"},
                 style_mods = {width = 15, height = 40},
-                actions = {on_click = {target = "Task", module = "Remindor", action = "Drag"}},
+                actions = {
+                    on_click = {target = "Task", module = "Remindor", action = "Drag", key = key},
+                },
                 tooltip = GetDragTooltip(isTop, isBottom),
             },
             Spritor:GetSpriteButtonAndRegister(self.CurrentTarget),
             Spritor:GetSpriteButtonAndRegister(self.Worker),
             Spritor:GetSpriteButtonAndRegister(self.Recipe),
             {
-                type = "flow",
-                direction = "vertical",
-                name = key,
-                children = {
-                    {
-                        type = "sprite-button",
-                        sprite = "utility/close_white",
-                        style = "frame_action_button",
-                        style_mods = {size = 17},
-                        ref = {"Remindor", "Task", "CloseButton"},
-                        actions = {
-                            on_click = {target = "Task", module = "Remindor", action = "Remove"},
-                        },
-                        tooltip = {"gui.close"},
-                    },
-                    {
-                        type = "sprite-button",
-                        sprite = "ingteb_settings_white",
-                        style = "frame_action_button",
-                        style_mods = {size = 17},
-                        ref = {"Remindor", "Task", "Settings"},
-                        actions = {
-                            on_click = {target = "Task", module = "Remindor", action = "Settings"},
-                        },
-                        tooltip = self.HelperTextSettings,
-                    },
-                },
+                type = "frame",
+                direction = "horizontal",
+                children = {self.SettingsGui:GetGui()},
+                style_mods = {padding = 1},
             },
-
-            Spritor:GetLine(self:GetRequired(data)),
+            Spritor:GetLinePart(self:GetRequired(data), self.Parent.MaximumRequiredCount),
+            {
+                type = "sprite-button",
+                sprite = "utility/close_white",
+                style = "frame_action_button",
+                style_mods = {size = 17},
+                ref = {"Remindor", "Task", "CloseButton"},
+                actions = {
+                    on_click = {target = "Task", module = "Remindor", action = "Remove", key = key},
+                },
+                tooltip = {"gui.close"},
+            },
         },
     }
 end
@@ -272,7 +275,7 @@ function Class:EnsureInventory(goods, data)
 end
 
 function Class:GetRequired(data)
-    return RequiredThings:new(
+    local target = RequiredThings:new(
         self.Recipe.Required.Technologies, --
         self.Recipe.Required.StackOfGoods --
         and self.Recipe.Required.StackOfGoods --
@@ -296,6 +299,12 @@ function Class:GetRequired(data)
         ) --
         or nil
     )
+
+    local result = target:GetData()
+    return result
+
 end
+
+function Class:GetRequiredCount() return self.Recipe.Required:Count() end
 
 return Class

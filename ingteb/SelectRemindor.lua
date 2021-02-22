@@ -2,6 +2,7 @@ local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local RemindorSettings = require "ingteb.RemindorSettings"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
@@ -12,10 +13,16 @@ local Class = class:new(
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
+        LocalSettings = {get = function(self) return self.Global.SelectRemindor.Settings end},
+        DefaultSettings = {get = function(self) return self.Parent.Modules.Remindor end},
     }
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
+function Class:new(parent)
+    local self = self:adopt{Parent = parent}
+    self.Settings = RemindorSettings:new(self, {ButtonSize = 28})
+    return self
+end
 
 function Class:Reopen()
     self:DestroyGui()
@@ -128,16 +135,7 @@ function Class:OnGuiEvent(event)
         self:Close()
     elseif message.action == "Click" then
         if message.control == "Settings" then
-            local isRightButton
-            if event.button == defines.mouse_button_type.left then
-                isRightButton = false
-            elseif event.button == defines.mouse_button_type.right then
-                isRightButton = true
-            else
-                dassert()
-            end
-
-            self:OnSettingsClick(message.tag, isRightButton)
+            self.Settings:OnClick(event)
             self:Reopen()
         else
             local commonKey = message.key or event.element.name
@@ -270,8 +268,14 @@ function Class:GetTargetGui()
                 allow_negative = true,
                 allow_decimal = true,
                 text = self.Count,
-                style_mods = {maximal_width = 100},
+                style_mods = {maximal_width = 60, height = 26},
                 actions = {on_text_changed = {module = self.class.name, action = "CountChanged"}},
+            },
+            {
+                type = "flow",
+                direction = "horizontal",
+                style_mods = {horizontal_align = "right", horizontally_stretchable = "on"},
+                children = {self.Settings:GetGui()},
             },
         },
     }
@@ -313,131 +317,13 @@ function Class:GetRecipesGui()
     }
 end
 
-function Class:GetSettingsNumber(tag)
-    if tag == "AutoCrafting" and self.Global.SelectRemindor.Settings.AutoCrafting then
-        local value = self.Global.SelectRemindor.Settings[tag] or self.Parent.Modules.Remindor[tag]
-        local result = tonumber(value)
-        if result ~= 0 then return result end
-    end
-end
-
-function Class:GetSettingsButton(tag, spriteList, help)
-    local value = self.Global.SelectRemindor.Settings[tag] or self.Parent.Modules.Remindor[tag]
-    local sprite = spriteList[(value == false or value == "off") and 1 or 2]
-
-    return {
-        type = "sprite-button",
-        sprite = sprite,
-        ref = {tag},
-        style = self.Global.SelectRemindor.Settings[tag] ~= nil and "ingteb-light-button"
-            or "slot_button",
-        tooltip = help,
-        number = self:GetSettingsNumber(tag),
-        actions = {
-            on_click = {
-                module = "SelectRemindor",
-                action = "Click",
-                control = "Settings",
-                tag = tag,
-            },
-        },
-    }
-end
-
-function Class:OnSettingsClick(tag, isRightButton)
-    local value = self.Global.SelectRemindor.Settings[tag]
-    local newValue
-
-    if isRightButton then
-        if value == nil then newValue = self.Parent.Modules.Remindor[tag] end
-    elseif self.Global.SelectRemindor.Settings[tag] ~= nil then
-        if tag == "AutoCrafting" then
-            local index = Array:new(Constants.AutoCraftingVariants):IndexWhere(
-                function(variant) return value == variant end
-            )
-            local newIndex = index % #Constants.AutoCraftingVariants + 1
-            newValue = Constants.AutoCraftingVariants[newIndex]
-        else
-            newValue = not value
-        end
-    end
-
-    self.Global.SelectRemindor.Settings[tag] = newValue
-end
-
-function Class:GetSettingsHelp(tag)
-    local localisedNames = {
-        AutoResearch = "ingteb-utility.select-remindor-autoresearch-help",
-        AutoCrafting = "ingteb-utility.select-remindor-autocrafting-help",
-        RemoveTaskWhenFulfilled = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
-    }
-
-    local localisedNameForValues = {
-        [true] = "ingteb-utility.settings-switch-on",
-        [false] = "ingteb-utility.settings-switch-off",
-        off = "string-mod-setting.ingteb_reminder-task-autocrafting-off",
-        ["1"] = "string-mod-setting.ingteb_reminder-task-autocrafting-1",
-        ["5"] = "string-mod-setting.ingteb_reminder-task-autocrafting-5",
-        all = "string-mod-setting.ingteb_reminder-task-autocrafting-all",
-    }
-
-    local nextValue = {
-        [true] = false,
-        [false] = true,
-        off = "1",
-        ["1"] = "5",
-        ["5"] = "all",
-        all = "off",
-    }
-
-    local additionalLines = Array:new{}
-
-    local currentValue = self.Global.SelectRemindor.Settings[tag]
-    local valueByDefault = self.Parent.Modules.Remindor[tag]
-    local nextValue = nextValue[currentValue]
-    if nextValue ~= nil then
-        additionalLines:Append(UI.GetHelpTextForButtons({localisedNameForValues[nextValue]}, "--- l"))
-    end
-
-    local nextValueByDefault = {localisedNameForValues[valueByDefault]}
-    local defaultClick = currentValue == nil and "ingteb-utility.settings-activate"
-                             or "ingteb-utility.settings-deactivate"
-    additionalLines:Append(UI.GetHelpTextForButtons({defaultClick, nextValueByDefault}, "--- r"))
-
-    local actualValue = currentValue or valueByDefault
-    return Helper.ConcatLocalisedText({localisedNames[tag], {localisedNameForValues[actualValue]}}, additionalLines)
-
-end
-
-function Class:GetSettingsGui()
-    return {
-        type = "flow",
-        direction = "horizontal",
-        children = {
-            self:GetSettingsButton(
-                "AutoResearch", {"utility.technology_black", "utility.technology_white"},
-                    self:GetSettingsHelp("AutoResearch")
-            ),
-            self:GetSettingsButton(
-                "AutoCrafting",
-                    {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
-                    self:GetSettingsHelp("AutoCrafting")
-            ),
-            self:GetSettingsButton(
-                "RemoveTaskWhenFulfilled", {"utility.trash", "utility.trash_white"},
-                    self:GetSettingsHelp("RemoveTaskWhenFulfilled")
-            ),
-        },
-    }
-
-end
+function Class:GetSettingsGui() return self.Settings:GetGui() end
 
 function Class:GetGui()
     local children = Array:new{
         {self:GetTargetGui()},
         self.Workers:Count() > 1 and {self:GetWorkersGui()} or {},
         self.Recipes:Count() > 1 and {self:GetRecipesGui()} or {},
-        {self:GetSettingsGui()},
     }
     return {type = "flow", direction = "vertical", children = children:ConcatMany()}
 end

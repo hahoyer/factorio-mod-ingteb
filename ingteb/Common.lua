@@ -1,3 +1,4 @@
+local gui = require("__flib__.gui-beta")
 local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
@@ -90,25 +91,31 @@ function Common:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKe
 function Common:GetHandCraftingRequest(event) end
 function Common:GetResearchRequest(event) end
 
-function Common:GetFunctionalHelp(site)
+function Common:GetSpecialFunctions(site)
     local lines = Dictionary:new{}
     self.SpecialFunctions --
     :Select(
         function(specialFunction)
             if --
             (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --        
-                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) --
-                and specialFunction.HelpText then
+                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
                 local key = specialFunction.UICode
-                if not lines[key] then
-                    lines[key] = UI.GetHelpTextForButtons(
-                        {specialFunction.HelpText}, specialFunction.UICode
-                    )
-                end
+                if (not lines[key]) then lines[key] = specialFunction end
             end --
         end
     )
     return lines:ToArray()
+end
+
+function Common:GetFunctionalHelp(site)
+    return self:GetSpecialFunctions(site) --
+    :Where(function(specialFunction) return specialFunction.HelpText end) --
+    :Select(
+        function(specialFunction)
+            return UI.GetHelpTextForButtons({specialFunction.HelpText}, specialFunction.UICode)
+        end
+    ) --
+    :ToArray()
 end
 
 function Common:GetHelperText(site)
@@ -146,13 +153,12 @@ function Common:SealUp()
 end
 
 function Common:GetAction(event)
-    for _, specialFunction in pairs(self.SpecialFunctions) do
-        if UI.IsMouseCode(event, specialFunction.UICode) then
-            if (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
-                return specialFunction.Action(self, event)
-            end
-        end
-    end
+    local message = gui.read_action(event)
+    local specialFunction = self:GetSpecialFunctions(message.module) --
+    :Where(function(specialFunction) return UI.IsMouseCode(event, specialFunction.UICode) end) --
+    :Top(nil, false)
+
+    if specialFunction then return specialFunction.Action(self, event) end
 end
 
 function Common:new(prototype, database)
