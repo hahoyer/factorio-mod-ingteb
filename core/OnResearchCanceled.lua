@@ -52,8 +52,13 @@ end
 
 function Class:OnResearchChanged(event) self:RefreshResearchQueueCopy(event.research.force) end
 
+function Class:RefreshResearchQueueCopies()
+    for _, force in pairs(game.forces) do self:RefreshResearchQueueCopy(force) end
+end
+
 function Class:new()
     local self = self:adopt{Forces = {}}
+
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_tick, self.OnTick, self.class.name)

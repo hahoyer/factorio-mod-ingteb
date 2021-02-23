@@ -183,6 +183,7 @@ function Class:OnLoad()
         History:adopt(player.History, true)
         player.History:Log("OnLoad")
     end
+    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
 function Class:EnsureMainButton() self.Modules.Gui:EnsureMainButton() end
@@ -239,6 +240,7 @@ function Class:OnInitialise()
         global.Players[index] = {}
         self:OnInitialisePlayer()
     end
+    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
 function Class:OnConfigurationChanged() translation.init() end
