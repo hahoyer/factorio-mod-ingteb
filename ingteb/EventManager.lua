@@ -173,6 +173,7 @@ function Class:OnTickInitial(event)
         if event.tick > 0 then self:RestoreFromSave() end
         self.Modules.Selector:EnsureData()
     end
+    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
     return false
 end
 
@@ -183,7 +184,6 @@ function Class:OnLoad()
         History:adopt(player.History, true)
         player.History:Log("OnLoad")
     end
-    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
 function Class:EnsureMainButton() self.Modules.Gui:EnsureMainButton() end
@@ -324,7 +324,7 @@ function Class:new()
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
-    self:SetHandler(core.OnResearchCanceled.EventId, self.OnResearchChanged)
+    self:SetHandler(defines.events.on_research_canceled, self.OnResearchChanged)
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
