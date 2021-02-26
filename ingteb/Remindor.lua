@@ -16,20 +16,10 @@ local Class = class:new(
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
-        AutoResearch = {
-            get = function(self)
-                return self.ParentData.Settings.AutoResearch
-            end,
-        },
-        AutoCrafting = {
-            get = function(self)
-                return self.ParentData.Settings.AutoCrafting
-            end,
-        },
+        AutoResearch = {get = function(self) return self.ParentData.Settings.AutoResearch end},
+        AutoCrafting = {get = function(self) return self.ParentData.Settings.AutoCrafting end},
         RemoveTaskWhenFulfilled = {
-            get = function(self)
-                return self.ParentData.Settings.RemoveTaskWhenFulfilled
-            end,
+            get = function(self) return self.ParentData.Settings.RemoveTaskWhenFulfilled end,
         },
         HelperTextSettings = {
             get = function(self)
@@ -136,18 +126,11 @@ function Class:Reopen()
 end
 
 local isRefreshActive
-local repeatAutoRefresh 
 
 function Class:Refresh()
-    if isRefreshActive then 
-        repeatAutoRefresh = true
-        return 
-    end
+    if isRefreshActive then return end
     isRefreshActive = true
-    repeat
-        repeatAutoRefresh = false
-        self:ForceRefresh()
-    until  not repeatAutoRefresh
+    self:ForceRefresh()
     isRefreshActive = false
 end
 
@@ -162,12 +145,8 @@ function Class:ForceRefresh()
         if self.Current then
             local data = {}
             local required = {Things = 0, Settings = {}}
-            self.Global.Remindor.List:Select(
-                function(task) task:ScanRequired(required) end
-            )
-            self.MaximumRequiredCount = 
-
-            self.Global.Remindor.List:Select(
+            self.Global.Remindor.List:Select(function(task) task:ScanRequired(required) end)
+            self.MaximumRequiredCount = self.Global.Remindor.List:Select(
                 function(task, index)
                     task:CreatePanel(
                         self.Tasks, task.CommonKey, data, index == 1,
@@ -185,7 +164,7 @@ end
 function Class:OnGuiDrag(event)
     local message = gui.read_action(event)
     local key = message.key or event.element.parent.name
-    local taskIndex = self:GetTaskIndex(key) 
+    local taskIndex = self:GetTaskIndex(key)
 
     local up
     if event.button == defines.mouse_button_type.left then
@@ -212,7 +191,7 @@ function Class:OnGuiDrag(event)
     end
 
     if newIndex == taskIndex then return end
-    local target = self.Global.Remindor.List[taskIndex] 
+    local target = self.Global.Remindor.List[taskIndex]
     self.Global.Remindor.List:Remove(taskIndex)
     self.Global.Remindor.List:InsertAt(newIndex, target)
     self:Reopen()
@@ -281,19 +260,19 @@ function Class:GetTaskIndex(key)
     end
 end
 
-function Class:OnSettingsChanged(event)
+function Class:OnSettingsChanged()
     self.cache[Class.name].ParentData.IsValid = false
     self:Reopen()
 end
 
-function Class:OnMainInventoryChanged(event)
+function Class:OnMainInventoryChanged()
     Spritor:RefreshMainInventoryChanged()
     self:Refresh()
 end
 
 function Class:OnStackChanged() self:Refresh() end
 
-function Class:OnResearchChanged(event)
+function Class:OnResearchChanged()
     Spritor:RefreshResearchChanged()
     self:Refresh()
 end

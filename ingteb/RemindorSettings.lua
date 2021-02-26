@@ -72,12 +72,14 @@ end
 
 function Class:GetButton(tag, required)
     local help = self:GetHelp(tag)
-    if required and not required[tag] then return {type = "empty-widget"} end
+    if required and not required[tag] then return {} end
     if self.IsIrrelevant and self.IsIrrelevant[tag] then
         return {
-            type = "sprite",
-            style = "ingteb-un-button",
-            style_mods = {size = self.Parameters.ButtonSize},
+            {
+                type = "sprite",
+                style = "ingteb-un-button",
+                style_mods = {size = self.Parameters.ButtonSize},
+            },
         }
     end
     local value = self.Local[tag]
@@ -85,20 +87,22 @@ function Class:GetButton(tag, required)
     local sprite = setup[tag].SpriteList[(value == false or value == "off") and 1 or 2]
 
     return {
-        type = "sprite-button",
-        sprite = sprite,
-        ref = {tag},
-        style = self.Local[tag] ~= nil and "ingteb-light-button" or "slot_button",
-        tooltip = help,
-        style_mods = {size = self.Parameters.ButtonSize},
-        number = self:GetNumber(tag),
-        actions = {
-            on_click = {
-                module = "Remindor",
-                action = "SettingsClick",
-                target = self.Parent.class.name,
-                tag = tag,
-                key = self.Parent.CommonKey,
+        {
+            type = "sprite-button",
+            sprite = sprite,
+            ref = {tag},
+            style = self.Local[tag] ~= nil and "ingteb-light-button" or "slot_button",
+            tooltip = help,
+            style_mods = {size = self.Parameters.ButtonSize},
+            number = self:GetNumber(tag),
+            actions = {
+                on_click = {
+                    module = "Remindor",
+                    action = "SettingsClick",
+                    target = self.Parent.class.name,
+                    tag = tag,
+                    key = self.Parent.CommonKey,
+                },
             },
         },
     }
@@ -123,11 +127,11 @@ function Class:GetGui(required)
     return {
         type = "flow",
         direction = "horizontal",
-        children = {
+        children = Array:new{
             self:GetButton("AutoResearch", required),
             self:GetButton("AutoCrafting", required),
             self:GetButton("RemoveTaskWhenFulfilled", required),
-        },
+        }:ConcatMany(),
     }
 
 end

@@ -83,7 +83,7 @@ function Class:PresentTarget(target, requestor)
     self.Modules.Presentator:Open(target)
     if requestor == "Presentator" then
         self.Global.History:AdvanceWith(target.CommonKey)
-    elseif requestor == "Selector" or requestor== "Remindor" then
+    elseif requestor == "Selector" or requestor == "Remindor" then
         self.Global.History:ResetTo(target.CommonKey)
     else
         dassert()
@@ -130,6 +130,12 @@ function Class:ChangeWatcher(event)
             self.Modules.Presentator:OnStackChanged()
             self.Modules.Remindor:OnStackChanged()
         end
+        if self.ResearchChangedWatcherTick[index] --
+        and event.tick > self.ResearchChangedWatcherTick[index] then
+            self.ResearchChangedWatcherTick[index] = nil
+            self.Modules.Presentator:OnResearchChanged()
+            self.Modules.Remindor:OnResearchChanged()
+        end
     end
 end
 
@@ -144,15 +150,9 @@ end
 function Class:OnResearchChanged(event)
     if not self.Modules.Database.IsInitialized then return end
     self.Database:OnResearchChanged(event)
-    self.Modules.Presentator:OnResearchChanged(event)
-    self.Modules.Remindor:OnResearchChanged(event)
 
-    if true then return end
-    if not self.CurrentFloating then return end
-    if self.Database.IsMulipleQueueResearch then
-        self.Database.IsRefreshResearchChangedRequired = true
-    else
-        self.CurrentFloating:RefreshResearchChanged()
+    for index in pairs(event.research.force.players) do
+        self.ResearchChangedWatcherTick[index] = event.tick + 60
     end
 end
 
@@ -327,6 +327,7 @@ function Class:new()
 
     self.MainInventoryChangedWatcherTick = {}
     self.StackChangedWatcherTick = {}
+    self.ResearchChangedWatcherTick = {}
 
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
