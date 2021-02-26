@@ -26,6 +26,10 @@ function RequiredThings:Count()
     return self.Technologies:Count() + self.StackOfGoods:Count()
 end
 
+function RequiredThings:GetData()
+    return self.Technologies:Concat(self.StackOfGoods:ToArray())
+end
+
 function RequiredThings:Except(other)
     local result = RequiredThings:new()
     result.Technologies = self.Technologies:Except(other.Technologies) 

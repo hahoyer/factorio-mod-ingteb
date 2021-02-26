@@ -2,28 +2,42 @@ local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
+local RemindorSettings = require "ingteb.RemindorSettings"
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local UI = require("core.UI")
 
 local Class = class:new(
     "SelectRemindor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
+        LocalSettings = {get = function(self) return self.Global.SelectRemindor.Settings end},
+        DefaultSettings = {get = function(self) return self.Parent.Modules.Remindor end},
     }
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
+function Class:new(parent)
+    local self = self:adopt{Parent = parent}
+    self.Settings = RemindorSettings:new(self, {ButtonSize = 28})
+    return self
+end
 
 function Class:Reopen()
     self:DestroyGui()
     self:CreateGui()
 end
 
+function Class:EnsureGlobals()
+    if not self.Global.SelectRemindor then self.Global.SelectRemindor = {} end
+    if not self.Global.SelectRemindor.Settings then self.Global.SelectRemindor.Settings = {} end
+end
+
 function Class:Open(action, location)
     if action then self:Setup(action) end
     if location then self.Global.Location.SelectRemindor = location end
+    self:EnsureGlobals()
     self:CreateGui()
 end
 
@@ -120,8 +134,15 @@ function Class:OnGuiEvent(event)
     if message.action == "Closed" then
         self:Close()
     elseif message.action == "Click" then
-        local commonKey = message.key or event.element.name
-        self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
+        if message.control == "Settings" then
+            self.Settings:OnClick(event)
+            self:Reopen()
+        else
+            local commonKey = message.key or event.element.name
+            if commonKey then
+                self:OnGuiClick(self.Database:GetProxyFromCommonKey(commonKey))
+            end
+        end
     elseif message.action == "CountChanged" then
         self:OnTextChanged(event.element.text)
     elseif message.action == "Enter" then
@@ -161,6 +182,7 @@ function Class:GetSelection()
         Worker = self.Worker.CommonKey,
         Recipe = self.Recipe.CommonKey,
         CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
+        Settings = self.Global.SelectRemindor.Settings,
     }
 end
 
@@ -229,79 +251,81 @@ function Class:GetBelongingRecipes(worker)
     return results
 end
 
-function Class:GetWorkersAndRecipes()
-    local result = Array:new{}
-
-    if self.Workers:Count() > 1 then
-        result:Append{
-            type = "flow",
-            direction = "horizontal",
-            children = {
-                {type = "label", caption = {"ingteb-utility.select-worker"}},
-                {
-                    type = "sprite",
-                    sprite = self.Worker.SpriteName,
-                    ref = {"Worker"},
-                    tooltip = self.Worker:GetHelperText(self.class.name),
-                },
-                {type = "label", caption = {"ingteb-utility.select-variants"}},
-                self:GetLinePart(self:CreateSelection(self.Workers)),
-            },
-        }
-    end
-
-    if self.Recipes:Count() > 1 then
-        result:Append{
-            type = "flow",
-            direction = "horizontal",
-            children = {
-                {type = "label", caption = {"ingteb-utility.select-recipe"}},
-                {
-                    type = "sprite",
-                    sprite = self.Recipe.SpriteName,
-                    ref = {"Recipe"},
-                    tooltip = self.Worker:GetHelperText(self.class.name),
-                },
-                {type = "label", caption = {"ingteb-utility.select-variants"}},
-                self:GetLinePart(self:CreateSelection(self.Recipes)),
-            },
-        }
-    end
-
-    return result
-end
-
-function Class:GetGui()
+function Class:GetTargetGui()
     return {
         type = "flow",
-        direction = "vertical",
+        direction = "horizontal",
         children = {
+            {type = "label", caption = {"ingteb-utility.select-target"}},
+            {
+                type = "sprite",
+                sprite = self.Target.SpriteName,
+                tooltip = self.Target:GetHelperText(self.class.name),
+            },
+            {
+                type = "textfield",
+                numeric = true,
+                allow_negative = true,
+                allow_decimal = true,
+                text = self.Count,
+                style_mods = {maximal_width = 60, height = 26},
+                actions = {on_text_changed = {module = self.class.name, action = "CountChanged"}},
+            },
             {
                 type = "flow",
                 direction = "horizontal",
-                children = {
-                    {type = "label", caption = {"ingteb-utility.select-target"}},
-                    {
-                        type = "sprite",
-                        sprite = self.Target.SpriteName,
-                        tooltip = self.Target:GetHelperText(self.class.name),
-                    },
-                    {
-                        type = "textfield",
-                        numeric = true,
-                        allow_negative = true,
-                        allow_decimal = true,
-                        text = self.Count,
-                        style_mods = {maximal_width = 100},
-                        actions = {
-                            on_text_changed = {module = self.class.name, action = "CountChanged"},
-                        },
-                    },
-                },
+                style_mods = {horizontal_align = "right", horizontally_stretchable = "on"},
+                children = {self.Settings:GetGui()},
             },
-            {type = "flow", direction = "vertical", children = self:GetWorkersAndRecipes()},
         },
     }
+end
+
+function Class:GetWorkersGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {type = "label", caption = {"ingteb-utility.select-worker"}},
+            {
+                type = "sprite",
+                sprite = self.Worker.SpriteName,
+                ref = {"Worker"},
+                tooltip = self.Worker:GetHelperText(self.class.name),
+            },
+            {type = "label", caption = {"ingteb-utility.select-variants"}},
+            self:GetLinePart(self:CreateSelection(self.Workers)),
+        },
+    }
+end
+
+function Class:GetRecipesGui()
+    return {
+        type = "flow",
+        direction = "horizontal",
+        children = {
+            {type = "label", caption = {"ingteb-utility.select-recipe"}},
+            {
+                type = "sprite",
+                sprite = self.Recipe.SpriteName,
+                ref = {"Recipe"},
+                tooltip = self.Worker:GetHelperText(self.class.name),
+            },
+            {type = "label", caption = {"ingteb-utility.select-variants"}},
+            self:GetLinePart(self:CreateSelection(self.Recipes)),
+        },
+    }
+end
+
+function Class:GetSettingsGui() return self.Settings:GetGui() end
+
+function Class:GetGui()
+    local children = Array:new{
+        {self:GetTargetGui()},
+        self.Workers:Count() > 1 and {self:GetWorkersGui()} or {},
+        self.Recipes:Count() > 1 and {self:GetRecipesGui()} or {},
+    }
+    return {type = "flow", direction = "vertical", children = children:ConcatMany()}
 end
 
 return Class

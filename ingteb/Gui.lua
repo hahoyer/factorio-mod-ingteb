@@ -74,7 +74,7 @@ function Class:FindTargets()
     if cursor then
 
         local t = player.opened_gui_type
-        if t == defines.gui_type.custom then dassert() end
+        if t == defines.gui_type.custom then return end
         if t == defines.gui_type.entity then
             dassert(cursor.object_name == "LuaEntity")
 
@@ -115,13 +115,19 @@ function Class:FindTargets()
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
-                __DebugAdapter.breakpoint()
+                dassert()
             end
 
             return result:Select(function(_, key) return self:GetObject(global, key) end)
         end
+        local message --
+        = "not implemented: defines.gui_type." .. Dictionary: --
+        new(defines.gui_type): --
+        Where(function(value) return value == t end): --
+        ToArray(function(_, key) return key end).Top()
 
-        __DebugAdapter.breakpoint()
+        log(message)
+        dassert()
     end
 
     return {}

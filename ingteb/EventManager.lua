@@ -83,7 +83,7 @@ function Class:PresentTarget(target, requestor)
     self.Modules.Presentator:Open(target)
     if requestor == "Presentator" then
         self.Global.History:AdvanceWith(target.CommonKey)
-    elseif requestor == "Selector" then
+    elseif requestor == "Selector" or requestor== "Remindor" then
         self.Global.History:ResetTo(target.CommonKey)
     else
         dassert()
@@ -187,6 +187,7 @@ function Class:OnTickInitial(event)
         if event.tick > 0 then self:RestoreFromSave() end
         self.Modules.Selector:EnsureData()
     end
+    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
     return false
 end
 
@@ -253,6 +254,7 @@ function Class:OnInitialise()
         global.Players[index] = {}
         self:OnInitialisePlayer()
     end
+    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
 function Class:OnConfigurationChanged() translation.init() end
@@ -340,7 +342,7 @@ function Class:new()
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
-    self:SetHandler(core.OnResearchCanceled.EventId, self.OnResearchChanged)
+    self:SetHandler(defines.events.on_research_canceled, self.OnResearchChanged)
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)

@@ -111,8 +111,6 @@ function Class:new(name, prototype, database)
 
     local _, _, domain, category = name:find("^(.-)%.(.*)$")
 
-    local p = GetPrototype(domain, category)
-    if not p then __DebugAdapter.breakpoint() end
     local self = self:adopt(
         self.system.BaseClass:new(prototype or GetPrototype(domain, category), database)
     )

@@ -1,11 +1,34 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.16
+Date: 2021-02-25
+  Bugfixes:
+    - Mitigating Crash opening ingteb GUI in an active py game
+---------------------------------------------------------------------------------------------------
+Version: 0.3.15
+Date: 2021-02-24
+  Bugfixes:
+    - Fixing Crash loading a py game Part iii
+---------------------------------------------------------------------------------------------------
+Version: 0.3.14
+Date: 2021-02-23
+  Bugfixes:
+    - Fixing Crash loading a py game
+---------------------------------------------------------------------------------------------------
+Version: 0.3.13
+Date: 2021-02-23
+  Bugfixes:
+    - Fixing Crash loading a py game
+---------------------------------------------------------------------------------------------------
 Version: 0.3.12
-Date: 2021-01-21
+Date: 2021-02-22
   Changes:
     - tooltip for categories
+    - OnResearchCanceled introduced
     - settings for presentator
+    - easier remindor settings
   Bugfixes:
     - fixing crash when clicking on steam
+    - get mod Nullius working
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.11
 Date: 2021-01-20
