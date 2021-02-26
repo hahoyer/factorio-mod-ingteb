@@ -6,7 +6,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 
-ColumnCount = 12
+ColumnCount = Constants.SelectorColumnCount
 
 ---@param data table Dictionary Dictionary where the key is searched
 ---@param key string
@@ -47,7 +47,6 @@ function Class:Open(targets)
                     sprite = "utility/search_white",
                     style = "frame_action_button",
                     actions = {on_click = {module = self.class.name, action = "Search"}},
-                    tooltip = self.HelperTextSettings,
                 },
             },
         }

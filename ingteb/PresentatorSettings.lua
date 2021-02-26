@@ -75,14 +75,6 @@ local function GetGui(self, target)
     local children = Array:new{
         GetGuiForControlGroup(self, "AutoResearch", {"ingteb-utility.auto-research"}),
         GetGuiForControlGroup(
-            self, "AutoCrafting", {"ingteb-utility.auto-crafting"}, Constants.AutoCraftingVariants, {
-                {"string-mod-setting.ingteb_reminder-task-autocrafting-off"},
-                {"string-mod-setting.ingteb_reminder-task-autocrafting-1"},
-                {"string-mod-setting.ingteb_reminder-task-autocrafting-5"},
-                {"string-mod-setting.ingteb_reminder-task-autocrafting-all"},
-            }
-        ),
-        GetGuiForControlGroup(
             self, "RemoveTaskWhenFulfilled", {"ingteb-utility.remove-when-fulfilled"}
         ),
     }:ConcatMany()

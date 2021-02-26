@@ -232,20 +232,22 @@ local Class = class:new(
     }
 )
 
-local function AddResearch(player, name)
-    if player.force.research_queue_enabled or #player.force.research_queue == 0 then
+local function AddResearch(player, name, setting)
+    if setting == "off" then return end
+    if #player.force.research_queue == 0 --
+    or player.force.research_queue_enabled and setting ~= "1" then
         return player.force.add_research(name)
     end
 end
 
-function Class:BeginMulipleQueueResearch()
+function Class:BeginMulipleQueueResearch(setting)
     local player = self.Database.Player
     local queued = Array:new{}
     local message = "ingteb-utility.research-no-ready-prerequisite"
     repeat
         local ready = self.TopReadyPrerequisite
         if ready then message = "ingteb-utility.not-added-to-research-queue" end
-        local added = ready and AddResearch(player, ready.Name)
+        local added = ready and AddResearch(player, ready.Name, setting)
         if added then queued:Append(ready) end
 
     until not added

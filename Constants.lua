@@ -8,7 +8,8 @@ local result = {
     ModName = modName,
     GlobalPrefix = modName .. "_" .. "GlobalPrefix",
     GraphicsPath = "__" .. modName .. "__/graphics/",
-    AutoCraftingVariants = {"off", "1", "5", "all"},
+    RefreshDelay = 10,
+    SelectorColumnCount = 12,
 }
 
 indent = ""

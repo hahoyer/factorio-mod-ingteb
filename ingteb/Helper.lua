@@ -86,33 +86,25 @@ local function EnsureMaxParameters(target, count)
     local half = math.ceil(#target / 2)
 
     local result1 = {""}
-    for index = 2, half do
-        table.insert(result1, target[index])
-    end 
+    for index = 2, half do table.insert(result1, target[index]) end
 
     local result2 = {""}
-    for index = half+1, #target do
-        table.insert(result2, target[index])
-    end 
+    for index = half + 1, #target do table.insert(result2, target[index]) end
 
     return {"", EnsureMaxParameters(result1, count), EnsureMaxParameters(result2, count)}
 end
 
 function Helper.ScrutinizeLocalisationString(target)
     if type(target) ~= "table" then return target end
-    for index = 2, #target do
-        target[index] = Helper.ScrutinizeLocalisationString(target[index])
-    end 
+    for index = 2, #target do target[index] = Helper.ScrutinizeLocalisationString(target[index]) end
     return EnsureMaxParameters(target, 20)
 end
-
 
 function Helper.SpriteStyleFromCode(code)
     return code == true and "ingteb-light-button" --
     or code == false and "red_slot_button" --
     or "slot_button"
 end
-
 
 ---Create frame and add content
 --- Provided actions: location_changed and closed
@@ -147,7 +139,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                         type = "flow",
                         direction = "horizontal",
                         children = {
-                            {type = "label", caption = caption, style="frame_title"},
+                            {type = "label", caption = caption, style = "frame_title"},
                             {
                                 type = "empty-widget",
                                 style = "flib_titlebar_drag_handle",
@@ -219,7 +211,10 @@ end
 --- subModule string name of the subModule for location and actions 
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreatePopupFrameWithContent(self, content, caption, options)
-    self.ParentScreen = self.Player.opened
+    local parentScreen = self.Player.opened
+    if parentScreen and parentScreen.object_name == "LuaGuiElement" then
+        self.ParentScreen = parentScreen 
+    end
     local isPopup = self.Global.IsPopup
     self.Global.IsPopup = true
     local result = Helper.CreateFloatingFrameWithContent(self, content, caption, options)
@@ -266,7 +261,6 @@ function Helper.ConcatLocalisedText(top, tail)
     end
     return top
 end
-
 
 return Helper
 

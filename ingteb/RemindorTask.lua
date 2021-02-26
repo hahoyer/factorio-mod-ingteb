@@ -91,29 +91,6 @@ local Class = class:new(
             end,
         },
 
-        HelperTextSettings = {
-            get = function(self)
-                local result = Array:new{}
-                if self.AutoResearch then
-                    result:Append("\n")
-                    result:Append{"ingteb-utility.auto-research"}
-                end
-                if self.AutoCrafting and self.AutoCrafting ~= "off" then
-                    result:Append("\n")
-                    result:Append{
-                        "string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting,
-                    }
-                end
-                if self.RemoveTaskWhenFulfilled then
-                    result:Append("\n")
-                    result:Append{"ingteb-utility.remove-when-fulfilled"}
-                end
-                if result:Any() then
-                    result[1] = ""
-                    return result
-                end
-            end,
-        },
     }
 )
 
@@ -153,10 +130,10 @@ function Class:new(selection, parent)
 end
 
 function Class:CheckAutoResearch()
-    if not self.AutoResearch then return end
+    if self.AutoResearch == "off" then return end
     if not self.Recipe.Required.Technologies:Any() then return end
 
-    self.Database:BeginMulipleQueueResearch(self.Recipe.Technology)
+    self.Database:BeginMulipleQueueResearch(self.Recipe.Technology, self.AutoResearch)
 end
 
 function Class:CheckAutoCrafting()

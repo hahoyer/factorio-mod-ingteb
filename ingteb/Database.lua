@@ -300,9 +300,9 @@ function Class:Get(target)
     return self:GetProxy(className, Name, Prototype)
 end
 
-function Class:BeginMulipleQueueResearch(target)
+function Class:BeginMulipleQueueResearch(target, setting)
     Class.IsMulipleQueueResearch = true
-    local result = target:BeginMulipleQueueResearch()
+    local result = target:BeginMulipleQueueResearch(setting)
     Class.IsMulipleQueueResearch = nil
     if class.IsRefreshResearchChangedRequired then
         class.IsRefreshResearchChangedRequired = nil

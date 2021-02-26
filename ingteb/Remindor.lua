@@ -21,29 +21,6 @@ local Class = class:new(
         RemoveTaskWhenFulfilled = {
             get = function(self) return self.ParentData.Settings.RemoveTaskWhenFulfilled end,
         },
-        HelperTextSettings = {
-            get = function(self)
-                local result = Array:new{}
-                if self.AutoResearch then
-                    result:Append("\n")
-                    result:Append{"ingteb-utility.auto-research"}
-                end
-                if self.AutoCrafting ~= "off" then
-                    result:Append("\n")
-                    result:Append{
-                        "string-mod-setting.ingteb_reminder-task-autocrafting-" .. self.AutoCrafting,
-                    }
-                end
-                if self.RemoveTaskWhenFulfilled then
-                    result:Append("\n")
-                    result:Append{"ingteb-utility.remove-when-fulfilled"}
-                end
-                if result:Any() then
-                    result[1] = ""
-                    return result
-                end
-            end,
-        },
         ParentData = {
             cache = true,
             get = function(self)

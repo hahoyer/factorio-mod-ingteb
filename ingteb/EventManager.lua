@@ -139,12 +139,14 @@ function Class:ChangeWatcher(event)
     end
 end
 
+local RefreshDelay = Constants.RefreshDelay
+
 function Class:OnMainInventoryChanged(event)
-    self.MainInventoryChangedWatcherTick[event.player_index] = event.tick + 60
+    self.MainInventoryChangedWatcherTick[event.player_index] = event.tick + RefreshDelay
 end
 
 function Class:OnStackChanged(event)
-    self.StackChangedWatcherTick[event.player_index] = event.tick + 60
+    self.StackChangedWatcherTick[event.player_index] = event.tick + RefreshDelay
 end
 
 function Class:OnResearchChanged(event)
@@ -152,7 +154,7 @@ function Class:OnResearchChanged(event)
     self.Database:OnResearchChanged(event)
 
     for index in pairs(event.research.force.players) do
-        self.ResearchChangedWatcherTick[index] = event.tick + 60
+        self.ResearchChangedWatcherTick[index] = event.tick + RefreshDelay
     end
 end
 
