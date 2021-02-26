@@ -26,11 +26,16 @@ data:extend{
         order = "c",
     },
     {
-        type = "bool-setting",
+        type = "string-setting",
         name = "ingteb_reminder-task-autoresearch",
         setting_type = "runtime-per-user",
-		default_value = false,
+		default_value = "1",
         order = "d1",
+        allowed_values = {
+            "off",
+            "1",
+            "all",
+		},
     },
     {
         type = "string-setting",

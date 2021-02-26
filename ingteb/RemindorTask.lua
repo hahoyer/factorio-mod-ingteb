@@ -186,9 +186,9 @@ function Class:AutomaticActions()
     self:CheckAutoCrafting()
 end
 
-function Class:CreatePanel(frame, key, data, isTop, isBottom)
+function Class:CreatePanel(frame, key, data, isTop, isBottom, required)
     Spritor:StartCollecting()
-    local guiData = self:GetGui(key, data, isTop, isBottom)
+    local guiData = self:GetGui(key, data, isTop, isBottom, required)
     local result = gui.build(frame, {guiData})
     Spritor:RegisterDynamicTargets(result.DynamicElements)
 end
@@ -213,7 +213,7 @@ local function GetDragTooltip(isTop, isBottom)
     }
 end
 
-function Class:GetGui(key, data, isTop, isBottom)
+function Class:GetGui(key, data, isTop, isBottom, required)
     return {
         type = "frame",
         direction = "horizontal",
@@ -236,10 +236,10 @@ function Class:GetGui(key, data, isTop, isBottom)
             {
                 type = "frame",
                 direction = "horizontal",
-                children = {self.SettingsGui:GetGui()},
+                children = {self.SettingsGui:GetGui(required.Settings)},
                 style_mods = {padding = 1},
             },
-            Spritor:GetLinePart(self:GetRequired(data), self.Parent.MaximumRequiredCount),
+            Spritor:GetLinePart(self:GetRequired(data), required.Things),
             {
                 type = "sprite-button",
                 sprite = "utility/close_white",
@@ -305,6 +305,17 @@ function Class:GetRequired(data)
 
 end
 
-function Class:GetRequiredCount() return self.Recipe.Required:Count() end
+function Class:ScanRelevantSettings(result, tag)
+    if result[tag] then return end
+    result[tag] = not self.SettingsGui.IsIrrelevant or not self.SettingsGui.IsIrrelevant[tag]
+end
+
+function Class:ScanRequired(required)
+    local value = self.Recipe.Required:Count()
+    if value > required.Things then required.Things = value end
+    self:ScanRelevantSettings(required.Settings, "AutoResearch")
+    self:ScanRelevantSettings(required.Settings, "AutoCrafting")
+    self:ScanRelevantSettings(required.Settings, "RemoveTaskWhenFulfilled")
+end
 
 return Class

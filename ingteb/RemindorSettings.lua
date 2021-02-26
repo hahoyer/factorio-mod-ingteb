@@ -19,75 +19,70 @@ local Class = class:new(
     }
 )
 
+local setup = {
+    AutoResearch = {
+        Name = "ingteb-utility.select-remindor-autoresearch-help",
+        SpriteList = {"utility.technology_black", "utility.technology_white"},
+        off = {Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off"},
+        ["1"] = {Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1"},
+        all = {Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all"},
+    },
+    AutoCrafting = {
+        Name = "ingteb-utility.select-remindor-autocrafting-help",
+        SpriteList = {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
+        off = {Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-off"},
+        ["1"] = {Next = "5", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-1"},
+        ["5"] = {Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-5"},
+        all = {Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-all"},
+    },
+    RemoveTaskWhenFulfilled = {
+        Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
+        SpriteList = {"utility.trash", "utility.trash_white"},
+        [true] = {Next = false, Name = "ingteb-utility.settings-switch-on"},
+        [false] = {Next = true, Name = "ingteb-utility.settings-switch-off"},
+    },
+}
+
 function Class:GetHelp(tag)
-    local localisedNames = {
-        AutoResearch = "ingteb-utility.select-remindor-autoresearch-help",
-        AutoCrafting = "ingteb-utility.select-remindor-autocrafting-help",
-        RemoveTaskWhenFulfilled = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
-    }
-
-    local localisedNameForValues = {
-        [true] = "ingteb-utility.settings-switch-on",
-        [false] = "ingteb-utility.settings-switch-off",
-        off = "string-mod-setting.ingteb_reminder-task-autocrafting-off",
-        ["1"] = "string-mod-setting.ingteb_reminder-task-autocrafting-1",
-        ["5"] = "string-mod-setting.ingteb_reminder-task-autocrafting-5",
-        all = "string-mod-setting.ingteb_reminder-task-autocrafting-all",
-    }
-
-    local nextValue = {
-        [true] = false,
-        [false] = true,
-        off = "1",
-        ["1"] = "5",
-        ["5"] = "all",
-        all = "off",
-    }
-
+    local setup = setup[tag]
     local additionalLines = Array:new{}
-
     local currentValue = self.Local[tag]
-    local valueByDefault = self.Default[tag]
-    local nextValue = nextValue[currentValue]
-    if nextValue ~= nil then
-        additionalLines:Append(
-            UI.GetHelpTextForButtons({localisedNameForValues[nextValue]}, "--- l")
-        )
+    if currentValue ~= nil then
+        local nextValue = setup[currentValue].Next
+        additionalLines:Append(UI.GetHelpTextForButtons({setup[nextValue].Name}, "--- l"))
     end
 
-    local nextValueByDefault = {localisedNameForValues[valueByDefault]}
+    local valueByDefault = self.Default[tag]
+    local nextValueByDefault = {setup[valueByDefault].Name}
     local defaultClick = currentValue == nil and "ingteb-utility.settings-activate"
                              or "ingteb-utility.settings-deactivate"
     additionalLines:Append(UI.GetHelpTextForButtons({defaultClick, nextValueByDefault}, "--- r"))
 
     local actualValue = currentValue or valueByDefault
-    return Helper.ConcatLocalisedText(
-        {localisedNames[tag], {localisedNameForValues[actualValue]}}, additionalLines
-    )
+    return Helper.ConcatLocalisedText({setup.Name, {setup[actualValue].Name}}, additionalLines)
 
 end
 
 function Class:GetNumber(tag)
-    if tag == "AutoCrafting" then
-        local value = self.Local[tag]
-        if value == nil then value = self.Default[tag] end
-        local result = tonumber(value)
-        if result ~= 0 then return result end
-    end
+    local value = self.Local[tag]
+    if value == nil then value = self.Default[tag] end
+    local result = tonumber(value)
+    if result ~= 0 then return result end
 end
 
-function Class:GetButton(tag, spriteList, help)
+function Class:GetButton(tag, required)
+    local help = self:GetHelp(tag)
+    if required and not required[tag] then return {type = "empty-widget"} end
     if self.IsIrrelevant and self.IsIrrelevant[tag] then
         return {
             type = "sprite",
             style = "ingteb-un-button",
             style_mods = {size = self.Parameters.ButtonSize},
-
         }
     end
     local value = self.Local[tag]
     if value == nil then value = self.Default[tag] end
-    local sprite = spriteList[(value == false or value == "off") and 1 or 2]
+    local sprite = setup[tag].SpriteList[(value == false or value == "off") and 1 or 2]
 
     return {
         type = "sprite-button",
@@ -118,38 +113,20 @@ function Class:OnClick(event)
     if event.button == defines.mouse_button_type.right then
         if value == nil then newValue = self.Default[tag] end
     elseif self.Local[tag] ~= nil then
-        if tag == "AutoCrafting" then
-            local index = Array:new(Constants.AutoCraftingVariants):IndexWhere(
-                function(variant) return value == variant end
-            )
-            local newIndex = index % #Constants.AutoCraftingVariants + 1
-            newValue = Constants.AutoCraftingVariants[newIndex]
-        else
-            newValue = not value
-        end
+        newValue = setup[tag][value].Next
     end
 
     self.Local[tag] = newValue
 end
 
-function Class:GetGui()
+function Class:GetGui(required)
     return {
         type = "flow",
         direction = "horizontal",
         children = {
-            self:GetButton(
-                "AutoResearch", {"utility.technology_black", "utility.technology_white"},
-                    self:GetHelp("AutoResearch")
-            ),
-            self:GetButton(
-                "AutoCrafting",
-                    {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
-                    self:GetHelp("AutoCrafting")
-            ),
-            self:GetButton(
-                "RemoveTaskWhenFulfilled", {"utility.trash", "utility.trash_white"},
-                    self:GetHelp("RemoveTaskWhenFulfilled")
-            ),
+            self:GetButton("AutoResearch", required),
+            self:GetButton("AutoCrafting", required),
+            self:GetButton("RemoveTaskWhenFulfilled", required),
         },
     }
 

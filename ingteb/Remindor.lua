@@ -136,28 +136,42 @@ function Class:Reopen()
 end
 
 local isRefreshActive
+local repeatAutoRefresh 
 
 function Class:Refresh()
-    if isRefreshActive then return end
+    if isRefreshActive then 
+        repeatAutoRefresh = true
+        return 
+    end
     isRefreshActive = true
+    repeat
+        repeatAutoRefresh = false
+        self:ForceRefresh()
+    until  not repeatAutoRefresh
+    isRefreshActive = false
+end
+
+function Class:ForceRefresh()
     self.Global.Remindor.Links = Dictionary:new{}
     if self.Tasks then self.Tasks.clear() end
-    local data = {}
 
     if self.Global.Remindor.List then
         self.Global.Remindor.List = self.Global.Remindor.List:Where(
             function(task) return task.IsRelevant end
         )
         if self.Current then
-            self.MaximumRequiredCount = self.Global.Remindor.List:Select(
-                function(task) return task:GetRequiredCount() end
-            ):Maximum()
+            local data = {}
+            local required = {Things = 0, Settings = {}}
+            self.Global.Remindor.List:Select(
+                function(task) task:ScanRequired(required) end
+            )
+            self.MaximumRequiredCount = 
 
             self.Global.Remindor.List:Select(
                 function(task, index)
                     task:CreatePanel(
                         self.Tasks, task.CommonKey, data, index == 1,
-                            index == #self.Global.Remindor.List
+                            index == #self.Global.Remindor.List, required
                     )
                 end
             )
@@ -166,17 +180,42 @@ function Class:Refresh()
     else
         self.Global.Remindor.List = Array:new{}
     end
-    isRefreshActive = false
 end
 
-function Class:GetValueOfControl(element)
-    if element.type == "checkbox" then
-        return element.state
-    elseif element.type == "drop-down" then
-        return Constants.AutoCraftingVariants[element.selected_index]
+function Class:OnGuiDrag(event)
+    local message = gui.read_action(event)
+    local key = message.key or event.element.parent.name
+    local taskIndex = self:GetTaskIndex(key) 
+
+    local up
+    if event.button == defines.mouse_button_type.left then
+        up = true
+    elseif event.button == defines.mouse_button_type.right then
+        up = false
     else
-        dassert()
+        return
     end
+
+    local newIndex
+    if event.shift then
+        if up then
+            newIndex = 1
+        else
+            newIndex = #self.Global.Remindor.List
+        end
+    else
+        if up then
+            newIndex = math.max(taskIndex - 1, 1)
+        else
+            newIndex = math.min(taskIndex + 1, #self.Global.Remindor.List)
+        end
+    end
+
+    if newIndex == taskIndex then return end
+    local target = self.Global.Remindor.List[taskIndex] 
+    self.Global.Remindor.List:Remove(taskIndex)
+    self.Global.Remindor.List:InsertAt(newIndex, target)
+    self:Reopen()
 end
 
 function Class:OnGuiEvent(event)
@@ -186,23 +225,8 @@ function Class:OnGuiEvent(event)
     dassert(message.target ~= "Task" or taskIndex)
     local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
 
-    if message.action == "Update" then
-        dassert(target == self)
-        self.Settings[message.control] = self:GetValueOfControl(event.element)
-        self:Reopen()
-    elseif message.action == "UpdateOverride" then
-        dassert(target == self)
-        if event.element.state then
-            self.Settings[message.control] = nil
-        else
-            self.Settings[message.control] = self[message.control]
-        end
-        self:Reopen()
-    elseif message.action == "Click" then
+    if message.action == "Click" then
         self.Parent:OnGuiClick(event)
-    elseif message.action == "Settings" then
-        dassert(target == self)
-        self:OpenSettings()
     elseif message.action == "SettingsClick" then
         if message.target == "SelectRemindor" then
             self.Parent.Modules.SelectRemindor.Settings:OnClick(event)
@@ -213,43 +237,16 @@ function Class:OnGuiEvent(event)
         else
             dassert()
         end
-
     elseif message.target == "Task" then
         if message.action == "Remove" then
             self.Global.Remindor.List:Remove(taskIndex)
+            self:Reopen()
         elseif message.action == "Drag" then
-            local up
-            if event.button == defines.mouse_button_type.left then
-                up = true
-            elseif event.button == defines.mouse_button_type.right then
-                up = false
-            else
-                return
-            end
-
-            local newIndex
-            if event.shift then
-                if up then
-                    newIndex = 1
-                else
-                    newIndex = #self.Global.Remindor.List
-                end
-            else
-                if up then
-                    newIndex = math.max(taskIndex - 1, 1)
-                else
-                    newIndex = math.min(taskIndex + 1, #self.Global.Remindor.List)
-                end
-            end
-
-            if newIndex == taskIndex then return end
-            self.Global.Remindor.List:Remove(taskIndex)
-            self.Global.Remindor.List:InsertAt(newIndex, target)
+            self:OnGuiDrag(event)
         else
             dassert()
             return
         end
-        self:Reopen()
     elseif message.action == "Closed" then
         if message.subModule == "Settings" then
             self:CloseSettings()
