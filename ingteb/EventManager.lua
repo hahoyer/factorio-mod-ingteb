@@ -115,16 +115,30 @@ function Class:OnMainKey(event)
     self:ToggleFloating()
 end
 
+function Class:ChangeWatcher(event)
+    for index, player in pairs(game.players) do
+        self.Player = player
+        if self.MainInventoryChangedWatcherTick[index] --
+        and event.tick > self.MainInventoryChangedWatcherTick[index] then
+            self.MainInventoryChangedWatcherTick[index] = nil
+            self.Modules.Presentator:OnMainInventoryChanged(event)
+            self.Modules.Remindor:OnMainInventoryChanged(event)
+        end
+        if self.StackChangedWatcherTick[index] --
+        and event.tick > self.StackChangedWatcherTick[index] then
+            self.StackChangedWatcherTick[index] = nil
+            self.Modules.Presentator:OnStackChanged()
+            self.Modules.Remindor:OnStackChanged()
+        end
+    end
+end
+
 function Class:OnMainInventoryChanged(event)
-    self.Player = event.player_index
-    self.Modules.Presentator:OnMainInventoryChanged(event)
-    self.Modules.Remindor:OnMainInventoryChanged(event)
+    self.MainInventoryChangedWatcherTick[event.player_index] = event.tick + 60
 end
 
 function Class:OnStackChanged(event)
-    self.Player = event.player_index
-    self.Modules.Presentator:OnStackChanged()
-    self.Modules.Remindor:OnStackChanged()
+    self.StackChangedWatcherTick[event.player_index] = event.tick + 60
 end
 
 function Class:OnResearchChanged(event)
@@ -308,8 +322,11 @@ function Class:new()
         Spritor = Spritor:new(self),
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
-        OnResearchCanceled = core.OnResearchCanceled:new(self)
+        OnResearchCanceled = core.OnResearchCanceled:new(self),
     }
+
+    self.MainInventoryChangedWatcherTick = {}
+    self.StackChangedWatcherTick = {}
 
     self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
@@ -318,6 +335,7 @@ function Class:new()
     --    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "OnTickInitial")
     self:SetHandler(defines.events.on_tick, self.OnTranslationBatch, "OnTranslationBatch")
+    self:SetHandler(defines.events.on_tick, self.ChangeWatcher, "ChangeWatcher")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)
 
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
