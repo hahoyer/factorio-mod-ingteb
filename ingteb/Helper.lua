@@ -212,8 +212,8 @@ end
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreatePopupFrameWithContent(self, content, caption, options)
     local parentScreen = self.Player.opened
-    if parentScreen and parentScreen.object_name == "LuaGuiElement" then
-        self.ParentScreen = parentScreen 
+    if parentScreen and parentScreen.valid and parentScreen.object_name == "LuaGuiElement" then
+        self.ParentScreen = parentScreen
     end
     local isPopup = self.Global.IsPopup
     self.Global.IsPopup = true

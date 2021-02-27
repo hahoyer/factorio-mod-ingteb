@@ -80,9 +80,11 @@ end
 
 function Class:DestroyGui()
     self.Current.destroy()
-    if not self.ParentScreen then return end
-    self.ParentScreen.ignored_by_interaction = nil
-    self.Player.opened = self.ParentScreen
+    local parentScreen = self.ParentScreen
+    if parentScreen and parentScreen.valid and parentScreen.object_name == "LuaGuiElement" then
+        parentScreen.ignored_by_interaction = nil
+        self.Player.opened = parentScreen
+    end
 end
 
 function Class:Clear()
