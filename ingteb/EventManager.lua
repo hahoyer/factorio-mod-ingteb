@@ -101,7 +101,7 @@ end
 function Class:ToggleFloating()
     if self.CurrentFloating then return self.CurrentFloating:Close() end
     local targets = self.Modules.Gui:FindTargets()
-    if #targets == 1 then
+    if targets and #targets == 1 then
         self:PresentTarget(targets[1], "Selector")
     else
         self.Modules.Selector:Open(targets)

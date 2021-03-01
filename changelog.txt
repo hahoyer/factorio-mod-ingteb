@@ -1,11 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.17
-Date: 2021-02-26
+Date: 2021-03-01
   Changes:
     - by default, autoresearch adds only 1 request at a time
   Bugfixes:
     - fixing crash when closing SelectRemindor
     - fixing crash when loading save file
+    - fixing crash when opening gui with other gui open
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.16
 Date: 2021-02-25

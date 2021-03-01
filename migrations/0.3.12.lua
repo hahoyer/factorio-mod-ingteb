@@ -1,5 +1,5 @@
 for index,player in pairs(game.players) do
-    local playerData = global.Players[index]
+    local playerData = global.Players and global.Players[index]
     if playerData then
         if not playerData.Remindor.List then playerData.Remindor.List = {} end
         if not playerData.Remindor.Links then playerData.Remindor.Links = {} end
