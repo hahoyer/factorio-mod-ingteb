@@ -8,7 +8,7 @@ local frame_action_icons = Constants.GraphicsPath .. "frame-action-icons.png"
 
 data:extend(
     {
-        {type = "custom-input", name = Constants.Key.Main, key_sequence = "H"},
+        {type = "custom-input", name = Constants.Key.Main, key_sequence = "H",include_selected_prototype=true},
         {type = "custom-input", name = Constants.Key.Back, key_sequence = "mouse-button-4"},
         {type = "custom-input", name = Constants.Key.Fore, key_sequence = "mouse-button-5"},
 

@@ -48,30 +48,23 @@ function Class:OnGuiEvent(event)
     dassert(true)
 end
 
-function Class:FindTargets()
+function Class:FindTargets(selected)
     local player = self.Player
-    local global = self.Global
 
-    local cursor = player.cursor_stack
-    if cursor and cursor.valid and cursor.valid_for_read then
-        return {self.Database:GetItem(cursor.name)}
-    end
-
-    local cursor = player.cursor_ghost
-    if cursor then return {self.Database:GetItem(cursor.name)} end
-
-    local cursor = player.selected
-    if cursor then
-        local result = self.Database:GetEntity(cursor.name)
-        if result.IsResource then
-            return {result}
-        else
-            return {result.Item}
+    if selected then
+        local result = self.Database:GetFromSelection(selected)
+        if result then
+            if result.IsResource then
+                return {result}
+            else
+                return {result.Item}
+            end
         end
     end
 
     local cursor = player.opened
     if cursor then
+        dassert(not selected)
 
         local t = player.opened_gui_type
         if t == defines.gui_type.custom then return end
@@ -118,7 +111,9 @@ function Class:FindTargets()
                 dassert()
             end
 
-            return result:Select(function(_, key) return self:GetObject(global, key) end)
+            return result:ToArray(
+                function(_, key) return self.Database:GetProxyFromCommonKey(key) end
+            )
         end
         local message --
         = "not implemented: defines.gui_type." .. Dictionary: --

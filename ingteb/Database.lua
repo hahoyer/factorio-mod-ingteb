@@ -300,6 +300,28 @@ function Class:Get(target)
     return self:GetProxy(className, Name, Prototype)
 end
 
+function Class:GetFromSelection(target)
+    local className
+    local name = target.name
+    if target.base_type == "item" then
+        className = "Item"
+    elseif target.base_type == "entity" then
+        className = "Entity"
+    elseif target.base_type == "recipe" then
+        className = "Recipe"
+    elseif target.base_type == "technology" then
+        className = "Technology"
+    elseif target.base_type == "item-group" then
+        return
+    else
+        dassert()
+    end
+    self:Ensure()
+    dassert(className)
+    dassert(name or Prototype)
+    return self:GetProxy(className, name, Prototype)
+end
+
 function Class:BeginMulipleQueueResearch(target, setting)
     Class.IsMulipleQueueResearch = true
     local result = target:BeginMulipleQueueResearch(setting)

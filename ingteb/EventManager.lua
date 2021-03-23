@@ -98,9 +98,9 @@ function Class:PresentTargetByCommonKey(targetKey, requestor)
     self:PresentTarget(target, requestor)
 end
 
-function Class:ToggleFloating()
+function Class:ToggleFloating(event)
     if self.CurrentFloating then return self.CurrentFloating:Close() end
-    local targets = self.Modules.Gui:FindTargets()
+    local targets = self.Modules.Gui:FindTargets(event.selected_prototype)
     if targets and #targets == 1 then
         self:PresentTarget(targets[1], "Selector")
     else
@@ -112,7 +112,7 @@ function Class:AddRemindor(selection) self.Modules.Remindor:AddRemindorTask(sele
 
 function Class:OnMainKey(event)
     self.Player = event.player_index
-    self:ToggleFloating()
+    self:ToggleFloating(event)
 end
 
 function Class:ChangeWatcher(event)
