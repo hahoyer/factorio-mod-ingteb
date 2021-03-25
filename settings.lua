@@ -2,12 +2,19 @@ local Constants = require("Constants")
 
 data:extend{
     {
+        type = "string-setting",
+        name = "ingteb_production-timeunit",
+        setting_type = "runtime-per-user",
+        default_value = "0:01",
+        order = "b",
+    },
+    {
         type = "int-setting",
         name = "ingteb_column-tab-threshold",
         setting_type = "runtime-per-user",
         default_value = 3,
         minimum_value = 0,
-        order = "a",
+        order = "a1",
     },
     {
         type = "int-setting",
@@ -15,7 +22,7 @@ data:extend{
         setting_type = "runtime-per-user",
         default_value = 10,
         minimum_value = 0,
-        order = "b",
+        order = "a2",
     },
     {
         type = "int-setting",
@@ -23,7 +30,7 @@ data:extend{
         setting_type = "runtime-per-user",
         default_value = 10,
         minimum_value = 0,
-        order = "c",
+        order = "a3",
     },
     {
         type = "string-setting",

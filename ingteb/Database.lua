@@ -5,6 +5,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local TimeSpan = require("core.TimeSpan")
 local Proxy = {
     BoilingRecipe = require("ingteb.BoilingRecipe"),
     Bonus = require("ingteb.Bonus"),
@@ -21,10 +22,29 @@ local Proxy = {
 local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new(
-    "Database", nil, {Player = {get = function(self) return self.Parent.Player end}}
+    "Database", nil, {
+        Player = {get = function(self) return self.Parent.Player end},
+        ProductionTimeUnit = {
+            cache = true,
+            get = function(self)
+                local rawValue =
+                    settings.get_player_settings(self.Player)["ingteb_production-timeunit"].value
+                return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
+            end,
+        },
+    }
 )
 
 function Class:new(parent) return self:adopt{Parent = parent} end
+
+function Class:OnSettingsChanged() 
+    self.cache.Database.ProductionTimeUnit.IsValid = false 
+end
+
+function Class:GetItemsPerTickText(amount, timeInSeconds)
+    return " (" .. self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)
+               .. "[img=items-per-timeunit]" .. ")"
+end
 
 local function EnsureKey(data, key, value)
     local result = data[key]
@@ -53,6 +73,7 @@ function Class:Ensure()
     self.IsInitialized = "pending"
 
     log("database initialize start...")
+    self:OnSettingsChanged()
     self.RecipesForItems = {}
     self.RecipesForCategory = {}
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end

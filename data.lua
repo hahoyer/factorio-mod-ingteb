@@ -47,6 +47,21 @@ data:extend(
             size = 64,
             scale = 0.5,
         },
+        {
+            type = "sprite",
+            name = "items-per-timeunit",
+            filename = Constants.GraphicsPath .. "items-per-timeunit.png",
+            size = 34,
+        },
+        {
+            type = "sprite",
+            name = "setting-is-off",
+            filename = "__core__/graphics/no-recipe.png",
+            width = 101,
+            height = 101,
+            scale = 0.6,
+        },
+  
         data_util.build_sprite("ingteb_settings_black", {0, 96}, frame_action_icons, 32),
         data_util.build_sprite("ingteb_settings_white", {32, 96}, frame_action_icons, 32),
     }

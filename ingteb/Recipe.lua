@@ -137,13 +137,20 @@ Recipe.system.Properties = {
             }
             result:AppendMany(
                 self.Input:Select(
-                    function(stack) return stack.HelpTextWhenUsedAsComponent end
+                    function(stack)
+                        return {
+                            "",
+                            stack.HelpTextWhenUsedAsProduct,
+                            self.Database:GetItemsPerTickText(stack.Amounts.value, self.Time),
+                        }
+                    end
                 )
             )
             result:Append{
                 "",
                 "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
                 {"description.crafting-time"},
+                self.Database:GetItemsPerTickText(1, self.Time),
             }
 
             return result
@@ -152,7 +159,9 @@ Recipe.system.Properties = {
 
     ProductHelp = {
         get = function(self)
-            if not self.Output or self.Output:Count() == 1 then return {} end
+            if not self.Output or self.Output:Count() == 1 and self.Output[1].Amounts.value == 1 then
+                return {}
+            end
 
             local result = Array:new{
                 {
@@ -165,7 +174,13 @@ Recipe.system.Properties = {
             }
             result:AppendMany(
                 self.Output:Select(
-                    function(stack) return stack.HelpTextWhenUsedAsProduct end
+                    function(stack)
+                        return {
+                            "",
+                            stack.HelpTextWhenUsedAsProduct,
+                            self.Database:GetItemsPerTickText(stack.Amounts.value, self.Time),
+                        }
+                    end
                 )
             )
 
@@ -178,8 +193,15 @@ Recipe.system.Properties = {
         get = function(self)
             if self.Prototype.main_product then
                 return self.Database:GetStackOfGoods(self.Prototype.main_product)
+            else
+                return self.Output[1]
             end
         end,
+    },
+
+    MainProductCount = {
+        cache = true,
+        get = function(self) return self.MainProductStack.Amounts.value end,
     },
 
     HelperHeaderText = {
@@ -195,7 +217,7 @@ Recipe.system.Properties = {
                 end
 
                 if outputAmount then
-                    return {"", self.Output[1].Amounts.value .. " x ", self.LocalisedName}
+                    return {"", outputAmount .. " x ", self.LocalisedName}
                 end
             end
             return self.LocalisedName

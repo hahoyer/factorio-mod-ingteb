@@ -246,6 +246,7 @@ function Class:OnSettingsChanged(event)
     self.Modules.Presentator:OnSettingsChanged(event)
     self.Modules.SelectRemindor:OnSettingsChanged(event)
     self.Modules.Remindor:OnSettingsChanged(event)
+    self.Modules.Database:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
