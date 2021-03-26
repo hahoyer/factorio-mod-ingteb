@@ -140,6 +140,7 @@ function Class:CheckAutoCrafting()
     if self.Worker.Name ~= "character" then return end
     if self.Recipe.class.name ~= "Recipe" then return end
     local player = game.players[self.Global.Index]
+    if player.controller_type ~= defines.controllers.character then return end
     if player.crafting_queue_size > 0 then return end
 
     local toDo = self.RemainingAmountForAutocrafting

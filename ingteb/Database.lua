@@ -37,9 +37,7 @@ local Class = class:new(
 
 function Class:new(parent) return self:adopt{Parent = parent} end
 
-function Class:OnSettingsChanged() 
-    self.cache.Database.ProductionTimeUnit.IsValid = false 
-end
+function Class:OnSettingsChanged() self.cache.Database.ProductionTimeUnit.IsValid = false end
 
 function Class:GetItemsPerTickText(amount, timeInSeconds)
     return " (" .. self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)
@@ -405,7 +403,11 @@ function Class:GetCraftableCount(target)
         end
         return result, recipe
     elseif target.class == Proxy.Recipe then
-        return self.Player.get_craftable_count(target.Name)
+        if self.Player.controller_type == defines.controllers.character then
+            return self.Player.get_craftable_count(target.Name)
+        else
+            return 0
+        end
     end
 end
 
