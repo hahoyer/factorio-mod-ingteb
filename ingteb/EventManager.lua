@@ -378,4 +378,4 @@ function Class:new()
     return self
 end
 
-Class:new()
+return Class:new()

@@ -45,16 +45,10 @@ data:extend{
 		},
     },
     {
-        type = "string-setting",
+        type = "bool-setting",
         name = "ingteb_reminder-task-autocrafting",
         setting_type = "runtime-per-user",
-        allowed_values = {
-            "off",
-            "1",
-            "5",
-            "all",
-		},
-		default_value = "off",
+		default_value = false,
         order = "d2",
     },
     {

@@ -30,10 +30,8 @@ local setup = {
     AutoCrafting = {
         Name = "ingteb-utility.select-remindor-autocrafting-help",
         SpriteList = {"utility.slot_icon_robot_material_black", "utility.slot_icon_robot_material"},
-        off = {Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-off"},
-        ["1"] = {Next = "5", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-1"},
-        ["5"] = {Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-5"},
-        all = {Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autocrafting-all"},
+        [true] = {Next = false, Name = "ingteb-utility.settings-switch-on"},
+        [false] = {Next = true, Name = "ingteb-utility.settings-switch-off"},
     },
     RemoveTaskWhenFulfilled = {
         Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",

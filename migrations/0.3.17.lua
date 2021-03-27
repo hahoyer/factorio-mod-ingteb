@@ -10,7 +10,7 @@ local function modify(data, tag)
 end
 
 for index, player in pairs(game.players) do
-    local playerData = global.Players[index]
+    local playerData = global.Players and global.Players[index]
     if playerData then
         if playerData.Remindor then playerData.Remindor.Settings = nil end
         for _, task in ipairs(playerData.Remindor.List) do

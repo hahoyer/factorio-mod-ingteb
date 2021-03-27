@@ -143,20 +143,12 @@ function Class:CheckAutoCrafting()
     if player.controller_type ~= defines.controllers.character then return end
     if player.crafting_queue_size > 0 then return end
 
-    local toDo = self.RemainingAmountForAutocrafting
-    if toDo <= 0 then return end
-
-    if self.AutoCrafting == "off" then
-        return
-    elseif self.AutoCrafting == "1" then
-        toDo = math.min(toDo, 1)
-    elseif self.AutoCrafting == "5" then
-        toDo = math.min(toDo, 5)
+    if self.AutoCrafting --
+    and self.RemainingAmountForAutocrafting > 0 --
+    and self.Recipe.CraftableCount > 0 then
+        player.begin_crafting {count = 1, recipe = self.Recipe.Name}
     end
 
-    local craftable = self.Recipe.CraftableCount
-    if toDo > craftable then return end
-    player.begin_crafting {count = toDo, recipe = self.Recipe.Name}
 end
 
 function Class:AutomaticActions()
