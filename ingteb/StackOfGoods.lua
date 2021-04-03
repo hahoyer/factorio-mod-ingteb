@@ -212,8 +212,17 @@ function Class:AddOption(other)
     self.Amounts.value = nil
 end
 
-function Class:Clone()
+function Class:Clone(factor)
     local amounts = self.Amounts and Dictionary:new(self.Amounts):Clone() or nil
+    if factor then
+        if amounts then
+            if amounts.value  then amounts.value = amounts.value * factor end
+            if amounts.min then amounts.min = amounts.min * factor end
+            if amounts.max then amounts.max = amounts.max * factor end
+        else
+            amounts = {value = factor}
+        end
+    end
     return Class:new(self.Goods, amounts, self.Database)
 end
 

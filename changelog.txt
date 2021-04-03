@@ -3,6 +3,9 @@ Version: 0.3.21
 Date: 2021-03-27
   Changes:
     - Autocrafting setup simplified
+    - Not use icons in mod-name
+    - Provide tooltip for technologies
+    - Use description of entity as fallback for items
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.20
 Date: 2021-03-26

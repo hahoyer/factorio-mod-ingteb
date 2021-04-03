@@ -59,7 +59,12 @@ local Common = class:new(
         AdditionalHelp = {
             get = function(self)
                 local result = Array:new{}
-                if self.HasDescription then result:Append(self.LocalizedDescription) end
+                if self.HasDescription then
+                    result:Append(self.LocalizedDescription)
+                elseif self.Entity and self.Entity.HasDescription then
+                    result:Append(self.Entity.LocalizedDescription)
+                end
+
                 return result
             end,
         },

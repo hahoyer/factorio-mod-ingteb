@@ -38,17 +38,42 @@ local Class = class:new(
 
         },
 
+        InputHelp = {
+            cache = true,
+            get = function(self) --
+                local result = Array:new{
+                    {
+                        "",
+                        "[font=heading-1][color=#F8E1BC]",
+                        {"gui-technology-preview.unit-ingredients"},
+                        ":[/color][/font]",
+                    },
+
+                }
+
+                local ingredients = self.Input
+                result:AppendMany(
+                    ingredients:Select(
+                        function(stack)
+                            return {"", stack.HelpTextWhenUsedAsProduct}
+                        end
+                    )
+                )
+                result:Append{
+                    "",
+                    "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                }
+
+                return result
+            end,
+
+        },
+
         Input = {
             cache = true,
             get = function(self) --
                 return self.Ingredients:Select(
-                    function(stack)
-                        return stack:Clone(
-                            function(amounts)
-                                amounts.value = amounts.value * self.Amount
-                            end
-                        )
-                    end
+                    function(stack) return stack:Clone(self.Amount) end
                 ) --
             end,
         },
@@ -58,6 +83,17 @@ local Class = class:new(
                 if self.Prototype.level and self.Prototype.max_level > 1 then
                     return self.Prototype.level
                 end
+            end,
+        },
+
+        AdditionalHelp = {
+            get = function(self)
+                local result = self.inherited.Technology.AdditionalHelp.get(self) --
+                result:AppendMany(self.InputHelp)
+                result:AppendMany(self.EffectsHelp)
+                result:AppendMany(self.EnablesHelp)
+                if self.Description then result:Append(self.LocalizedDescription) end
+                return result
             end,
         },
 
@@ -172,6 +208,32 @@ local Class = class:new(
             end,
         },
 
+        EnablesHelp = {
+            cache = true,
+            get = function(self)
+                if not self.Enables:Any() then return Array:new{} end
+
+                local result = Array:new{
+                    {
+                        "",
+                        "[font=heading-1][color=#F8E1BC]",
+                        {"ingteb-utility.technology-enables"},
+                        ":[/color][/font]",
+                    },
+
+                    {
+                        "",
+                        self.Enables:Select(
+                            function(effect) return effect.RichTextName end
+                        )--
+                        :ToArray():Stringify(""),
+                    },
+                }
+
+                return result
+            end,
+        },
+
         EnabledRecipes = {
             cache = true,
             get = function(self)
@@ -182,6 +244,32 @@ local Class = class:new(
                         return self.Database:GetRecipe(effect.recipe)
                     end
                 )
+            end,
+        },
+
+        EffectsHelp = {
+            cache = true,
+            get = function(self)
+                if not self.Effects:Any() then return Array:new{} end
+
+                local result = Array:new{
+                    {
+                        "",
+                        "[font=heading-1][color=#F8E1BC]",
+                        {"gui-technology-preview.effects"},
+                        ":[/color][/font]",
+                    },
+
+                    {
+                        "",
+                        self.Effects:Select(
+                            function(effect) return effect.RichTextName end
+                        )--
+                        :ToArray():Stringify(""),
+                    },
+                }
+
+                return result
             end,
         },
 
@@ -308,7 +396,7 @@ function Class:new(name, prototype, database)
     dassert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
     self.SpriteType = "technology"
-    self.Time = self.Prototype.research_unit_energy
+    self.Time = self.Prototype.research_unit_energy / 60
     self.IsRefreshRequired = {Research = true}
     self.TypeStringForLocalisation = "ingteb-utility.title-technology"
 
