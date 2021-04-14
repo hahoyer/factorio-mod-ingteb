@@ -1,4 +1,5 @@
 local translation = require("__flib__.translation")
+local Number= require("core.Number")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -41,7 +42,7 @@ function Class:OnSettingsChanged() self.cache.Database.ProductionTimeUnit.IsVali
 
 function Class:GetItemsPerTickText(amounts, timeInSeconds)
     local amount = amounts.value or (amounts.max + amounts.min)/2
-    return " (" .. self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)
+    return " (" .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
                .. "[img=items-per-timeunit]" .. ")"
 end
 

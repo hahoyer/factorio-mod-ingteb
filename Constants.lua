@@ -29,7 +29,7 @@ else
     function dlog(text) end
 end
 
-function ConditionalBreak(condition, data) if condition then __DebugAdapter.breakpoint("ConditionalBreak "..data) end end
+function ConditionalBreak(condition, data) if condition then __DebugAdapter.breakpoint("ConditionalBreak "..(data or "")) end end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     dassert = assert
