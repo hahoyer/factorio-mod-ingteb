@@ -141,7 +141,7 @@ Recipe.system.Properties = {
                         return {
                             "",
                             stack.HelpTextWhenUsedAsProduct,
-                            self.Database:GetItemsPerTickText(stack.Amounts.value, self.Time),
+                            self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
                         }
                     end
                 )
@@ -150,7 +150,7 @@ Recipe.system.Properties = {
                 "",
                 "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
                 {"description.crafting-time"},
-                self.Database:GetItemsPerTickText(1, self.Time),
+                self.Database:GetItemsPerTickText({value=1}, self.Time),
             }
 
             return result
@@ -178,7 +178,7 @@ Recipe.system.Properties = {
                         return {
                             "",
                             stack.HelpTextWhenUsedAsProduct,
-                            self.Database:GetItemsPerTickText(stack.Amounts.value, self.Time),
+                            self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
                         }
                     end
                 )

@@ -1,6 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.22
+Date: 2021-04-14
+  Bugfixes:
+    - Fixed: crash when selecting ash (Pyanodon)
+---------------------------------------------------------------------------------------------------
 Version: 0.3.21
-Date: 2021-03-27
+Date: 2021-04-03
   Changes:
     - Autocrafting setup simplified
     - Not use icons in mod-name

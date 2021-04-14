@@ -82,6 +82,38 @@ local Class = class:new(
             end,
         },
 
+        FormatedAmounts = {
+            get = function(self)
+                local amounts = self.Amounts
+                local result = ""
+                if amounts then
+                    if amounts.value then
+                        result = result .. amounts.value
+                    end
+
+                    if amounts.min or amounts.max then
+                        result = result ..
+                            (amounts.min or amounts.value) .. " - " .. (amounts.max or amounts.value)
+                    end
+
+                    if amounts.probability and amounts.probability ~= 1 then
+                        result = result ..
+                            "(" .. amounts.probability * 100 .. "%)"
+                        
+                    end
+                    if amounts.temperature then
+                        result = result ..
+                            "(" .. amounts.temperature.. "°)"
+                    end
+                    if amounts.catalyst_amount then
+                        result = result ..
+                            "(=>" .. amounts.catalyst_amount.. "=>)"
+                    end
+                end
+                return result
+            end,
+        },
+
         CustomAdditionalHelp = {
             get = function(self)
                 if self.GetCustomHelp then
@@ -160,7 +192,7 @@ local Class = class:new(
             get = function(self)
                 return {
                     "",
-                    self.Goods.RichTextName .. " [font=default-bold]" .. self.Amounts.value
+                    self.Goods.RichTextName .. " [font=default-bold]" .. self.FormatedAmounts
                         .. " x[/font] ",
                     self.Goods.Prototype.localised_name,
 
