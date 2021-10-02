@@ -1,9 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.23
-Date: 2021-04-14
+Date: 2021-10-02
+  Bugfixes:
+    - Fixed: crash when forcing handcrafting from presentator screen
   Changes:
     - Introducing 3-digit-formatting
     - 3-digit-formating for items-per-tick
+    - icons that are special to ingteb but referenced from core are copied to ingteb mod
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.22
 Date: 2021-04-14
