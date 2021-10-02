@@ -44,7 +44,7 @@ function Class:Open(targets)
                 },
                 {
                     type = "sprite-button",
-                    sprite = "utility/search_white",
+                    sprite = "search_white",
                     style = "frame_action_button",
                     actions = {on_click = {module = self.class.name, action = "Search"}},
                 },

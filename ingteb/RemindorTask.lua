@@ -212,7 +212,7 @@ function Class:GetGui(key, data, isTop, isBottom, required)
             Spritor:GetLinePart(self:GetRequired(data), required.Things),
             {
                 type = "sprite-button",
-                sprite = "utility/close_white",
+                sprite = "close_white",
                 style = "frame_action_button",
                 style_mods = {size = 17},
                 ref = {"Remindor", "Task", "CloseButton"},
@@ -228,7 +228,7 @@ end
 function Class:CreateCloseButton(global, frame, functionData)
     local closeButton = frame.add {
         type = "sprite",
-        sprite = "utility/close_black",
+        sprite = "close_black",
         tooltip = {"gui.close"},
     }
     global.Remindor.Links[closeButton.index] = functionData

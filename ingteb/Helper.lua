@@ -148,7 +148,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                             {type = "flow", direction = "horizontal", children = buttons},
                             {
                                 type = "sprite-button",
-                                sprite = "utility/close_white",
+                                sprite = "close_white",
                                 tooltip = {"gui.close"},
                                 actions = {
                                     on_click = {

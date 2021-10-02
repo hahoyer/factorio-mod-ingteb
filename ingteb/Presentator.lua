@@ -79,7 +79,7 @@ local function GetRecipeLine(target, inCount, outCount)
                 name = "GetRecipeLine inner " .. GetNextId(),
                 direction = "horizontal",
                 children = {
-                    {type = "sprite", sprite = "utility/go_to_arrow"},
+                    {type = "sprite", sprite = "go_to_arrow"},
                     Spritor:GetSpriteButtonAndRegister(
                         target.Technology
                             or {
@@ -91,7 +91,7 @@ local function GetRecipeLine(target, inCount, outCount)
                     Spritor:GetSpriteButtonAndRegister(
                         {SpriteName = "utility/clock", NumberOnSprite = target.Time}
                     ),
-                    {type = "sprite", sprite = "utility/go_to_arrow"},
+                    {type = "sprite", sprite = "go_to_arrow"},
                 },
             },
             Spritor:GetLinePart(target.Output, outCount, false),
@@ -161,7 +161,7 @@ local function GetTechnologyEffectsData(target)
             children = Spritor:GetSpriteButtonAndRegister(target),
             {
                 type = "label",
-                caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
+                caption = "[img=go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
             },
         }
 
@@ -186,7 +186,7 @@ local function GetTechnologyEffectsData(target)
                         direction = "horizontal",
                         children = {
                             Spritor:GetSpriteButtonAndRegister(target),
-                            {type = "label", caption = "[img=utility/go_to_arrow]"},
+                            {type = "label", caption = "[img=go_to_arrow]"},
                             Spritor:GetSpriteButtonAndRegister(effekt),
                         },
                     }
@@ -474,7 +474,7 @@ local function GetTechnologyList(target)
                     )
                 ) --
                 :Concat{
-                    {type = "label", caption = "[img=utility/go_to_arrow]"},
+                    {type = "label", caption = "[img=go_to_arrow]"},
                     {
                         type = "table",
                         column_count = 2,
@@ -640,12 +640,12 @@ function Class:GetGui(target)
             children = {
                 {
                     type = "label",
-                    caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]",
+                    caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=go_to_arrow]",
                 },
                 Spritor:GetSpriteButtonAndRegister(target),
                 {
                     type = "label",
-                    caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
+                    caption = "[img=go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
                 },
             },
         }
@@ -665,12 +665,12 @@ function Class:GetGui(target)
                             GetTechnologiesPanel(
                                 target.ResearchingTechnologies,
                                     target.RichTextName
-                                        .. "[img=utility/go_to_arrow][img=entity/lab]",
+                                        .. "[img=go_to_arrow][img=entity/lab]",
                                     {"ingteb-utility.researching-technologies-for-item"}
                             ),
                             GetTechnologiesExtendedPanel(
                                 target.Prerequisites,
-                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                    "[img=utility/missing_icon][img=go_to_arrow]"
                                         .. target.RichTextName, true,
                                     {"ingteb-utility.prerequisites-for-technology"}
 
@@ -679,7 +679,7 @@ function Class:GetGui(target)
                             self:GetRecipePanel(target),
                             GetTechnologiesExtendedPanel(
                                 target.Enables, target.RichTextName
-                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]", false,
+                                    .. "[img=go_to_arrow][img=utility/missing_icon]", false,
                                     {"ingteb-utility.technologies-enabled"}
 
                             ),
@@ -690,14 +690,14 @@ function Class:GetGui(target)
                             ),
                             self:GetCraftingGroupsPanel(
                                 target.CreatedBy,
-                                    "[img=utility/missing_icon][img=utility/go_to_arrow]"
+                                    "[img=utility/missing_icon][img=go_to_arrow]"
                                         .. target.RichTextName,
                                     {"ingteb-utility.creating-recipes-for-item"}
 
                             ),
                             self:GetCraftingGroupsPanel(
                                 target.UsedBy, target.RichTextName
-                                    .. "[img=utility/go_to_arrow][img=utility/missing_icon]",
+                                    .. "[img=go_to_arrow][img=utility/missing_icon]",
                                     {"ingteb-utility.consuming-recipes-for-item"}
                             ),
                         }:ConcatMany(),
