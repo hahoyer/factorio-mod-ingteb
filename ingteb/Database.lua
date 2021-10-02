@@ -386,19 +386,24 @@ function Class:GetCountInHand(goods)
     return 0
 end
 
+
+--- Get craftable count and recipe for target (item or recipe)
+---@param target table 
+---@return count integer
+---@return recipe table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
-        local recipes = target.CreatedBy["crafting.crafting"]
+        local recipeCandidates = target.CreatedBy["crafting.crafting"]
         local result = 0
         local recipe
-        if recipes then
-            recipes --
+        if recipeCandidates then
+            recipeCandidates --
             :Select(
-                function(recipe)
-                    local count = self:GetCraftableCount(recipe)
+                function(recipeCandidate)
+                    local count = self:GetCraftableCount(recipeCandidate)
                     if result < count then
                         result = count
-                        recipe = recipe
+                        recipe = recipeCandidate
                     end
                 end
             ) --
@@ -406,9 +411,9 @@ function Class:GetCraftableCount(target)
         return result, recipe
     elseif target.class == Proxy.Recipe then
         if self.Player.controller_type == defines.controllers.character then
-            return self.Player.get_craftable_count(target.Name)
+            return self.Player.get_craftable_count(target.Name), target
         else
-            return 0
+            return 0, target
         end
     end
 end
