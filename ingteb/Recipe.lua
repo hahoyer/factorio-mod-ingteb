@@ -27,9 +27,9 @@ Recipe.system.Properties = {
         get = function(self)
             return --
             not self.Technologies:Any() --
-                or self.Technologies:Any(
-                    function(technology) return technology.IsResearched end
-                )
+                or self.Technologies:Any(function(technology)
+                    return technology.IsResearched
+                end)
         end,
     },
 
@@ -150,7 +150,7 @@ Recipe.system.Properties = {
                 "",
                 "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
                 {"description.crafting-time"},
-                self.Database:GetItemsPerTickText({value=1}, self.Time),
+                self.Database:GetItemsPerTickText({value = 1}, self.Time),
             }
 
             return result
@@ -159,9 +159,10 @@ Recipe.system.Properties = {
 
     ProductHelp = {
         get = function(self)
-            if not self.Output or self.Output:Count() == 1 and self.Output[1].Amounts.value == 1 then
-                return {}
-            end
+            if not self.Output or --
+            self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
+                and self.Output[1].Amounts.catalyst_amount == nil --
+            then return {} end
 
             local result = Array:new{
                 {
@@ -366,7 +367,9 @@ function Recipe:SortAll() end
 
 function Recipe:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.recipe_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.recipe_prototypes[name], database
+        )
     )
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")

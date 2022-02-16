@@ -415,7 +415,7 @@ function Class:GetRecipePanel(target)
     local outCount = math.min(target.Output:Count(), maximalCount)
     return {
         GetContentPanel(
-            {"", target.RichTextName}, "Information about the recipe", {
+            {"", target.RichTextName}, {"ingteb-utility.recipe-information"}, {
                 self:GetWorkersPanel(target.Category, inCount + outCount + 3),
                 {type = "line", direction = "horizontal"},
                 GetRecipeLine(target, inCount, outCount),
