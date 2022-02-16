@@ -48,37 +48,15 @@ function Class:OnGuiEvent(event)
     dassert(true)
 end
 
-function Class:FindTargets(selected)
+function Class:FindOpenedTargets()
     local player = self.Player
-
-    if selected then
-        local result = self.Database:GetFromSelection(selected)
-        if result then
-            if result.class.name ~= "Entity" or result.IsResource then
-                return {result}
-            else
-                return {result.Item}
-            end
-        end
-    end
 
     local cursor = player.opened
     if cursor then
-        dassert(not selected)
-
         local t = player.opened_gui_type
         if t == defines.gui_type.custom then return end
         if t == defines.gui_type.entity then
             dassert(cursor.object_name == "LuaEntity")
-
-            local inventories = Dictionary:new(defines.inventory) --
-            :Select(
-                function(_, name)
-                    local inventory = cursor.get_inventory(defines.inventory[name])
-                    return inventory and #inventory or 0
-                end
-            ) --
-            :Where(function(count) return count > 0 end)
 
             local result = Dictionary:new{}
 
@@ -104,11 +82,12 @@ function Class:FindTargets(selected)
                         result["FuelCategory." .. category] = true
                     end
                 end
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel),result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main),result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules),result)
             else
-                dassert()
+
+               -- dassert()
             end
 
             return result:ToArray(
@@ -123,6 +102,23 @@ function Class:FindTargets(selected)
 
         log(message)
         dassert()
+    end
+end
+
+function Class:FindTargets(selected)
+    local player = self.Player
+    local result = self:FindOpenedTargets()
+    if result then return result end
+
+    if selected then
+        local result = self.Database:GetFromSelection(selected)
+        if result then
+            if result.class.name ~= "Entity" or result.IsResource then
+                return {result}
+            else
+                return {result.Item}
+            end
+        end
     end
 
     return {}
