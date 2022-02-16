@@ -5,6 +5,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local class = require("core.class")
+local ResearchQueue = require "ingteb.ResearchQueue"
 
 local ignore
 local Class = class:new(
@@ -103,6 +104,11 @@ local Class = class:new(
                 return self.IsReady
             end,
         },
+
+        ResearchQueue = {get = function(self)
+            return self.Database.Parent.Modules.ResearchQueue
+        end},
+
         IsResearched = {
             get = function(self)
                 return self.Database.Player.force.technologies[self.Prototype.name].researched
@@ -121,10 +127,7 @@ local Class = class:new(
 
         IsResearching = {
             get = function(self)
-                local queue = self.Database.Player.force.research_queue
-                for index = 1, #queue do
-                    if queue[index].name == self.Prototype.name then return true end
-                end
+                return self.ResearchQueue:IsResearching(self.Prototype.name)
             end,
         },
         IsReady = {
@@ -193,8 +196,8 @@ local Class = class:new(
         Enables = {
             cache = true,
             get = function(self)
-                local enabledTechnologies =
-                    self.Database.EnabledTechnologiesForTechnology[self.Prototype.name]
+                local enabledTechnologies = self.Database.EnabledTechnologiesForTechnology[self.Prototype
+                                                .name]
                 if enabledTechnologies then
                     return enabledTechnologies --
                     :Select(
@@ -225,7 +228,7 @@ local Class = class:new(
                         "",
                         self.Enables:Select(
                             function(effect) return effect.RichTextName end
-                        )--
+                        ) --
                         :ToArray():Stringify(""),
                     },
                 }
@@ -239,11 +242,9 @@ local Class = class:new(
             get = function(self)
                 return Dictionary:new(self.Prototype.effects) --
                 :Where(function(effect) return effect.type == "unlock-recipe" end) --
-                :Select(
-                    function(effect)
-                        return self.Database:GetRecipe(effect.recipe)
-                    end
-                )
+                :Select(function(effect)
+                    return self.Database:GetRecipe(effect.recipe)
+                end)
             end,
         },
 
@@ -264,7 +265,7 @@ local Class = class:new(
                         "",
                         self.Effects:Select(
                             function(effect) return effect.RichTextName end
-                        )--
+                        ) --
                         :ToArray():Stringify(""),
                     },
                 }
@@ -320,14 +321,6 @@ local Class = class:new(
     }
 )
 
-local function AddResearch(player, name, setting)
-    if setting == "off" then return end
-    if #player.force.research_queue == 0 --
-    or player.force.research_queue_enabled and setting ~= "1" then
-        return player.force.add_research(name)
-    end
-end
-
 function Class:BeginMulipleQueueResearch(setting)
     local player = self.Database.Player
     local queued = Array:new{}
@@ -335,17 +328,18 @@ function Class:BeginMulipleQueueResearch(setting)
     repeat
         local ready = self.TopReadyPrerequisite
         if ready then message = "ingteb-utility.not-added-to-research-queue" end
-        local added = ready and AddResearch(player, ready.Name, setting)
+        local added = ready and self.ResearchQueue:AddResearch(ready.Name, setting)
         if added then queued:Append(ready) end
 
-    until not added
+    until not added or setting == "1"
 
     queued:Select(
         function(technology)
-            self.Database:Print(
-                player,
-                    {"ingteb-utility.added-to-research-queue", technology.Prototype.localised_name}
-            )
+            self.Database:Print{
+                "ingteb-utility.added-to-research-queue",
+                technology.Prototype.localised_name,
+            }
+
             technology:Refresh()
         end
     )
@@ -354,16 +348,15 @@ end
 
 function Class:BeginDirectQueueResearch()
     local player = self.Database.Player
-    local added = AddResearch(player, self.Name)
+    local added = self.ResearchQueue:AddResearch(self.Name)
     if added then
-        self.Database:Print(
-            player, {"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}
-        )
+        self.Database:Print{"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}
         self:Refresh()
     else
-        self.Database:Print(
-            player, {"ingteb-utility.not-added-to-research-queue", self.Prototype.localised_name}
-        )
+        self.Database:Print{
+            "ingteb-utility.not-added-to-research-queue",
+            self.Prototype.localised_name,
+        }
     end
 end
 
@@ -390,7 +383,9 @@ end
 
 function Class:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.technology_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.technology_prototypes[name], database
+        )
     )
 
     dassert(self.Prototype.object_name == "LuaTechnologyPrototype")

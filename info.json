@@ -1,12 +1,14 @@
 {
     "title": "ingteb",
-    "version": "0.3.23",
+    "version": "0.3.24",
     "name": "ingteb",
     "author": "ixu",
     "description": "Ingame technology browser",
     "factorio_version": "1.1",
     "dependencies": [
         "base >= 1.1.0",
-        "flib >= 0.6.1"
+        "flib >= 0.6.1",
+        "? sonaxaton-research-queue-with-interface"
+
     ]
 }

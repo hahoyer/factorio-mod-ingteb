@@ -19,6 +19,7 @@ local Database = require("ingteb.Database")
 local Spritor = require("ingteb.Spritor")
 local Remindor = require("ingteb.Remindor")
 local SelectRemindor = require("ingteb.SelectRemindor")
+local ResearchQueue = require("ingteb.ResearchQueue")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -293,7 +294,7 @@ function Class:OnGuiClick(event)
     if action.Research then
         if action.Multiple then
             local message = self.Database:BeginMulipleQueueResearch(action.Research)
-            if message then self.Database:Print(player, message) end
+            if message then self.Database:Print(message) end
         elseif action.Research.IsReady then
             action.Research:BeginDirectQueueResearch()
         end
@@ -325,6 +326,7 @@ function Class:new()
         Spritor = Spritor:new(self),
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
+        ResearchQueue = ResearchQueue:new(self),
         OnResearchCanceled = core.OnResearchCanceled:new(self),
     }
 

@@ -6,6 +6,7 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 local core = {EventManager = require "core.EventManager"}
+local sonaxaton = require "ingteb.Sonaxaton"
 
 local Class = class:new("core.OnResearchCanceled", core.EventManager)
 
@@ -13,31 +14,52 @@ defines.events.on_research_canceled = script.generate_event_name()
 Class.EventId = defines.events.on_research_canceled
 
 function Class:GetResearchQueue(force)
-    return Array:new(force.research_queue):Select(function(technology) return technology.name end)
+    if sonaxaton then
+        return Array:new(sonaxaton.GetQueue(force))
+    else
+        return Array:new(force.research_queue):Select(
+            function(technology) return technology.name end
+        )
+    end
 end
 
 function Class:HasResearchQueueChanged(force)
     local last = self.Forces[force.index]
-    if #last ~= #force.research_queue then return true end
-    for index = 1, #last do
-        if last[index] ~= force.research_queue[index].name then return true end
-    end
+    local current = self:GetResearchQueue(force)
+    if #last ~= #current then return true end
+    for index = 1, #last do if last[index] ~= current[index] then return true end end
 end
 
 function Class:AlignResearchQueueCopy(force)
     if self.Forces[force.index] then
         if not self:HasResearchQueueChanged(force) then return end
 
-        local active = Array:new(force.research_queue) --
-        :ToDictionary(function(technology) return {Key = technology.name, Value = true} end)
+        local active = self:GetResearchQueue(force) --
+        :ToDictionary(function(technology) return {Key = technology, Value = true} end)
 
-        self.Forces[force.index] --
-        :Where(function(name) return not active[name] end) --
+        local last = self.Forces[force.index]
+        :ToDictionary(function(technology) return {Key = technology, Value = true} end)
+
+        last --
         :Select(
-            function(name)
-                script.raise_event(
-                    defines.events.on_research_canceled, {research = force.technologies[name]}
-                )
+            function(_, name)
+                if not active[name] then
+                    script.raise_event(
+                        defines.events.on_research_canceled, {research = force.technologies[name]}
+                    )
+                end
+            end
+        )
+
+        active --
+        :Select(
+            function(_, name)
+                if not last[name] then
+                    self.Parent:OnResearchChanged{
+                        research = force.technologies[name],
+                        tick = game.tick,
+                    }
+                end
             end
         )
     end
@@ -61,8 +83,8 @@ function Class:RefreshResearchQueueCopies()
     for _, force in pairs(game.forces) do self:RefreshResearchQueueCopy(force) end
 end
 
-function Class:new()
-    local self = self:adopt{Forces = {}}
+function Class:new(parent)
+    local self = self:adopt{Forces = {}, Parent = parent}
 
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)

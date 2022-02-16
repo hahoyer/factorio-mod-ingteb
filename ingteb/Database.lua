@@ -362,7 +362,7 @@ function Class:RefreshTechnology(target)
     dassert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
 end
-function Class:Print(player, text) player.print {"", "[ingteb]", text} end
+function Class:Print(text) self.Player.print {"", "[ingteb]", text} end
 
 function Class:GetCountInInventory(goods)
     if goods.class == Proxy.Item then

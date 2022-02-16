@@ -11,6 +11,8 @@ The remidor panel is inspired by the one from Satisfactory.
 - provide information on recipe-combinations
 - help on modules
 - help on fuel consumption
+- consider burnt_result (thank you meifray)
+- consider rocket_launch_product (thank you meifray)
 - multiplayer
 - involve achievements
 - machine-column for labs
@@ -24,9 +26,6 @@ The remidor panel is inspired by the one from Satisfactory.
   => by hidden/hidden_from_player_crafting 
   => ... *(I am open for suggestions)*
 - Reminder selector: Order things by technology level
-- Integrating with some other mods
-  => sonaxaton-research-queue
-  => ... *(I am open for suggestions)*
 - ... *more suggestions?*
 
 ###known issue: 

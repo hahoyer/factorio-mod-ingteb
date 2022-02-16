@@ -12,7 +12,7 @@ local result = {
     GraphicsPath = "__" .. modName .. "__/graphics/",
     RefreshDelay = 10,
     SelectorColumnCount = 12,
-    ProductionTimeUnitInTicks = TimeSpan.FromMinutes(1)
+    ProductionTimeUnitInTicks = TimeSpan.FromMinutes(1),
 }
 
 indent = ""
