@@ -409,6 +409,16 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     }
 end
 
+function Class:GetFuelsPanel(target, headerSprites, tooltip)
+    if not target or not target:Any() then return {} end
+
+    return {
+        GetContentPanel(
+            headerSprites, tooltip, {Spritor:GetLinePart(target, target:Count(), true)} --
+        ),
+    }
+end
+
 function Class:GetRecipePanel(target)
     if target.class.name ~= "Recipe" then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
@@ -631,7 +641,8 @@ function Class:GetGui(target)
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
           + (target.ResearchingTechnologies and target.ResearchingTechnologies:Any() and 1 or 0) --
-
+          + (target.Fuels and target.Fuels:Any() and 1 or 0) --
+    
     local children
     if columnCount == 0 then
         children = {
@@ -664,14 +675,12 @@ function Class:GetGui(target)
                         children = Array:new{
                             GetTechnologiesPanel(
                                 target.ResearchingTechnologies,
-                                    target.RichTextName
-                                        .. "[img=go_to_arrow][img=entity/lab]",
+                                    target.RichTextName .. "[img=go_to_arrow][img=entity/lab]",
                                     {"ingteb-utility.researching-technologies-for-item"}
                             ),
                             GetTechnologiesExtendedPanel(
-                                target.Prerequisites,
-                                    "[img=utility/missing_icon][img=go_to_arrow]"
-                                        .. target.RichTextName, true,
+                                target.Prerequisites, "[img=utility/missing_icon][img=go_to_arrow]"
+                                    .. target.RichTextName, true,
                                     {"ingteb-utility.prerequisites-for-technology"}
 
                             ),
@@ -689,9 +698,8 @@ function Class:GetGui(target)
                                     {"ingteb-utility.recipes-for-worker"}
                             ),
                             self:GetCraftingGroupsPanel(
-                                target.CreatedBy,
-                                    "[img=utility/missing_icon][img=go_to_arrow]"
-                                        .. target.RichTextName,
+                                target.CreatedBy, "[img=utility/missing_icon][img=go_to_arrow]"
+                                    .. target.RichTextName,
                                     {"ingteb-utility.creating-recipes-for-item"}
 
                             ),
@@ -699,6 +707,11 @@ function Class:GetGui(target)
                                 target.UsedBy, target.RichTextName
                                     .. "[img=go_to_arrow][img=utility/missing_icon]",
                                     {"ingteb-utility.consuming-recipes-for-item"}
+                            ),
+                            self:GetFuelsPanel(
+                                target.Fuels, target.RichTextName
+                                    .. "[img=go_to_arrow][img=utility/slot_icon_fuel_black]",
+                                    {"ingteb-utility.fuel"}
                             ),
                         }:ConcatMany(),
 

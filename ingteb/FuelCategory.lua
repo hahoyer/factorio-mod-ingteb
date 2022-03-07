@@ -15,6 +15,11 @@ FuelCategory.system.Properties = {
             :Select(function(item) return self.Database:GetItem(nil, item) end)
         end,
     },
+    SpriteName = {
+        cache = true,
+        get = function(self) return "tooltip-category-" .. self.Prototype.name end,
+    },
+
 }
 
 function FuelCategory:new(name, prototype, database)

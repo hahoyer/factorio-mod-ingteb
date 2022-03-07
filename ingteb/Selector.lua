@@ -116,12 +116,13 @@ function Class:GetGui()
 end
 
 function Class:GetGuiInnerVariant()
-
+    local result
     if self.Targets:Count() > 0 then
-        return self:GetTargetsGui()
+        result = self:GetTargetsGui()
     else
-        return self:GetAllItemsGui()
+        result = self:GetAllItemsGui()
     end
+    return result
 end
 
 function Class:Close()
@@ -152,9 +153,10 @@ function Class:GetTargets()
             if target.SpriteType == "fuel-category" then
                 return {
                     type = "sprite-button",
-                    sprite = target.Name,
+                    sprite = target.SpriteName,
                     name = target.CommonKey,
                     tooltip = target.LocalisedName,
+                    actions = {on_click = {module = self.class.name, action = "Click"}},
                 }
             else
                 return {
@@ -162,6 +164,7 @@ function Class:GetTargets()
                     elem_type = target.SpriteType,
                     name = target.CommonKey,
                     elem_mods = {elem_value = target.Name, locked = true},
+                    actions = {on_click = {module = self.class.name, action = "Click"}},
                 }
             end
         end
@@ -185,12 +188,32 @@ end
 
 local SelectorCache = {}
 
+function GetFuelCategories(database)
+    local result = database:GetFuelCategories() --
+    :ToDictionary(
+        function(name)
+            return {
+                Key = name,
+                Value = { --
+                    group = {name = "fuel-category"},
+                    subgroup = {name = "fuel-category"},
+                }, 
+            }
+        end
+    )
+    return result
+end
+
 function SelectorCache:EnsureGroups(database)
     local self = SelectorCache
     if not self.Groups then
         local maximalColumns = 0
         self.Groups = Dictionary:new{}
-        local targets = {Item = game.item_prototypes, Fluid = game.fluid_prototypes}
+        local targets = {
+            Item = game.item_prototypes,
+            Fluid = game.fluid_prototypes,
+            FuelCategory = GetFuelCategories(database),
+        }
         for type, domain in pairs(targets) do
             for name, goods in pairs(domain) do
                 local isHidden
@@ -244,17 +267,18 @@ function Class:GetAllItemsGui()
 
     return {
         type = "tabbed-pane",
-        tabs = groups:ToArray():Select(
-            function(group)
-                local groupHeader = group[next(group)][1].Prototype.group
+        tabs = groups:ToArray(
+            function(group, name)
                 local subGroup = self:GetSubGroupPanel(group)
+                local caption = "[item-group=" .. name .. "]"
+                if name == "fuel-category" then caption = "[img=utility.slot_icon_fuel]" end
                 return {
                     tab = {
                         type = "tab",
-                        caption = "[item-group=" .. groupHeader.name .. "]",
+                        caption = caption,
                         -- style = "filter_group_tab",
                         style = subGroup:Any() and "ingteb-big-tab" or "ingteb-big-tab-disabled",
-                        tooltip = groupHeader.localised_name,
+                        tooltip = {"item-group-name." .. name },
                         ignored_by_interaction = not subGroup:Any(),
                         -- style_mods = {font = "ingteb-font32"}
                     },

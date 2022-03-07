@@ -1,5 +1,5 @@
 local translation = require("__flib__.translation")
-local Number= require("core.Number")
+local Number = require("core.Number")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -28,8 +28,8 @@ local Class = class:new(
         ProductionTimeUnit = {
             cache = true,
             get = function(self)
-                local rawValue =
-                    settings.get_player_settings(self.Player)["ingteb_production-timeunit"].value
+                local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
+                                     .value
                 return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
             end,
         },
@@ -41,8 +41,9 @@ function Class:new(parent) return self:adopt{Parent = parent} end
 function Class:OnSettingsChanged() self.cache.Database.ProductionTimeUnit.IsValid = false end
 
 function Class:GetItemsPerTickText(amounts, timeInSeconds)
-    local amount = amounts.value or (amounts.max + amounts.min)/2
-    return " (" .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
+    local amount = amounts.value or (amounts.max + amounts.min) / 2
+    return " ("
+               .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
                .. "[img=items-per-timeunit]" .. ")"
 end
 
@@ -160,6 +161,11 @@ end
 function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 function Class:GetFuelCategory(name, prototype) return
     self:GetProxy("FuelCategory", name, prototype) end
+
+function Class:GetFuelCategories()
+    return Dictionary:new(self.EntitiesForBurnersFuel) --
+    :Select(function(_, fuelTypeName) return fuelTypeName end)
+end
 
 function Class:GetBonusFromEffect(target)
     local type = target.type
@@ -385,7 +391,6 @@ function Class:GetCountInHand(goods)
     end
     return 0
 end
-
 
 --- Get craftable count and recipe for target (item or recipe)
 ---@param target table 
