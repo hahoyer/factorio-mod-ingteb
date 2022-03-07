@@ -23,11 +23,11 @@ function History:new()
 end
 
 function History:Log(tag)
-    log(">>>---" .. tag)
+    dlog(">>>---" .. tag)
     for index = 1, #self.Data do
-        log((index == self.Index and "*" or " ") .. index .. " " .. self.Data[index])
+        dlog((index == self.Index and "*" or " ") .. index .. " " .. self.Data[index])
     end
-    log("<<<---" .. tag)
+    dlog("<<<---" .. tag)
 end
 
 function History:ResetTo(target)
