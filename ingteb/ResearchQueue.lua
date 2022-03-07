@@ -18,14 +18,28 @@ local Class = class:new(
     }
 )
 
-function Class:new(parent) 
-    local result = self:adopt{Parent = parent} 
+function Class:new(parent)
+    local result = self:adopt{Parent = parent}
     return result
 end
 
 function Class:IsResearching(name)
     local queue = self.Current
     for index = 1, #queue do if queue[index] == name then return true end end
+end
+
+function Class:SonaxatonCheck()
+    if sonaxaton then return end
+    if script.active_mods["sonaxaton-research-queue"] == nil then return end
+
+    for _, player in pairs(self.Force.players) do
+        player.print {
+            "ingteb-utility.research-not-available",
+            {"mod-name.sonaxaton-research-queue"},
+            "sonaxaton-research-queue-with-interface",
+        }
+    end
+
 end
 
 function Class:AddResearch(name, setting)
@@ -39,6 +53,8 @@ function Class:AddResearch(name, setting)
     or self.Force.research_queue_enabled and setting ~= "1" then
         return self.Force.add_research(name)
     end
+
+    self:SonaxatonCheck()
 end
 
 return Class
