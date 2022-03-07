@@ -69,25 +69,30 @@ function Class:FindOpenedTargets()
             if cursor.type == "container" then
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
             elseif cursor.type == "storage-tank" then
+            elseif cursor.type == "reactor" then
             elseif cursor.type == "assembling-machine" then
                 self:GetRecipeData(cursor.get_recipe(), result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.assembling_machine_modules), result)
+            elseif cursor.type == "furnace" then
+                self:GetRecipeData(cursor.get_recipe(), result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.furnace_modules), result)
             elseif cursor.type == "lab" then
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
-                self:GetRecipeData(player.force.current_research, result)
+                self:GetTechnologyData(player.force.current_research, result)
             elseif cursor.type == "mining-drill" then
                 result["Entity." .. cursor.mining_target.name] = true
-                if cursor.burner and cursor.burner.fuel_categories then
-                    for category, _ in pairs(cursor.burner.fuel_categories) do
-                        result["FuelCategory." .. category] = true
-                    end
-                end
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel),result)
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main),result)
                 self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules),result)
             else
 
-               -- dassert()
+               --dassert()
+            end
+            if cursor.burner and cursor.burner.fuel_categories then
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel),result)
+                for category, _ in pairs(cursor.burner.fuel_categories) do
+                    result["FuelCategory." .. category] = true
+                end
             end
 
             return result:ToArray(
@@ -136,8 +141,12 @@ function Class:GetRecipeData(recipePrototype, result)
     if not recipePrototype then return end
     local recipe = self.Database:GetRecipe(nil, recipePrototype)
     result["Recipe." .. recipePrototype.name] = true
-    local inoutItems = recipe.Input:Concat(recipe.Output) --
-    inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
+end
+
+function Class:GetTechnologyData(target, result)
+    if not target then return end
+    local technology = self.Database:GetTechnology(nil, target)
+    result["Technology." .. target.name] = true
 end
 
 function Class:PresentTargetFromCommonKey(global, targetKey)
