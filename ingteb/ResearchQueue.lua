@@ -34,9 +34,24 @@ function Class:SonaxatonCheck()
 
     for _, player in pairs(self.Force.players) do
         player.print {
-            "ingteb-utility.research-not-available",
-            {"mod-name.sonaxaton-research-queue"},
-            "sonaxaton-research-queue-with-interface",
+            "",
+            "[color=yellow]",
+            {"ingteb-utility.research-not-available", {"mod-name.sonaxaton-research-queue"}},
+            "[/color]",
+        }
+        player.print {
+            "",
+            {
+                "ingteb-utility.research-not-available-alternative",
+                {"mod-name.sonaxaton-research-queue"},
+                {
+                    "",
+                    "[font=default-large-bold][color=blue]",
+                    "'sonaxaton-research-queue-with-interface'",
+                    "[/color][/font]",
+                },
+            },
+
         }
     end
 
