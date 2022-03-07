@@ -6,7 +6,7 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 local core = {EventManager = require "core.EventManager"}
-local sonaxaton = require "ingteb.Sonaxaton"
+local sonaxaton = require "core.Sonaxaton"
 
 local Class = class:new("core.OnResearchCanceled", core.EventManager)
 

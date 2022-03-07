@@ -2,7 +2,7 @@ local Constants = require "Constants"
 local class = require "core.class"
 local Table = require "core.Table"
 local Array = Table.Array
-local sonaxaton = require "ingteb.Sonaxaton"
+local sonaxaton = require "core.Sonaxaton"
 
 local Class = class:new(
     "ResearchQueue", nil, {
