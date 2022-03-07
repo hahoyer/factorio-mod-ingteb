@@ -257,6 +257,11 @@ function Array:ToArray(getItem)
     return result
 end
 
+--- Get the first element
+---@param allowEmpty boolean optional default: true
+---@param allowMultiple boolean optional default: true
+---@param onEmpty any error message function, opional
+---@param onMultiple any error message function, opional
 function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if #self == 0 then
         if allowEmpty == false or onEmpty then
@@ -275,7 +280,11 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     end
     return self[1]
 end
-
+--- Get the first element
+---@param allowEmpty boolean optional default: true
+---@param allowMultiple boolean optional default: true
+---@param onEmpty any error message function, opional
+---@param onMultiple any error message function, opional
 function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     local result
     for key, value in pairs(self) do
