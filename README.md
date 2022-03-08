@@ -33,3 +33,5 @@ The remidor panel is inspired by the one from Satisfactory.
 - Large recipe columns are jerky during handcrafts or research completion 
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G4BH6WX)
