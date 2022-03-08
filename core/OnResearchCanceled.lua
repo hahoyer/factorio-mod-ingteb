@@ -14,7 +14,7 @@ defines.events.on_research_canceled = script.generate_event_name()
 Class.EventId = defines.events.on_research_canceled
 
 function Class:GetResearchQueue(force)
-    if sonaxaton then
+    if sonaxaton.IsValid() then
         return Array:new(sonaxaton.GetQueue(force))
     else
         return Array:new(force.research_queue):Select(

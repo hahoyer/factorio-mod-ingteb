@@ -9,7 +9,9 @@ local Class = class:new(
         Force = {get = function(self) return self.Parent.Player.force end},
         Current = {
             get = function(self)
-                if sonaxaton then return Array:new(sonaxaton.GetQueue(self.Force)) end
+                if sonaxaton.IsValid() then
+                    return Array:new(sonaxaton.GetQueue(self.Force))
+                end
                 return Array --
                 :new(self.Force.research_queue) --
                 :Select(function(technology) return technology.name end)
@@ -29,7 +31,7 @@ function Class:IsResearching(name)
 end
 
 function Class:SonaxatonCheck()
-    if sonaxaton then return end
+    if sonaxaton.IsValid() then return end
     if script.active_mods["sonaxaton-research-queue"] == nil then return end
 
     for _, player in pairs(self.Force.players) do
@@ -40,7 +42,7 @@ function Class:SonaxatonCheck()
             "[/color]",
         }
         player.print {
-            "",
+            "ingteb-utility.remark-style",
             {
                 "ingteb-utility.research-not-available-alternative",
                 {"mod-name.sonaxaton-research-queue"},
@@ -59,7 +61,7 @@ end
 
 function Class:AddResearch(name, setting)
     if setting == "off" then return end
-    if sonaxaton then
+    if sonaxaton.IsValid() then
         sonaxaton.Enqueue(self.Force, name)
         return true
     end
