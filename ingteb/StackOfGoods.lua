@@ -90,9 +90,11 @@ local Class = class:new(
                 local result = ""
                 if amounts then
                     local catalyst = amounts.catalyst_amount or 0
+                    local showPlus
 
                     if amounts.value and amounts.value > catalyst then
                         result = result .. (amounts.value - catalyst)
+                        showPlus = true
                     end
 
                     if amounts.min or amounts.max then
@@ -100,17 +102,21 @@ local Class = class:new(
                         ((amounts.min or amounts.value) - catalyst) .. --
                         " - " .. --
                         ((amounts.max or amounts.value) - catalyst)
+                        showPlus = true
                     end
 
                     if amounts.probability and amounts.probability ~= 1 then
                         result = result .. "(" .. amounts.probability * 100 .. "%)"
-
+                        showPlus = true
                     end
+
+                    if amounts.catalyst_amount then
+                        if showPlus then result = result .. "+" end
+                        result = result .. "[" .. amounts.catalyst_amount .. "]"
+                    end
+                    
                     if amounts.temperature then
                         result = result .. "(" .. amounts.temperature .. "°)"
-                    end
-                    if amounts.catalyst_amount then
-                        result = result .. "[" .. amounts.catalyst_amount .. "]"
                     end
                 end
                 return result
