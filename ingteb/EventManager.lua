@@ -285,7 +285,17 @@ function Class:OnGuiClick(event)
 
     if action.Selecting then
         if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
-            player.cursor_ghost = action.Selecting.Prototype
+            local playerCounts = action.Selecting.PlayerCounts
+            if playerCounts.Hand == 0 then
+                if playerCounts.Inventory == 0 then
+                    player.cursor_ghost = action.Selecting.Prototype
+                else
+                    local inventory = player --
+                    .get_main_inventory() --
+                    .find_item_stack(action.Selecting.Name)
+                    player.cursor_stack.set_stack(inventory)
+                end
+            end
         end
     end
 

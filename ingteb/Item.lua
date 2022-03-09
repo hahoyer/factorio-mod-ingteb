@@ -95,7 +95,8 @@ Item.system.Properties = {
             local result = self.inherited.Item.SpecialFunctions.get(self)
             return result:Concat{
                 {
-                    UICode = "--S l",
+                    UICode = "-C- l",
+                    HelpText = "controls.smart-pipette",
                     Action = function(self)
                         return {Selecting = self, Entity = self.Entity}
                     end,
