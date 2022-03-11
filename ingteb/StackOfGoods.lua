@@ -4,6 +4,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local Number = require "core.Number"
 
 local Class = class:new(
     "StackOfGoods", Common, {
@@ -49,8 +50,8 @@ local Class = class:new(
                     if amounts.min or amounts.max then
                         line:AppendMany{
                             ", ",
-                            ((amounts.min or amounts.value) - catalyst) .. " - "
-                                .. ((amounts.max or amounts.value) - catalyst),
+                            Number.Format3Digits((amounts.min or amounts.value) - catalyst) .. " - "
+                                .. Number.Format3Digits((amounts.max or amounts.value) - catalyst),
                         }
                     end
 
@@ -58,7 +59,7 @@ local Class = class:new(
                         line:AppendMany{
                             ", ",
                             {"description.probability"},
-                            ": " .. amounts.probability * 100 .. "%",
+                            ": " .. Number.Format3Digits(amounts.probability * 100) .. "%",
                         }
                     end
                     if amounts.temperature then
@@ -72,7 +73,7 @@ local Class = class:new(
                         line:AppendMany{
                             ", ",
                             {"description.catalyst_amount"},
-                            ": " .. amounts.catalyst_amount,
+                            ": " .. Number.Format3Digits(amounts.catalyst_amount),
                         }
                     end
                     if line:Any() then
@@ -93,28 +94,30 @@ local Class = class:new(
                     local showPlus
 
                     if amounts.value and amounts.value > catalyst then
-                        result = result .. (amounts.value - catalyst)
+                        result = result .. Number.Format3Digits(amounts.value - catalyst)
                         showPlus = true
                     end
 
                     if amounts.min or amounts.max then
                         result = result .. --
-                        ((amounts.min or amounts.value) - catalyst) .. --
+                        Number.Format3Digits((amounts.min or amounts.value) - catalyst) .. --
                         " - " .. --
-                        ((amounts.max or amounts.value) - catalyst)
+                        Number.Format3Digits((amounts.max or amounts.value) - catalyst)
                         showPlus = true
                     end
 
                     if amounts.probability and amounts.probability ~= 1 then
-                        result = result .. "(" .. amounts.probability * 100 .. "%)"
+                        result = result .. "(" .. Number.Format3Digits(amounts.probability * 100)
+                                     .. "%)"
                         showPlus = true
                     end
 
                     if amounts.catalyst_amount then
                         if showPlus then result = result .. "+" end
-                        result = result .. "[" .. amounts.catalyst_amount .. "]"
+                        result = result .. "[" .. Number.Format3Digits(amounts.catalyst_amount)
+                                     .. "]"
                     end
-                    
+
                     if amounts.temperature then
                         result = result .. "(" .. amounts.temperature .. "°)"
                     end

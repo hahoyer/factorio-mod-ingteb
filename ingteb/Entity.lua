@@ -62,7 +62,7 @@ Entity.system.Properties = {
                     elseif domain == "researching" then
                         return self.Prototype.lab_inputs
                     elseif domain == "boiling" then
-                        return self.Prototype.type == "boiler"
+                        return self.Prototype.type == "boiler" and category.SubName == self.Name
                     else
                         dassert()
                     end
@@ -116,7 +116,9 @@ function Entity:SortAll() end
 
 function Entity:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.entity_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.entity_prototypes[name], database
+        )
     )
     self.SpriteType = "entity"
     if name then self.Name = name end
@@ -125,13 +127,23 @@ function Entity:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
 
+    -- ConditionalBreak(self.Prototype.target_temperature)
+
     self.NumberOnSprite --
     = self.Prototype.mining_speed --
     or self.Prototype.crafting_speed -- 
     or self.Prototype.researching_speed -- 
+    or self.Prototype.target_temperature -- 
 
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
+    self.Amounts = {value = 1}
+    self.HelpTextWhenUsedAsProduct = {
+        "",
+        self.RichTextName .. " ",
+        self.Prototype.localised_name,
+
+    }
 
     if self.IsResource then
         self.TypeStringForLocalisation = "ingteb-utility.title-resource"

@@ -17,7 +17,7 @@ local function GetPrototype(domain, category)
     elseif domain == "mining" or domain == "fluid-mining" then
         return game.resource_category_prototypes[category]
     elseif domain == "boiling" then
-        return game.fluid_prototypes[category]
+        return game.entity_prototypes[category]
     else
         dassert()
     end
@@ -26,6 +26,7 @@ end
 Class.system.Properties = {
     OriginalWorkers = {
         get = function(self)
+            local w = self.Database.WorkersForCategory[self.Name]
             return self.Database.WorkersForCategory[self.Name] --
             :Select(function(worker) return self.Database:GetEntity(nil, worker) end)
         end,
@@ -81,7 +82,7 @@ Class.system.Properties = {
                         == "hand-mining" then
                         return self.Database:GetMiningRecipe(recipeName)
                     elseif self.Domain == "boiling" then
-                        return self.Database:GetBoilingRecipe(recipeName)
+                        return self.Database:GetBoilingRecipe(recipeName, self.Prototype)
                     else
                         dassert()
                     end
@@ -112,10 +113,12 @@ function Class:new(name, prototype, database)
     local _, _, domain, category = name:find("^(.-)%.(.*)$")
 
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or GetPrototype(domain, category), database)
+        self.system.BaseClass:new(
+            prototype or GetPrototype(domain, category), database
+        )
     )
     self.Domain = domain
-    self.SubName = self.Prototype.name
+    self.SubName = category
     self.Name = self.Domain .. "." .. self.SubName
     return self
 

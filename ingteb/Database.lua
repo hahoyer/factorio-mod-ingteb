@@ -58,10 +58,12 @@ end
 
 function Class:Ensure()
     if self.IsInitialized then return self end
+    local order = 1
     self.Order = {
         Recipe = 1,
         MiningRecipe = 2,
         BoilingRecipe = 3,
+        FuelRecipe = 3.5,
         Technology = 4,
         Entity = 5,
         Bonus = 6,
@@ -76,23 +78,15 @@ function Class:Ensure()
     log("database initialize start...")
     self:OnSettingsChanged()
     self.RecipesForItems = {}
+    self.CategoryNames = Dictionary:new{}
     self.RecipesForCategory = {}
-    for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
-
     self.TechnologiesForRecipe = {}
     self.EnabledTechnologiesForTechnology = {}
     self.ResearchingTechnologyForItems = {}
-    for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
-
     self.ItemsForFuelCategory = {}
-    for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
-
     self.EntitiesForBurnersFuel = {}
     self.WorkersForCategory = {}
     self.Resources = {}
-    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
-
-    log("database initialize proxies...")
     self.Proxies = {
         MiningRecipe = Dictionary:new{},
         BoilingRecipe = Dictionary:new{},
@@ -101,23 +95,29 @@ function Class:Ensure()
         Recipe = Dictionary:new{},
         Technology = Dictionary:new{},
         Entity = Dictionary:new{},
+        Item = Dictionary:new{},
+        FuelCategory = Dictionary:new{},
+        Bonus = Dictionary:new{},
     }
 
-    for categoryName in pairs(self.RecipesForCategory) do
-        EnsureKey(self.WorkersForCategory, categoryName, Array:new())
-    end
+    log("database scan recipes ...")
+    for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
+    log("database scan technologies ...")
+    for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
+    log("database scan items ...")
+    for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
+    log("database scan entities ...")
+    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
+
+    log("database special things...")
 
     log("database initialize categories...")
-    self:CreateBoilerRecipe()
-    self:CreateHandMiningCategory()
-    self.Proxies.Item = Dictionary:new{}
-    self.Proxies.FuelCategory = Dictionary:new{}
-    for categoryName in pairs(self.WorkersForCategory) do self:GetCategory(categoryName) end
+    self.CategoryNames:Select(
+        function(value, categoryName) return value and self:GetCategory(categoryName) end
+    )
 
     log("database initialize recipes...")
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
-
-    self.Proxies.Bonus = Dictionary:new{}
 
     log("database initialize complete.")
     self.IsInitialized = true
@@ -153,12 +153,16 @@ function Class:GetItem(name, prototype) return self:GetProxy("Item", name, proto
 function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
-function Class:GetMiningRecipe(name, prototype) return
-    self:GetProxy("MiningRecipe", name, prototype) end
+function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+
+function Class:GetMiningRecipe(name, prototype) --
+    return self:GetProxy("MiningRecipe", name, prototype)
+end
+
 function Class:GetBoilingRecipe(name, prototype)
     return self:GetProxy("BoilingRecipe", name, prototype)
 end
-function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+
 function Class:GetFuelCategory(name, prototype) return
     self:GetProxy("FuelCategory", name, prototype) end
 
@@ -184,7 +188,9 @@ end
 ---@param category string
 ---@param prototype table LuaEntityPrototype
 function Class:AddWorkerForCategory(domain, category, prototype)
-    EnsureKey(self.WorkersForCategory, domain .. "." .. category, Array:new{}):Append(prototype)
+    local categoryName = domain .. "." .. category
+    EnsureKey(self.WorkersForCategory, categoryName, Array:new{}):Append(prototype)
+    self.CategoryNames[categoryName] = true
 end
 
 local function EnsureRecipeCategory(result, side, name, category)
@@ -212,6 +218,11 @@ function Class:ScanEntity(prototype)
         end
     end
 
+    if prototype.type == "boiler" then 
+        self:AddWorkerForCategory("boiling", prototype.name, prototype)
+        EnsureKey(self.RecipesForCategory, "boiling."..prototype.name, Array:new()):Append(prototype.name)
+    end
+
     if prototype.mineable_properties --
     and prototype.mineable_properties.minable --
     and prototype.mineable_properties.products --
@@ -221,11 +232,12 @@ function Class:ScanEntity(prototype)
                                   or Array:new(prototype.mineable_properties.products) --
             :Any(function(product) return product.type == "fluid" end) --
 
-        local category = not prototype.resource_category and "hand-mining.steel-axe" --
-                             or (isFluidMining and "fluid-mining." or "mining.")
-                             .. prototype.resource_category
+        local categoryName = not prototype.resource_category and "hand-mining.steel-axe" --
+                                 or (isFluidMining and "fluid-mining." or "mining.")
+                                 .. prototype.resource_category
 
-        EnsureKey(self.RecipesForCategory, category, Array:new()):Append(prototype.name)
+        EnsureKey(self.RecipesForCategory, categoryName, Array:new()):Append(prototype.name)
+        self.CategoryNames[categoryName] = true
     end
 
     if prototype.type == "character" and prototype.name == "character" then
@@ -234,12 +246,6 @@ function Class:ScanEntity(prototype)
 end
 
 function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
-
-function Class:CreateBoilerRecipe()
-    local prototype = game.entity_prototypes.boiler
-    self:AddWorkerForCategory("boiling", "steam", prototype)
-    self:GetBoilingRecipe("steam", prototype)
-end
 
 function Class:ScanTechnology(prototype)
     for _, value in pairs(prototype.effects or {}) do
@@ -279,8 +285,10 @@ function Class:ScanRecipe(prototype)
         :Append(prototype.name)
     end
 
-    EnsureKey(self.RecipesForCategory, "crafting." .. prototype.category, Array:new()) --
+    local categoryName = "crafting." .. prototype.category
+    EnsureKey(self.RecipesForCategory, categoryName, Array:new()) --
     :Append(prototype.name)
+    self.CategoryNames[categoryName] = true
 
 end
 

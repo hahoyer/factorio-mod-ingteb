@@ -39,8 +39,7 @@ local Common = class:new(
 
         SearchText = {
             get = function(self)
-                return
-                    type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
+                return type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
             end,
         },
 
@@ -64,6 +63,74 @@ local Common = class:new(
                 elseif self.Entity and self.Entity.HasDescription then
                     result:Append(self.Entity.LocalizedDescription)
                 end
+                result:AppendMany(self.ComponentHelp)
+                result:AppendMany(self.ProductHelp)
+                return result
+            end,
+        },
+
+        ComponentHelp = {
+            get = function(self)
+                if not self.Input then return {} end
+                local result = Array:new{
+                    {
+                        "",
+                        "[font=heading-1][color=#F8E1BC]",
+                        {"description.ingredients"},
+                        ":[/color][/font]",
+                    },
+
+                }
+                result:AppendMany(
+                    self.Input:Select(
+                        function(stack)
+                            return {
+                                "",
+                                stack.HelpTextWhenUsedAsProduct,
+                                self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
+                            }
+                        end
+                    )
+                )
+                result:Append{
+                    "",
+                    "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                    {"description.crafting-time"},
+                    self.Database:GetItemsPerTickText({value = 1}, self.Time),
+                }
+
+                return result
+
+            end,
+        },
+
+        ProductHelp = {
+            get = function(self)
+                if not self.Output or --
+                self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
+                    and self.Output[1].Amounts.catalyst_amount == nil --
+                then return {} end
+
+                local result = Array:new{
+                    {
+                        "",
+                        "[font=heading-1][color=#F8E1BC]",
+                        {"description.products"},
+                        ":[/color][/font]",
+                    },
+
+                }
+                result:AppendMany(
+                    self.Output:Select(
+                        function(stack)
+                            return {
+                                "",
+                                stack.HelpTextWhenUsedAsProduct,
+                                self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
+                            }
+                        end
+                    )
+                )
 
                 return result
             end,
@@ -135,8 +202,8 @@ end
 function Common:AssertValid() end
 
 function Common:SealUp()
-    self:SortAll()
     self.CommonKey = self.class.name .. "." .. self.Name
+    self:SortAll()
 
     translation.add_requests(
         self.Database.Player.index, {
@@ -170,6 +237,7 @@ function Common:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
+    self.CommonKey = self.name .. "." .. prototype.name
     local self = self:adopt{Prototype = prototype, Database = database}
     self.IsSealed = false
     self.Name = self.Prototype.name

@@ -38,7 +38,7 @@ Class.system.Properties = {
             if value < 0 then value = -value end
             while value < 100 do value = value * 10 end
             while value >= 1000 do value = value / 10 end
-            return string.format("%03d", math.floor(value+0.5))
+            return string.format("%03d", math.floor(value + 0.5))
         end,
     },
 
@@ -134,5 +134,7 @@ function Unittest()
 end
 
 dassert(Unittest())
+
+function Class.Format3Digits(target) return Class:new(target).Format3Digits end
 
 return Class

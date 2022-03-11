@@ -93,7 +93,6 @@ local Class = class:new(
                 result:AppendMany(self.InputHelp)
                 result:AppendMany(self.EffectsHelp)
                 result:AppendMany(self.EnablesHelp)
-                if self.Description then result:Append(self.LocalizedDescription) end
                 return result
             end,
         },

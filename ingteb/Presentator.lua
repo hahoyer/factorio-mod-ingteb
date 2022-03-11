@@ -12,6 +12,7 @@ local SpritorClass = require("ingteb.Spritor")
 local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
 local Settings = require("ingteb.PresentatorSettings")
+local BoilingRecipe = require "ingteb.BoilingRecipe"
 
 local Class = class:new(
     "Presentator", nil, {
@@ -381,6 +382,7 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     dassert(
         sampleClient.class == Recipe --
         or sampleClient.class == MiningRecipe --
+        or sampleClient.class == BoilingRecipe --
         or sampleClient.class == Technology --
     )
 
