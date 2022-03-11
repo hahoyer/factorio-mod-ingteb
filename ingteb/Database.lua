@@ -193,6 +193,15 @@ function Class:AddWorkerForCategory(domain, category, prototype)
     self.CategoryNames[categoryName] = true
 end
 
+---@param domain string
+---@param category string
+---@param prototype table LuaEntityPrototype
+function Class:AddRecipesForCategory(domain, category, prototype)
+    local categoryName = domain .. "." .. category
+    EnsureKey(self.RecipesForCategory, categoryName, Array:new{}):Append(prototype)
+    self.CategoryNames[categoryName] = true
+end
+
 local function EnsureRecipeCategory(result, side, name, category)
     local itemData = EnsureKey(result, name)
     local sideData = EnsureKey(itemData, side, Dictionary:new())
@@ -218,9 +227,9 @@ function Class:ScanEntity(prototype)
         end
     end
 
-    if prototype.type == "boiler" then 
+    if prototype.type == "boiler" then
         self:AddWorkerForCategory("boiling", prototype.name, prototype)
-        EnsureKey(self.RecipesForCategory, "boiling."..prototype.name, Array:new()):Append(prototype.name)
+        self:AddRecipesForCategory("boiling", prototype.name, prototype.name)
     end
 
     if prototype.mineable_properties --
@@ -232,12 +241,14 @@ function Class:ScanEntity(prototype)
                                   or Array:new(prototype.mineable_properties.products) --
             :Any(function(product) return product.type == "fluid" end) --
 
-        local categoryName = not prototype.resource_category and "hand-mining.steel-axe" --
-                                 or (isFluidMining and "fluid-mining." or "mining.")
-                                 .. prototype.resource_category
+        local domain = not prototype.resource_category and "hand-mining" --
+        or isFluidMining and "fluid-mining" --
+        or "mining"
 
-        EnsureKey(self.RecipesForCategory, categoryName, Array:new()):Append(prototype.name)
-        self.CategoryNames[categoryName] = true
+        local categoryName = not prototype.resource_category and "steel-axe" --
+                                 or prototype.resource_category
+
+        self:AddRecipesForCategory(domain, categoryName, prototype.name)
     end
 
     if prototype.type == "character" and prototype.name == "character" then
@@ -285,11 +296,7 @@ function Class:ScanRecipe(prototype)
         :Append(prototype.name)
     end
 
-    local categoryName = "crafting." .. prototype.category
-    EnsureKey(self.RecipesForCategory, categoryName, Array:new()) --
-    :Append(prototype.name)
-    self.CategoryNames[categoryName] = true
-
+    self:AddRecipesForCategory("crafting", prototype.category, prototype.name)
 end
 
 function Class:GetStackOfGoods(target)

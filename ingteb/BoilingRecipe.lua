@@ -12,15 +12,14 @@ local function CalculateHeaterValues(prototype)
     = fluidBoxes --
     :Where( --
           function(box)
-            return box.production_type == "input" --
-            or box.production_type == "input-output"
+            return box.filter and (box.production_type == "input" or box.production_type == "input-output")
         end
       ) --
     :Top(false, false) --
     .filter
 
     local outBox = fluidBoxes --
-    :Where(function(box) return box.production_type == "output" end) --
+    :Where(function(box) return box.filter and box.production_type == "output" end) --
     :Top(false, false) --
     .filter
 

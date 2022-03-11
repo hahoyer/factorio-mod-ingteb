@@ -17,7 +17,12 @@ FuelCategory.system.Properties = {
     },
     SpriteName = {
         cache = true,
-        get = function(self) return "tooltip-category-" .. self.Prototype.name end,
+        get = function(self)
+            local result = "tooltip-category-" .. self.Prototype.name
+            if game.is_valid_sprite_path(result) then return result end
+            result = "item."..self.Fuels:Top(false).Prototype.name
+            return result
+        end,
     },
 
 }
@@ -26,7 +31,9 @@ function FuelCategory:new(name, prototype, database)
     dassert(name)
 
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.fuel_category_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.fuel_category_prototypes[name], database
+        )
     )
 
     dassert(self.Prototype.object_name == "LuaFuelCategoryPrototype")

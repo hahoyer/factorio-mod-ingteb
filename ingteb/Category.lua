@@ -26,9 +26,14 @@ end
 Class.system.Properties = {
     OriginalWorkers = {
         get = function(self)
-            local w = self.Database.WorkersForCategory[self.Name]
-            return self.Database.WorkersForCategory[self.Name] --
-            :Select(function(worker) return self.Database:GetEntity(nil, worker) end)
+            local workers = self.Database.WorkersForCategory[self.Name]
+            if workers then
+                return workers:Select(
+                    function(worker) return self.Database:GetEntity(nil, worker) end
+                )
+            else
+                return Array:new{}
+            end
         end,
     },
 
