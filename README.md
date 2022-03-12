@@ -31,6 +31,7 @@ The remidor panel is inspired by the one from Satisfactory.
 ###known issue: 
 - the displayed speed for a worker depends on request (for instance mining or crafting)
 - Large recipe columns are jerky during handcrafts or research completion 
+- When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. 
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance
 
