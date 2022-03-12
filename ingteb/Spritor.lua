@@ -27,15 +27,22 @@ function Class:GetSpriteButton(target, sprite)
     local sprite = target.SpriteName
     if sprite == "fuel-category/chemical" then sprite = "chemical" end
 
+    dassert(game.is_valid_sprite_path(sprite))
+    
     return {
         type = "sprite-button",
         tooltip = self:GetHelperText(target),
         sprite = sprite,
         number = target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
-        actions = target.ClickTarget
-            and {on_click = {module = self.Site, subModule = self.class.name, action = "Click", key = target.ClickTarget }}
-            or nil,
+        actions = target.ClickTarget and {
+            on_click = {
+                module = self.Site,
+                subModule = self.class.name,
+                action = "Click",
+                key = target.ClickTarget,
+            },
+        } or nil,
         style = style,
     }
 end
@@ -132,7 +139,9 @@ function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
 
     local children = Array:new()
     children:AppendMany(
-        target:Select(function(element) return self:GetSpriteButtonAndRegister(element) end)
+        target:Select(
+            function(element) return self:GetSpriteButtonAndRegister(element) end
+        )
     )
     if not isRightAligned then children:AppendMany(self:GetTiles(count - target:Count())) end
 
@@ -140,7 +149,7 @@ function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
         type = "flow",
         direction = "horizontal",
         style = isRightAligned and "ingteb-flow-right" or nil,
-        tooltip = tooltip, 
+        tooltip = tooltip,
         children = children,
     }
 

@@ -136,9 +136,56 @@ local Common = class:new(
             end,
         },
 
+        Output = {
+            cache = true,
+            get = function(self)
+                if self.RawOutput then
+                    return Array:new(self.RawOutput) --
+                    :Select(
+                        function(product, index)
+                            local result = self.Database:GetStackOfGoods(product)
+                            if result then
+                                result.Source = {Recipe = self, ProductIndex = index}
+                            else
+                                self.IsHidden = true
+                            end
+                            return result
+                        end
+                    ) --
+                    :Where(function(value) return value end) --
+                end
+            end,
+        },
+        Input = {
+            cache = true,
+            get = function(self)
+                if self.RawInput then
+                    return Array:new(self.RawInput) --
+                    :Select(
+                        function(ingredient, index)
+                            local result = self.Database:GetStackOfGoods(ingredient)
+                            if result then
+                                result.Source = {Recipe = self, IngredientIndex = index}
+                            else
+                                self.IsHidden = true
+                            end
+                            return result
+                        end
+                    ) --
+                    :Where(
+                        function(value)
+                            return not (value.flags and value.flags.hidden)
+                        end
+                    ) --
+                end
+            end,
+        },
+
         SpriteName = {
             cache = true,
-            get = function(self) return self.SpriteType .. "/" .. self.Prototype.name end,
+            get = function(self) 
+                local spriteType = self.SpriteType or self.Prototype.type
+                return spriteType .. "/" .. self.Prototype.name end,
         },
 
         RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},

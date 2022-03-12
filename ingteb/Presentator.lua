@@ -13,6 +13,8 @@ local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
 local Settings = require("ingteb.PresentatorSettings")
 local BoilingRecipe = require "ingteb.BoilingRecipe"
+local BurningRecipe = require "ingteb.BurningRecipe"
+local RocketLaunchRecipe = require "ingteb.RocketLaunchRecipe"
 
 local Class = class:new(
     "Presentator", nil, {
@@ -383,6 +385,8 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
         sampleClient.class == Recipe --
         or sampleClient.class == MiningRecipe --
         or sampleClient.class == BoilingRecipe --
+        or sampleClient.class == BurningRecipe --
+        or sampleClient.class == RocketLaunchRecipe --
         or sampleClient.class == Technology --
     )
 
@@ -644,7 +648,7 @@ function Class:GetGui(target)
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
           + (target.ResearchingTechnologies and target.ResearchingTechnologies:Any() and 1 or 0) --
           + (target.Fuels and target.Fuels:Any() and 1 or 0) --
-    
+
     local children
     if columnCount == 0 then
         children = {

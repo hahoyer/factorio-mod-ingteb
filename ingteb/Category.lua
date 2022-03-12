@@ -16,8 +16,12 @@ local function GetPrototype(domain, category)
         return game.technology_prototypes["steel-axe"]
     elseif domain == "mining" or domain == "fluid-mining" then
         return game.resource_category_prototypes[category]
-    elseif domain == "boiling" then
+    elseif domain == "boiling" or domain == "researching" then
         return game.entity_prototypes[category]
+    elseif domain == "rocket-launch" then
+        return game.entity_prototypes["rocket-silo-rocket"]
+    elseif domain == "burning" then
+        return game.fuel_category_prototypes[category]
     else
         dassert()
     end
@@ -80,14 +84,18 @@ Class.system.Properties = {
             local recipeList = self.Database.RecipesForCategory[self.Name] or Array:new{} --
             local result = recipeList --
             :Select(
-                function(recipeName)
+                function(recipe)
                     if self.Domain == "crafting" then
-                        return self.Database:GetRecipe(recipeName)
+                        return self.Database:GetRecipe(recipe.name, recipe)
                     elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
                         == "hand-mining" then
-                        return self.Database:GetMiningRecipe(recipeName)
+                        return self.Database:GetMiningRecipe(recipe.name)
                     elseif self.Domain == "boiling" then
-                        return self.Database:GetBoilingRecipe(recipeName, self.Prototype)
+                        return self.Database:GetBoilingRecipe(recipe.name, self.Prototype)
+                    elseif self.Domain == "burning" then
+                        return self.Database:GetBurningRecipe(recipe.name, recipe)
+                    elseif self.Domain == "rocket-launch" then
+                        return self.Database:GetRocketLaunchRecipe(recipe.name, recipe)
                     else
                         dassert()
                     end

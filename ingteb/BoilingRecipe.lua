@@ -12,7 +12,8 @@ local function CalculateHeaterValues(prototype)
     = fluidBoxes --
     :Where( --
           function(box)
-            return box.filter and (box.production_type == "input" or box.production_type == "input-output")
+            return box.filter
+                       and (box.production_type == "input" or box.production_type == "input-output")
         end
       ) --
     :Top(false, false) --
@@ -46,7 +47,7 @@ Class.system.Properties = {
             .. " " .. self.Prototype.order
         end,
     },
-   
+
 }
 
 function Class:new(name, prototype, database)
@@ -59,24 +60,8 @@ function Class:new(name, prototype, database)
     self.TypeStringForLocalisation = "ingteb-utility.title-boiling-recipe"
 
     local recipe = CalculateHeaterValues(self.Prototype)
-
-    local input = self.Database:GetStackOfGoods{
-        type = "fluid",
-        amount = recipe.amount,
-        name = recipe.input,
-    }
-    input.Source = {Recipe = self, ProductIndex = 1}
-    input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-    self.Input = Array:new{input}
-
-    local output = self.Database:GetStackOfGoods{
-        type = "fluid",
-        amount = recipe.amount,
-        name = recipe.output,
-    }
-    output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
-    output.Source = {Recipe = self, IngredientIndex = 1}
-    self.Output = Array:new{output}
+    self.RawInput = {{type = "fluid", amount = recipe.amount, name = recipe.input}}
+    self.RawOutput = {{type = "fluid", amount = recipe.amount, name = recipe.output}}
 
     function self:IsBefore(other)
         if self == other then return false end

@@ -67,29 +67,29 @@ function Class:FindOpenedTargets()
                 end
             end
             if cursor.type == "container" then
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
             elseif cursor.type == "storage-tank" then
             elseif cursor.type == "reactor" then
             elseif cursor.type == "assembling-machine" then
                 self:GetRecipeData(cursor.get_recipe(), result)
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.assembling_machine_modules), result)
             elseif cursor.type == "furnace" then
                 self:GetRecipeData(cursor.get_recipe(), result)
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.furnace_modules), result)
             elseif cursor.type == "lab" then
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
-                self:GetTechnologyData(player.force.current_research, result)
+                if player.force.current_research then
+                    self:GetTechnologyData(player.force.current_research.prototype, result)
+                end
             elseif cursor.type == "mining-drill" then
                 result["Entity." .. cursor.mining_target.name] = true
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.item_main),result)
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules),result)
             else
 
-               --dassert()
+                -- dassert()
             end
+
+            for index = 1, Dictionary:new(defines.inventory):Count() do
+                self:GetInventoryData(cursor.get_inventory(index), result)
+            end
+
             if cursor.burner and cursor.burner.fuel_categories then
-                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel),result)
+                self:GetInventoryData(cursor.get_inventory(defines.inventory.fuel), result)
                 for category, _ in pairs(cursor.burner.fuel_categories) do
                     result["FuelCategory." .. category] = true
                 end

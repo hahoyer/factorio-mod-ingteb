@@ -10,6 +10,7 @@ local TimeSpan = require("core.TimeSpan")
 local Proxy = {
     BoilingRecipe = require("ingteb.BoilingRecipe"),
     Bonus = require("ingteb.Bonus"),
+    BurningRecipe = require("ingteb.BurningRecipe"),
     Category = require("ingteb.Category"),
     Entity = require("ingteb.Entity"),
     FuelCategory = require("ingteb.FuelCategory"),
@@ -17,6 +18,7 @@ local Proxy = {
     Item = require("ingteb.Item"),
     MiningRecipe = require("ingteb.MiningRecipe"),
     Recipe = require("ingteb.Recipe"),
+    RocketLaunchRecipe = require("ingteb.RocketLaunchRecipe"),
     Technology = require("ingteb.Technology"),
 }
 
@@ -63,7 +65,9 @@ function Class:Ensure()
         Recipe = 1,
         MiningRecipe = 2,
         BoilingRecipe = 3,
+        BurningRecipe = 3.4,
         FuelRecipe = 3.5,
+        RocketLaunchRecipe = 3.6,
         Technology = 4,
         Entity = 5,
         Bonus = 6,
@@ -85,19 +89,21 @@ function Class:Ensure()
     self.ResearchingTechnologyForItems = {}
     self.ItemsForFuelCategory = {}
     self.EntitiesForBurnersFuel = {}
-    self.WorkersForCategory = {}
+    self.WorkersForCategory = Dictionary:new{}
     self.Resources = {}
     self.Proxies = {
-        MiningRecipe = Dictionary:new{},
         BoilingRecipe = Dictionary:new{},
-        Category = Dictionary:new{},
-        Fluid = Dictionary:new{},
-        Recipe = Dictionary:new{},
-        Technology = Dictionary:new{},
-        Entity = Dictionary:new{},
-        Item = Dictionary:new{},
-        FuelCategory = Dictionary:new{},
         Bonus = Dictionary:new{},
+        BurningRecipe = Dictionary:new{},
+        Category = Dictionary:new{},
+        Entity = Dictionary:new{},
+        Fluid = Dictionary:new{},
+        FuelCategory = Dictionary:new{},
+        Item = Dictionary:new{},
+        MiningRecipe = Dictionary:new{},
+        Recipe = Dictionary:new{},
+        RocketLaunchRecipe = Dictionary:new{},
+        Technology = Dictionary:new{},
     }
 
     log("database scan recipes ...")
@@ -163,8 +169,17 @@ function Class:GetBoilingRecipe(name, prototype)
     return self:GetProxy("BoilingRecipe", name, prototype)
 end
 
-function Class:GetFuelCategory(name, prototype) return
-    self:GetProxy("FuelCategory", name, prototype) end
+function Class:GetBurningRecipe(name, prototype)
+    return self:GetProxy("BurningRecipe", name, prototype)
+end
+
+function Class:GetRocketLaunchRecipe(name, prototype)
+    return self:GetProxy("RocketLaunchRecipe", name, prototype)
+end
+
+function Class:GetFuelCategory(name, prototype) --
+    return self:GetProxy("FuelCategory", name, prototype)
+end
 
 function Class:GetFuelCategories()
     return Dictionary:new(self.EntitiesForBurnersFuel) --
@@ -224,12 +239,21 @@ function Class:ScanEntity(prototype)
     if prototype.burner_prototype then
         for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
             EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
+            self:AddWorkerForCategory("burning", category, prototype)
         end
     end
 
     if prototype.type == "boiler" then
         self:AddWorkerForCategory("boiling", prototype.name, prototype)
-        self:AddRecipesForCategory("boiling", prototype.name, prototype.name)
+        self:AddRecipesForCategory("boiling", prototype.name, prototype)
+    end
+
+    if prototype.type == "rocket-silo" then
+        self:AddWorkerForCategory("rocket-launch", "rocket-launch", prototype)
+    end
+
+    if prototype.type == "lab" then
+        self:AddWorkerForCategory("researching", prototype.name, prototype)
     end
 
     if prototype.mineable_properties --
@@ -248,7 +272,7 @@ function Class:ScanEntity(prototype)
         local categoryName = not prototype.resource_category and "steel-axe" --
                                  or prototype.resource_category
 
-        self:AddRecipesForCategory(domain, categoryName, prototype.name)
+        self:AddRecipesForCategory(domain, categoryName, prototype)
     end
 
     if prototype.type == "character" and prototype.name == "character" then
@@ -279,6 +303,12 @@ function Class:ScanItem(prototype)
     if prototype.fuel_category then
         EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
     end
+    if prototype.burnt_result then
+        self:AddRecipesForCategory("burning", prototype.fuel_category, prototype)
+    end
+    if #prototype.rocket_launch_products > 0 then
+        self:AddRecipesForCategory("rocket-launch", "rocket-launch", prototype)
+    end
 end
 
 function Class:ScanRecipe(prototype)
@@ -296,7 +326,7 @@ function Class:ScanRecipe(prototype)
         :Append(prototype.name)
     end
 
-    self:AddRecipesForCategory("crafting", prototype.category, prototype.name)
+    self:AddRecipesForCategory("crafting", prototype.category, prototype)
 end
 
 function Class:GetStackOfGoods(target)

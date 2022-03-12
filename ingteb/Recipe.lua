@@ -150,46 +150,6 @@ Recipe.system.Properties = {
         end,
     },
 
-    Output = {
-        cache = true,
-        get = function(self)
-
-            return Array:new(self.Prototype.products) --
-            :Select(
-                function(product, index)
-                    local result = self.Database:GetStackOfGoods(product)
-                    if result then
-                        result.Source = {Recipe = self, ProductIndex = index}
-                    else
-                        self.IsHidden = true
-                    end
-                    return result
-                end
-            ) --
-            :Where(function(value) return value end) --
-
-        end,
-    },
-    Input = {
-        cache = true,
-        get = function(self)
-            return Array:new(self.Prototype.ingredients) --
-            :Select(
-                function(ingredient, index)
-                    local result = self.Database:GetStackOfGoods(ingredient)
-                    if result then
-                        result.Source = {Recipe = self, IngredientIndex = index}
-                    else
-                        self.IsHidden = true
-                    end
-                    return result
-                end
-            ) --
-            :Where(function(value) return not (value.flags and value.flags.hidden) end) --
-
-        end,
-    },
-
     SpecialFunctions = {
         get = function(self) --
             local result = self.inherited.Recipe.SpecialFunctions.get(self)
@@ -300,6 +260,9 @@ function Recipe:new(name, prototype, database)
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
     self.SpriteType = "recipe"
+    self.RawOutput = self.Prototype.products 
+    self.RawInput = self.Prototype.ingredients
+
     self.TypeStringForLocalisation = "description.recipe"
     self.IsHidden = false
     self.Time = self.Prototype.energy

@@ -37,11 +37,50 @@ MiningRecipe.system.Properties = {
         end,
     },
 
+    Output = {
+        cache = true,
+        get = function(self)
+            local configuration = self.Prototype.mineable_properties
+            return Array:new(configuration.products) --
+            :Select(
+                function(product, index)
+                    local result = self.Database:GetStackOfGoods(product)
+                    if result then
+                        result.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
+                        result.Source = {Recipe = self, ProductIndex = index}
+                    else
+                        self.IsHidden = true
+                    end
+                    return result
+                end
+            )
+        end,
+    },
+    Input = {
+        cache = true,
+        get = function(self)
+            local configuration = self.Prototype.mineable_properties
+            local result = Array:new{self.Resource}
+            if configuration.required_fluid then
+                local fluid = self.Database:GetStackOfGoods{
+                    type = "fluid",
+                    name = configuration.required_fluid,
+                    amount = configuration.fluid_amount,
+                }
+                fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
+                fluid.Source = {Recipe = self, IngredientIndex = 1}
+                result:Append(fluid)
+            end
+            return result
+        end,
+    },
 }
 
 function MiningRecipe:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.entity_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.entity_prototypes[name], database
+        )
     )
 
     self.SpriteType = "entity"
@@ -62,32 +101,7 @@ function MiningRecipe:new(name, prototype, database)
     self.Resource = self.Database:GetEntity(nil, self.Prototype)
     self.Resource.UsedBy:AppendForKey(self.Category.Name, self)
 
-    self.Input = Array:new{self.Resource}
-    if configuration.required_fluid then
-        local fluid = self.Database:GetStackOfGoods{
-            type = "fluid",
-            name = configuration.required_fluid,
-            amount = configuration.fluid_amount,
-        }
-        fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-        fluid.Source = {Recipe = self, IngredientIndex = 1}
-        self.Input:Append(fluid)
-    end
-
     self.IsHidden = false
-    self.Output = Array:new(configuration.products) --
-    :Select(
-        function(product, index)
-            local result = database:GetStackOfGoods(product)
-            if result then
-                result.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
-                result.Source = {Recipe = self, ProductIndex = index}
-            else
-                self.IsHidden = true
-            end
-            return result
-        end
-    )
 
     function self:IsBefore(other)
         if self == other then return false end

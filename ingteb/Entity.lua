@@ -47,28 +47,16 @@ Entity.system.Properties = {
     Categories = {
         cache = true,
         get = function(self)
-            -- if self.Name == "big-processing-machine" then __DebugAdapter.breakpoint() end
             local xreturn = self.Database.Proxies.Category -- 
             :Where(
                 function(category)
-                    local domain = category.Domain
-                    local list = {}
-                    if domain == "mining" or domain == "fluid-mining" then
-                        list = self.Prototype.resource_categories
-                    elseif domain == "crafting" then
-                        list = self.Prototype.crafting_categories
-                    elseif domain == "hand-mining" then
-                        return self.Name == "character"
-                    elseif domain == "researching" then
-                        return self.Prototype.lab_inputs
-                    elseif domain == "boiling" then
-                        return self.Prototype.type == "boiler" and category.SubName == self.Name
-                    else
-                        dassert()
-                    end
-                    return list and list[category.SubName]
+                    local workers = self.Database.WorkersForCategory[category.Name]
+                    return workers:Any(function(worker)
+                        return worker == self.Prototype
+                    end)
                 end
             ) --
+
             return xreturn
         end,
     },
@@ -138,12 +126,7 @@ function Entity:new(name, prototype, database)
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
     self.Amounts = {value = 1}
-    self.HelpTextWhenUsedAsProduct = {
-        "",
-        self.RichTextName .. " ",
-        self.Prototype.localised_name,
-
-    }
+    self.HelpTextWhenUsedAsProduct = {"", self.RichTextName .. " ", self.Prototype.localised_name}
 
     if self.IsResource then
         self.TypeStringForLocalisation = "ingteb-utility.title-resource"
