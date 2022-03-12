@@ -8,7 +8,7 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 
-local Common = class:new(
+local Class = class:new(
     "Common", nil, {
         DebugLine = {get = function(self) return self.CommonKey end},
         ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
@@ -92,12 +92,15 @@ local Common = class:new(
                         end
                     )
                 )
-                result:Append{
-                    "",
-                    "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
-                    {"description.crafting-time"},
-                    self.Database:GetItemsPerTickText({value = 1}, self.Time),
-                }
+                
+                if self.Time then
+                    result:Append{
+                        "",
+                        "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                        {"description.crafting-time"},
+                        self.Database:GetItemsPerTickText({value = 1}, self.Time),
+                    }
+                end
 
                 return result
 
@@ -183,9 +186,10 @@ local Common = class:new(
 
         SpriteName = {
             cache = true,
-            get = function(self) 
+            get = function(self)
                 local spriteType = self.SpriteType or self.Prototype.type
-                return spriteType .. "/" .. self.Prototype.name end,
+                return spriteType .. "/" .. self.Prototype.name
+            end,
         },
 
         RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
@@ -194,7 +198,7 @@ local Common = class:new(
     }
 )
 
-function Common:IsBefore(other)
+function Class:IsBefore(other)
     if self == other then return false end
     if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end
     if self.TypeSubOrder ~= other.TypeSubOrder then return self.TypeSubOrder < other.TypeSubOrder end
@@ -205,12 +209,12 @@ function Common:IsBefore(other)
     return self.Prototype.order < other.Prototype.order
 end
 
-function Common:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end
+function Class:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end
 
-function Common:GetHandCraftingRequest(event) end
-function Common:GetResearchRequest(event) end
+function Class:GetHandCraftingRequest(event) end
+function Class:GetResearchRequest(event) end
 
-function Common:GetSpecialFunctions(site)
+function Class:GetSpecialFunctions(site)
     local lines = Dictionary:new{}
     self.SpecialFunctions --
     :Select(
@@ -226,7 +230,7 @@ function Common:GetSpecialFunctions(site)
     return lines:ToArray()
 end
 
-function Common:GetFunctionalHelp(site)
+function Class:GetFunctionalHelp(site)
     return self:GetSpecialFunctions(site) --
     :Where(function(specialFunction) return specialFunction.HelpText end) --
     :Select(
@@ -237,7 +241,7 @@ function Common:GetFunctionalHelp(site)
     :ToArray()
 end
 
-function Common:GetHelperText(site)
+function Class:GetHelperText(site)
     local name = {"", "[font=default-large-bold]", self.HelperHeaderText, "[/font]"}
     -- append(self.LocalizedDescription)
     local additionalHelp = self.AdditionalHelp
@@ -246,9 +250,9 @@ function Common:GetHelperText(site)
     return Helper.ConcatLocalisedText(name, additionalHelp:Concat(functionalHelp))
 end
 
-function Common:AssertValid() end
+function Class:AssertValid() end
 
-function Common:SealUp()
+function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name
     self:SortAll()
 
@@ -271,7 +275,10 @@ function Common:SealUp()
     return self
 end
 
-function Common:GetAction(event)
+function Class:GetNumberOnSprite(category)
+end
+
+function Class:GetAction(event)
     local message = gui.read_action(event)
     local specialFunction = self:GetSpecialFunctions(message.module) --
     :Where(function(specialFunction) return UI.IsMouseCode(event, specialFunction.UICode) end) --
@@ -280,7 +287,7 @@ function Common:GetAction(event)
     if specialFunction then return specialFunction.Action(self, event) end
 end
 
-function Common:new(prototype, database)
+function Class:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
@@ -299,4 +306,4 @@ function Common:new(prototype, database)
 
 end
 
-return Common
+return Class

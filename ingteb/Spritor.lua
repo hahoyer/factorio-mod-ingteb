@@ -20,7 +20,7 @@ function Class:new(parent)
     return self:adopt{Parent = parent, DynamicElements = Dictionary:new(), DynamicElementsIndex = 1}
 end
 
-function Class:GetSpriteButton(target, sprite)
+function Class:GetSpriteButton(target, sprite, category)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
     if not target then return {type = "sprite-button", sprite = sprite, style = style} end
@@ -28,12 +28,12 @@ function Class:GetSpriteButton(target, sprite)
     if sprite == "fuel-category/chemical" then sprite = "chemical" end
 
     dassert(game.is_valid_sprite_path(sprite))
-    
+
     return {
         type = "sprite-button",
         tooltip = self:GetHelperText(target),
         sprite = sprite,
-        number = target.NumberOnSprite,
+        number = category and target:GetNumberOnSprite(category) or target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
         actions = target.ClickTarget and {
             on_click = {
@@ -53,8 +53,8 @@ function Class:StartCollecting()
     self.DynamicElements = Dictionary:new()
 end
 
-function Class:CreateSprite(frame, target, sprite)
-    return gui.build(frame, self:GetSpriteButton(target, sprite))
+function Class:CreateSprite(frame, target, sprite, category)
+    return gui.build(frame, self:GetSpriteButton(target, sprite, category))
 end
 
 function Class:GetHelperText(target)
@@ -82,8 +82,8 @@ function Class:RegisterDynamicTargets(guiElements)
     end
 end
 
-function Class:GetSpriteButtonAndRegister(target, sprite)
-    local result = self:GetSpriteButton(target, sprite)
+function Class:GetSpriteButtonAndRegister(target, sprite, category)
+    local result = self:GetSpriteButton(target, sprite, category)
     if target then self:CollectForGuiClick(result, target) end
     return result
 end

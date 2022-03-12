@@ -43,6 +43,7 @@ function Class:new(parent) return self:adopt{Parent = parent} end
 function Class:OnSettingsChanged() self.cache.Database.ProductionTimeUnit.IsValid = false end
 
 function Class:GetItemsPerTickText(amounts, timeInSeconds)
+    if not timeInSeconds then return "" end
     local amount = amounts.value or (amounts.max + amounts.min) / 2
     return " ("
                .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits

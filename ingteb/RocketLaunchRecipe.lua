@@ -22,19 +22,22 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    local self = self:adopt(self.system.BaseClass:new(prototype, database))
-    self.Name = name
+    dassert(name == nil)
+    dassert(prototype)
+    local outputPrototype = game.item_prototypes[prototype.rocket_launch_products[1].name]
+    local self = self:adopt(self.system.BaseClass:new(outputPrototype, database))
+    self.Name = prototype.name
     self.SpriteType = "item"
-    self.Time = 1
+    -- self.Time = 1
     self.IsRecipe = true
     self.Category = self.Database:GetCategory("rocket-launch.rocket-launch")
     self.TypeStringForLocalisation = "ingteb-utility.title-rocket-launch-recipe"
 
     self.RawInput = {
-        {type = "item", amount = self.Prototype.default_request_amount, name = self.Prototype.name},
+        {type = "item", amount = prototype.default_request_amount, name = prototype.name},
     }
 
-    self.RawOutput = self.Prototype.rocket_launch_products
+    self.RawOutput = prototype.rocket_launch_products
 
     function self:IsBefore(other)
         if self == other then return false end

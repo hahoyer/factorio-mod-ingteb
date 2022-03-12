@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.24
-Date: 2022-03-11
+Date: 2022-03-12
   Changes:
     - Support for sonaxaton-research-queue
     - "open target" handler improved
@@ -9,6 +9,7 @@ Date: 2022-03-11
     - presentation of catalyst amounts improved
     - boiler recipes improved
     - tooltip of mining recipe improved
+    - BurningRecipe and RocketLaunchRecipe added
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.23
 Date: 2021-10-02

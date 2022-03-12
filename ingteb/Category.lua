@@ -86,16 +86,16 @@ Class.system.Properties = {
             :Select(
                 function(recipe)
                     if self.Domain == "crafting" then
-                        return self.Database:GetRecipe(recipe.name, recipe)
+                        return self.Database:GetRecipe(nil, recipe)
                     elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
                         == "hand-mining" then
                         return self.Database:GetMiningRecipe(recipe.name)
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(recipe.name, self.Prototype)
                     elseif self.Domain == "burning" then
-                        return self.Database:GetBurningRecipe(recipe.name, recipe)
+                        return self.Database:GetBurningRecipe(nil, recipe)
                     elseif self.Domain == "rocket-launch" then
-                        return self.Database:GetRocketLaunchRecipe(recipe.name, recipe)
+                        return self.Database:GetRocketLaunchRecipe(nil, recipe)
                     else
                         dassert()
                     end
@@ -105,7 +105,18 @@ Class.system.Properties = {
             return result
         end,
     },
+
+    EnergyUsagePerSecond = {
+        cache = true,
+        get = function(self) --
+            return self.OriginalWorkers --
+            :Select(function(worker) return worker.Prototype.max_energy_usage end) --
+            :Minimum() * 60
+        end,
+    },
+
 }
+function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end
 
 function Class:SealUp()
     self.class.system.BaseClass.SealUp(self)

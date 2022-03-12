@@ -135,7 +135,7 @@ function Class:GetWorkersPanel(category, columnCount)
                 workersPanelData:AppendMany(Spritor:GetTiles(dummyColumnsLeft))
                 position = position + dummyColumnsLeft
             end
-            workersPanelData:Append(Spritor:GetSpriteButtonAndRegister(worker))
+            workersPanelData:Append(Spritor:GetSpriteButtonAndRegister(worker, nil, category))
             position = position + 1
             if position >= columnCount then
                 position = 0

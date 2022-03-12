@@ -23,16 +23,19 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    local self = self:adopt(self.system.BaseClass:new(prototype, database))
-    self.Name = name
-    self.Time = 1
+    dassert(name == nil)
+    dassert(prototype )
+    local self = self:adopt(self.system.BaseClass:new(prototype.burnt_result, database))
+    self.Name = prototype.name
+    self.SpriteType = "item"
     self.IsRecipe = true
     self.Category = self.Database:GetCategory("burning." .. prototype.fuel_category)
+    self.Time = prototype.fuel_value / self.Category.EnergyUsagePerSecond
     self.TypeStringForLocalisation = "ingteb-utility.title-burning-recipe"
 
-    local input = self.Prototype
+    local input = prototype
     self.RawInput = {{type = input.type, amount = 1, name = input.name}}
-    local output = self.Prototype.burnt_result
+    local output = prototype.burnt_result
     self.RawOutput = {{type = output.type, amount = 1, name = output.name}}
 
     function self:IsBefore(other)

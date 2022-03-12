@@ -7,9 +7,9 @@ local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
-local Entity = class:new("Entity", Common)
+local Class = class:new("Entity", Common)
 
-Entity.system.Properties = {
+Class.system.Properties = {
     SpriteName = {
         get = function(self)
             -- special entity for handmining
@@ -98,11 +98,29 @@ Entity.system.Properties = {
             return RequiredThings:new()
         end,
     },
+
+    NumberOnSprite = {
+        get = function(self)
+            return self.Prototype.mining_speed --
+            or self.Prototype.crafting_speed -- 
+            or self.Prototype.researching_speed -- 
+            or self.Prototype.target_temperature -- 
+        end,
+    },
+
 }
 
-function Entity:SortAll() end
+function Class:SortAll() end
 
-function Entity:new(name, prototype, database)
+function Class:GetNumberOnSprite(category)
+    local result = self.NumberOnSprite
+    if result then return result end
+    if self.Prototype.type == "reactor" then
+        return self.Prototype.max_energy_usage * 60 / category.EnergyUsagePerSecond
+    end
+end
+
+function Class:new(name, prototype, database)
     local self = self:adopt(
         self.system.BaseClass:new(
             prototype or game.entity_prototypes[name], database
@@ -116,12 +134,6 @@ function Entity:new(name, prototype, database)
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
 
     -- ConditionalBreak(self.Prototype.target_temperature)
-
-    self.NumberOnSprite --
-    = self.Prototype.mining_speed --
-    or self.Prototype.crafting_speed -- 
-    or self.Prototype.researching_speed -- 
-    or self.Prototype.target_temperature -- 
 
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Dictionary:new{}
@@ -137,4 +149,4 @@ function Entity:new(name, prototype, database)
 
 end
 
-return Entity
+return Class
