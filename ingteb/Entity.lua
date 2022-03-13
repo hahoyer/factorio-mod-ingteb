@@ -51,7 +51,7 @@ Class.system.Properties = {
             :Where(
                 function(category)
                     local workers = self.Database.WorkersForCategory[category.Name]
-                    return workers:Any(function(worker)
+                    return workers and workers:Any(function(worker)
                         return worker == self.Prototype
                     end)
                 end
