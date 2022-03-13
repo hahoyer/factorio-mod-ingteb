@@ -26,6 +26,7 @@ The remidor panel is inspired by the one from Satisfactory.
   => by hidden/hidden_from_player_crafting 
   => ... *(I am open for suggestions)*
 - Reminder selector: Order things by technology level
+- Ping for objects ("Where the hell are there some more iron plates lying around?")
 - ... *more suggestions?*
 
 ###known issue: 
