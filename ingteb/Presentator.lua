@@ -172,8 +172,8 @@ local function GetTechnologyEffectsData(target)
 
     dassert(effects[1].class == Recipe or effects[1].class == Bonus)
 
-    local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Maximum()
-    local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Maximum()
+    local inCount = effects:Select(function(recipe) return recipe.Input and recipe.Input:Count() or 0 end):Maximum()
+    local outCount = effects:Select(function(recipe) return recipe.Output and recipe.Output:Count() or 0 end):Maximum()
 
     return {
         type = "flow",
