@@ -57,32 +57,37 @@ function Class:FindOpenedTargets()
         if t == defines.gui_type.custom then return end
         if t == defines.gui_type.entity then
             dassert(cursor.object_name == "LuaEntity")
+            local prototype = cursor.prototype
+            local entity = self.Database:GetEntity(nil, prototype)
 
             local result = Dictionary:new{}
 
-            result["Item." .. cursor.name] = true
+            if prototype.mineable_properties then
+                for index = 1, #prototype.mineable_properties.products do
+                    result["Item." .. prototype.mineable_properties.products[index].name] = true
+                end
+            end
+
             if cursor.fluidbox then
                 for index = 1, #cursor.fluidbox do
-                    result["Fluid." .. cursor.fluidbox[index].name] = true
+                    if cursor.fluidbox[index] then
+                        result["Fluid." .. cursor.fluidbox[index].name] = true
+                    end
                 end
             end
-            if cursor.type == "container" then
-            elseif cursor.type == "storage-tank" then
-            elseif cursor.type == "reactor" then
-            elseif cursor.type == "assembling-machine" then
-                self:GetRecipeData(cursor.get_recipe(), result)
-            elseif cursor.type == "furnace" then
-                self:GetRecipeData(cursor.get_recipe(), result)
-            elseif cursor.type == "lab" then
-                if player.force.current_research then
-                    self:GetTechnologyData(player.force.current_research.prototype, result)
-                end
-            elseif cursor.type == "mining-drill" then
-                result["Entity." .. cursor.mining_target.name] = true
-            else
 
-                -- dassert()
+            if cursor.type == "lab" and player.force.current_research then
+                self:GetTechnologyData(player.force.current_research.prototype, result)
             end
+
+            if cursor.type == "mining-drill" then
+                result["Entity." .. cursor.mining_target.name] = true
+            end
+
+            if cursor.type == "rocket-silo" or --
+            cursor.type == "assembling-machine" or --
+            cursor.type == "furnace" --
+            then self:GetRecipeData(cursor.get_recipe(), result) end
 
             for index = 1, Dictionary:new(defines.inventory):Count() do
                 self:GetInventoryData(cursor.get_inventory(index), result)
