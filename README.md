@@ -11,8 +11,6 @@ The remidor panel is inspired by the one from Satisfactory.
 - provide information on recipe-combinations
 - help on modules
 - help on fuel consumption
-- consider burnt_result (thank you meifray)
-- consider rocket_launch_product (thank you meifray)
 - multiplayer
 - involve achievements
 - machine-column for labs
@@ -32,7 +30,7 @@ The remidor panel is inspired by the one from Satisfactory.
 ###known issue: 
 - the displayed speed for a worker depends on request (for instance mining or crafting)
 - Large recipe columns are jerky during handcrafts or research completion 
-- When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. 
+- When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. (As a workaround, you can temporarily use the replacement mod [Improved Research Queue with interface](https://mods.factorio.com/mod/sonaxaton-research-queue-with-interface) instead of [Improved Research Queue](https://mods.factorio.com/mod/sonaxaton-research-queue).)
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance
 
