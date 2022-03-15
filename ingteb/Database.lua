@@ -252,7 +252,7 @@ function Class:ScanEntity(prototype)
     if prototype.type == "rocket-silo" then
         self:AddWorkerForCategory("rocket-launch", "rocket-launch", prototype)
     end
-
+    
     if prototype.type == "lab" then
         self:AddWorkerForCategory("researching", prototype.name, prototype)
     end
@@ -314,7 +314,6 @@ end
 
 function Class:ScanRecipe(prototype)
 
-    if prototype.hidden then return end
     -- if prototype.hidden_from_player_crafting then return end
 
     for _, itemSet in pairs(prototype.ingredients) do

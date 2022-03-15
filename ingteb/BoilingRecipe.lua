@@ -56,6 +56,7 @@ function Class:new(name, prototype, database)
     self.SpriteType = "entity"
     self.Time = 1
     self.IsRecipe = true
+    self.IsHidden = true
     self.Category = self.Database:GetCategory("boiling." .. name)
     self.TypeStringForLocalisation = "ingteb-utility.title-boiling-recipe"
 

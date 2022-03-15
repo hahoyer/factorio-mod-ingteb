@@ -30,6 +30,7 @@ function Class:new(name, prototype, database)
     self.SpriteType = "item"
     -- self.Time = 1
     self.IsRecipe = true
+    self.IsHidden = true
     self.Category = self.Database:GetCategory("rocket-launch.rocket-launch")
     self.TypeStringForLocalisation = "ingteb-utility.title-rocket-launch-recipe"
 

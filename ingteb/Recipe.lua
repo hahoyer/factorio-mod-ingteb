@@ -264,7 +264,7 @@ function Recipe:new(name, prototype, database)
     self.RawInput = self.Prototype.ingredients
 
     self.TypeStringForLocalisation = "description.recipe"
-    self.IsHidden = false
+    self.IsHidden = self.Prototype.hidden
     self.Time = self.Prototype.energy
     self.IsRefreshRequired = {Research = true, MainInventory = true}
     self.IsRecipe = true

@@ -70,6 +70,24 @@ end
 
 local maximalCount = 6
 
+local function GetTechnologyButton(target)
+    if target.IsHidden then
+        return {
+            type = "sprite-button",
+            sprite = "hidden-recipe",
+            tooltip = {"description.recipe-hidden"},
+        }
+    elseif target.Technology then
+        return Spritor:GetSpriteButtonAndRegister(target.Technology)
+    else
+        return {
+            type = "sprite-button",
+            sprite = "factorio",
+            tooltip = {"ingteb-utility.initial-technology"},
+        }
+    end
+end
+
 local function GetRecipeLine(target, inCount, outCount)
     return {
         type = "flow",
@@ -83,13 +101,7 @@ local function GetRecipeLine(target, inCount, outCount)
                 direction = "horizontal",
                 children = {
                     {type = "sprite", sprite = "go_to_arrow"},
-                    Spritor:GetSpriteButtonAndRegister(
-                        target.Technology
-                            or {
-                                SpriteName = "factorio",
-                                HelperText = {"ingteb-utility.initial-technology"},
-                            }
-                    ),
+                    GetTechnologyButton(target),
                     Spritor:GetSpriteButtonAndRegister(target),
                     Spritor:GetSpriteButtonAndRegister(
                         {SpriteName = "utility/clock", NumberOnSprite = target.Time}
@@ -172,8 +184,12 @@ local function GetTechnologyEffectsData(target)
 
     dassert(effects[1].class == Recipe or effects[1].class == Bonus)
 
-    local inCount = effects:Select(function(recipe) return recipe.Input and recipe.Input:Count() or 0 end):Maximum()
-    local outCount = effects:Select(function(recipe) return recipe.Output and recipe.Output:Count() or 0 end):Maximum()
+    local inCount = effects --
+    :Select(function(recipe) return recipe.Input and recipe.Input:Count() or 0 end) --
+    :Maximum()
+    local outCount = effects --
+    :Select(function(recipe) return recipe.Output and recipe.Output:Count() or 0 end) --
+    :Maximum()
 
     return {
         type = "flow",
@@ -652,17 +668,19 @@ function Class:GetGui(target)
     local children
     if columnCount == 0 then
         children = {
-            type = "frame",
-            direction = "horizontal",
-            children = {
-                {
-                    type = "label",
-                    caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=go_to_arrow]",
-                },
-                Spritor:GetSpriteButtonAndRegister(target),
-                {
-                    type = "label",
-                    caption = "[img=go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
+            {
+                type = "frame",
+                direction = "horizontal",
+                children = {
+                    {
+                        type = "label",
+                        caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=go_to_arrow]",
+                    },
+                    Spritor:GetSpriteButtonAndRegister(target),
+                    {
+                        type = "label",
+                        caption = "[img=go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
+                    },
                 },
             },
         }

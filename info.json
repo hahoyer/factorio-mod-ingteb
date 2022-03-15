@@ -1,6 +1,6 @@
 {
     "title": "ingteb",
-    "version": "0.3.24",
+    "version": "0.3.25",
     "name": "ingteb",
     "author": "ixu",
     "description": "Ingame technology browser",
@@ -9,6 +9,5 @@
         "base >= 1.1.0",
         "flib >= 0.9.2",
         "? sonaxaton-research-queue-with-interface"
-
     ]
 }

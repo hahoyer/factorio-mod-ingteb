@@ -28,6 +28,7 @@ function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype.burnt_result, database))
     self.Name = prototype.name
     self.SpriteType = "item"
+    self.IsHidden = true
     self.IsRecipe = true
     self.Category = self.Database:GetCategory("burning." .. prototype.fuel_category)
     self.Time = prototype.fuel_value / self.Category.EnergyUsagePerSecond

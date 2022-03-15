@@ -26,6 +26,16 @@ data:extend(
             size = 64,
             scale = 0.5,
         },
+
+        {
+            type = "sprite",
+            name = "hidden-recipe",
+            filename = "__core__/graphics/favourite-grey.png",
+            size = 64,
+            scale = 0.5,
+        },
+
+        
         {
             type = "sprite",
             name = "ingteb",

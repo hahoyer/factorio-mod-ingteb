@@ -25,6 +25,7 @@ The remidor panel is inspired by the one from Satisfactory.
   => ... *(I am open for suggestions)*
 - Reminder selector: Order things by technology level
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
+- Show energy-source
 - ... *more suggestions?*
 
 ###known issue: 

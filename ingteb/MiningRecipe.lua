@@ -85,6 +85,7 @@ function MiningRecipe:new(name, prototype, database)
 
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
+    self.IsHidden = true
     self.IsRecipe = true
     self.TypeStringForLocalisation = "ingteb-utility.title-mining-recipe"
 
@@ -100,8 +101,6 @@ function MiningRecipe:new(name, prototype, database)
 
     self.Resource = self.Database:GetEntity(nil, self.Prototype)
     self.Resource.UsedBy:AppendForKey(self.Category.Name, self)
-
-    self.IsHidden = false
 
     function self:IsBefore(other)
         if self == other then return false end

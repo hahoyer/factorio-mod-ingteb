@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.25
+Date: 2022-03-14
+  Changes:
+    - Show hidden recipes
+    - Missing locales added for domains and categories
+---------------------------------------------------------------------------------------------------
 Version: 0.3.24
-Date: 2022-03-12
+Date: 2022-03-14
   Changes:
     - Support for sonaxaton-research-queue
     - "open target" handler improved
