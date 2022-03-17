@@ -1,9 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.25
-Date: 2022-03-14
+Date: 2022-03-17
   Changes:
     - Show hidden recipes
     - Missing locales added for domains and categories
+  Bugfixes: 
+    - Missing hidden recipe for water to steam
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.24
 Date: 2022-03-14

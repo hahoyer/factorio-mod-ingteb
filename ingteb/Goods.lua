@@ -12,48 +12,15 @@ Goods.system.Properties = {
         get = function(self) return self.Entity and self.Entity.RecipeList or Array:new{} end,
     },
 
-    RecipesForItem = {
-        cache = true,
-        get = function(self) return self.Database.RecipesForItems[self.Prototype.name] or {} end,
-    },
-
     OriginalUsedBy = {
-        get = function(self)
-            local result = Dictionary:new{}
-
-            local names = self.RecipesForItem.UsedBy
-            if names then
-
-                result = names --
-                :Select(
-                    function(value)
-                        return value --
-                        :Select(
-                            function(value)
-                                return self.Database:GetRecipe(value)
-                            end
-                        )
-                    end
-                )
-            end
-
-            return result
-        end,
+        cache = true,
+        get = function(self) return self.Database:GetUsedByRecipes(self.Prototype.name) end,
     },
 
     OriginalCreatedBy = {
-        get = function(self)
-            local names = self.RecipesForItem.CreatedBy
-            if not names then return Dictionary:new{} end
-
-            return names --
-            :Select(
-                function(value)
-                    return value --
-                    :Select(function(value) return self.Database:GetRecipe(value) end)
-                end
-            )
-
+        cache = true,
+        get = function(self) 
+            return self.Database:GetCreatedByRecipes(self.Prototype.name) 
         end,
     },
 

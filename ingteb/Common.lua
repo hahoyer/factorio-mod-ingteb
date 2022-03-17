@@ -92,7 +92,7 @@ local Class = class:new(
                         end
                     )
                 )
-                
+
                 if self.Time then
                     result:Append{
                         "",
@@ -166,13 +166,17 @@ local Class = class:new(
                     return Array:new(self.RawInput) --
                     :Select(
                         function(ingredient, index)
-                            local result = self.Database:GetStackOfGoods(ingredient)
-                            if result then
-                                result.Source = {Recipe = self, IngredientIndex = index}
+                            if ingredient.type == "resource" then
+                                return ingredient.value
                             else
-                                self.IsHidden = true
+                                local result = self.Database:GetStackOfGoods(ingredient)
+                                if result then
+                                    result.Source = {Recipe = self, IngredientIndex = index}
+                                else
+                                    self.IsHidden = true
+                                end
+                                return result
                             end
-                            return result
                         end
                     ) --
                     :Where(
@@ -254,6 +258,7 @@ function Class:AssertValid() end
 
 function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name
+    self.Database:EnsureUsage(self, self.RawInput, self.RawOutput)
     self:SortAll()
 
     translation.add_requests(
@@ -275,8 +280,7 @@ function Class:SealUp()
     return self
 end
 
-function Class:GetNumberOnSprite(category)
-end
+function Class:GetNumberOnSprite(category) end
 
 function Class:GetAction(event)
     local message = gui.read_action(event)

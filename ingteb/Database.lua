@@ -21,6 +21,19 @@ local Proxy = {
     RocketLaunchRecipe = require("ingteb.RocketLaunchRecipe"),
     Technology = require("ingteb.Technology"),
 }
+---comment
+---@param data table
+---@param key string
+---@param value any
+---@return any
+local function EnsureKey(data, key, value)
+    local result = data[key]
+    if not result then
+        result = value or {}
+        data[key] = result
+    end
+    return result
+end
 
 local StackOfGoods = require("ingteb.StackOfGoods")
 
@@ -50,15 +63,6 @@ function Class:GetItemsPerTickText(amounts, timeInSeconds)
                .. "[img=items-per-timeunit]" .. ")"
 end
 
-local function EnsureKey(data, key, value)
-    local result = data[key]
-    if not result then
-        result = value or {}
-        data[key] = result
-    end
-    return result
-end
-
 function Class:Ensure()
     if self.IsInitialized then return self end
     local order = 1
@@ -82,7 +86,8 @@ function Class:Ensure()
 
     log("database initialize start...")
     self:OnSettingsChanged()
-    self.RecipesForItems = {}
+    self.UsedByRecipesForItems = {}
+    self.CreatedByRecipesForItems = {}
     self.CategoryNames = Dictionary:new{}
     self.RecipesForCategory = {}
     self.TechnologiesForRecipe = {}
@@ -203,8 +208,7 @@ end
 ---@param domain string
 ---@param category string
 ---@param prototype table LuaEntityPrototype
-function Class:AddWorkerForCategory(domain, category, prototype)
-    local categoryName = domain .. "." .. category
+function Class:AddWorkerForCategory(categoryName, prototype)
     EnsureKey(self.WorkersForCategory, categoryName, Array:new{}):Append(prototype)
     self.CategoryNames[categoryName] = true
 end
@@ -212,49 +216,54 @@ end
 ---@param domain string
 ---@param category string
 ---@param prototype table LuaEntityPrototype
-function Class:AddRecipesForCategory(domain, category, prototype)
-    local categoryName = domain .. "." .. category
+function Class:AddRecipesForCategory(categoryName, prototype)
     EnsureKey(self.RecipesForCategory, categoryName, Array:new{}):Append(prototype)
     self.CategoryNames[categoryName] = true
 end
 
-local function EnsureRecipeCategory(result, side, name, category)
+local function EnsureRecipeCategory(result, side, name, categoryName)
     local itemData = EnsureKey(result, name)
     local sideData = EnsureKey(itemData, side, Dictionary:new())
-    local categoryData = EnsureKey(sideData, "crafting." .. category, Array:new())
+    local categoryData = EnsureKey(sideData, categoryName, Array:new())
     return categoryData
 end
 
+local function EnsureRecipeForItem(result, itemName, recipe)
+    EnsureKey(result, itemName, Array:new{}):Append(recipe)
+end
+
 function Class:ScanEntity(prototype)
+    if prototype.fluid_energy_source_prototype then __DebugAdapter.breakpoint() end
+
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("crafting", category, prototype)
+        self:AddWorkerForCategory("crafting." .. category, prototype)
     end
 
     for category, _ in pairs(prototype.resource_categories or {}) do
         if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("fluid-mining", category, prototype)
+            self:AddWorkerForCategory("fluid-mining." .. category, prototype)
         end
-        self:AddWorkerForCategory("mining", category, prototype)
+        self:AddWorkerForCategory("mining." .. category, prototype)
     end
 
     if prototype.burner_prototype then
         for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
             EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
-            self:AddWorkerForCategory("burning", category, prototype)
+            self:AddWorkerForCategory("burning." .. category, prototype)
         end
     end
 
     if prototype.type == "boiler" then
-        self:AddWorkerForCategory("boiling", prototype.name, prototype)
-        self:AddRecipesForCategory("boiling", prototype.name, prototype)
+        self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
+        self:AddRecipesForCategory("boiling." .. prototype.name, prototype)
     end
 
     if prototype.type == "rocket-silo" then
-        self:AddWorkerForCategory("rocket-launch", "rocket-launch", prototype)
+        self:AddWorkerForCategory("rocket-launch.rocket-launch", prototype)
     end
-    
+
     if prototype.type == "lab" then
-        self:AddWorkerForCategory("researching", prototype.name, prototype)
+        self:AddWorkerForCategory("researching." .. prototype.name, prototype)
     end
 
     if prototype.mineable_properties --
@@ -273,12 +282,13 @@ function Class:ScanEntity(prototype)
         local categoryName = not prototype.resource_category and "steel-axe" --
                                  or prototype.resource_category
 
-        self:AddRecipesForCategory(domain, categoryName, prototype)
+        self:AddRecipesForCategory(domain .. "." .. categoryName, prototype)
     end
 
     if prototype.type == "character" and prototype.name == "character" then
-        self:AddWorkerForCategory("hand-mining", "steel-axe", prototype)
+        self:AddWorkerForCategory("hand-mining.steel-axe", prototype)
     end
+
 end
 
 function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
@@ -305,10 +315,11 @@ function Class:ScanItem(prototype)
         EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
     end
     if prototype.burnt_result then
-        self:AddRecipesForCategory("burning", prototype.fuel_category, prototype)
+        local categoryName = "burning." .. prototype.fuel_category
+        self:AddRecipesForCategory(categoryName, prototype)
     end
     if #prototype.rocket_launch_products > 0 then
-        self:AddRecipesForCategory("rocket-launch", "rocket-launch", prototype)
+        self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)
     end
 end
 
@@ -316,17 +327,7 @@ function Class:ScanRecipe(prototype)
 
     -- if prototype.hidden_from_player_crafting then return end
 
-    for _, itemSet in pairs(prototype.ingredients) do
-        EnsureRecipeCategory(self.RecipesForItems, "UsedBy", itemSet.name, prototype.category) --
-        :Append(prototype.name)
-    end
-
-    for _, itemSet in pairs(prototype.products) do
-        EnsureRecipeCategory(self.RecipesForItems, "CreatedBy", itemSet.name, prototype.category) --
-        :Append(prototype.name)
-    end
-
-    self:AddRecipesForCategory("crafting", prototype.category, prototype)
+    self:AddRecipesForCategory("crafting." .. prototype.category, prototype)
 end
 
 function Class:GetStackOfGoods(target)
@@ -481,6 +482,40 @@ function Class:OnStringTranslated(event)
     end
     if finished then
         -- dassert() 
+    end
+end
+
+function Class:GetRecipesGroupByCategory(recipes)
+    if recipes then
+        local xreturn = recipes:ToGroup(
+            function(recipe) return {Key = recipe.Category.Name, Value = recipe} end
+        )
+        return xreturn
+    end
+    return Dictionary:new{}
+end
+
+function Class:GetUsedByRecipes(itemName)
+    local xreturn = self:GetRecipesGroupByCategory(self.UsedByRecipesForItems[itemName])
+    return xreturn
+end
+
+function Class:GetCreatedByRecipes(itemName)
+    local xreturn = self:GetRecipesGroupByCategory(self.CreatedByRecipesForItems[itemName])
+    return xreturn
+end
+
+function Class:EnsureUsage(recipe, input, output)
+    if input then
+        for _, value in ipairs(input) do
+            if value.type ~= "resource" then 
+            EnsureRecipeForItem(self.UsedByRecipesForItems, value.name, recipe)end
+        end
+    end
+    if output then
+        for _, value in ipairs(output) do
+            EnsureRecipeForItem(self.CreatedByRecipesForItems, value.name, recipe)
+        end
     end
 end
 

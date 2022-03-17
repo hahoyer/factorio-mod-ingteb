@@ -116,6 +116,24 @@ Class.system.Properties = {
     },
 
 }
+
+function Class:GetRecipe(recipeName) 
+    if self.Domain == "crafting" then
+        return self.Database:GetRecipe(recipeName)
+    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
+        == "hand-mining" then
+        return self.Database:GetMiningRecipe(recipeName)
+    elseif self.Domain == "boiling" then
+        return self.Database:GetBoilingRecipe(recipeName)
+    elseif self.Domain == "burning" then
+        return self.Database:GetBurningRecipe(recipeName)
+    elseif self.Domain == "rocket-launch" then
+        return self.Database:GetRocketLaunchRecipe(recipeName)
+    else
+        dassert()
+    end
+end
+
 function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end
 
 function Class:SealUp()

@@ -37,43 +37,6 @@ MiningRecipe.system.Properties = {
         end,
     },
 
-    Output = {
-        cache = true,
-        get = function(self)
-            local configuration = self.Prototype.mineable_properties
-            return Array:new(configuration.products) --
-            :Select(
-                function(product, index)
-                    local result = self.Database:GetStackOfGoods(product)
-                    if result then
-                        result.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
-                        result.Source = {Recipe = self, ProductIndex = index}
-                    else
-                        self.IsHidden = true
-                    end
-                    return result
-                end
-            )
-        end,
-    },
-    Input = {
-        cache = true,
-        get = function(self)
-            local configuration = self.Prototype.mineable_properties
-            local result = Array:new{self.Resource}
-            if configuration.required_fluid then
-                local fluid = self.Database:GetStackOfGoods{
-                    type = "fluid",
-                    name = configuration.required_fluid,
-                    amount = configuration.fluid_amount,
-                }
-                fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-                fluid.Source = {Recipe = self, IngredientIndex = 1}
-                result:Append(fluid)
-            end
-            return result
-        end,
-    },
 }
 
 function MiningRecipe:new(name, prototype, database)
@@ -99,9 +62,23 @@ function MiningRecipe:new(name, prototype, database)
 
     self.Category = GetCategoryAndRegister(self, domain, category)
 
-    self.Resource = self.Database:GetEntity(nil, self.Prototype)
-    self.Resource.UsedBy:AppendForKey(self.Category.Name, self)
+    local resource = self.Database:GetEntity(nil, self.Prototype)
+    resource.UsedBy:AppendForKey(self.Category.Name, self)
 
+    self.RawInput = {{type = "resource", value = resource}}
+    local configuration = self.Prototype.mineable_properties
+    if configuration.required_fluid then
+        table.insert(
+            self.RawInput, {
+                type = "fluid",
+                name = configuration.required_fluid,
+                amount = configuration.fluid_amount,
+            }
+        )
+    end
+
+    self.RawOutput = configuration.products
+    
     function self:IsBefore(other)
         if self == other then return false end
         return self.OrderValue < other.OrderValue
