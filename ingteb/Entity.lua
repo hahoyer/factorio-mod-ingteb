@@ -51,9 +51,10 @@ Class.system.Properties = {
             :Where(
                 function(category)
                     local workers = self.Database.WorkersForCategory[category.Name]
-                    return workers and workers:Any(function(worker)
-                        return worker == self.Prototype
-                    end)
+                    return workers
+                               and workers:Any(function(worker)
+                            return worker == self.Prototype
+                        end)
                 end
             ) --
 
@@ -73,17 +74,23 @@ Class.system.Properties = {
     SpecialFunctions = {
         get = function(self)
             local inherited = self.inherited.Entity.SpecialFunctions.get(self)
+            if not self.Item then return inherited end
             local result = Array:new{
                 {
                     UICode = "--- l", --
-                    IsAvailable = function(self) return self.Item end,
                     Action = function(self) return {Presenting = self.Item} end,
+                },
+                {
+                    UICode = "-C- l",
+                    HelpText = "controls.smart-pipette",
+                    Action = function(self)
+                        return {Selecting = self.Item, Entity = self}
+                    end,
                 },
                 {
                     UICode = "--- r",
                     IsRestricedTo = {Presentator = true, Remindor = true},
                     HelpText = "ingteb-utility.create-reminder-task",
-                    IsAvailable = function(self) return self.Item end,
                     Action = function(self) return {RemindorTask = self.Item} end,
                 },
             }
