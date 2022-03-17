@@ -6,6 +6,7 @@ Date: 2022-03-17
     - Missing locales added for domains and categories
   Bugfixes:
     - Missing hidden recipe for water to steam
+    - fixing Crash when loading se-energy-transmitter-chamber from space exploration mod
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.24
 Date: 2022-03-14

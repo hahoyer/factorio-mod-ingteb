@@ -232,6 +232,55 @@ local function EnsureRecipeForItem(result, itemName, recipe)
     EnsureKey(result, itemName, Array:new{}):Append(recipe)
 end
 
+local function IsValidBoiler(prototype)
+    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+    if not fluidBoxes then
+        log("WARNING: " .. prototype.name .. "(" .. prototype.type .. ") has no fluid boxes.")
+        log {"", "INFO: " .. prototype.name .. " is ", {prototype.localised_name}}
+        return
+    end
+    local inBoxes --
+    = fluidBoxes --
+    :Where(
+        function(box)
+            return box.production_type == "input" or box.production_type == "input-output"
+        end
+    ) --
+    local outBoxes = fluidBoxes --
+    :Where(function(box) return box.production_type == "output" end) --
+
+    local result = true
+    if not inBoxes or inBoxes:Count() ~= 1 then
+        log(
+            "WARNING: " .. prototype.name .. "(" .. prototype.type
+                .. ") has no uniqe fluid box for input."
+        )
+        result = false
+    elseif not inBoxes[1].filter then
+        log(
+            "WARNING: fluid input for " .. prototype.name .. "(" .. prototype.type .. ") is generic."
+        )
+        result = false
+    end
+
+    if not outBoxes or outBoxes:Count() ~= 1 then
+        log(
+            "WARNING: " .. prototype.name .. "(" .. prototype.type
+                .. ") has no uniqe fluid box for output."
+        )
+        result = false
+    elseif not outBoxes[1].filter then
+        log(
+            "WARNING: fluid output for " .. prototype.name .. "(" .. prototype.type
+                .. ") is generic."
+        )
+        result = false
+    end
+
+    if not result then log {"", "INFO: " .. prototype.name .. " is ", prototype.localised_name} end
+    return result
+end
+
 function Class:ScanEntity(prototype)
     if prototype.fluid_energy_source_prototype then __DebugAdapter.breakpoint() end
 
@@ -253,7 +302,7 @@ function Class:ScanEntity(prototype)
         end
     end
 
-    if prototype.type == "boiler" then
+    if prototype.type == "boiler" and IsValidBoiler(prototype) then
         self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
         self:AddRecipesForCategory("boiling." .. prototype.name, prototype)
     end
