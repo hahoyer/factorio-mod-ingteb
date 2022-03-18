@@ -209,7 +209,7 @@ function SelectorCache:EnsureGroups(database)
             for name, goods in pairs(domain) do
                 if not self:IsHidden(type, goods) then
                     local grouping = --
-                    type == "FuelCategory" and {"fuel_category", "fuel_category"} --
+                    type == "FuelCategory" and {"fuel-category", "fuel-category"} --
                         or {goods.group.name, goods.subgroup.name}
                     local group = EnsureKey(self.Groups, grouping[1], Dictionary:new{})
                     local subgroup = EnsureKey(group, grouping[2], Array:new{})
