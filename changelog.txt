@@ -3,6 +3,11 @@ Version: 0.3.26
 Date: 2022-03-17
   Changes:
     - pipette improved
+  Bugfixes:
+    - Remaining debug code removed
+    - fixing incompatible Pyanodons Coal Processing
+    - fixing incompatible with Industrial Revolution 2
+    - fixing incompatible with both aai industry and Krastorio 2
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.25
 Date: 2022-03-17

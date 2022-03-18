@@ -186,55 +186,42 @@ function Class:GetTargetsGui()
 
 end
 
-local SelectorCache = {}
+local SelectorCache = {MaximumColumnCount = 0}
 
-function GetFuelCategories(database)
-    local result = database:GetFuelCategories() --
-    :ToDictionary(
-        function(name)
-            return {
-                Key = name,
-                Value = { --
-                    group = {name = "fuel-category"},
-                    subgroup = {name = "fuel-category"},
-                }, 
-            }
+function SelectorCache:IsHidden(type, goods)
+    if type == "Item" then
+        return goods.flags and goods.flags.hidden
+    elseif type == "Fluid" then
+        return goods.hidden
         end
-    )
-    return result
 end
 
 function SelectorCache:EnsureGroups(database)
     local self = SelectorCache
     if not self.Groups then
-        local maximalColumns = 0
         self.Groups = Dictionary:new{}
         local targets = {
             Item = game.item_prototypes,
             Fluid = game.fluid_prototypes,
-            FuelCategory = GetFuelCategories(database),
+            FuelCategory = game.fuel_category_prototypes,
         }
         for type, domain in pairs(targets) do
             for name, goods in pairs(domain) do
-                local isHidden
-                if type == "Item" then
-                    isHidden = goods.flags and goods.flags.hidden
-                elseif type == "Fluid" then
-                    isHidden = goods.hidden
-                end
-
-                if not isHidden then
-                    local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
-                    local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
+                if not self:IsHidden(type, goods) then
+                    local grouping = --
+                    type == "FuelCategory" and {"fuel_category", "fuel_category"} --
+                        or {goods.group.name, goods.subgroup.name}
+                    local group = EnsureKey(self.Groups, grouping[1], Dictionary:new{})
+                    local subgroup = EnsureKey(group, grouping[2], Array:new{})
                     subgroup:Append(database:GetProxy(type, name, goods))
-                    if maximalColumns < subgroup:Count() then
-                        maximalColumns = subgroup:Count()
+                    if self.MaximumColumnCount < subgroup:Count() then
+                        self.MaximumColumnCount = subgroup:Count()
                     end
                 end
             end
         end
-        self.ColumnCount =
-            maximalColumns < ColumnCount and maximalColumns or self.Groups:Count() * 2
+        self.ColumnCount = self.MaximumColumnCount < ColumnCount and self.MaximumColumnCount
+                               or self.Groups:Count() * 2
     end
     return self.Groups
 end
@@ -271,14 +258,16 @@ function Class:GetAllItemsGui()
             function(group, name)
                 local subGroup = self:GetSubGroupPanel(group)
                 local caption = "[item-group=" .. name .. "]"
-                if name == "fuel-category" then caption = "[img=utility.slot_icon_fuel]" end
+                if name == "fuel-category" then
+                    caption = "[img=utility.slot_icon_fuel]"
+                end
                 return {
                     tab = {
                         type = "tab",
                         caption = caption,
                         -- style = "filter_group_tab",
                         style = subGroup:Any() and "ingteb-big-tab" or "ingteb-big-tab-disabled",
-                        tooltip = {"item-group-name." .. name },
+                        tooltip = {"item-group-name." .. name},
                         ignored_by_interaction = not subGroup:Any(),
                         -- style_mods = {font = "ingteb-font32"}
                     },

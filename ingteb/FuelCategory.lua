@@ -18,10 +18,22 @@ FuelCategory.system.Properties = {
     SpriteName = {
         cache = true,
         get = function(self)
-            local result = "tooltip-category-" .. self.Prototype.name
+            local prototype = self.Prototype
+            local result = "tooltip-category-" .. prototype.name
             if game.is_valid_sprite_path(result) then return result end
-            result = "item."..self.Fuels:Top(false).Prototype.name
+            local item = self.Fuels:Top()
+            if item then
+                result = "item." .. self.Fuels:Top(false).Prototype.name
             return result
+            end
+
+            log(
+                "WARNING: The " .. prototype.name
+                    .. "(fuel_category) is not provided by any substance."
+            )
+            log {"", "INFO: " .. prototype.name .. " is ", prototype.localised_name}
+            return "utility/missing_icon"
+
         end,
     },
 

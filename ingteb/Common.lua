@@ -295,7 +295,7 @@ function Class:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
-    self.CommonKey = self.name .. "." .. prototype.name
+    if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging 
     local self = self:adopt{Prototype = prototype, Database = database}
     self.IsSealed = false
     self.Name = self.Prototype.name

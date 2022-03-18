@@ -128,6 +128,11 @@ function Class:Ensure()
         function(value, categoryName) return value and self:GetCategory(categoryName) end
     )
 
+    log("database initialize fuel-categories...")
+    for name, prototype in pairs(game.fuel_category_prototypes) do
+        EnsureKey(self.ItemsForFuelCategory, name, Array:new())
+    end
+
     log("database initialize recipes...")
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
@@ -558,7 +563,8 @@ function Class:EnsureUsage(recipe, input, output)
     if input then
         for _, value in ipairs(input) do
             if value.type ~= "resource" then 
-            EnsureRecipeForItem(self.UsedByRecipesForItems, value.name, recipe)end
+                EnsureRecipeForItem(self.UsedByRecipesForItems, value.name, recipe)
+            end
         end
     end
     if output then
