@@ -1,6 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.27
+Date: 2022-03-18
+  Changes:
+    - logging of issues found in other mods improved
+  Bugfixes:
+    - fixing incompatible with se-space-trains
+---------------------------------------------------------------------------------------------------
 Version: 0.3.26
-Date: 2022-03-17
+Date: 2022-03-18
   Changes:
     - pipette improved
   Bugfixes:

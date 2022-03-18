@@ -27,11 +27,11 @@ FuelCategory.system.Properties = {
             return result
             end
 
-            log(
-                "WARNING: The " .. prototype.name
-                    .. "(fuel_category) is not provided by any substance."
-            )
-            log {"", "INFO: " .. prototype.name .. " is ", prototype.localised_name}
+            log {
+                "mod-issue.fuel-category-empty",
+                prototype.localised_name,
+                "fuel_category." .. prototype.name,
+            }
             return "utility/missing_icon"
 
         end,

@@ -10,8 +10,8 @@ The remidor panel is inspired by the one from Satisfactory.
 - copy recipe *(See no way do this. Help welcome)*
 - provide information on recipe-combinations
 - help on modules
-- help on fuel consumption
-- multiplayer
+- help on fuel consumption (see also https://mods.factorio.com/mod/ingteb/discussion/62349f746e0bcc86993ee892)
+- multiplayer 
 - involve achievements
 - machine-column for labs
 - Improve recipe-column-layout in case of huge amount of recipes

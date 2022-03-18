@@ -240,8 +240,11 @@ end
 local function IsValidBoiler(prototype)
     local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
     if not fluidBoxes then
-        log("WARNING: " .. prototype.name .. "(" .. prototype.type .. ") has no fluid boxes.")
-        log {"", "INFO: " .. prototype.name .. " is ", {prototype.localised_name}}
+        log {
+            "mod-issue.boiler-without-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
         return
     end
     local inBoxes --
@@ -256,33 +259,37 @@ local function IsValidBoiler(prototype)
 
     local result = true
     if not inBoxes or inBoxes:Count() ~= 1 then
-        log(
-            "WARNING: " .. prototype.name .. "(" .. prototype.type
-                .. ") has no uniqe fluid box for input."
-        )
-        result = false
+        log {
+            "mod-issue.boiler-no-unique-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
     elseif not inBoxes[1].filter then
-        log(
-            "WARNING: fluid input for " .. prototype.name .. "(" .. prototype.type .. ") is generic."
-        )
-        result = false
+        log {
+            "mod-issue.boiler-generic-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
     end
 
     if not outBoxes or outBoxes:Count() ~= 1 then
-        log(
-            "WARNING: " .. prototype.name .. "(" .. prototype.type
-                .. ") has no uniqe fluid box for output."
-        )
-        result = false
+        log {
+            "mod-issue.boiler-no-unique-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
     elseif not outBoxes[1].filter then
-        log(
-            "WARNING: fluid output for " .. prototype.name .. "(" .. prototype.type
-                .. ") is generic."
-        )
-        result = false
+        log {
+            "mod-issue.boiler-generic-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
     end
 
-    if not result then log {"", "INFO: " .. prototype.name .. " is ", prototype.localised_name} end
     return result
 end
 
@@ -369,8 +376,18 @@ function Class:ScanItem(prototype)
         EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
     end
     if prototype.burnt_result then
-        local categoryName = "burning." .. prototype.fuel_category
-        self:AddRecipesForCategory(categoryName, prototype)
+        if prototype.fuel_category then
+            local categoryName = "burning." .. prototype.fuel_category
+            self:AddRecipesForCategory(categoryName, prototype)
+        else
+            log {
+                "mod-issue.burnt-result-without-fuel-category",
+                prototype.localised_name,
+                prototype.type .. "." .. prototype.name,
+                prototype.burnt_result.localised_name,
+                prototype.burnt_result.type .. "." .. prototype.burnt_result.name,
+            }
+        end
     end
     if #prototype.rocket_launch_products > 0 then
         self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)
@@ -562,7 +579,7 @@ end
 function Class:EnsureUsage(recipe, input, output)
     if input then
         for _, value in ipairs(input) do
-            if value.type ~= "resource" then 
+            if value.type ~= "resource" then
                 EnsureRecipeForItem(self.UsedByRecipesForItems, value.name, recipe)
             end
         end
