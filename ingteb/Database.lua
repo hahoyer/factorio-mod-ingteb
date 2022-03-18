@@ -282,7 +282,7 @@ local function IsValidBoiler(prototype)
 end
 
 function Class:ScanEntity(prototype)
-    if prototype.fluid_energy_source_prototype then __DebugAdapter.breakpoint() end
+    -- if prototype.fluid_energy_source_prototype then __DebugAdapter.breakpoint() end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting." .. category, prototype)
