@@ -109,19 +109,20 @@ Class.system.Properties = {
     EnergyUsagePerSecond = {
         cache = true,
         get = function(self) --
-            return self.OriginalWorkers --
+            dassert(self.IsSealed)
+            local rawResult = self.OriginalWorkers --
             :Select(function(worker) return worker.Prototype.max_energy_usage end) --
-            :Minimum() * 60
+            :Minimum()
+            if rawResult then return rawResult * 60 end
         end,
     },
 
 }
 
-function Class:GetRecipe(recipeName) 
+function Class:GetRecipe(recipeName)
     if self.Domain == "crafting" then
         return self.Database:GetRecipe(recipeName)
-    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
-        == "hand-mining" then
+    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining" then
         return self.Database:GetMiningRecipe(recipeName)
     elseif self.Domain == "boiling" then
         return self.Database:GetBoilingRecipe(recipeName)

@@ -19,19 +19,26 @@ Class.system.Properties = {
             .. " " .. self.Prototype.order
         end,
     },
+    Time = {
+        cache = true,
+        get = function(self)
+            local energyUsagePerSecond = self.Category.EnergyUsagePerSecond
+            if energyUsagePerSecond then return self.FuelValue / energyUsagePerSecond end
+        end,
+    },
 
 }
 
 function Class:new(name, prototype, database)
     dassert(name == nil)
-    dassert(prototype )
+    dassert(prototype)
     local self = self:adopt(self.system.BaseClass:new(prototype.burnt_result, database))
     self.Name = prototype.name
     self.SpriteType = "item"
     self.IsHidden = true
     self.IsRecipe = true
     self.Category = self.Database:GetCategory("burning." .. prototype.fuel_category)
-    self.Time = prototype.fuel_value / self.Category.EnergyUsagePerSecond
+    self.FuelValue = prototype.fuel_value
     self.TypeStringForLocalisation = "ingteb-utility.title-burning-recipe"
 
     local input = prototype
