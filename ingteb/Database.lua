@@ -294,10 +294,15 @@ local function IsValidBoiler(prototype)
 end
 
 function Class:ScanEntity(prototype)
-    -- if prototype.fluid_energy_source_prototype then __DebugAdapter.breakpoint() end
+    -- if prototype.type == "assembling-machine" or prototype.type == "furnace" then __DebugAdapter.breakpoint() end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting." .. category, prototype)
+        if prototype.fixed_recipe then
+            self:AddRecipesForCategory(
+                "crafting." .. category, game.recipe_prototypes[prototype.fixed_recipe]
+            )
+        end
     end
 
     for category, _ in pairs(prototype.resource_categories or {}) do
@@ -397,7 +402,7 @@ end
 function Class:ScanRecipe(prototype)
 
     -- if prototype.hidden_from_player_crafting then return end
-
+    if prototype.hidden then return end
     self:AddRecipesForCategory("crafting." .. prototype.category, prototype)
 end
 

@@ -3,6 +3,7 @@ Version: 0.3.29
 Date: 2022-03-23
   Changes:
     - Special treatment for zombie recipes 
+    - Better treatment for hidden recipes. Present them only when they are used as fixed-recipe somewhere.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.28
 Date: 2022-03-19
