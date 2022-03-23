@@ -79,11 +79,17 @@ local function GetTechnologyButton(target)
         }
     elseif target.Technology then
         return Spritor:GetSpriteButtonAndRegister(target.Technology)
-    else
+    elseif target.Prototype.enabled then
         return {
             type = "sprite-button",
             sprite = "factorio",
             tooltip = {"ingteb-utility.initial-technology"},
+        }
+    else
+        return {
+            type = "sprite-button",
+            sprite = "utility/crafting_machine_recipe_not_unlocked",
+            tooltip = {"ingteb-utility.impossible-recipe"},
         }
     end
 end
