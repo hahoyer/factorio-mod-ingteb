@@ -1,9 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.30
+Date: 2022-03-24
+  Bugfixes:
+    - fixing that hidden recipes for furnances are not presented anymore.
+---------------------------------------------------------------------------------------------------
 Version: 0.3.29
 Date: 2022-03-23
   Changes:
     - Special treatment for zombie recipes 
-    - Better treatment for hidden recipes. Present them only when they are used as fixed-recipe somewhere.
+    - Better treatment for hidden recipes. Present them only when used as fixed-recipe somewhere.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.28
 Date: 2022-03-19

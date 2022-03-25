@@ -74,8 +74,8 @@ local function GetTechnologyButton(target)
     if target.IsHidden then
         return {
             type = "sprite-button",
-            sprite = "hidden-recipe",
-            tooltip = {"description.recipe-hidden"},
+            sprite = "automatic-recipe",
+            tooltip = {"ingteb-utility.automatic-recipe"},
         }
     elseif target.Technology then
         return Spritor:GetSpriteButtonAndRegister(target.Technology)

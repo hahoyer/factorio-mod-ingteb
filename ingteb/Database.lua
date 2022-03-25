@@ -400,9 +400,6 @@ function Class:ScanItem(prototype)
 end
 
 function Class:ScanRecipe(prototype)
-
-    -- if prototype.hidden_from_player_crafting then return end
-    if prototype.hidden then return end
     self:AddRecipesForCategory("crafting." .. prototype.category, prototype)
 end
 

@@ -52,6 +52,13 @@ data:extend(
         },
         {
             type = "sprite",
+            name = "automatic-recipe",
+            filename = Constants.GraphicsPath .. "automatic-recipe.png",
+            size = 64,
+            scale = 0.5,
+        },
+        {
+            type = "sprite",
             name = "effects",
             filename = Constants.GraphicsPath .. "effects.png",
             size = 32,

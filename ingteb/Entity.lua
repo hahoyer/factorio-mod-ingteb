@@ -98,6 +98,15 @@ Class.system.Properties = {
         end,
     },
 
+    HasAutomaticRecipes = {
+        cache = true,
+        get = function(self)
+            if self.Prototype.type == "furnace" or self.Prototype.type == "rocket-silo" then
+                return true
+            end
+        end,
+    },
+
     Required = {
         get = function(self)
             if self.Item then return self.Item.Required end
