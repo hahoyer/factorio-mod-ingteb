@@ -448,7 +448,7 @@ function Class:GetFuelsPanel(target, headerSprites, tooltip)
 end
 
 function Class:GetRecipePanel(target)
-    if target.class.name ~= "Recipe" then return {} end
+    if not target.IsRecipe then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
     local outCount = math.min(target.Output:Count(), maximalCount)
     return {
@@ -662,7 +662,7 @@ function Class:GetGui(target)
 
     local columnCount --
     = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
-          + (target.class == Recipe and 1 or 0) --
+          + (target.IsRecipe and 1 or 0) --
           + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
           + (target.Effects and target.Effects:Any() and 1 or 0) --
           + (target.Enables and target.Enables:Any() and 1 or 0) --
