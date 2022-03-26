@@ -447,6 +447,11 @@ function Class:GetFuelsPanel(target, headerSprites, tooltip)
     }
 end
 
+function Class:GetPropertiesPanel(target)
+    if not target or not target:Any() then return {} end
+    return {Spritor:GetLinePart(target, nil, nil, {"ingteb-utility.properties"})}
+end
+
 function Class:GetRecipePanel(target)
     if not target.IsRecipe then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
@@ -647,6 +652,28 @@ function Class:Open(target)
     log("opening Target = " .. target.CommonKey .. " ok.")
 end
 
+local function PlaceProperties(targets)
+    if #targets.CreatedBy > 0 then
+        targets.CreatedBy[1] = {
+            type = "flow",
+            direction = "vertical",
+            name = "properties&createdBy",
+            children = {targets.Properties[1], targets.CreatedBy[1]},
+        }
+        targets.Properties = {}
+    end
+end
+
+local function CreateMainPanel(rawTargets)
+    local targets = Dictionary.Clone(rawTargets)
+    if #rawTargets.Properties > 0 then
+        PlaceProperties(targets)
+    end
+    local lists = targets:ToArray()
+    dassert(lists:All(function(item) return #item < 2 end))
+    return lists:ConcatMany()
+end
+
 function Class:GetGui(target)
     target:SortAll()
     dassert(
@@ -662,8 +689,8 @@ function Class:GetGui(target)
 
     local columnCount --
     = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
-          + (target.IsRecipe and 1 or 0) --
-          + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
+    + (target.IsRecipe and 1 or 0) --
+    + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
           + (target.Effects and target.Effects:Any() and 1 or 0) --
           + (target.Enables and target.Enables:Any() and 1 or 0) --
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
@@ -702,48 +729,44 @@ function Class:GetGui(target)
                         type = columnCount > 1 and "frame" or "flow",
                         direction = "horizontal",
                         name = "frame",
-                        children = Array:new{
-                            GetTechnologiesPanel(
+                        children = CreateMainPanel {
+                            ResearchingTechnologies = GetTechnologiesPanel(
                                 target.ResearchingTechnologies,
                                     target.RichTextName .. "[img=go_to_arrow][img=entity/lab]",
                                     {"ingteb-utility.researching-technologies-for-item"}
                             ),
-                            GetTechnologiesExtendedPanel(
+                            Prerequisites = GetTechnologiesExtendedPanel(
                                 target.Prerequisites, "[img=utility/missing_icon][img=go_to_arrow]"
                                     .. target.RichTextName, true,
                                     {"ingteb-utility.prerequisites-for-technology"}
 
                             ),
-                            GetTechnologyEffectsPanel(target),
-                            self:GetRecipePanel(target),
-                            GetTechnologiesExtendedPanel(
+                            TechnologyEffectsPanel = GetTechnologyEffectsPanel(target),
+                            RecipePanel = self:GetRecipePanel(target),
+                            TechnologiesExtendedPanel = GetTechnologiesExtendedPanel(
                                 target.Enables, target.RichTextName
                                     .. "[img=go_to_arrow][img=utility/missing_icon]", false,
                                     {"ingteb-utility.technologies-enabled"}
 
                             ),
-                            self:GetCraftingGroupsPanel(
+                            RecipeList = self:GetCraftingGroupsPanel(
                                 target.RecipeList,
                                     target.RichTextName .. "[img=utility/change_recipe]",
                                     {"ingteb-utility.recipes-for-worker"}
                             ),
-                            self:GetCraftingGroupsPanel(
+                            CreatedBy = self:GetCraftingGroupsPanel(
                                 target.CreatedBy, "[img=utility/missing_icon][img=go_to_arrow]"
                                     .. target.RichTextName,
                                     {"ingteb-utility.creating-recipes-for-item"}
 
                             ),
-                            self:GetCraftingGroupsPanel(
+                            UsedBy = self:GetCraftingGroupsPanel(
                                 target.UsedBy, target.RichTextName
                                     .. "[img=go_to_arrow][img=utility/missing_icon]",
                                     {"ingteb-utility.consuming-recipes-for-item"}
                             ),
-                            self:GetFuelsPanel(
-                                target.Fuels, target.RichTextName
-                                    .. "[img=go_to_arrow][img=utility/slot_icon_fuel_black]",
-                                    {"ingteb-utility.fuel"}
-                            ),
-                        }:ConcatMany(),
+                            Properties = self:GetPropertiesPanel(target.Properties),
+                        },
 
                     },
                 },

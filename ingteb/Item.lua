@@ -33,6 +33,16 @@ Item.system.Properties = {
         end,
     },
 
+    Properties = {
+        cache = true,
+        get = function(self)
+            return Array:new{
+                self.Fuel and {self.Fuel.Category} or {},
+                self.Entity and self.Entity.Properties or {},
+            }:ConcatMany()
+        end,
+    },
+
     ResearchingTechnologies = {
         cache = true,
         get = function(self)

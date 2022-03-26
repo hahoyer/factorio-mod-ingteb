@@ -44,6 +44,38 @@ Class.system.Properties = {
         end,
     },
 
+    -- not used at the moment
+    EnergySourceProperties = {
+        cache = true,
+        get = function(self)
+            local data = self.Prototype.electric_energy_source_prototype
+                             or self.Prototype.fluid_energy_source_prototype
+                             or self.Prototype.heat_energy_source_prototype
+                             or self.Prototype.void_energy_source_prototype
+            if data then --
+                return --
+            end
+        end,
+    },
+
+    FuelCategories = {
+        cache = true,
+        get = function(self)
+            return self.Categories:Where(
+                function(category) return category.Domain == "burning" end
+            ):ToArray(function (value)
+                return self.Database:GetFuelCategory(value.SubName)
+            end)
+        end,
+    },
+
+    Properties = {
+        cache = true,
+        get = function(self)
+            return self.FuelCategories  or {}
+        end,
+    },
+
     Categories = {
         cache = true,
         get = function(self)

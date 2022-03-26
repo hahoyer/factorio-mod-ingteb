@@ -3,6 +3,7 @@ Version: 0.3.31
 Date: 2022-03-26
   Changes:
     - Show mini-recipe panel for improper recipes also
+    - Show fuel category related information
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.30
 Date: 2022-03-26
