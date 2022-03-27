@@ -1,4 +1,3 @@
-local translation = require("__flib__.translation")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -9,19 +8,26 @@ local class = require("core.class")
 
 local Class = class:new("Category", Common)
 
-local function GetPrototype(domain, category)
+local function GetPrototype(domain, subName)
     if domain == "crafting" then
-        return game.recipe_category_prototypes[category]
-    elseif category == "steel-axe" then
+        return game.recipe_category_prototypes[subName]
+    elseif subName == "steel-axe" then
         return game.technology_prototypes["steel-axe"]
     elseif domain == "mining" or domain == "fluid-mining" then
-        return game.resource_category_prototypes[category]
+        return game.resource_category_prototypes[subName]
     elseif domain == "boiling" or domain == "researching" then
-        return game.entity_prototypes[category]
+        return game.entity_prototypes[subName]
     elseif domain == "rocket-launch" then
         return game.entity_prototypes["rocket-silo-rocket"]
     elseif domain == "burning" then
-        return game.fuel_category_prototypes[category]
+        return game.fuel_category_prototypes[subName]
+    elseif domain == "fluid-burning" then
+        dassert(subName == "fluid")
+        return {
+            name = "fluid-burning",
+            localised_name = {"ingteb-utility.fluid-fuel-category"},
+            localised_description = {"ingteb-utility.fluid-fuel-category"},
+        }
     else
         dassert()
     end
@@ -88,7 +94,7 @@ Class.system.Properties = {
     LineSprite = {
         cache = true,
         get = function(self)
-            if self.Domain == "burning" then
+            if self.Domain == "burning" or self.Domain == "fluid-burning" then
                 return "utility/slot_icon_fuel_black"
             else
                 return "utility/change_recipe"
@@ -111,7 +117,7 @@ Class.system.Properties = {
                         return self.Database:GetMiningRecipe(recipe.name)
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(recipe.name, self.Prototype)
-                    elseif self.Domain == "burning" then
+                    elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
                         return self.Database:GetBurningRecipe(nil, recipe)
                     elseif self.Domain == "rocket-launch" then
                         return self.Database:GetRocketLaunchRecipe(nil, recipe)
@@ -154,22 +160,6 @@ Class.system.Properties = {
     },
 }
 
-function Class:GetRecipe(recipeName)
-    if self.Domain == "crafting" then
-        return self.Database:GetRecipe(recipeName)
-    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining" then
-        return self.Database:GetMiningRecipe(recipeName)
-    elseif self.Domain == "boiling" then
-        return self.Database:GetBoilingRecipe(recipeName)
-    elseif self.Domain == "burning" then
-        return self.Database:GetBurningRecipe(recipeName)
-    elseif self.Domain == "rocket-launch" then
-        return self.Database:GetRocketLaunchRecipe(recipeName)
-    else
-        dassert()
-    end
-end
-
 function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end
 
 function Class:SealUp()
@@ -188,16 +178,16 @@ function Class:AssertValid() end
 function Class:new(name, prototype, database)
     dassert(name)
 
-    local _, _, domain, category = name:find("^(.-)%.(.*)$")
+    local _, _, domain, subName = name:find("^(.-)%.(.*)$")
 
     local self = self:adopt(
         self.system.BaseClass:new(
-            prototype or GetPrototype(domain, category), database
+            prototype or GetPrototype(domain, subName), database
         )
     )
 
     self.Domain = domain
-    self.SubName = category
+    self.SubName = subName
     self.Name = self.Domain .. "." .. self.SubName
     return self
 

@@ -12,7 +12,7 @@ FuelCategory.system.Properties = {
         cache = true,
         get = function(self)
             return self.Database.ItemsForFuelCategory[self.Name] --
-            :Select(function(item) return self.Database:GetItem(nil, item) end)
+            :Select(function(fuel) return self.Database:Get(fuel) end)
         end,
     },
     SpriteName = {
@@ -23,8 +23,7 @@ FuelCategory.system.Properties = {
             if game.is_valid_sprite_path(result) then return result end
             local item = self.Fuels:Top()
             if item then
-                result = "item." .. self.Fuels:Top(false).Prototype.name
-                return result
+                return item.SpriteName
             end
 
             log {
@@ -57,14 +56,20 @@ FuelCategory.system.Properties = {
 function FuelCategory:new(name, prototype, database)
     dassert(name)
 
+    if name == "fluid" and not prototype then
+        prototype = {
+            name = name,
+            localised_name = {"ingteb-utility.fluid-fuel-category"},
+            localised_description = {"ingteb-utility.fluid-fuel-category"},
+        }
+    end
+
     local self = self:adopt(
         self.system.BaseClass:new(
             prototype or game.fuel_category_prototypes[name], database
         )
     )
 
-    dassert(self.Prototype.object_name == "LuaFuelCategoryPrototype")
-    self.Name = name
     self.SpriteType = "fuel-category"
 
     function self:SortAll() end

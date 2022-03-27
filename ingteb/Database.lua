@@ -118,6 +118,8 @@ function Class:Ensure()
     for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
     log("database scan items ...")
     for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
+    log("database scan fluids ...")
+    for _, prototype in pairs(game.fluid_prototypes) do self:ScanFluid(prototype) end
     log("database scan entities ...")
     for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
 
@@ -146,6 +148,20 @@ function Class:GetProxyFromCommonKey(targetKey)
     local _, _, className, prototypeName = targetKey:find("^(.-)%.(.*)$")
     local result = self:GetProxy(className, prototypeName)
     return result
+end
+
+function Class:GetProxyFromPrototype(prototype)
+    self:Ensure()
+    local objectType = prototype.object_name
+    if objectType == "LuaFluidPrototype" then
+        return self:GetFluid(nil, prototype)
+    elseif objectType == "LuaItemPrototype" then
+        return self:GetItem(nil, prototype)
+    elseif objectType == "LuaEntityPrototype" then
+        return self:GetEntity(nil, prototype)
+    else
+        dassert(false)
+    end
 end
 
 function Class:GetProxy(className, name, prototype)
@@ -226,13 +242,6 @@ function Class:AddRecipesForCategory(categoryName, prototype)
     self.CategoryNames[categoryName] = true
 end
 
-local function EnsureRecipeCategory(result, side, name, categoryName)
-    local itemData = EnsureKey(result, name)
-    local sideData = EnsureKey(itemData, side, Dictionary:new())
-    local categoryData = EnsureKey(sideData, categoryName, Array:new())
-    return categoryData
-end
-
 local function EnsureRecipeForItem(result, itemName, recipe)
     EnsureKey(result, itemName, Array:new{}):Append(recipe)
 end
@@ -295,6 +304,10 @@ end
 
 function Class:ScanEntity(prototype)
     -- if prototype.type == "assembling-machine" or prototype.type == "furnace" then __DebugAdapter.breakpoint() end
+
+    if prototype.fluid_energy_source_prototype then
+        self:AddWorkerForCategory("fluid-burning.fluid", prototype)
+    end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting." .. category, prototype)
@@ -384,12 +397,20 @@ function Class:ScanTechnology(prototype)
 
 end
 
-function Class:ScanItem(prototype)
-    if prototype.fuel_category then
-        EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
-        local categoryName = "burning." .. prototype.fuel_category
+function Class:ScanFuel(prototype, domainName, subName)
+    if prototype.fuel_value and prototype.fuel_value > 0 then
+        local subName = subName or "~"
+        EnsureKey(self.ItemsForFuelCategory, subName, Array:new()):Append(prototype)
+        local categoryName = domainName .. "." .. subName
         self:AddRecipesForCategory(categoryName, prototype)
     end
+end
+
+function Class:ScanFluid(prototype) self:ScanFuel(prototype, "fluid-burning", "fluid") end
+
+function Class:ScanItem(prototype)
+    self:ScanFuel(prototype, "burning", prototype.fuel_category)
+
     if prototype.burnt_result and not prototype.fuel_category then
         log {
             "mod-issue.burnt-result-without-fuel-category",
@@ -399,6 +420,7 @@ function Class:ScanItem(prototype)
             prototype.burnt_result.type .. "." .. prototype.burnt_result.name,
         }
     end
+
     if #prototype.rocket_launch_products > 0 then
         self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)
     end
@@ -426,11 +448,13 @@ end
 function Class:CreateStackFromGoods(goods, amounts) return StackOfGoods:new(goods, amounts, self) end
 
 function Class:Get(target)
-    local className, Name
+    local className, name, prototype
     if not target or target == "" then
         return
     elseif type(target) == "string" then
         return self:GetProxyFromCommonKey(target)
+    elseif target.object_name then
+        return self:GetProxyFromPrototype(target)
     elseif target.type then
         if target.type == "item" then
             className = "Item"
@@ -439,20 +463,20 @@ function Class:Get(target)
         else
             dassert()
         end
-        Name = target.name
+        name = target.name
     else
         className = target.class.name
-        Name = target.Name
-        Prototype = target.Prototype
+        name = target.Name
+        prototype = target.Prototype
     end
     self:Ensure()
     dassert(className)
-    dassert(Name or Prototype)
-    return self:GetProxy(className, Name, Prototype)
+    dassert(name or prototype)
+    return self:GetProxy(className, name, prototype)
 end
 
 function Class:GetFromSelection(target)
-    local className
+    local className, prototype
     local name = target.name
     if target.base_type == "item" then
         className = "Item"
@@ -469,8 +493,8 @@ function Class:GetFromSelection(target)
     end
     self:Ensure()
     dassert(className)
-    dassert(name or Prototype)
-    return self:GetProxy(className, name, Prototype)
+    dassert(name or prototype)
+    return self:GetProxy(className, name, prototype)
 end
 
 function Class:BeginMulipleQueueResearch(target, setting)

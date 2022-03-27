@@ -62,8 +62,11 @@ Class.system.Properties = {
         cache = true,
         get = function(self)
             return self.Categories --
-            :Where(function(category) return category.Domain == "burning" end) --
-            :ToArray(function(value) return self.Database:GetFuelCategory(value.SubName) end)
+            :Where(function(category) return category.Domain == "burning" or category.Domain == "fluid-burning" end) --
+            :ToArray(function(category) 
+                local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
+                return self.Database:GetFuelCategory(name) 
+            end)
         end,
     },
 
@@ -154,7 +157,7 @@ Class.system.Properties = {
 function Class:SortAll() end
 
 function Class:GetNumberOnSprite(category)
-    if category.Domain == "burning" then
+    if category.Domain == "burning" or category.Domain == "fluid-burning" then
         return self.Prototype.max_energy_usage * 60 / category.EnergyUsagePerSecond
     elseif category.Domain == "boiling" then
         return self.Prototype.target_temperature

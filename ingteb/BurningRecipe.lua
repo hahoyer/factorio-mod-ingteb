@@ -34,16 +34,19 @@ function Class:new(name, prototype, database)
     dassert(prototype)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = prototype.name
-    self.SpriteType = "item"
+    self.IsFluid = prototype.object_name == "LuaFluidPrototype"
     self.IsHidden = true
     self.IsRecipe = true
-    self.Category = self.Database:GetCategory("burning." .. prototype.fuel_category)
+    self.SpriteType = self.IsFluid and "fluid" or "item"
+
+    local categoryName = self.IsFluid and "fluid-burning.fluid" or "burning."
+                             .. prototype.fuel_category
+    self.Category = self.Database:GetCategory(categoryName)
     self.FuelValue = prototype.fuel_value
     self.TypeStringForLocalisation = "ingteb-utility.title-burning-recipe"
 
-    local input = prototype
-    self.RawInput = {{type = input.type, amount = 1, name = input.name}}
-    local output = prototype.burnt_result
+    self.RawInput = {{type = self.IsFluid and "fluid" or "item", amount = 1, name = prototype.name}}
+    local output = not self.IsFluid and prototype.burnt_result
     if output then
         self.RawOutput = {{type = output.type, amount = 1, name = output.name}}
     else
