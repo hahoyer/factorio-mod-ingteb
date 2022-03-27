@@ -81,9 +81,18 @@ Class.system.Properties = {
     IsAutomatic = {
         cache = true,
         get = function(self)
-            return self.Workers:Any(function(worker) 
-                return worker.HasAutomaticRecipes 
-            end)
+            return self.Workers:Any(function(worker) return worker.HasAutomaticRecipes end)
+        end,
+    },
+
+    LineSprite = {
+        cache = true,
+        get = function(self)
+            if self.Domain == "burning" then
+                return "utility/slot_icon_fuel_black"
+            else
+                return "utility/change_recipe"
+            end
         end,
     },
 
@@ -94,7 +103,7 @@ Class.system.Properties = {
             local result = recipeList --
             :Select(
                 function(recipe)
-                    if self.Domain == "crafting" then 
+                    if self.Domain == "crafting" then
                         if recipe.hidden and not self.IsAutomatic then return end
                         return self.Database:GetRecipe(nil, recipe)
                     elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
@@ -121,12 +130,28 @@ Class.system.Properties = {
         get = function(self) --
             dassert(self.IsSealed)
             local rawResult = self.OriginalWorkers --
-            :Select(function(worker) return worker.Prototype.max_energy_usage end) --
+            :Select(
+                function(worker)
+                    local result = worker.Prototype.max_energy_usage
+                    dassert(result and result > 0)
+                    return result
+                end
+            ) --
             :Minimum()
             if rawResult then return rawResult * 60 end
         end,
     },
 
+    Speed = {
+        cache = true,
+        get = function(self) --
+            dassert(self.IsSealed)
+            dassert(self.Domain == "rocket-launch")
+            return self.OriginalWorkers --
+            :Select(function(worker) return worker.Speed end) --
+            :Minimum()
+        end,
+    },
 }
 
 function Class:GetRecipe(recipeName)
@@ -170,6 +195,7 @@ function Class:new(name, prototype, database)
             prototype or GetPrototype(domain, category), database
         )
     )
+
     self.Domain = domain
     self.SubName = category
     self.Name = self.Domain .. "." .. self.SubName

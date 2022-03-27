@@ -32,7 +32,7 @@ Class.system.Properties = {
 function Class:new(name, prototype, database)
     dassert(name == nil)
     dassert(prototype)
-    local self = self:adopt(self.system.BaseClass:new(prototype.burnt_result, database))
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = prototype.name
     self.SpriteType = "item"
     self.IsHidden = true
@@ -44,8 +44,11 @@ function Class:new(name, prototype, database)
     local input = prototype
     self.RawInput = {{type = input.type, amount = 1, name = input.name}}
     local output = prototype.burnt_result
-    self.RawOutput = {{type = output.type, amount = 1, name = output.name}}
-
+    if output then
+        self.RawOutput = {{type = output.type, amount = 1, name = output.name}}
+    else
+        self.RawOutput = {}
+    end
     function self:IsBefore(other)
         if self == other then return false end
         return self.OrderValue < other.OrderValue

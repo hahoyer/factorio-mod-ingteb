@@ -61,20 +61,13 @@ Class.system.Properties = {
     FuelCategories = {
         cache = true,
         get = function(self)
-            return self.Categories:Where(
-                function(category) return category.Domain == "burning" end
-            ):ToArray(function (value)
-                return self.Database:GetFuelCategory(value.SubName)
-            end)
+            return self.Categories --
+            :Where(function(category) return category.Domain == "burning" end) --
+            :ToArray(function(value) return self.Database:GetFuelCategory(value.SubName) end)
         end,
     },
 
-    Properties = {
-        cache = true,
-        get = function(self)
-            return self.FuelCategories  or {}
-        end,
-    },
+    Properties = {cache = true, get = function(self) return self.FuelCategories or {} end},
 
     Categories = {
         cache = true,
@@ -147,24 +140,32 @@ Class.system.Properties = {
         end,
     },
 
-    NumberOnSprite = {
-        get = function(self)
-            return self.Prototype.mining_speed --
-            or self.Prototype.crafting_speed -- 
-            or self.Prototype.researching_speed -- 
-            or self.Prototype.target_temperature -- 
+    Speed = {
+        cache = true,
+        get = function(self) --
+            local result = 60.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time) 
+            dassert(result and result > 0)
+            return result
         end,
     },
-
 }
+
 
 function Class:SortAll() end
 
 function Class:GetNumberOnSprite(category)
-    local result = self.NumberOnSprite
-    if result then return result end
-    if self.Prototype.type == "reactor" then
+    if category.Domain == "burning" then
         return self.Prototype.max_energy_usage * 60 / category.EnergyUsagePerSecond
+    elseif category.Domain == "boiling" then
+        return self.Prototype.target_temperature
+    elseif category.Domain == "crafting" then
+        return self.Prototype.crafting_speed
+    elseif category.Domain == "mining" or category.Domain == "fluid-mining" then
+        return self.Prototype.mining_speed
+    elseif category.Domain == "rocket-launch" then
+        return self.Speed / category.Speed
+    else
+        dassert(false)
     end
 end
 
@@ -194,6 +195,7 @@ function Class:new(name, prototype, database)
         self.TypeStringForLocalisation = "ingteb-utility.title-entity"
     end
     return self
+
 
 end
 

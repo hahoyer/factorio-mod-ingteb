@@ -9,7 +9,7 @@ local Goods = class:new("Goods", Common)
 
 Goods.system.Properties = {
     OriginalRecipeList = {
-        get = function(self) return self.Entity and self.Entity.RecipeList or Array:new{} end,
+        get = function(self) return self.Entity and self.Entity.RecipeList or Dictionary:new{} end,
     },
 
     OriginalUsedBy = {

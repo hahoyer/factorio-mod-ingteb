@@ -19,6 +19,7 @@ Class.system.Properties = {
             .. " " .. self.Prototype.order
         end,
     },
+    Time = {cache = true, get = function(self) return 1.0 / self.Category.Speed end},
 }
 
 function Class:new(name, prototype, database)
@@ -28,7 +29,6 @@ function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(outputPrototype, database))
     self.Name = prototype.name
     self.SpriteType = "item"
-    -- self.Time = 1
     self.IsRecipe = true
     self.IsHidden = true
     self.Category = self.Database:GetCategory("rocket-launch.rocket-launch")

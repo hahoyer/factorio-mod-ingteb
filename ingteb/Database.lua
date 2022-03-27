@@ -313,9 +313,17 @@ function Class:ScanEntity(prototype)
     end
 
     if prototype.burner_prototype then
-        for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
-            EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
-            self:AddWorkerForCategory("burning." .. category, prototype)
+        if prototype.burner_prototype.fuel_inventory_size > 0 then
+            for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
+                EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
+                self:AddWorkerForCategory("burning." .. category, prototype)
+            end
+        else
+            log {
+                "mod-issue.burner-without-fuel-inventory",
+                prototype.localised_name,
+                prototype.type .. "." .. prototype.name,
+            }
         end
     end
 
@@ -379,20 +387,17 @@ end
 function Class:ScanItem(prototype)
     if prototype.fuel_category then
         EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
+        local categoryName = "burning." .. prototype.fuel_category
+        self:AddRecipesForCategory(categoryName, prototype)
     end
-    if prototype.burnt_result then
-        if prototype.fuel_category then
-            local categoryName = "burning." .. prototype.fuel_category
-            self:AddRecipesForCategory(categoryName, prototype)
-        else
-            log {
-                "mod-issue.burnt-result-without-fuel-category",
-                prototype.localised_name,
-                prototype.type .. "." .. prototype.name,
-                prototype.burnt_result.localised_name,
-                prototype.burnt_result.type .. "." .. prototype.burnt_result.name,
-            }
-        end
+    if prototype.burnt_result and not prototype.fuel_category then
+        log {
+            "mod-issue.burnt-result-without-fuel-category",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+            prototype.burnt_result.localised_name,
+            prototype.burnt_result.type .. "." .. prototype.burnt_result.name,
+        }
     end
     if #prototype.rocket_launch_products > 0 then
         self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)

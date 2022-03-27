@@ -1,9 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.31
-Date: 2022-03-26
+Date: 2022-03-27
   Changes:
-    - Show mini-recipe panel for improper recipes also
-    - Show fuel category related information
+    - show mini-recipe panel for improper recipes also
+    - show fuel category related information
+    - speed information on worker sprites improved
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.30
 Date: 2022-03-26

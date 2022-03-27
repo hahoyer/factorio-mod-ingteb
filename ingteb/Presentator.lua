@@ -138,7 +138,7 @@ function Class:GetWorkersPanel(category, columnCount)
             if position == 0 then
                 workersPanelData:Append{
                     type = "sprite",
-                    sprite = "utility/change_recipe",
+                    sprite = category.LineSprite,
                     tooltip = category:GetHelperText("Presentator"),
                     actions = {
                         on_click = {
@@ -666,9 +666,7 @@ end
 
 local function CreateMainPanel(rawTargets)
     local targets = Dictionary.Clone(rawTargets)
-    if #rawTargets.Properties > 0 then
-        PlaceProperties(targets)
-    end
+    if #rawTargets.Properties > 0 then PlaceProperties(targets) end
     local lists = targets:ToArray()
     dassert(lists:All(function(item) return #item < 2 end))
     return lists:ConcatMany()
@@ -696,7 +694,7 @@ function Class:GetGui(target)
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
           + (target.ResearchingTechnologies and target.ResearchingTechnologies:Any() and 1 or 0) --
-          + (target.Fuels and target.Fuels:Any() and 1 or 0) --
+          + (target.Properties and target.Properties:Any() and 1 or 0) --
 
     local children
     if columnCount == 0 then
@@ -754,6 +752,7 @@ function Class:GetGui(target)
                                     target.RichTextName .. "[img=utility/change_recipe]",
                                     {"ingteb-utility.recipes-for-worker"}
                             ),
+                            Properties = self:GetPropertiesPanel(target.Properties),
                             CreatedBy = self:GetCraftingGroupsPanel(
                                 target.CreatedBy, "[img=utility/missing_icon][img=go_to_arrow]"
                                     .. target.RichTextName,
@@ -765,7 +764,6 @@ function Class:GetGui(target)
                                     .. "[img=go_to_arrow][img=utility/missing_icon]",
                                     {"ingteb-utility.consuming-recipes-for-item"}
                             ),
-                            Properties = self:GetPropertiesPanel(target.Properties),
                         },
 
                     },

@@ -6,11 +6,9 @@ It is a tribute to the help system of Evospace. I hope factorio players will lik
 The remidor panel is inspired by the one from Satisfactory. 
 
 ###todo: *(please feel free to rate)*
-- selection from multi-item-entities
 - copy recipe *(See no way do this. Help welcome)*
 - provide information on recipe-combinations
 - help on modules
-- help on fuel consumption (see also https://mods.factorio.com/mod/ingteb/discussion/62349f746e0bcc86993ee892)
 - multiplayer 
 - involve achievements
 - machine-column for labs
@@ -29,7 +27,6 @@ The remidor panel is inspired by the one from Satisfactory.
 - ... *more suggestions?*
 
 ###known issue: 
-- the displayed speed for a worker depends on request (for instance mining or crafting)
 - Large recipe columns are jerky during handcrafts or research completion 
 - When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. (As a workaround, you can temporarily use the replacement mod [Improved Research Queue with interface](https://mods.factorio.com/mod/sonaxaton-research-queue-with-interface) instead of [Improved Research Queue](https://mods.factorio.com/mod/sonaxaton-research-queue).)
 
