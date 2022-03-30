@@ -165,10 +165,10 @@ local Class = class:new(
         NotResearchedPrerequisitesRaw = {
             cache = true,
             get = function(self)
-                dlog(self.CommonKey .. ">>>")
-                local oldIndent = AddIndent()
                 local result = Dictionary:new{}
                 if self.IsResearched then return result end
+                dlog(self.CommonKey .. ">>>")
+                local oldIndent = AddIndent()
                 for _, technology in pairs(self.Prerequisites) do
                     local prerequisites = technology.NotResearchedPrerequisitesRaw
                     result:AppendMany(prerequisites)
