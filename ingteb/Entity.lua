@@ -145,9 +145,9 @@ Class.system.Properties = {
     HasAutomaticRecipes = {
         cache = true,
         get = function(self)
-            if self.Prototype.type == "furnace" or self.Prototype.type == "rocket-silo" then
-                return true
-            end
+            local prototype = self.Prototype
+            return prototype.type == "furnace" or prototype.type == "rocket-silo"
+                       or prototype.fixed_recipe ~= nil
         end,
     },
 

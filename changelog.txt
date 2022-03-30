@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.31
 Date: 2022-03-27
+  Bugfixes:
+    - fixing that fixed recipes are not presented anymore.
   Changes:
     - show mini-recipe panel for improper recipes also
     - show fuel category related information
