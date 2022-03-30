@@ -6,6 +6,7 @@ Date: 2022-03-27
     - show fuel category related information
     - speed information on worker sprites improved
     - show fluid fuel categories and their burners
+    - show information concerning modules
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.30
 Date: 2022-03-26

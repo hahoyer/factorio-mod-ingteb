@@ -202,6 +202,15 @@ local Class = class:new(
     }
 )
 
+function Class:CreatePrototype(type, name)
+    return {
+        type = type,
+        name = name,
+        localised_name = {"ingteb-name."..type.."-"..name},
+        localised_description = {"ingteb-descrition."..type.."-"..name},
+    }
+end
+
 function Class:IsBefore(other)
     if self == other then return false end
     if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end

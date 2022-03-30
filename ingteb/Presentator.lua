@@ -447,9 +447,21 @@ function Class:GetFuelsPanel(target, headerSprites, tooltip)
     }
 end
 
-function Class:GetPropertiesPanel(target)
+function Class:GetUsefulLinksPanel(target)
     if not target or not target:Any() then return {} end
-    return {Spritor:GetLinePart(target, nil, nil, {"ingteb-utility.properties"})}
+    local children = target --
+    :Select(
+        function(group)
+            return Spritor:GetLinePart(group, nil, nil, {"ingteb-utility.properties"})
+        end
+    )
+    if #children == 1 then return children end
+    return {{
+        type = "flow",
+        name = "GetUsefulLinksPanel " .. GetNextId(),
+        direction = "vertical",
+        children = children,
+    }}
 end
 
 function Class:GetRecipePanel(target)
@@ -652,21 +664,21 @@ function Class:Open(target)
     log("opening Target = " .. target.CommonKey .. " ok.")
 end
 
-local function PlaceProperties(targets)
+local function PlaceUsefulLinks(targets)
     if #targets.CreatedBy > 0 then
         targets.CreatedBy[1] = {
             type = "flow",
             direction = "vertical",
             name = "properties&createdBy",
-            children = {targets.Properties[1], targets.CreatedBy[1]},
+            children = {targets.CreatedBy[1], targets.UsefulLinks[1]},
         }
-        targets.Properties = {}
+        targets.UsefulLinks = {}
     end
 end
 
 local function CreateMainPanel(rawTargets)
     local targets = Dictionary.Clone(rawTargets)
-    if #rawTargets.Properties > 0 then PlaceProperties(targets) end
+    if #rawTargets.UsefulLinks > 0 then PlaceUsefulLinks(targets) end
     local lists = targets:ToArray()
     dassert(lists:All(function(item) return #item < 2 end))
     return lists:ConcatMany()
@@ -694,7 +706,7 @@ function Class:GetGui(target)
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
           + (target.ResearchingTechnologies and target.ResearchingTechnologies:Any() and 1 or 0) --
-          + (target.Properties and target.Properties:Any() and 1 or 0) --
+          + (target.UsefulLinks and target.UsefulLinks:Any() and 1 or 0) --
 
     local children
     if columnCount == 0 then
@@ -752,7 +764,7 @@ function Class:GetGui(target)
                                     target.RichTextName .. "[img=utility/change_recipe]",
                                     {"ingteb-utility.recipes-for-worker"}
                             ),
-                            Properties = self:GetPropertiesPanel(target.Properties),
+                            UsefulLinks = self:GetUsefulLinksPanel(target.UsefulLinks),
                             CreatedBy = self:GetCraftingGroupsPanel(
                                 target.CreatedBy, "[img=utility/missing_icon][img=go_to_arrow]"
                                     .. target.RichTextName,

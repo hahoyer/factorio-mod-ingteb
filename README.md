@@ -8,7 +8,6 @@ The remidor panel is inspired by the one from Satisfactory.
 ###todo: *(please feel free to rate)*
 - copy recipe *(See no way do this. Help welcome)*
 - provide information on recipe-combinations
-- help on modules
 - multiplayer 
 - involve achievements
 - machine-column for labs

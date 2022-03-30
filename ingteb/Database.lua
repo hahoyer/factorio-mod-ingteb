@@ -20,6 +20,8 @@ local Proxy = {
     Recipe = require("ingteb.Recipe"),
     RocketLaunchRecipe = require("ingteb.RocketLaunchRecipe"),
     Technology = require("ingteb.Technology"),
+    ModuleCategory = require("ingteb.ModuleCategory"),
+    ModuleEffect = require("ingteb.ModuleEffect"),
 }
 ---comment
 ---@param data table
@@ -79,7 +81,9 @@ function Class:Ensure()
         Item = 7,
         Fluid = 8,
         FuelCategory = 9,
-        StackOfGoods = 10,
+        ModuleCategory = 10,
+        ModuleEffect = 11,
+        StackOfGoods = 12,
     }
 
     self.IsInitialized = "pending"
@@ -97,20 +101,10 @@ function Class:Ensure()
     self.EntitiesForBurnersFuel = {}
     self.WorkersForCategory = Dictionary:new{}
     self.Resources = {}
-    self.Proxies = {
-        BoilingRecipe = Dictionary:new{},
-        Bonus = Dictionary:new{},
-        BurningRecipe = Dictionary:new{},
-        Category = Dictionary:new{},
-        Entity = Dictionary:new{},
-        Fluid = Dictionary:new{},
-        FuelCategory = Dictionary:new{},
-        Item = Dictionary:new{},
-        MiningRecipe = Dictionary:new{},
-        Recipe = Dictionary:new{},
-        RocketLaunchRecipe = Dictionary:new{},
-        Technology = Dictionary:new{},
-    }
+    self.ItemsForModuleEffects = {}
+    self.ItemsForModuleCategory = {}
+    self.EntitiesForModuleEffects = {}
+    self.Proxies = {}
 
     log("database scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
@@ -124,13 +118,9 @@ function Class:Ensure()
     for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
 
     log("database special things...")
-
-    log("database initialize categories...")
     self.CategoryNames:Select(
         function(value, categoryName) return value and self:GetCategory(categoryName) end
     )
-
-    log("database initialize fuel-categories...")
     for name, prototype in pairs(game.fuel_category_prototypes) do
         EnsureKey(self.ItemsForFuelCategory, name, Array:new())
     end
@@ -165,7 +155,7 @@ function Class:GetProxyFromPrototype(prototype)
 end
 
 function Class:GetProxy(className, name, prototype)
-    local data = self.Proxies[className]
+    local data = EnsureKey(self.Proxies, className, Dictionary:new()) 
     local key = name or prototype.name
 
     local result = data[key]
@@ -187,6 +177,12 @@ function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, p
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
 function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+function Class:GetModuleCategory(name, prototype)
+    return self:GetProxy("ModuleCategory", name, prototype)
+end
+function Class:GetModuleEffect(name, prototype)
+    return self:GetProxy("ModuleEffect", name, prototype)
+end
 
 function Class:GetMiningRecipe(name, prototype) --
     return self:GetProxy("MiningRecipe", name, prototype)
@@ -376,6 +372,9 @@ function Class:ScanEntity(prototype)
         self:AddWorkerForCategory("hand-mining.steel-axe", prototype)
     end
 
+    for name, value in pairs(prototype.allowed_effects or {}) do
+        EnsureKey(self.EntitiesForModuleEffects, name, Array:new()):Append(prototype)
+    end
 end
 
 function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
@@ -423,6 +422,14 @@ function Class:ScanItem(prototype)
 
     if #prototype.rocket_launch_products > 0 then
         self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)
+    end
+
+    for name in pairs(prototype.module_effects or {}) do
+        EnsureKey(self.ItemsForModuleEffects, name, Array:new()):Append(prototype)
+    end
+
+    if prototype.category then
+        EnsureKey(self.ItemsForModuleCategory, prototype.category, Array:new()):Append(prototype)
     end
 end
 

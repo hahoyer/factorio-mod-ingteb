@@ -193,7 +193,7 @@ function SelectorCache:IsHidden(type, goods)
         return goods.flags and goods.flags.hidden
     elseif type == "Fluid" then
         return goods.hidden
-        end
+    end
 end
 
 function SelectorCache:EnsureGroups(database)
@@ -204,13 +204,17 @@ function SelectorCache:EnsureGroups(database)
             Item = game.item_prototypes,
             Fluid = game.fluid_prototypes,
             FuelCategory = game.fuel_category_prototypes,
+            ModuleCategory = game.module_category_prototypes,
         }
         for type, domain in pairs(targets) do
             for name, goods in pairs(domain) do
                 if not self:IsHidden(type, goods) then
                     local grouping = --
-                    type == "FuelCategory" and {"fuel-category", "fuel-category"} --
-                        or {goods.group.name, goods.subgroup.name}
+                   
+                        (type == "Item" or type == "Fluid")
+                            and {goods.group.name, goods.subgroup.name} --
+                        or {"other", type}
+
                     local group = EnsureKey(self.Groups, grouping[1], Dictionary:new{})
                     local subgroup = EnsureKey(group, grouping[2], Array:new{})
                     subgroup:Append(database:GetProxy(type, name, goods))

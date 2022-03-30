@@ -43,6 +43,7 @@ Class.system.Properties = {
     },
 
     Sign = {cache = true, get = function(self) return self.Value < 0 and "-" or "" end},
+    AbsoluteValue = {cache = true, get = function(self) return self.Value < 0 and -self.Value or self.Value end},
 
     Unit = {
         cache = true,
@@ -93,6 +94,21 @@ Class.system.Properties = {
         cache = true,
         get = function(self)
             return self.Sign .. self.IntegerPart .. self.Decimals .. self.Unit
+        end,
+    },
+    FormatAsPercent = {
+        cache = true,
+        get = function(self)
+            if self.AbsoluteValue < 0.01 then 
+                return Class:new(self.Value * 1000).Format3Digits .. "%%"
+            end
+            return Class:new(self.Value * 100).Format3Digits .. "%"
+        end,
+    },
+    FormatAsPercentWithSign = {
+        cache = true,
+        get = function(self)
+            return self.Sign .. Class:new(self.AbsoluteValue).FormatAsPercent
         end,
     },
 }

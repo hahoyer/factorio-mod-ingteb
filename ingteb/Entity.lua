@@ -62,15 +62,31 @@ Class.system.Properties = {
         cache = true,
         get = function(self)
             return self.Categories --
-            :Where(function(category) return category.Domain == "burning" or category.Domain == "fluid-burning" end) --
-            :ToArray(function(category) 
-                local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
-                return self.Database:GetFuelCategory(name) 
-            end)
+            :Where(
+                function(category)
+                    return category.Domain == "burning" or category.Domain == "fluid-burning"
+                end
+            ) --
+            :ToArray(
+                function(category)
+                    local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
+                    return self.Database:GetFuelCategory(name)
+                end
+            )
         end,
     },
 
-    Properties = {cache = true, get = function(self) return self.FuelCategories or {} end},
+    UsefulLinks = {
+        cache = true,
+        get = function(self)
+            return Array:new{
+                self.FuelCategories,
+                self.Modules --
+                :Where(function(value) return value end) --
+                :ToArray(function(_, module) return module end),
+            }
+        end,
+    },
 
     Categories = {
         cache = true,
@@ -146,13 +162,36 @@ Class.system.Properties = {
     Speed = {
         cache = true,
         get = function(self) --
-            local result = 60.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time) 
+            local result = 60.0
+                               / (self.Prototype.rocket_rising_delay
+                                   + self.Prototype.launch_wait_time)
             dassert(result and result > 0)
             return result
         end,
     },
-}
 
+    Modules = {
+        cache = true,
+        get = function(self)
+            local result = Dictionary:new()
+            local prototype = self.Prototype
+            for name, value in pairs(prototype.allowed_effects or {}) do
+                local items = self.Database.ItemsForModuleEffects[name]
+                if items then
+                    items:Select(
+                        function(itemPrototype)
+                            local item = self.Database:GetItem(nil, itemPrototype)
+                            if result[item] ~= false then
+                                result[item] = value
+                            end
+                        end
+                    )
+                end
+            end
+            return result
+        end,
+    },
+}
 
 function Class:SortAll() end
 
@@ -197,8 +236,8 @@ function Class:new(name, prototype, database)
     else
         self.TypeStringForLocalisation = "ingteb-utility.title-entity"
     end
-    return self
 
+    return self
 
 end
 

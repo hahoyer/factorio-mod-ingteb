@@ -46,9 +46,9 @@ FuelCategory.system.Properties = {
         end,
     },
 
-    Properties = {
+    UsefulLinks = {
         cache = true,
-        get = function(self) return Array:new{self.Fuels, self.Burners}:ConcatMany() end,
+        get = function(self) return Array:new{self.Fuels, self.Burners} end,
     },
 
 }

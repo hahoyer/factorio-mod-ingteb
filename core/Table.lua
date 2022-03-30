@@ -92,15 +92,17 @@ function Dictionary:Sum(predicate)
     return result
 end
 
-function Dictionary:Maximum()
+function Dictionary:Maximum(selector)
     local result
-    for key, value in pairs(self) do if not result or result < value then result = value end end
+    if not selector then selector = function (value) return value end end
+    for key, value in pairs(self) do if not result or selector(result) < selector(value)then result = value end end
     return result
 end
 
-function Dictionary:Minimum()
+function Dictionary:Minimum(selector)
     local result
-    for key, value in pairs(self) do if not result or result > value then result = value end end
+    if not selector then selector = function (value) return value end end
+    for key, value in pairs(self) do if not result or selector(result) > selector(value) then result = value end end
     return result
 end
 
@@ -112,15 +114,17 @@ function Array:Sum(predicate)
     return result
 end
 
-function Array:Maximum()
+function Array:Maximum(selector)
     local result
-    for key, value in ipairs(self) do if not result or result < value then result = value end end
+    if not selector then selector = function (value) return value end end
+    for key, value in ipairs(self) do if not result or selector(result) < selector(value) then result = value end end
     return result
 end
 
-function Array:Minimum()
+function Array:Minimum(selector)
     local result
-    for key, value in ipairs(self) do if not result or result > value then result = value end end
+    if not selector then selector = function (value) return value end end
+    for key, value in ipairs(self) do if not result or selector(result) > selector(value) then result = value end end
     return result
 end
 

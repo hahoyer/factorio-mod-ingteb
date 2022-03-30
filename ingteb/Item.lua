@@ -33,13 +33,19 @@ Item.system.Properties = {
         end,
     },
 
-    Properties = {
+    UsefulLinks = {
         cache = true,
         get = function(self)
-            return Array:new{
-                self.Fuel and {self.Fuel.Category} or {},
-                self.Entity and self.Entity.Properties or {},
-            }:ConcatMany()
+            local result = Array:new{}
+
+            if self.Fuel then result:Append(self.Fuel.Category) end
+            if self.Entity then result:AppendMany(self.Entity.UsefulLinks) end
+
+            local moduleTargets = self.ModuleTargets --
+            :Where(function(value) return value end) --
+            :ToArray(function(_, module) return module end)
+            if moduleTargets:Any() then result:Append(moduleTargets) end
+            return result
         end,
     },
 
@@ -79,6 +85,9 @@ Item.system.Properties = {
                 )
             end
 
+            if self.ModuleEffectsHelp then 
+                result:AppendMany(self.ModuleEffectsHelp)
+            end
             return result
         end,
     },
@@ -140,11 +149,49 @@ Item.system.Properties = {
     },
 
     IsRefreshRequired = {get = function(self) return {MainInventory = true} end},
+
+    ModuleEffectsHelp = {
+        cache = true,
+        get = function(self)
+            local result = Array:new()
+            local prototype = self.Prototype
+            for name, effect in pairs(prototype.module_effects or {}) do
+                result:Append(self.Database:GetModuleEffect(name):GetEffectHelp(effect))
+            
+            end
+            return result
+        end,
+    },
+
+    ModuleTargets = {
+        cache = true,
+        get = function(self)
+            local result = Dictionary:new()
+            local prototype = self.Prototype
+            for name in pairs(prototype.module_effects or {}) do
+                local entities = self.Database.EntitiesForModuleEffects[name]
+                if entities then
+                    entities:Select(
+                        function(entityPrototype)
+                            local entity = self.Database:GetEntity(nil, entityPrototype)
+                            if result[entity] ~= false then
+                                local modules = entity.Modules
+                                result[entity] = modules[self]
+                            end
+                        end
+                    )
+                end
+            end
+            return result
+        end,
+    },
 }
 
 function Item:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(prototype or game.item_prototypes[name], database)
+        self.system.BaseClass:new(
+            prototype or game.item_prototypes[name], database
+        )
     )
     self.SpriteType = "item"
 
