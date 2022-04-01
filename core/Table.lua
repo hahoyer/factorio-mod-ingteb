@@ -94,15 +94,19 @@ end
 
 function Dictionary:Maximum(selector)
     local result
-    if not selector then selector = function (value) return value end end
-    for key, value in pairs(self) do if not result or selector(result) < selector(value)then result = value end end
+    if not selector then selector = function(value) return value end end
+    for key, value in pairs(self) do
+        if not result or selector(result) < selector(value) then result = value end
+    end
     return result
 end
 
 function Dictionary:Minimum(selector)
     local result
-    if not selector then selector = function (value) return value end end
-    for key, value in pairs(self) do if not result or selector(result) > selector(value) then result = value end end
+    if not selector then selector = function(value) return value end end
+    for key, value in pairs(self) do
+        if not result or selector(result) > selector(value) then result = value end
+    end
     return result
 end
 
@@ -116,15 +120,19 @@ end
 
 function Array:Maximum(selector)
     local result
-    if not selector then selector = function (value) return value end end
-    for key, value in ipairs(self) do if not result or selector(result) < selector(value) then result = value end end
+    if not selector then selector = function(value) return value end end
+    for key, value in ipairs(self) do
+        if not result or selector(result) < selector(value) then result = value end
+    end
     return result
 end
 
 function Array:Minimum(selector)
     local result
-    if not selector then selector = function (value) return value end end
-    for key, value in ipairs(self) do if not result or selector(result) > selector(value) then result = value end end
+    if not selector then selector = function(value) return value end end
+    for key, value in ipairs(self) do
+        if not result or selector(result) > selector(value) then result = value end
+    end
     return result
 end
 
@@ -251,13 +259,15 @@ end
 
 function Dictionary:ToArray(getItem)
     local result = Array:new{}
-    for key, value in pairs(self) do result:Append(getItem and getItem(value, key) or value) end
+    if not getItem then getItem = function(value) return value end end
+    for key, value in pairs(self) do result:Append(getItem(value,key)) end
     return result
 end
 
 function Array:ToArray(getItem)
     local result = Array:new{}
-    for key, value in ipairs(self) do result:Append(getItem and getItem(value, key) or value) end
+    if not getItem then getItem = function(value) return value end end
+    for key, value in ipairs(self) do result:Append(getItem(value,key)) end
     return result
 end
 
@@ -276,9 +286,8 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
         if allowMultiple == false or onMultiple then
             error(
 
-               
-                    onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ").", 1
+                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
+                    .. ").", 1
             )
         end
     end
@@ -296,9 +305,8 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
         if result then
             error(
 
-               
-                    onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ").", 1
+                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
+                    .. ").", 1
             )
         end
         result = {Key = key, Value = value}
@@ -321,9 +329,8 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
         if allowMultiple == false or onMultiple then
             error(
 
-               
-                    onMultiple and onMultiple(#self) or "Array contains more than one element ("
-                        .. #self .. ").", 1
+                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
+                    .. ").", 1
             )
         end
     end

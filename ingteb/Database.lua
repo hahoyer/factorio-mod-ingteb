@@ -119,7 +119,11 @@ function Class:Ensure()
 
     log("database special things...")
     self.CategoryNames:Select(
-        function(value, categoryName) return value and self:GetCategory(categoryName) end
+        function(value, categoryName) 
+            EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
+            EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
+            return self:GetCategory(categoryName) 
+        end
     )
     for name, prototype in pairs(game.fuel_category_prototypes) do
         EnsureKey(self.ItemsForFuelCategory, name, Array:new())
@@ -226,7 +230,8 @@ end
 ---@param category string
 ---@param prototype table LuaEntityPrototype
 function Class:AddWorkerForCategory(categoryName, prototype)
-    EnsureKey(self.WorkersForCategory, categoryName, Array:new{}):Append(prototype)
+    local data = EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
+    data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
 
@@ -234,7 +239,8 @@ end
 ---@param category string
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipesForCategory(categoryName, prototype)
-    EnsureKey(self.RecipesForCategory, categoryName, Array:new{}):Append(prototype)
+    local data = EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
+    data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
 

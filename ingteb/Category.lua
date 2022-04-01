@@ -38,7 +38,7 @@ Class.system.Properties = {
         get = function(self)
             local workers = self.Database.WorkersForCategory[self.Name]
             if workers then
-                return workers:Select(
+                return workers:ToArray(
                     function(worker) return self.Database:GetEntity(nil, worker) end
                 )
             else
@@ -105,9 +105,9 @@ Class.system.Properties = {
     RecipeList = {
         cache = true,
         get = function(self)
-            local recipeList = self.Database.RecipesForCategory[self.Name] or Array:new{} --
+            local recipeList = self.Database.RecipesForCategory[self.Name] --
             local result = recipeList --
-            :Select(
+            :ToArray(
                 function(recipe)
                     if self.Domain == "crafting" then
                         if recipe.hidden and not self.IsAutomatic then return end
