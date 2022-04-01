@@ -38,7 +38,7 @@ Item.system.Properties = {
         get = function(self)
             local result = Array:new{}
 
-            if self.Fuel then result:Append(self.Fuel.Category) end
+            if self.Fuel then result:Append(Array:new{self.Fuel.Category}) end
             if self.Entity then result:AppendMany(self.Entity.UsefulLinks) end
 
             local moduleTargets = self.ModuleTargets --
