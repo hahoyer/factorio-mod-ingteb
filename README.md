@@ -1,9 +1,14 @@
 #Provides an ingame technology browser.
 It is a simple help system. With H (configurable) you get to an item what it is made of and where it is needed. This works in a lot of different places. In the help system you can get more information about the items with one click. 
+Also, you can trigger certain actions directly from the help system. 
+- Research
+- Handcrafting
+- Pipette
+There is a reminder panel with optional automatic research and (hand-)crafting.
 There is also a history.
 
 It is a tribute to the help system of Evospace. I hope factorio players will like it a lot as well.
-The remidor panel is inspired by the one from Satisfactory. 
+The "remidor panel" is inspired by the one from Satisfactory. 
 
 ###todo: *(please feel free to rate)*
 - copy recipe *(See no way do this. Help welcome)*
