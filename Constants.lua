@@ -10,9 +10,9 @@ local result = {
     ModName = modName,
     GlobalPrefix = modName .. "_" .. "GlobalPrefix",
     GraphicsPath = "__" .. modName .. "__/graphics/",
-    RefreshDelay = 10,
     SelectorColumnCount = 12,
     ProductionTimeUnitInTicks = TimeSpan.FromMinutes(1),
+    UpdateCountPerTick = 5,
 }
 
 indent = ""

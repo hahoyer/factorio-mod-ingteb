@@ -90,7 +90,6 @@ local Class = class:new(
                 return result
             end,
         },
-
     }
 )
 
@@ -157,10 +156,9 @@ function Class:AutomaticActions()
 end
 
 function Class:CreatePanel(frame, key, data, isTop, isBottom, required)
-    Spritor:StartCollecting()
     local guiData = self:GetGui(key, data, isTop, isBottom, required)
     local result = gui.build(frame, {guiData})
-    Spritor:RegisterDynamicTargets(result.DynamicElements)
+    self.Parent.Spritor:RegisterDynamicElements(result.DynamicElements)
 end
 
 local function GetDragTooltip(isTop, isBottom)
@@ -200,16 +198,16 @@ function Class:GetGui(key, data, isTop, isBottom, required)
                 },
                 tooltip = GetDragTooltip(isTop, isBottom),
             },
-            Spritor:GetSpriteButtonAndRegister(self.CurrentTarget),
-            Spritor:GetSpriteButtonAndRegister(self.Worker),
-            Spritor:GetSpriteButtonAndRegister(self.Recipe),
+            self.Parent.Spritor:GetSpriteButtonAndRegister(self.CurrentTarget),
+            self.Parent.Spritor:GetSpriteButtonAndRegister(self.Worker),
+            self.Parent.Spritor:GetSpriteButtonAndRegister(self.Recipe),
             {
                 type = "frame",
                 direction = "horizontal",
                 children = {self.SettingsGui:GetGui(required.Settings)},
                 style_mods = {padding = 1},
             },
-            Spritor:GetLinePart(self:GetRequired(data), required.Things),
+            self.Parent.Spritor:GetLinePart(self:GetRequired(data), required.Things),
             {
                 type = "sprite-button",
                 sprite = "close_white",

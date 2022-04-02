@@ -9,16 +9,14 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new(
     "Spritor", nil, {
-        Site = {get = function(self) return self.Parent.class.name end},
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
+        ChangeWatcher = {cache = true, get = function(self) return self.Parent.ChangeWatcher end},
     }
 )
 
-function Class:new(parent)
-    return self:adopt{Parent = parent, DynamicElements = Dictionary:new(), DynamicElementsIndex = 1}
-end
+function Class:new(parent) return self:adopt{Parent = parent} end
 
 function Class:GetSpriteButton(target, sprite, category)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
@@ -37,7 +35,7 @@ function Class:GetSpriteButton(target, sprite, category)
         show_percent_for_small_numbers = target.UsePercentage,
         actions = target.ClickTarget and {
             on_click = {
-                module = self.Site,
+                module = self.Parent.class.name,
                 subModule = self.class.name,
                 action = "Click",
                 key = target.ClickTarget,
@@ -47,39 +45,13 @@ function Class:GetSpriteButton(target, sprite, category)
     }
 end
 
-function Class:StartCollecting()
-    self.DynamicElementsIndex = 1
-    self.DynamicTargets = Array:new()
-    self.DynamicElements = Dictionary:new()
-end
-
 function Class:CreateSprite(frame, target, sprite, category)
     return gui.build(frame, self:GetSpriteButton(target, sprite, category))
 end
 
 function Class:GetHelperText(target)
-    if target.GetHelperText then return target:GetHelperText(self.Site) end
+    if target.GetHelperText then return target:GetHelperText(self.Parent.class.name) end
     return target.HelperText
-end
-
-function Class:CollectForGuiClick(result, target)
-    --    global.Links[self.Site][result.index] = target and target.ClickTarget
-    if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
-        result.ref = {"DynamicElements", self.DynamicElementsIndex}
-        self.DynamicTargets:Append(target)
-        self.DynamicElementsIndex = self.DynamicElementsIndex + 1
-    end
-    return result
-end
-
-function Class:RegisterDynamicTargets(guiElements)
-    if guiElements then
-        self.DynamicTargets:Select(
-            function(target, index)
-                self.DynamicElements:AppendForKey(target, guiElements[index])
-            end
-        )
-    end
 end
 
 function Class:GetSpriteButtonAndRegister(target, sprite, category)
@@ -92,7 +64,7 @@ function Class:CreateSpriteAndRegister(frame, target, sprite)
     return gui.build(frame, self:GetSpriteButtonAndRegister(target, sprite))
 end
 
-function Class:UpdateGui(list, target)
+function Class:UpdateGui(guiElement, target)
     if target.class == StackOfGoods then
         target = StackOfGoods:new(target.Goods, target.Amounts, self.Database)
     else
@@ -102,31 +74,26 @@ function Class:UpdateGui(list, target)
     local number = target.NumberOnSprite
     local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
 
-    for _, guiElement in pairs(list) do
-        if guiElement.valid then
-            guiElement.tooltip = helperText
-            guiElement.number = number
-            guiElement.style = style
-        end
+    if guiElement.valid then
+        guiElement.tooltip = helperText
+        guiElement.number = number
+        guiElement.style = style
     end
 end
 
-function Class:Close()
-    self.DynamicElements = Dictionary:new() --
+function Class:Close() return self.ChangeWatcher:Close(self) end
+function Class:StartCollecting() return self.ChangeWatcher:StartCollecting(self) end
+
+function Class:CollectForGuiClick(result, target)
+    if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
+        local index = self.ChangeWatcher:CollectForGuiClick(self, target)
+        result.ref = {"DynamicElements", index}
+    end
+    return result
 end
 
-function Class:RefreshMainInventoryChanged()
-    self.DynamicElements --
-    :Where(function(_, target) return target.IsRefreshRequired.MainInventory end) --
-    :Select(function(list, target) self:UpdateGui(list, target) end) --
-end
-
-function Class:OnStackChanged() end
-
-function Class:RefreshResearchChanged()
-    self.DynamicElements --
-    :Where(function(_, target) return target.IsRefreshRequired.Research end) --
-    :Select(function(list, target) self:UpdateGui(list, target) end) --
+function Class:RegisterDynamicElements(guiElements)
+    return self.ChangeWatcher:RegisterDynamicElements(self, guiElements)
 end
 
 function Class:GetTiles(count)

@@ -7,15 +7,16 @@ local RemindorTask = require("ingteb.RemindorTask")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local SpritorClass = require("ingteb.Spritor")
 local Task = require("ingteb.RemindorTask")
 local Settings = require("ingteb.RemindorSettings")
+local Spritor = require "ingteb.Spritor"
 
 local Class = class:new(
     "Remindor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
+        ChangeWatcher = {get = function(self) return self.Parent.Modules.ChangeWatcher end},
         AutoResearch = {get = function(self) return self.ParentData.Settings.AutoResearch end},
         AutoCrafting = {get = function(self) return self.ParentData.Settings.AutoCrafting end},
         RemoveTaskWhenFulfilled = {
@@ -40,7 +41,7 @@ local Class = class:new(
 
 function Class:new(parent)
     local self = self:adopt{Parent = parent}
-    Spritor = SpritorClass:new(self)
+    self.Spritor = Spritor:new(self)
     return self
 end
 
@@ -75,7 +76,6 @@ function Class:Close()
     self.Current.destroy()
     self.Current = nil
     self.Tasks = nil
-    Spritor:Close()
 end
 
 function Class:Open()
@@ -120,6 +120,7 @@ function Class:ForceRefresh()
             function(task) return task.IsRelevant end
         )
         if self.Current then
+            self.Spritor:StartCollecting()
             local data = {}
             local required = {Things = 0, Settings = {}}
             self.Global.Remindor.List:Select(function(task) task:ScanRequired(required) end)
@@ -242,21 +243,8 @@ function Class:OnSettingsChanged()
     self:Reopen()
 end
 
-function Class:OnMainInventoryChanged()
-    Spritor:RefreshMainInventoryChanged()
-    self:Refresh()
-end
-
+function Class:OnMainInventoryChanged() self:Refresh() end
 function Class:OnStackChanged() self:Refresh() end
-
-function Class:OnResearchChanged()
-    Spritor:RefreshResearchChanged()
-    self:Refresh()
-end
-
-function Class:RefreshMainInventoryChanged()
-    dassert()
-    self:Refresh()
-end
+function Class:OnResearchChanged() self:Refresh() end
 
 return Class

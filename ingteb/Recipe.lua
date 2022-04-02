@@ -109,8 +109,9 @@ Recipe.system.Properties = {
 
     SpriteStyle = {
         get = function(self)
-            if not self.IsResearched then return false end
-            if self.NumberOnSprite then return true end
+            if not self.IsResearched then return "not-researched" 
+            elseif self.Technology and self.Technology.IsResearching then return "researching" 
+            elseif self.NumberOnSprite then return "active" end
         end,
     },
 

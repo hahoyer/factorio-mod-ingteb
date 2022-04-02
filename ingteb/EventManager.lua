@@ -16,7 +16,7 @@ local Gui = require("ingteb.Gui")
 local Selector = require("ingteb.Selector")
 local Presentator = require("ingteb.Presentator")
 local Database = require("ingteb.Database")
-local Spritor = require("ingteb.Spritor")
+local ChangeWatcher = require("ingteb.ChangeWatcher")
 local Remindor = require("ingteb.Remindor")
 local SelectRemindor = require("ingteb.SelectRemindor")
 local ResearchQueue = require("ingteb.ResearchQueue")
@@ -119,35 +119,18 @@ end
 function Class:ChangeWatcher(event)
     for index, player in pairs(game.players) do
         self.Player = player
-        if self.MainInventoryChangedWatcherTick[index] --
-        and event.tick > self.MainInventoryChangedWatcherTick[index] then
-            self.MainInventoryChangedWatcherTick[index] = nil
-            self.Modules.Presentator:OnMainInventoryChanged(event)
-            self.Modules.Remindor:OnMainInventoryChanged(event)
-        end
-        if self.StackChangedWatcherTick[index] --
-        and event.tick > self.StackChangedWatcherTick[index] then
-            self.StackChangedWatcherTick[index] = nil
-            self.Modules.Presentator:OnStackChanged()
-            self.Modules.Remindor:OnStackChanged()
-        end
-        if self.ResearchChangedWatcherTick[index] --
-        and event.tick > self.ResearchChangedWatcherTick[index] then
-            self.ResearchChangedWatcherTick[index] = nil
-            self.Modules.Presentator:OnResearchChanged()
-            self.Modules.Remindor:OnResearchChanged()
-        end
+        self.Modules.ChangeWatcher:OnTick()
     end
 end
 
-local RefreshDelay = Constants.RefreshDelay
-
 function Class:OnMainInventoryChanged(event)
-    self.MainInventoryChangedWatcherTick[event.player_index] = event.tick + RefreshDelay
+    self.Modules.Remindor:OnMainInventoryChanged()
+    self.Modules.ChangeWatcher:OnChanged()
 end
 
 function Class:OnStackChanged(event)
-    self.StackChangedWatcherTick[event.player_index] = event.tick + RefreshDelay
+    self.Modules.Remindor:OnStackChanged()
+    self.Modules.ChangeWatcher:OnChanged()
 end
 
 function Class:OnResearchChanged(event)
@@ -155,7 +138,9 @@ function Class:OnResearchChanged(event)
     self.Database:OnResearchChanged(event)
 
     for index in pairs(event.research.force.players) do
-        self.ResearchChangedWatcherTick[index] = event.tick + RefreshDelay
+        self.Player = game.players[index]
+        self.Modules.Remindor:OnResearchChanged()
+        self.Modules.ChangeWatcher:OnChanged()
     end
 end
 
@@ -335,7 +320,7 @@ function Class:new()
         Presentator = Presentator:new(self),
         Gui = Gui:new(self),
         Database = Database:new(self),
-        Spritor = Spritor:new(self),
+        ChangeWatcher = ChangeWatcher:new(self),
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
         ResearchQueue = ResearchQueue:new(self),

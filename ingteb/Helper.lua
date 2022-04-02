@@ -101,8 +101,9 @@ function Helper.ScrutinizeLocalisationString(target)
 end
 
 function Helper.SpriteStyleFromCode(code)
-    return code == true and "ingteb-light-button" --
-    or code == false and "red_slot_button" --
+    return code == "active" and "ingteb-light-button" --
+    or code == "not-researched" and "red_slot_button" --
+    or code == "researching" and "yellow_slot_button" --
     or "slot_button"
 end
 

@@ -99,8 +99,13 @@ local Class = class:new(
 
         SpriteStyle = {
             get = function(self)
-                if self.IsResearchedOrResearching then return end
-                return self.IsReady
+                if self.IsReady then
+                    return "active"
+                elseif self.IsResearching then
+                    return "researching"
+                elseif not self.IsResearched then
+                    return "not-researched"
+                end
             end,
         },
 

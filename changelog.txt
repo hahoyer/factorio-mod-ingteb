@@ -1,9 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.33
-Date: 2022-04-01
+Date: 2022-04-02
   Bugfixes:
     - fixing multiple lines of the same recipe
     - fixing multiple icons for the same worker
+    - mitigating Large recipe columns are jerky during handcrafts or research completion 
+  Changes:
+    - Yellow backgroung for recipes that are currently in research queue
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.32
 Date: 2022-03-31
