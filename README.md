@@ -31,7 +31,7 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - ... *more suggestions?*
 
 ###known issue: 
-- Large recipe columns are jerky during handcrafts or research completion 
+- Multiplayer: Desync issue when loading a save file where reminder panel is open *(help welcome!)*
 - When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. (As a workaround, you can temporarily use the replacement mod [Improved Research Queue with interface](https://mods.factorio.com/mod/sonaxaton-research-queue-with-interface) instead of [Improved Research Queue](https://mods.factorio.com/mod/sonaxaton-research-queue).)
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance
