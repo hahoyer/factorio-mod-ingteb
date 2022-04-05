@@ -3,7 +3,7 @@ local Table = require("core.Table")
 local RequiredThings = require("ingteb.RequiredThings")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Common = require("ingteb.Common")
+local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
 
 local Recipe = class:new("Recipe", Common)
@@ -96,14 +96,6 @@ Recipe.system.Properties = {
             return self.Category.Workers:Where(
                 function(worker) return worker.Prototype.name == "character" end
             ):Top()
-        end,
-    },
-
-    Workers = {
-        get = function(self)
-            local result = self.Category.Workers
-            result:Sort(function(a, b) return a:IsBefore(b) end)
-            return result
         end,
     },
 
@@ -268,7 +260,6 @@ function Recipe:new(name, prototype, database)
     self.IsHidden = self.Prototype.hidden
     self.Time = self.Prototype.energy
     self.IsRefreshRequired = {Research = true, MainInventory = true}
-    self.IsRecipe = true
 
     return self
 

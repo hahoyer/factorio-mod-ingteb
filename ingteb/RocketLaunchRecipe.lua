@@ -3,22 +3,12 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Common = require("ingteb.Common")
+local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
 
 local Class = class:new("RocketLaunchRecipe", Common)
 
 Class.system.Properties = {
-    OrderValue = {
-        cache = true,
-        get = function(self)
-            return self.TypeOrder --
-            .. " R R " --
-            .. self.Prototype.group.order --
-            .. " " .. self.Prototype.subgroup.order --
-            .. " " .. self.Prototype.order
-        end,
-    },
     Time = {cache = true, get = function(self) return 1.0 / self.Category.Speed end},
 }
 
@@ -29,7 +19,6 @@ function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(outputPrototype, database))
     self.Name = prototype.name
     self.SpriteType = "item"
-    self.IsRecipe = true
     self.IsHidden = true
     self.Category = self.Database:GetCategory("rocket-launch.rocket-launch")
     self.TypeStringForLocalisation = "ingteb-utility.title-rocket-launch-recipe"

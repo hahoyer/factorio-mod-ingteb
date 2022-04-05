@@ -15,7 +15,21 @@ local Class = class:new(
         Database = {get = function(self) return self.Parent.Database end},
         LocalSettings = {get = function(self) return self.Global.SelectRemindor.Settings end},
         DefaultSettings = {get = function(self) return self.Parent.Modules.Remindor end},
+        Memento = {
+            get = function(self)
+                return {
+                    Target = self.Target.CommonKey,
+                    Count = self.Count,
+                    Worker = self.Worker.CommonKey,
+                    Recipe = self.Recipe.CommonKey,
+                    CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":"
+                        .. self.Recipe.Name,
+                    Settings = self.Global.SelectRemindor.Settings,
+                }
+            end,
+        },
     }
+
 )
 
 function Class:new(parent)
@@ -148,7 +162,7 @@ function Class:OnGuiEvent(event)
     elseif message.action == "CountChanged" then
         self:OnTextChanged(event.element.text)
     elseif message.action == "Enter" then
-        local selection = self:GetSelection()
+        local selection = self.Memento
         self:Close()
         self.Parent:AddRemindor(selection)
     else
@@ -176,17 +190,6 @@ function Class:OnGuiClick(target)
 end
 
 function Class:OnTextChanged(value) self.Count = tonumber(value) end
-
-function Class:GetSelection()
-    return {
-        Target = self.Target.CommonKey,
-        Count = self.Count,
-        Worker = self.Worker.CommonKey,
-        Recipe = self.Recipe.CommonKey,
-        CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":" .. self.Recipe.Name,
-        Settings = self.Global.SelectRemindor.Settings,
-    }
-end
 
 function Class:CreateSelection(target)
     return target:Select(function(object) return self:GetSpriteButton(object) end)

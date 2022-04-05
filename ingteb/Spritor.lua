@@ -54,14 +54,14 @@ function Class:GetHelperText(target)
     return target.HelperText
 end
 
-function Class:GetSpriteButtonAndRegister(target, sprite, category)
+function Class:GetRespondingSpriteButton(target, sprite, category)
     local result = self:GetSpriteButton(target, sprite, category)
     if target then self:CollectForGuiClick(result, target) end
     return result
 end
 
 function Class:CreateSpriteAndRegister(frame, target, sprite)
-    return gui.build(frame, self:GetSpriteButtonAndRegister(target, sprite))
+    return gui.build(frame, self:GetRespondingSpriteButton(target, sprite))
 end
 
 function Class:UpdateGui(guiElement, target)
@@ -107,7 +107,7 @@ function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
     local children = Array:new()
     children:AppendMany(
         target:Select(
-            function(element) return self:GetSpriteButtonAndRegister(element) end
+            function(element) return self:GetRespondingSpriteButton(element) end
         )
     )
     if not isRightAligned then children:AppendMany(self:GetTiles(count - target:Count())) end
@@ -137,12 +137,12 @@ function Class:GetLine(target, tooltip)
     if target.Technologies then
         children:AppendMany(
             target.Technologies:Select(
-                function(element) return self:GetSpriteButtonAndRegister(element) end
+                function(element) return self:GetRespondingSpriteButton(element) end
             )
         )
     end
     target.StackOfGoods:Select(
-        function(element) children:Append(self:GetSpriteButtonAndRegister(element)) end
+        function(element) children:Append(self:GetRespondingSpriteButton(element)) end
     )
 
     local result = {type = "flow", direction = "horizontal", tooltip = tooltip, children = children}

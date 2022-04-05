@@ -90,10 +90,12 @@ local Class = class:new(
                 return result
             end,
         },
+
+        Memento = {get = function(self) return self:GetMemento() end},
     }
 )
 
-function Class:GetSelection()
+function Class:GetMemento()
     return {
         Target = self.Target.Goods.CommonKey,
         Count = self.Target.Amounts.value,
@@ -181,6 +183,38 @@ local function GetDragTooltip(isTop, isBottom)
     }
 end
 
+function Class:GetLineHeader(key, isTop, isBottom)
+    return {
+        type = "empty-widget",
+        style = "flib_titlebar_drag_handle",
+        ref = {"UpDownDragBar"},
+        style_mods = {width = 15, height = 40},
+        actions = {on_click = {target = "Task", module = "Remindor", action = "Drag", key = key}},
+        tooltip = GetDragTooltip(isTop, isBottom),
+    }
+end
+
+function Class:GetSettingsGui(settings)
+    return {
+        type = "frame",
+        direction = "horizontal",
+        children = {self.SettingsGui:GetGui(settings)},
+        style_mods = {padding = 1},
+    }
+end
+
+function Class:GetLineFooter(key)
+    return {
+        type = "sprite-button",
+        sprite = "close_white",
+        style = "frame_action_button",
+        style_mods = {size = 17},
+        ref = {"Remindor", "Task", "CloseButton"},
+        actions = {on_click = {target = "Task", module = "Remindor", action = "Remove", key = key}},
+        tooltip = {"gui.close"},
+    }
+end
+
 function Class:GetGui(key, data, isTop, isBottom, required)
     return {
         type = "frame",
@@ -188,48 +222,15 @@ function Class:GetGui(key, data, isTop, isBottom, required)
         name = key,
         style_mods = {left_padding = 0, right_padding = 2, top_padding = 1, bottom_padding = 1},
         children = {
-            {
-                type = "empty-widget",
-                style = "flib_titlebar_drag_handle",
-                ref = {"UpDownDragBar"},
-                style_mods = {width = 15, height = 40},
-                actions = {
-                    on_click = {target = "Task", module = "Remindor", action = "Drag", key = key},
-                },
-                tooltip = GetDragTooltip(isTop, isBottom),
-            },
-            self.Parent.Spritor:GetSpriteButtonAndRegister(self.CurrentTarget),
-            self.Parent.Spritor:GetSpriteButtonAndRegister(self.Worker),
-            self.Parent.Spritor:GetSpriteButtonAndRegister(self.Recipe),
-            {
-                type = "frame",
-                direction = "horizontal",
-                children = {self.SettingsGui:GetGui(required.Settings)},
-                style_mods = {padding = 1},
-            },
+            self:GetLineHeader(key, isTop, isBottom),
+            self.Parent.Spritor:GetRespondingSpriteButton(self.CurrentTarget),
+            self.Parent.Spritor:GetRespondingSpriteButton(self.Worker),
+            self.Parent.Spritor:GetRespondingSpriteButton(self.Recipe),
+            self:GetSettingsGui(required.Settings),
             self.Parent.Spritor:GetLinePart(self:GetRequired(data), required.Things),
-            {
-                type = "sprite-button",
-                sprite = "close_white",
-                style = "frame_action_button",
-                style_mods = {size = 17},
-                ref = {"Remindor", "Task", "CloseButton"},
-                actions = {
-                    on_click = {target = "Task", module = "Remindor", action = "Remove", key = key},
-                },
-                tooltip = {"gui.close"},
-            },
+            self:GetLineFooter(key),
         },
     }
-end
-
-function Class:CreateCloseButton(global, frame, functionData)
-    local closeButton = frame.add {
-        type = "sprite",
-        sprite = "close_black",
-        tooltip = {"gui.close"},
-    }
-    global.Remindor.Links[closeButton.index] = functionData
 end
 
 function Class:EnsureInventory(goods, data)

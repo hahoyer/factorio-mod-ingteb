@@ -3,22 +3,12 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Common = require("ingteb.Common")
+local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
 
 local Class = class:new("BurningRecipe", Common)
 
 Class.system.Properties = {
-    OrderValue = {
-        cache = true,
-        get = function(self)
-            return self.TypeOrder --
-            .. " R R " --
-            .. self.Prototype.group.order --
-            .. " " .. self.Prototype.subgroup.order --
-            .. " " .. self.Prototype.order
-        end,
-    },
     Time = {
         cache = true,
         get = function(self)
@@ -36,7 +26,6 @@ function Class:new(name, prototype, database)
     self.Name = prototype.name
     self.IsFluid = prototype.object_name == "LuaFluidPrototype"
     self.IsHidden = true
-    self.IsRecipe = true
     self.SpriteType = self.IsFluid and "fluid" or "item"
 
     local categoryName = self.IsFluid and "fluid-burning.fluid" or "burning."

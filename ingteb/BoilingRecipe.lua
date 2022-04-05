@@ -3,7 +3,7 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Common = require("ingteb.Common")
+local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
 
 local function CalculateHeaterValues(prototype)
@@ -36,26 +36,13 @@ end
 
 local Class = class:new("BoilingRecipe", Common)
 
-Class.system.Properties = {
-    OrderValue = {
-        cache = true,
-        get = function(self)
-            return self.TypeOrder --
-            .. " R R " --
-            .. self.Prototype.group.order --
-            .. " " .. self.Prototype.subgroup.order --
-            .. " " .. self.Prototype.order
-        end,
-    },
-
-}
+Class.system.Properties = {}
 
 function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
     self.SpriteType = "entity"
     self.Time = 1
-    self.IsRecipe = true
     self.IsHidden = true
     self.Category = self.Database:GetCategory("boiling." .. name)
     self.TypeStringForLocalisation = "ingteb-utility.title-boiling-recipe"

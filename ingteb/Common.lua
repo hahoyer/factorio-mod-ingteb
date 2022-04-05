@@ -139,7 +139,7 @@ local Class = class:new(
             end,
         },
 
-        Output = {
+            Output = {
             cache = true,
             get = function(self)
                 if self.RawOutput then
@@ -206,8 +206,8 @@ function Class:CreatePrototype(type, name)
     return {
         type = type,
         name = name,
-        localised_name = {"ingteb-name."..type.."-"..name},
-        localised_description = {"ingteb-descrition."..type.."-"..name},
+        localised_name = {"ingteb-name." .. type .. "-" .. name},
+        localised_description = {"ingteb-descrition." .. type .. "-" .. name},
     }
 end
 
@@ -263,7 +263,7 @@ function Class:GetHelperText(site)
     return Helper.ConcatLocalisedText(name, additionalHelp:Concat(functionalHelp))
 end
 
-function Class:AssertValid() end
+function Class:AssertValid() if self.IsRecipe then dassert(self.Workers:Any()) end end
 
 function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name

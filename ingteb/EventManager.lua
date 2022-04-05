@@ -216,10 +216,10 @@ end
 function Class:OnInitialisePlayer()
     global.Players[self.Player.index] = {
         Index = self.Player.index,
-        Links = {Presentator = {}, Remindor = {}},
+        Links = {Presentator = {}},
         Location = {},
         History = History:new(),
-        Remindor = {List = Array:new{}, Links = Dictionary:new{}},
+        Remindor = {},
     }
     self:EnsureMainButton()
     self.RestoreFromSaveDone = true

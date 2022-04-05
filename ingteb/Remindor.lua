@@ -42,19 +42,35 @@ local Class = class:new(
 function Class:new(parent)
     local self = self:adopt{Parent = parent}
     self.Spritor = Spritor:new(self)
+    self.Tasks = Array:new()
     return self
+end
+
+function Class:CopyTasksToGlobal()
+    self.Global.Remindor = self.Tasks:Select(function(task) return task.Memento end)
+end
+
+function Class.SerializeForMigration(tasks)
+    return Array:new(tasks):Select(function(task) return Task.GetMemento(task) end)
+end
+
+function Class:CreateTasksFromGlobal()
+    if not self.Global.Remindor then
+        self.Global.Remindor = {}
+        self.Tasks = Array:new()
+        return
+    end
+
+    local tasks = self.Global.Remindor.Tasks or {}
+    self.Global.Remindor.Tasks = Array:new()
+    for _, task in ipairs(tasks) do self.Tasks:Append(Task:new(task, self)) end
+    self.GlobalTasksValid = true
 end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    if not self.Global.Remindor then self.Global.Remindor = {} end
     local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
-    local list = self.Global.Remindor.List or {}
-    self.Global.Remindor.List = Array:new()
-    for _, task in ipairs(list) do
-        self.Global.Remindor.List:Append(Task:new(RemindorTask.GetSelection(task), self))
-    end
-
+    self:CreateTasksFromGlobal()
     if current then
         current.destroy()
         self:Open()
@@ -63,7 +79,7 @@ function Class:RestoreFromSave(parent)
 end
 
 function Class:Toggle()
-    if self.Current then
+    if self.MainGui then
         self:Close()
     else
         self:Open()
@@ -72,10 +88,10 @@ function Class:Toggle()
 end
 
 function Class:Close()
-    if not self.Current then return end
-    self.Current.destroy()
-    self.Current = nil
-    self.Tasks = nil
+    if not self.MainGui then return end
+    self.MainGui.destroy()
+    self.MainGui = nil
+    self.TasksGui = nil
 end
 
 function Class:Open()
@@ -89,13 +105,13 @@ function Class:Open()
         }, --
         {"ingteb-utility.reminder-tasks"} --
     )
-    self.Tasks = result.Tasks
-    self.Current = result.Main
+    self.TasksGui = result.Tasks
+    self.MainGui = result.Main
     self:Refresh()
 end
 
 function Class:Reopen()
-    if self.Current then
+    if self.MainGui then
         self:Close()
         self:Open()
     end
@@ -112,31 +128,25 @@ function Class:Refresh()
 end
 
 function Class:ForceRefresh()
-    self.Global.Remindor.Links = Dictionary:new{}
-    if self.Tasks then self.Tasks.clear() end
+    if self.TasksGui then self.TasksGui.clear() end
 
-    if self.Global.Remindor.List then
-        self.Global.Remindor.List = self.Global.Remindor.List:Where(
-            function(task) return task.IsRelevant end
+    self.Tasks = self.Tasks:Where(function(task) return task.IsRelevant end)
+    self:CopyTasksToGlobal()
+
+    if self.MainGui then
+        self.Spritor:StartCollecting()
+        local data = {}
+        local required = {Things = 0, Settings = {}}
+        self.Tasks:Select(function(task) task:ScanRequired(required) end)
+        self.MaximumRequiredCount = self.Tasks:Select(
+            function(task, index)
+                task:CreatePanel(
+                    self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
+                )
+            end
         )
-        if self.Current then
-            self.Spritor:StartCollecting()
-            local data = {}
-            local required = {Things = 0, Settings = {}}
-            self.Global.Remindor.List:Select(function(task) task:ScanRequired(required) end)
-            self.MaximumRequiredCount = self.Global.Remindor.List:Select(
-                function(task, index)
-                    task:CreatePanel(
-                        self.Tasks, task.CommonKey, data, index == 1,
-                            index == #self.Global.Remindor.List, required
-                    )
-                end
-            )
-        end
-        self.Global.Remindor.List:Select(function(task) task:AutomaticActions() end)
-    else
-        self.Global.Remindor.List = Array:new{}
     end
+    self.Tasks:Select(function(task) task:AutomaticActions() end)
 end
 
 function Class:OnGuiDrag(event)
@@ -158,20 +168,21 @@ function Class:OnGuiDrag(event)
         if up then
             newIndex = 1
         else
-            newIndex = #self.Global.Remindor.List
+            newIndex = #self.Tasks
         end
     else
         if up then
             newIndex = math.max(taskIndex - 1, 1)
         else
-            newIndex = math.min(taskIndex + 1, #self.Global.Remindor.List)
+            newIndex = math.min(taskIndex + 1, #self.Tasks)
         end
     end
 
     if newIndex == taskIndex then return end
-    local target = self.Global.Remindor.List[taskIndex]
-    self.Global.Remindor.List:Remove(taskIndex)
-    self.Global.Remindor.List:InsertAt(newIndex, target)
+    local target = self.Tasks[taskIndex]
+    self.Tasks:Remove(taskIndex)
+    self.Tasks:InsertAt(newIndex, target)
+    self.GlobalTasksValid = false
     self:Reopen()
 end
 
@@ -180,7 +191,7 @@ function Class:OnGuiEvent(event)
     local key = message.key or event.element.parent.name
     local taskIndex = message.target == "Task" and self:GetTaskIndex(key) or nil
     dassert(message.target ~= "Task" or taskIndex)
-    local target = taskIndex and self.Global.Remindor.List[taskIndex] or self
+    local target = taskIndex and self.Tasks[taskIndex] or self
 
     if message.action == "Click" then
         self.Parent:OnGuiClick(event)
@@ -196,7 +207,8 @@ function Class:OnGuiEvent(event)
         end
     elseif message.target == "Task" then
         if message.action == "Remove" then
-            self.Global.Remindor.List:Remove(taskIndex)
+            self.Tasks:Remove(taskIndex)
+            self.GlobalTasksValid = false
             self:Reopen()
         elseif message.action == "Drag" then
             self:OnGuiDrag(event)
@@ -218,24 +230,23 @@ end
 function Class:AddRemindorTask(selection)
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
-    local task = index and self.Global.Remindor.List[index] or Task:new(selection, self)
+    local task = index and self.Tasks[index] or Task:new(selection, self)
     if index then
-        task = self.Global.Remindor.List[index]
-        self.Global.Remindor.List:Remove(index)
+        task = self.Tasks[index]
+        self.Tasks:Remove(index)
         task:AddSelection(selection)
     else
         task = Task:new(selection, self)
     end
-    self.Global.Remindor.List:InsertAt(1, task)
+    self.Tasks:InsertAt(1, task)
+    self.GlobalTasksValid = false
 
-    if not self.Current then self:Open() end
+    if not self.MainGui then self:Open() end
     self:Refresh()
 end
 
 function Class:GetTaskIndex(key)
-    for index, task in ipairs(self.Global.Remindor.List) do
-        if task.CommonKey == key then return index end
-    end
+    for index, task in ipairs(self.Tasks) do if task.CommonKey == key then return index end end
 end
 
 function Class:OnSettingsChanged()

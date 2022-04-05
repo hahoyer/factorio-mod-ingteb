@@ -69,8 +69,8 @@ end
 
 local maximalCount = 6
 
-function Class:GetSpriteButtonAndRegister(target, sprite, category)
-    return self.Spritor:GetSpriteButtonAndRegister(target, sprite, category)
+function Class:GetRespondingSpriteButton(target, sprite, category)
+    return self.Spritor:GetRespondingSpriteButton(target, sprite, category)
 end
 
 function Class:GetSpriteButton(target, sprite, category)
@@ -89,7 +89,7 @@ function Class:GetTechnologyButton(target)
             tooltip = {"ingteb-utility.automatic-recipe"},
         }
     elseif target.Technology then
-        return self:GetSpriteButtonAndRegister(target.Technology)
+        return self:GetRespondingSpriteButton(target.Technology)
     elseif target.Prototype.enabled then
         return {
             type = "sprite-button",
@@ -119,8 +119,8 @@ function Class:GetRecipeLine(target, inCount, outCount)
                 children = {
                     {type = "sprite", sprite = "go_to_arrow"},
                     self:GetTechnologyButton(target),
-                    self:GetSpriteButtonAndRegister(target),
-                    self:GetSpriteButtonAndRegister(
+                    self:GetRespondingSpriteButton(target),
+                    self:GetRespondingSpriteButton(
                         {SpriteName = "utility/clock", NumberOnSprite = target.Time}
                     ),
                     {type = "sprite", sprite = "go_to_arrow"},
@@ -164,7 +164,7 @@ function Class:GetWorkersPanel(category, columnCount)
                 workersPanelData:AppendMany(self.Spritor:GetTiles(dummyColumnsLeft))
                 position = position + dummyColumnsLeft
             end
-            workersPanelData:Append(self:GetSpriteButtonAndRegister(worker, nil, category))
+            workersPanelData:Append(self:GetRespondingSpriteButton(worker, nil, category))
             position = position + 1
             if position >= columnCount then
                 position = 0
@@ -220,9 +220,9 @@ function Class:GetTechnologyEffectsData(target)
                         type = "flow",
                         direction = "horizontal",
                         children = {
-                            self:GetSpriteButtonAndRegister(target),
+                            self:GetRespondingSpriteButton(target),
                             {type = "label", caption = "[img=go_to_arrow]"},
-                            self:GetSpriteButtonAndRegister(effekt),
+                            self:GetRespondingSpriteButton(effekt),
                         },
                     }
                 end
@@ -538,7 +538,7 @@ function Class:GetTechnologyList(target)
                 :Concat(
                     values[1].Ingredients:Select(
                         function(stack)
-                            return self:GetSpriteButtonAndRegister(stack)
+                            return self:GetRespondingSpriteButton(stack)
                         end
                     )
                 ) --
@@ -553,7 +553,7 @@ function Class:GetTechnologyList(target)
                                     type = "frame",
                                     direction = "horizontal",
                                     children = {
-                                        self:GetSpriteButtonAndRegister(target),
+                                        self:GetRespondingSpriteButton(target),
                                         self:GetSpriteButton{
                                             SpriteName = "item/lab",
                                             NumberOnSprite = target.Amount,
@@ -729,7 +729,7 @@ function Class:GetGui(target)
                         type = "label",
                         caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=go_to_arrow]",
                     },
-                    self:GetSpriteButtonAndRegister(target),
+                    self:GetRespondingSpriteButton(target),
                     {
                         type = "label",
                         caption = "[img=go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]",
