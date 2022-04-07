@@ -92,8 +92,6 @@ function Class:PresentTarget(target, requestor)
 
 end
 
-function Class:PresentatorSettings(requestor) self.Modules.Presentator:OpenSettings(requestor) end
-
 function Class:PresentTargetByCommonKey(targetKey, requestor)
     local target = self.Database:GetProxyFromCommonKey(targetKey)
     self:PresentTarget(target, requestor)
@@ -304,11 +302,6 @@ function Class:OnGuiClick(event)
 
     if action.Presenting then
         local result = self:PresentTarget(action.Presenting, message.module)
-        return result
-    end
-
-    if action.Settings then
-        local result = self:PresentatorSettings(action.Settings)
         return result
     end
 end

@@ -10,7 +10,6 @@ local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
 local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
-local Settings = require("ingteb.PresentatorSettings")
 local BoilingRecipe = require "ingteb.BoilingRecipe"
 local BurningRecipe = require "ingteb.BurningRecipe"
 local RocketLaunchRecipe = require "ingteb.RocketLaunchRecipe"
@@ -813,9 +812,7 @@ function Class:OnGuiEvent(event)
     end
 end
 
-function Class:OnSettingsChanged(event)
-    -- dassert()   
-end
+function Class:OnSettingsChanged(event) end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
@@ -824,30 +821,6 @@ function Class:RestoreFromSave(parent)
         current.destroy()
         self:Open(self.Database:GetProxyFromCommonKey(self.Global.History.Current))
     end
-end
-
-function Class:CloseSettings()
-    if not self.CurrentSettings then return end
-    self.CurrentSettings.destroy()
-    if self.ParentScreen then
-        self.ParentScreen.ignored_by_interaction = nil
-        self.Player.opened = self.ParentScreen
-    end
-    self.CurrentSettings = nil
-end
-
-function Class:OpenSettings(target)
-    self:CloseSettings()
-    self.CurrentSettings = Settings.Open(self, target)
-end
-
-function Class:RefreshSettings(target)
-    self.CurrentSettings.destroy()
-    if self.ParentScreen and self.ParentScreen.valid then
-        self.ParentScreen.ignored_by_interaction = nil
-        self.Player.opened = self.ParentScreen
-    end
-    self.CurrentSettings = Settings.Open(self, target)
 end
 
 return Class
