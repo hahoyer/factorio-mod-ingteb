@@ -1,5 +1,6 @@
+require "core.debugSupport"
 local Constants = require("Constants")
-local Common = require("Common")
+local Common = require "ingteb.Common"
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary

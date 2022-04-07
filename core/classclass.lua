@@ -1,3 +1,4 @@
+require "core.debugSupport"
 local class = {name = "class"}
 
 local function GetInherited(self, key)

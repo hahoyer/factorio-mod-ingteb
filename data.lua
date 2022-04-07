@@ -6,8 +6,6 @@ local small_size = 32
 local tiny_size = 24
 local frame_action_icons = Constants.GraphicsPath .. "frame-action-icons.png"
 
-Constants.SonaxatonResearchQueue = mods["sonaxaton-research-queue"] 
-
 data:extend(
     {
         {

@@ -226,8 +226,7 @@ function Class:GetBonusFromEffect(target)
     return self:GetProxy("Bonus", name, prototype)
 end
 
----@param domain string
----@param category string
+---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddWorkerForCategory(categoryName, prototype)
     local data = EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
@@ -235,8 +234,7 @@ function Class:AddWorkerForCategory(categoryName, prototype)
     self.CategoryNames[categoryName] = true
 end
 
----@param domain string
----@param category string
+---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipesForCategory(categoryName, prototype)
     local data = EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
@@ -555,8 +553,6 @@ end
 
 --- Get craftable count and recipe for target (item or recipe)
 ---@param target table 
----@return count integer
----@return recipe table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
         local recipeCandidates = target.CreatedBy["crafting.crafting"]

@@ -1,3 +1,4 @@
+require "core.debugSupport"
 local mod_gui = require("mod-gui")
 local event = require("__flib__.event")
 local gui = require("__flib__.gui-beta")

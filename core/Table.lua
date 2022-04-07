@@ -267,7 +267,7 @@ end
 function Array:ToArray(getItem)
     local result = Array:new{}
     if not getItem then getItem = function(value) return value end end
-    for key, value in ipairs(self) do result:Append(getItem(value,key)) end
+    for key, value in ipairs(self) do result:Append(getItem(value)) end
     return result
 end
 

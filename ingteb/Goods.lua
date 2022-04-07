@@ -5,6 +5,22 @@ local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
+local function FormatEnergy(value)
+    if value < 0 then return "-" .. FormatEnergy(-value) end
+    if value < 1000 then return value .. "J" end
+    value = value / 1000
+    if value < 1000 then return value .. "kJ" end
+    value = value / 1000
+    if value < 1000 then return value .. "MJ" end
+    value = value / 1000
+    if value < 1000 then return value .. "GJ" end
+    value = value / 1000
+    if value < 1000 then return value .. "TJ" end
+    value = value / 1000
+    return value .. "PJ"
+
+end
+
 local Goods = class:new("Goods", Common)
 
 Goods.system.Properties = {

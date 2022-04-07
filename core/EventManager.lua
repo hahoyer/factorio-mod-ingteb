@@ -78,6 +78,10 @@ end
 
 function Class:Leave() self.Active = self.Active[2] end
 
+---comment
+---@param eventId any a number or string that identifies the event
+---@param handler function a function with self as first argument and more arguments according to eventId. If function returns false the handler is removed after execution
+---@param identifier string a name that identifies the event registration. Has to be set if you need more than one handler for an event. Must not be "default" to achieve this.
 function Class:SetHandler(eventId, handler, identifier)
     if not Class.Handlers then Class.Handlers = {} end
     if not identifier then identifier = "default" end

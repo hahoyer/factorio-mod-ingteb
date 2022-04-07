@@ -64,7 +64,6 @@ function Class:CreateTasksFromGlobal()
     local tasks = self.Global.Remindor.Tasks or {}
     self.Global.Remindor.Tasks = Array:new()
     for _, task in ipairs(tasks) do self.Tasks:Append(Task:new(task, self)) end
-    self.GlobalTasksValid = true
 end
 
 function Class:RestoreFromSave(parent)
@@ -182,7 +181,6 @@ function Class:OnGuiDrag(event)
     local target = self.Tasks[taskIndex]
     self.Tasks:Remove(taskIndex)
     self.Tasks:InsertAt(newIndex, target)
-    self.GlobalTasksValid = false
     self:Reopen()
 end
 
@@ -208,7 +206,6 @@ function Class:OnGuiEvent(event)
     elseif message.target == "Task" then
         if message.action == "Remove" then
             self.Tasks:Remove(taskIndex)
-            self.GlobalTasksValid = false
             self:Reopen()
         elseif message.action == "Drag" then
             self:OnGuiDrag(event)
@@ -239,7 +236,6 @@ function Class:AddRemindorTask(selection)
         task = Task:new(selection, self)
     end
     self.Tasks:InsertAt(1, task)
-    self.GlobalTasksValid = false
 
     if not self.MainGui then self:Open() end
     self:Refresh()
