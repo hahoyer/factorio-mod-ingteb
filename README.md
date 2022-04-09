@@ -28,6 +28,8 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Reminder selector: Order things by technology level
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
 - Show energy-source
+- present multiple items_to_place_this of entity-prototypes
+- present linitations for modules
 - ... *more suggestions?*
 
 ###known issue: 

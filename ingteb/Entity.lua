@@ -27,7 +27,7 @@ Class.system.Properties = {
         get = function(self)
             local place = self.Prototype.items_to_place_this
             if not place or #place == 0 then return end
-            dassert(Array:new(place):All(function(p) return p.name == place[1].name end))
+            -- todo: present multiple items_to_place_this 
             return self.Database:GetItem(place[1].name)
         end,
     },

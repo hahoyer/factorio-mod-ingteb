@@ -35,9 +35,9 @@ Class.system.Properties = {
             end
 
             log {
-                "mod-issue.missing-item-for-module-category",
+                "mod-issue.missing-item",
                 self.Prototype.localised_name,
-                "module_category." .. self.Prototype.name,
+                "module_effect." .. self.Prototype.name,
             }
             return "utility/missing_icon"
 

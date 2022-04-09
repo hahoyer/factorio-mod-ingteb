@@ -7,6 +7,8 @@ local class = require("core.class")
 
 local Class = class:new("ModuleCategory", Common)
 
+-- todo: present limitations
+
 Class.system.Properties = {
     Items = {
         cache = true,
@@ -41,14 +43,13 @@ Class.system.Properties = {
     SpriteName = {
         cache = true,
         get = function(self)
-            local item = self.Items --
-            :Where(function(item) return item.Prototype.module_effects[self.Name] end):Top()
+            local item = self.Items:Top()
             if item and game.is_valid_sprite_path(item.SpriteName) then
                 return item.SpriteName
             end
 
             log {
-                "mod-issue.missing-item-for-module-category",
+                "mod-issue.missing-item",
                 self.Prototype.localised_name,
                 "module_category." .. self.Prototype.name,
             }
