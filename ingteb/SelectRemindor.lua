@@ -28,6 +28,7 @@ local Class = class:new(
                 }
             end,
         },
+        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
     }
 
 )
@@ -65,7 +66,6 @@ function Class:Setup(action)
 end
 
 function Class:CreateGui()
-    self.Current = --
     Helper.CreatePopupFrameWithContent(
         self, self:GetGui(), --
         {"ingteb-utility.select-reminder"}, --
@@ -79,8 +79,7 @@ function Class:CreateGui()
                 },
             },
         }
-    ). --
-    Main
+    )
 end
 
 function Class:Close()
@@ -93,7 +92,8 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:DestroyGui()
-    self.Current.destroy()
+    if not self.MainGui then return end
+    self.MainGui.destroy()
     local parentScreen = self.ParentScreen
     if parentScreen and parentScreen.valid and parentScreen.object_name == "LuaGuiElement" then
         parentScreen.ignored_by_interaction = nil
@@ -111,8 +111,7 @@ end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    local current = self.Player.gui.screen[self.class.name]
-    if current then current.destroy() end
+    self:Close()
 end
 
 function Class:GetWorkerSpriteStyle(target)

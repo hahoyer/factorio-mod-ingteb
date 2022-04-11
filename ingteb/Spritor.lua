@@ -31,7 +31,8 @@ function Class:GetSpriteButton(target, sprite, category)
         type = "sprite-button",
         tooltip = self:GetHelperText(target),
         sprite = sprite,
-        number = category and target:GetNumberOnSprite(category) or target.NumberOnSprite,
+        number = category and target.GetNumberOnSprite and target:GetNumberOnSprite(category)
+            or target.NumberOnSprite,
         show_percent_for_small_numbers = target.UsePercentage,
         actions = target.ClickTarget and {
             on_click = {

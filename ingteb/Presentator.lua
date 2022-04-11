@@ -21,6 +21,7 @@ local Class = class:new(
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
         ChangeWatcher = {get = function(self) return self.Parent.Modules.ChangeWatcher end},
+        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
     }
 )
 
@@ -133,6 +134,14 @@ end
 
 function Class:GetWorkersPanel(category, columnCount)
     local workers = category.Workers
+    if not workers:Any() then
+        workers = Array:new{
+            {
+                SpriteName = "utility/crafting_machine_recipe_not_unlocked",
+                HelperText = {"ingteb-utility.no-worker-for-recipe"},
+            },
+        }
+    end
     local workersCount = workers:Count()
     local lines = math.ceil(workersCount / columnCount)
     local potentialWorkerCount = lines * columnCount
@@ -144,7 +153,6 @@ function Class:GetWorkersPanel(category, columnCount)
     local position = 0
     workers:Select(
         function(worker)
-
             if position == 0 then
                 workersPanelData:Append{
                     type = "sprite",
@@ -163,7 +171,9 @@ function Class:GetWorkersPanel(category, columnCount)
                 workersPanelData:AppendMany(self.Spritor:GetTiles(dummyColumnsLeft))
                 position = position + dummyColumnsLeft
             end
+
             workersPanelData:Append(self:GetRespondingSpriteButton(worker, nil, category))
+
             position = position + 1
             if position >= columnCount then
                 position = 0
@@ -652,9 +662,8 @@ function Class:CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 function Class:Close()
-    if self.Current then
-        self.Current.destroy()
-        self.Current = nil
+    if self.MainGui then
+        self.MainGui.destroy()
         self.Spritor:Close()
         self.Global.Links.Presentator = {}
     end
@@ -669,7 +678,6 @@ function Class:Open(target)
     if target.class == Entity and target.Item then target = target.Item end
     local result = Helper.CreateFloatingFrameWithContent(self, guiData, target.LocalisedName)
     self.Spritor:RegisterDynamicElements(result.DynamicElements)
-    self.Current = result.Main
     log("opening Target = " .. target.CommonKey .. " ok.")
 end
 
@@ -801,7 +809,7 @@ function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
         if self.Global.IsPopup then
-            self.Current.ignored_by_interaction = true
+            self.MainGui.ignored_by_interaction = true
         else
             self:Close()
         end

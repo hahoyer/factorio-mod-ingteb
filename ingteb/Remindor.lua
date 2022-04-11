@@ -36,6 +36,18 @@ local Class = class:new(
                 }
             end,
         },
+        TasksGui = {
+            get = function(self) 
+                local gui = self.MainGui
+                if gui then return gui.Tasks or gui.children[2] end
+            end
+        },
+        MainGui = {
+            get = function(self) 
+                local gui = mod_gui.get_frame_flow(self.Player)
+                if gui then return gui.Remindor end
+            end,
+        },
     }
 )
 
@@ -47,7 +59,8 @@ function Class:new(parent)
 end
 
 function Class:CopyTasksToGlobal()
-    self.Global.Remindor = self.Tasks:Select(function(task) return task.Memento end)
+    self.Global.Remindor = {}
+    self.Global.Remindor.Tasks = self.Tasks:Select(function(task) return task.Memento end)
 end
 
 function Class.SerializeForMigration(tasks)
@@ -68,12 +81,7 @@ end
 
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    local current = mod_gui.get_frame_flow(self.Player)[self.class.name]
     self:CreateTasksFromGlobal()
-    if current then
-        current.destroy()
-        self:Open()
-    end
     self:Refresh()
 end
 
@@ -87,10 +95,7 @@ function Class:Toggle()
 end
 
 function Class:Close()
-    if not self.MainGui then return end
-    self.MainGui.destroy()
-    self.MainGui = nil
-    self.TasksGui = nil
+    if self.MainGui then self.MainGui.destroy() end
 end
 
 function Class:Open()
@@ -98,14 +103,15 @@ function Class:Open()
         self, --
         {
             type = "flow",
+            name = "Tasks",
             ref = {"Tasks"},
             direction = "vertical",
             style_mods = {horizontally_stretchable = "on"},
         }, --
         {"ingteb-utility.reminder-tasks"} --
     )
-    self.TasksGui = result.Tasks
-    self.MainGui = result.Main
+    dassert(self.TasksGui == result.Tasks)
+    dassert(self.MainGui == result.Main)
     self:Refresh()
 end
 

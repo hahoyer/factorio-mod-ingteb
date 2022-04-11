@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.1
+Date: 2022-04-11
+  Bugfixes:
+    - Fixing Remindor data is lost when loading a save file
+    - Multiplayer: Mitigating Desync issue when loading a save file where any panel is open
+---------------------------------------------------------------------------------------------------
 Version: 0.4.0
-Date: 2022-04-05
+Date: 2022-04-09
   Bugfixes:
     - Mitigating Desync issue when loading a save file where reminder panel is open
     - Fixing Crash when getting information from mod-defined module-categories

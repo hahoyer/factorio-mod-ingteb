@@ -28,9 +28,9 @@ local Class = class:new(
     "EventManager", core.EventManager, {
         CurrentFloating = {
             get = function(self)
-                if self.Modules.Selector.Current then
+                if self.Modules.Selector.MainGui then
                     return self.Modules.Selector
-                elseif self.Modules.Presentator.Current then
+                elseif self.Modules.Presentator.MainGui then
                     return self.Modules.Presentator
                 end
             end,

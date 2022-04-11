@@ -25,6 +25,7 @@ local Class = class:new(
     "Selector", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
+        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
     }
 )
 
@@ -51,14 +52,7 @@ function Class:Open(targets)
             },
         }
     )
-    self.Current = result.Main
     if result.Filter then result.Filter.focus() end
-end
-
-function Class:RestoreFromSave(parent)
-    self.Parent = parent
-    local current = self.Player.gui.screen[self.class.name]
-    dassert(current == self.Current)
 end
 
 function Class:OnGuiEvent(event)
@@ -125,12 +119,7 @@ function Class:GetGuiInnerVariant()
     return result
 end
 
-function Class:Close()
-    if self.Current then
-        self.Current.destroy()
-        self.Current = nil
-    end
-end
+function Class:Close() if self.MainGui then self.MainGui.destroy() end end
 
 function Class:IsVisible(target)
     if self.Filter then
@@ -186,7 +175,9 @@ function Class:GetTargetsGui()
 
 end
 
-local SelectorCache = {MaximumColumnCount = 0}
+local SelectorCache = {}
+
+function SelectorCache:Reset() self.Groups = nil end
 
 function SelectorCache:IsHidden(type, goods)
     if type == "Item" then
@@ -196,9 +187,10 @@ function SelectorCache:IsHidden(type, goods)
     end
 end
 
-function SelectorCache:EnsureGroups(database)
+function SelectorCache:Ensure(database)
     local self = SelectorCache
     if not self.Groups then
+        local maximumColumnCount = 0
         self.Groups = Dictionary:new{}
         local targets = {
             Item = game.item_prototypes,
@@ -218,16 +210,22 @@ function SelectorCache:EnsureGroups(database)
                     local group = EnsureKey(self.Groups, grouping[1], Dictionary:new{})
                     local subgroup = EnsureKey(group, grouping[2], Array:new{})
                     subgroup:Append(database:GetProxy(type, name, goods))
-                    if self.MaximumColumnCount < subgroup:Count() then
-                        self.MaximumColumnCount = subgroup:Count()
+                    if maximumColumnCount < subgroup:Count() then
+                        maximumColumnCount = subgroup:Count()
                     end
                 end
             end
         end
-        self.ColumnCount = self.MaximumColumnCount < ColumnCount and self.MaximumColumnCount
+        self.ColumnCount = maximumColumnCount < ColumnCount and maximumColumnCount
                                or self.Groups:Count() * 2
     end
     return self.Groups
+end
+
+function Class:RestoreFromSave(parent)
+    self.Parent = parent
+    SelectorCache:Reset()
+    self:Close()
 end
 
 function Class:GetGoodsPanel(goods)
@@ -254,7 +252,7 @@ function Class:GetSubGroupPanel(group)
 end
 
 function Class:GetAllItemsGui()
-    local groups = SelectorCache:EnsureGroups(self.Parent.Database)
+    local groups = SelectorCache:Ensure(self.Parent.Database)
 
     return {
         type = "tabbed-pane",
@@ -300,11 +298,7 @@ function Class:GetAllItemsGui()
     }
 end
 
-function Class:ShowSelectionForAllItems()
-    return self.Frame.add {type = "choose-elem-button", elem_type = "signal"}
-end
-
-function Class:EnsureData() SelectorCache:EnsureGroups(self.Parent.Database) end
+function Class:EnsureData() SelectorCache:Ensure(self.Parent.Database) end
 
 function Class:new(parent) return self:adopt{Parent = parent} end
 

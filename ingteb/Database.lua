@@ -512,12 +512,6 @@ function Class:BeginMulipleQueueResearch(target, setting)
     Class.IsMulipleQueueResearch = true
     local result = target:BeginMulipleQueueResearch(setting)
     Class.IsMulipleQueueResearch = nil
-    if class.IsRefreshResearchChangedRequired then
-        class.IsRefreshResearchChangedRequired = nil
-        local current = self.Parent.Current
-        if current then current:RefreshResearchChanged() end
-    end
-
     return result
 end
 

@@ -139,7 +139,7 @@ local Class = class:new(
             end,
         },
 
-            Output = {
+        Output = {
             cache = true,
             get = function(self)
                 if self.RawOutput then
@@ -263,7 +263,16 @@ function Class:GetHelperText(site)
     return Helper.ConcatLocalisedText(name, additionalHelp:Concat(functionalHelp))
 end
 
-function Class:AssertValid() if self.IsRecipe then dassert(self.Workers:Any()) end end
+function Class:AssertValid()
+    if self.IsRecipe and not self.Workers:Any() then
+        local prototype = self.Prototype
+        log {
+            "mod-issue.missing-worker",
+            prototype.localised_name,
+            prototype.object_name .. "." .. prototype.name,
+        }
+    end
+end
 
 function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name
