@@ -16,6 +16,7 @@ local Class = class:new(
         Group = {cache = true, get = function(self) return self.Prototype.group end},
         SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
         Prototype = {
+            cache = true,
             get = function(self)
                 local realm = self.PrototypeData.Realm
                 if realm == "game" then
@@ -326,10 +327,43 @@ function Class:GetAction(event)
     if specialFunction then return specialFunction.Action(self, event) end
 end
 
-function Class:new(prototypeData, database)
-    dassert(prototypeData)
+local gameKeysForObjectName = {
+    ["LuaRecipeCategoryPrototype"] = "recipe_category_prototypes",
+    ["LuaEntityPrototype"] = "entity_prototypes",
+    ["LuaFuelCategoryPrototype"] = "fuel_category_prototypes",
+    ["LuaResourceCategoryPrototype"] = "resource_category_prototypes",
+    ["LuaTechnologyPrototype"] = "technology_prototypes",
+    ["LuaRecipePrototype"] = "recipe_prototypes",
+    ["LuaItemPrototype"] = "item_prototypes",
+    ["LuaFluidPrototype"] = "fluid_prototypes",
+    ["LuaModuleCategoryPrototype"] = "module_category_prototypes",
+}
+
+function Class:SplitPrototype(prototype)
+    local objectName = prototype.object_name
+    if objectName then
+        local key = gameKeysForObjectName[prototype.object_name]
+        if key then
+            return {Realm = "game", Group = key, Name = prototype.name}
+        else
+            dassert(
+                false, "Unexpected protptype: " .. type(prototype) .. " " .. prototype.object_name
+            )
+        end
+    else
+        dassert(prototype.type)
+        dassert(prototype.name)
+        dassert(prototype.localised_name)
+        dassert(prototype.localised_description)
+        return {Realm = "constant", Value = prototype}
+    end
+end
+
+function Class:new(prototype, database)
+    dassert(prototype)
     dassert(database)
 
+    local prototypeData = self:SplitPrototype(prototype)
     if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging 
     local self = self:adopt{PrototypeData = prototypeData, Database = database}
     self.IsSealed = false
