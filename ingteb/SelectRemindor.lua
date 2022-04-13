@@ -28,7 +28,11 @@ local Class = class:new(
                 }
             end,
         },
-        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
+        MainGui = {
+            get = function(self)
+                return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
+            end,
+        },
     }
 
 )

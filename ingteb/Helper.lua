@@ -2,6 +2,7 @@ require "core.debugSupport"
 local mod_gui = require("mod-gui")
 local event = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
+local Constants = require("Constants")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
@@ -126,7 +127,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
             {
                 type = "frame",
                 direction = "vertical",
-                name = moduleName .. (options.subModule or ""),
+                name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
                 ref = {"Main"},
                 actions = {
                     on_location_changed = {action = "Moved"},
@@ -139,17 +140,30 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                 children = {
                     {
                         type = "flow",
+                        name = "Header",
                         direction = "horizontal",
                         children = {
-                            {type = "label", caption = caption, style = "frame_title"},
+                            {
+                                type = "label",
+                                name = "Title",
+                                caption = caption,
+                                style = "frame_title",
+                            },
                             {
                                 type = "empty-widget",
+                                name = "DragHandle",
                                 style = "flib_titlebar_drag_handle",
                                 ref = {"DragBar"},
                             },
-                            {type = "flow", direction = "horizontal", children = buttons},
+                            {
+                                type = "flow",
+                                name = "Buttons",
+                                direction = "horizontal",
+                                children = buttons,
+                            },
                             {
                                 type = "sprite-button",
+                                name = "CloseButtom",
                                 sprite = "close_white",
                                 tooltip = {"gui.close"},
                                 actions = {
