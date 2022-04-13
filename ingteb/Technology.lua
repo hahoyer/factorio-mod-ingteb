@@ -179,8 +179,8 @@ local Class = class:new(
                     result:AppendMany(prerequisites)
                 end
                 result[self.Name] = true
-                dassert(string.len(indent) < 1000)
-                indent = oldIndent
+                dassert(string.len(oldIndent) < 1000)
+                ResetIndent(oldIndent)
                 dlog(self.CommonKey .. "<<<")
                 return result
             end,

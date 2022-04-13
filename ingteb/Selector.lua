@@ -6,8 +6,6 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 
-ColumnCount = Constants.SelectorColumnCount
-
 ---@param data table Dictionary Dictionary where the key is searched
 ---@param key string
 ---@param value any Value to use if key is not jet contained in data
@@ -170,9 +168,9 @@ function Class:GetTargetsGui()
         type = "flow",
         direction = "vertical",
         children = {
-            {type = "table", column_count = ColumnCount, children = self:GetTargets()},
+            {type = "table", column_count = Constants.SelectorColumnCount, children = self:GetTargets()},
             {type = "line", direction = "horizontal"},
-            {type = "table", column_count = ColumnCount},
+            {type = "table", column_count = Constants.SelectorColumnCount},
         },
 
     }

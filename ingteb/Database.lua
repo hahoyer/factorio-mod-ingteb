@@ -90,7 +90,7 @@ local Class = class:new(
                         end
                     end
                 end
-                result.ColumnCount = maximumColumnCount < ColumnCount and maximumColumnCount
+                result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount and maximumColumnCount
                                          or result.Groups:Count() * 2
                 log("database initialize Selector complete.")
                 return result
@@ -113,6 +113,7 @@ end
 
 function Class:Ensure()
     if self.IsInitialized then return self end
+    self.Global.Translation = nil
     local order = 1
     self.Order = {
         Recipe = 1,

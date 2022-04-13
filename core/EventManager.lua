@@ -72,7 +72,7 @@ function Class:RemoveIfEmpty(handlers, eventId)
     end
 end
 
-function FormatData(data)
+local function FormatData(data)
     return tostring(data[1]) .. "/" .. tostring(data[2]) .. "/" .. tostring(data[3])
 end
 
@@ -84,7 +84,7 @@ function Class:Enter(eventName, eventId, identifier)
 end
 
 function Class:Leave()
-    --indent = self.Active[3]
+    --ResetIndent(self.Active[3])
     --ilog("<<<LeaveEvent " .. FormatData(self.Active[1]))
     self.Active = self.Active[2]
 end

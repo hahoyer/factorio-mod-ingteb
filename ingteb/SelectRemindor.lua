@@ -181,12 +181,7 @@ function Class:OnGuiClick(target)
         end
     else
         self.Worker = target
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
-        -- DebugAdapter.print(indent .. "SelectRemindor:OnGuiClick worker = {target.CommonKey}")
-        local old = AddIndent()
         local recipes = self:GetBelongingRecipes(self.Worker)
-        indent = old
-        -- DebugAdapter.print(indent .. "------------------------------------------------------")
         if not recipes:Contains(self.Recipe) then self.Recipe = recipes:Top(false) end
     end
     self:Reopen()
@@ -214,48 +209,28 @@ function Class:GetLinePart(children)
 end
 
 function Class:GetBelongingWorkers(recipe)
-    -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingWorkers recipe = {recipe.CommonKey}")
-    local old = AddIndent()
     local results = self.Workers:Where(
         function(worker)
-            -- DebugAdapter.print(indent .. "worker = {worker.CommonKey}")
-            local old = AddIndent()
             local result = worker.RecipeList:Any(
                 function(category, name)
-                    -- DebugAdapter.print(indent .. "category = {name}")
-                    local old = AddIndent()
                     local result = category:Contains(recipe)
-                    indent = old
-                    -- DebugAdapter.print(indent .. "result = {result}")
                     return result
                 end
             )
-            indent = old
-            -- DebugAdapter.print(indent .. "result = {result}")
             return result
         end
     )
-    indent = old
-    -- DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 
 function Class:GetBelongingRecipes(worker)
-    -- DebugAdapter.print(indent .. "SelectRemindor:GetBelongingRecipes worker = {worker.CommonKey}")
-    local old = AddIndent()
     local results = self.Recipes:Where(
         function(recipe)
-            -- DebugAdapter.print(indent .. "recipe = {recipe.CommonKey}")
-            local old = AddIndent()
             local workers = self:GetBelongingWorkers(recipe)
             local result = workers:Contains(worker)
-            indent = old
-            -- DebugAdapter.print(indent .. "result = {result}")
             return result
         end
     )
-    indent = old
-    -- DebugAdapter.print(indent .. "results = {results}")
     return results
 end
 

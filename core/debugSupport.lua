@@ -1,18 +1,24 @@
-indent = ""
+local function EnsureIndent()
+    if not global.System then global.System = {} end
+    if not global.System.Indent then global.System.Indent = 0 end
+end
 
 function AddIndent()
-    local result = indent
-    indent = indent .. "    "
+    EnsureIndent()
+    local result = global.System.Indent
+    global.System.Indent = result .. "    "
     return result
 end
 
-function BackIndent()
-    local result = indent
-    indent = indent:sub(1,indent:len()-4)
-    return result
+function ResetIndent(value)
+    EnsureIndent()
+    global.System.Indent = value
 end
 
-function ilog(text) log(indent .. text) end
+function ilog(text)
+    EnsureIndent()
+    log(global.System.Indent .. text)
+end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     function dlog(text) ilog(text) end
@@ -20,7 +26,9 @@ else
     function dlog(text) end
 end
 
-function ConditionalBreak(condition, data) if condition then __DebugAdapter.breakpoint("ConditionalBreak "..(data or "")) end end
+function ConditionalBreak(condition, data)
+    if condition then __DebugAdapter.breakpoint("ConditionalBreak " .. (data or "")) end
+end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     dassert = assert

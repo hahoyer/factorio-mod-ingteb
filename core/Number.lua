@@ -118,7 +118,7 @@ function Class:new(target)
     return result
 end
 
-function Unittest()
+local function Unittest()
 
     local targets = {
         {0, "0"},
