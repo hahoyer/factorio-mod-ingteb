@@ -13,6 +13,7 @@ local result = {
     SelectorColumnCount = 12,
     ProductionTimeUnitInTicks = TimeSpan.FromMinutes(1),
     UpdateCountPerTick = 5,
+    MaximumEntriesInRecipeList = 6,
 }
 
 return result
