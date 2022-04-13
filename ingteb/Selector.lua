@@ -25,7 +25,11 @@ local Class = class:new(
     "Selector", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
-        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
+        MainGui = {
+            get = function(self)
+                return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
+            end,
+        },
     }
 )
 
@@ -175,56 +179,8 @@ function Class:GetTargetsGui()
 
 end
 
-local SelectorCache = {}
-
-function SelectorCache:Reset() self.Groups = nil end
-
-function SelectorCache:IsHidden(type, goods)
-    if type == "Item" then
-        return goods.flags and goods.flags.hidden
-    elseif type == "Fluid" then
-        return goods.hidden
-    end
-end
-
-function SelectorCache:Ensure(database)
-    local self = SelectorCache
-    if not self.Groups then
-        local maximumColumnCount = 0
-        self.Groups = Dictionary:new{}
-        local targets = {
-            Item = game.item_prototypes,
-            Fluid = game.fluid_prototypes,
-            FuelCategory = game.fuel_category_prototypes,
-            ModuleCategory = game.module_category_prototypes,
-        }
-        for type, domain in pairs(targets) do
-            for name, goods in pairs(domain) do
-                if not self:IsHidden(type, goods) then
-                    local grouping = --
-                   
-                        (type == "Item" or type == "Fluid")
-                            and {goods.group.name, goods.subgroup.name} --
-                        or {"other", type}
-
-                    local group = EnsureKey(self.Groups, grouping[1], Dictionary:new{})
-                    local subgroup = EnsureKey(group, grouping[2], Array:new{})
-                    subgroup:Append(database:GetProxy(type, name, goods))
-                    if maximumColumnCount < subgroup:Count() then
-                        maximumColumnCount = subgroup:Count()
-                    end
-                end
-            end
-        end
-        self.ColumnCount = maximumColumnCount < ColumnCount and maximumColumnCount
-                               or self.Groups:Count() * 2
-    end
-    return self.Groups
-end
-
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    SelectorCache:Reset()
     self:Close()
 end
 
@@ -238,27 +194,28 @@ function Class:GetGoodsPanel(goods)
     }
 end
 
-function Class:GetSubGroupPanel(group)
+function Class:GetSubGroupPanel(group, columnCount)
     return group:ToArray():Select(
         function(subgroup)
             local goods = subgroup --
             :Where(function(goods) return self:IsVisible(goods) end) --
             :Select(function(goods) return self:GetGoodsPanel(goods) end)
             if not goods:Any() then return end
-            return {type = "table", column_count = SelectorCache.ColumnCount, children = goods}
+            return {type = "table", column_count = columnCount, children = goods}
         end
     ) --
     :Where(function(subgroup) return subgroup end)
 end
 
 function Class:GetAllItemsGui()
-    local groups = SelectorCache:Ensure(self.Parent.Database)
+    local selector = self.Parent.Database.Selector
+    local groups = selector.Groups
 
     return {
         type = "tabbed-pane",
         tabs = groups:ToArray(
             function(group, name)
-                local subGroup = self:GetSubGroupPanel(group)
+                local subGroup = self:GetSubGroupPanel(group, selector.ColumnCount)
                 local caption = "[item-group=" .. name .. "]"
                 if name == "fuel-category" then
                     caption = "[img=utility.slot_icon_fuel]"
@@ -297,8 +254,6 @@ function Class:GetAllItemsGui()
         ),
     }
 end
-
-function Class:EnsureData() SelectorCache:Ensure(self.Parent.Database) end
 
 function Class:new(parent) return self:adopt{Parent = parent} end
 

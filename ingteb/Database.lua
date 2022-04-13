@@ -50,6 +50,49 @@ local Class = class:new(
                 return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
             end,
         },
+        Selector = {
+            cache = true,
+            get = function(self)
+                local result = {}
+                local maximumColumnCount = 0
+                result.Groups = Dictionary:new{}
+                local targets = {
+                    Item = game.item_prototypes,
+                    Fluid = game.fluid_prototypes,
+                    FuelCategory = game.fuel_category_prototypes,
+                    ModuleCategory = game.module_category_prototypes,
+                }
+
+                local function IsHidden(type, goods)
+                    if type == "Item" then
+                        return goods.flags and goods.flags.hidden
+                    elseif type == "Fluid" then
+                        return goods.hidden
+                    end
+                end
+                
+                for type, domain in pairs(targets) do
+                    for name, goods in pairs(domain) do
+                        if not IsHidden(type, goods) then
+                            local grouping = --
+                            (type == "Item" or type == "Fluid")
+                                and {goods.group.name, goods.subgroup.name} --
+                            or {"other", type}
+
+                            local group = EnsureKey(result.Groups, grouping[1], Dictionary:new{})
+                            local subgroup = EnsureKey(group, grouping[2], Array:new{})
+                            subgroup:Append(self:GetProxy(type, name, goods))
+                            if maximumColumnCount < subgroup:Count() then
+                                maximumColumnCount = subgroup:Count()
+                            end
+                        end
+                    end
+                end
+                result.ColumnCount = maximumColumnCount < ColumnCount and maximumColumnCount
+                                         or result.Groups:Count() * 2
+                return result
+            end,
+        },
     }
 )
 
@@ -105,7 +148,7 @@ function Class:Ensure()
     self.ItemsForModuleCategory = {}
     self.EntitiesForModuleEffects = {}
     self.Proxies = {}
-
+    
     log("database scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
     log("database scan technologies ...")
@@ -119,10 +162,10 @@ function Class:Ensure()
 
     log("database special things...")
     self.CategoryNames:Select(
-        function(value, categoryName) 
+        function(value, categoryName)
             EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
             EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
-            return self:GetCategory(categoryName) 
+            return self:GetCategory(categoryName)
         end
     )
     for name, prototype in pairs(game.fuel_category_prototypes) do
@@ -159,7 +202,7 @@ function Class:GetProxyFromPrototype(prototype)
 end
 
 function Class:GetProxy(className, name, prototype)
-    local data = EnsureKey(self.Proxies, className, Dictionary:new()) 
+    local data = EnsureKey(self.Proxies, className, Dictionary:new())
     local key = name or prototype.name
 
     local result = data[key]
