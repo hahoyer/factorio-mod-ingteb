@@ -72,11 +72,22 @@ function Class:RemoveIfEmpty(handlers, eventId)
     end
 end
 
-function Class:Enter(eventName, eventId, identifier)
-    self.Active = {{eventName, eventId, identifier}, self.Active}
+function FormatData(data)
+    return tostring(data[1]) .. "/" .. tostring(data[2]) .. "/" .. tostring(data[3])
 end
 
-function Class:Leave() self.Active = self.Active[2] end
+function Class:Enter(eventName, eventId, identifier)
+    local data = {eventName, eventId, identifier}
+    --ilog(">>>EnterEvent " .. FormatData(data))
+    local oldIndent = nil --AddIndent()
+    self.Active = {data, self.Active, oldIndent}
+end
+
+function Class:Leave()
+    --indent = self.Active[3]
+    --ilog("<<<LeaveEvent " .. FormatData(self.Active[1]))
+    self.Active = self.Active[2]
+end
 
 ---comment
 ---@param eventId any a number or string that identifies the event
@@ -86,7 +97,10 @@ function Class:SetHandler(eventId, handler, identifier)
     if not Class.Handlers then Class.Handlers = {} end
     if not identifier then identifier = "default" end
 
-    local eventName = type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or eventId
+    local eventName = --
+    type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or --
+    eventId == 0 and "on_tick" or --
+    eventId
 
     local handlers = Class.Handlers[eventName]
     dassert(

@@ -6,8 +6,16 @@ function AddIndent()
     return result
 end
 
+function BackIndent()
+    local result = indent
+    indent = indent:sub(1,indent:len()-4)
+    return result
+end
+
+function ilog(text) log(indent .. text) end
+
 if (__DebugAdapter and __DebugAdapter.instrument) then
-    function dlog(text) log(indent .. text) end
+    function dlog(text) ilog(text) end
 else
     function dlog(text) end
 end
