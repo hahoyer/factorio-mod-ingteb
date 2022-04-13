@@ -61,8 +61,6 @@ function Helper.ShowFrame(player, name, create)
     return main
 end
 
-function Helper.OnClose(name, frame) global.Location[name] = frame.location end
-
 function Helper.DeepEqual(a, b)
     if not a then return not b end
     if not b then return false end
@@ -130,7 +128,11 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                 name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
                 ref = {"Main"},
                 actions = {
-                    on_location_changed = {action = "Moved"},
+                    on_location_changed = {
+                        module = moduleName,
+                        subModule = options.subModule,
+                        action = "Moved",
+                    },
                     on_closed = {
                         module = moduleName,
                         subModule = options.subModule,

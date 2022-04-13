@@ -169,7 +169,6 @@ function Class:OnTickInitial(event)
         self.Player = player
         self:EnsureMainButton()
         if event.tick > 0 then self:RestoreFromSave() end
-        self.Modules.Selector:EnsureData()
     end
     self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
     return false
@@ -347,7 +346,7 @@ function Class:new()
             if event.element and event.element.get_mod() ~= script.mod_name then return end
             local message = gui.read_action(event)
             if event.name == defines.events.on_gui_location_changed then
-                self.Global.Location[event.element.name] = event.element.location
+                self.Global.Location[message.module] = event.element.location
             elseif message then
                 if message.module then
                     self.Modules[message.module]:OnGuiEvent(event)

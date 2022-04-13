@@ -53,6 +53,7 @@ local Class = class:new(
         Selector = {
             cache = true,
             get = function(self)
+                log("database initialize Selector...")
                 local result = {}
                 local maximumColumnCount = 0
                 result.Groups = Dictionary:new{}
@@ -70,7 +71,7 @@ local Class = class:new(
                         return goods.hidden
                     end
                 end
-                
+
                 for type, domain in pairs(targets) do
                     for name, goods in pairs(domain) do
                         if not IsHidden(type, goods) then
@@ -90,6 +91,7 @@ local Class = class:new(
                 end
                 result.ColumnCount = maximumColumnCount < ColumnCount and maximumColumnCount
                                          or result.Groups:Count() * 2
+                log("database initialize Selector complete.")
                 return result
             end,
         },
@@ -148,7 +150,7 @@ function Class:Ensure()
     self.ItemsForModuleCategory = {}
     self.EntitiesForModuleEffects = {}
     self.Proxies = {}
-    
+
     log("database scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
     log("database scan technologies ...")
@@ -224,10 +226,10 @@ function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, p
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
 function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
-function Class:GetModuleCategory(name, prototype)
+function Class:GetModuleCategory(name, prototype) --
     return self:GetProxy("ModuleCategory", name, prototype)
 end
-function Class:GetModuleEffect(name, prototype)
+function Class:GetModuleEffect(name, prototype) --
     return self:GetProxy("ModuleEffect", name, prototype)
 end
 
@@ -235,15 +237,15 @@ function Class:GetMiningRecipe(name, prototype) --
     return self:GetProxy("MiningRecipe", name, prototype)
 end
 
-function Class:GetBoilingRecipe(name, prototype)
+function Class:GetBoilingRecipe(name, prototype) --
     return self:GetProxy("BoilingRecipe", name, prototype)
 end
 
-function Class:GetBurningRecipe(name, prototype)
+function Class:GetBurningRecipe(name, prototype) --
     return self:GetProxy("BurningRecipe", name, prototype)
 end
 
-function Class:GetRocketLaunchRecipe(name, prototype)
+function Class:GetRocketLaunchRecipe(name, prototype) --
     return self:GetProxy("RocketLaunchRecipe", name, prototype)
 end
 
