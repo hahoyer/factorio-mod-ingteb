@@ -37,15 +37,19 @@ local Class = class:new(
             end,
         },
         TasksGui = {
-            get = function(self) 
+            get = function(self)
                 local gui = self.MainGui
                 if gui then return gui.Tasks or gui.children[2] end
-            end
+            end,
         },
         MainGui = {
-            get = function(self) 
+            get = function(self)
                 local gui = mod_gui.get_frame_flow(self.Player)
-                if gui then return gui.Remindor end
+                if gui then
+                    local xreturn = gui[Constants.ModName .. "." .. self.class.name]
+                    if xreturn then ilog("Remindor.MainGui =  " .. xreturn.index) end
+                    return xreturn
+                end
             end,
         },
     }
@@ -94,9 +98,7 @@ function Class:Toggle()
     end
 end
 
-function Class:Close()
-    if self.MainGui then self.MainGui.destroy() end
-end
+function Class:Close() if self.MainGui then self.MainGui.destroy() end end
 
 function Class:Open()
     local result = Helper.CreateLeftSideFrameWithContent(
@@ -123,13 +125,11 @@ function Class:Reopen()
     self:Refresh()
 end
 
-local isRefreshActive
-
 function Class:Refresh()
-    if isRefreshActive then return end
-    isRefreshActive = true
+    if self.IsRefreshActive then return end
+    self.IsRefreshActive = true
     self:ForceRefresh()
-    isRefreshActive = false
+    self.IsRefreshActive = false
 end
 
 function Class:ForceRefresh()
@@ -187,7 +187,7 @@ function Class:OnGuiDrag(event)
     local target = self.Tasks[taskIndex]
     self.Tasks:Remove(taskIndex)
     self.Tasks:InsertAt(newIndex, target)
-    self:Reopen()
+    self:Refresh()
 end
 
 function Class:OnGuiEvent(event)
@@ -205,14 +205,14 @@ function Class:OnGuiEvent(event)
             self.Parent.Modules.SelectRemindor:Reopen()
         elseif message.target == "Task" then
             target.SettingsGui:OnClick(event)
-            self:Reopen()
+            self:Refresh()
         else
             dassert()
         end
     elseif message.target == "Task" then
         if message.action == "Remove" then
             self.Tasks:Remove(taskIndex)
-            self:Reopen()
+            self:Refresh()
         elseif message.action == "Drag" then
             self:OnGuiDrag(event)
         else
@@ -253,7 +253,7 @@ end
 
 function Class:OnSettingsChanged()
     self.cache[Class.name].ParentData.IsValid = false
-    self:Reopen()
+    self:Refresh()
 end
 
 function Class:OnMainInventoryChanged() self:Refresh() end
