@@ -42,6 +42,7 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 local Class = class:new(
     "Database", nil, {
         Player = {get = function(self) return self.Parent.Player end},
+        Global = {get = function(self) return self.Parent.Global end},
         ProductionTimeUnit = {
             cache = "player",
             get = function(self)
@@ -619,14 +620,19 @@ function Class:GetCraftableCount(target)
     end
 end
 
+function Class:GetTranslation(commonKey)
+    local dictionary = EnsureKey(self.Global, "Translation", Dictionary:new())
+    return EnsureKey(dictionary, commonKey, Dictionary:new())
+end
+
 function Class:OnStringTranslated(event)
     local names, finished = translation.process_result(event)
     if names then
         local result = event.translated and event.result or false
         for tag, keys in pairs(names) do
             for _, key in ipairs(keys) do
-                local target = self:GetProxyFromCommonKey(key)
-                target.Translation[tag] = result
+                local target = self:GetTranslation(key)
+                target[tag] = result
             end
         end
     end

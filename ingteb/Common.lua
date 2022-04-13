@@ -15,9 +15,25 @@ local Class = class:new(
         ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
         Group = {cache = true, get = function(self) return self.Prototype.group end},
         SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
+        Prototype = {
+            get = function(self)
+                local realm = self.PrototypeData.Realm
+                if realm == "game" then
+                    return game[self.PrototypeData.Group][self.PrototypeData.Name]
+                elseif realm == "constant" then
+                    return self.PrototypeData.Value
+                else
+                    dassert(false, "invalid realm: " .. realm)
+                end
+            end,
+        },
         TypeOrder = {
             cache = true,
             get = function(self) return self.Database.Order[self.class.name] end,
+        },
+
+        Translation = { --
+            get = function(self) return self.Database:GetTranslation(self.CommonKey) end,
         },
 
         LocalisedName = {
@@ -310,12 +326,12 @@ function Class:GetAction(event)
     if specialFunction then return specialFunction.Action(self, event) end
 end
 
-function Class:new(prototype, database)
-    dassert(prototype)
+function Class:new(prototypeData, database)
+    dassert(prototypeData)
     dassert(database)
 
     if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging 
-    local self = self:adopt{Prototype = prototype, Database = database}
+    local self = self:adopt{PrototypeData = prototypeData, Database = database}
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
@@ -323,7 +339,6 @@ function Class:new(prototype, database)
         "ingteb-utility.remark-style",
         self.Prototype.localised_description,
     }
-    self.Translation = {}
 
     return self
 
