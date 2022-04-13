@@ -21,7 +21,11 @@ local Class = class:new(
         Global = {get = function(self) return self.Parent.Global end},
         Database = {get = function(self) return self.Parent.Database end},
         ChangeWatcher = {get = function(self) return self.Parent.Modules.ChangeWatcher end},
-        MainGui = {get = function(self) return self.Player.gui.screen[self.class.name] end},
+        MainGui = {
+            get = function(self)
+                return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
+            end,
+        },
     }
 )
 
@@ -31,10 +35,9 @@ function Class:new(parent)
     return self
 end
 
-local nextId = 0
-local function GetNextId()
-    nextId = nextId + 1
-    return nextId
+function Class:GetNextId()
+    self.NextId = self.NextId + 1
+    return self.NextId 
 end
 
 ---Create the header for content
@@ -67,7 +70,7 @@ local function GetContentPanel(headerSprites, tooltip, data)
     return result
 end
 
-local maximalCount = 6
+local maximalCount = Constants.MaximumEntriesInRecipeList
 
 function Class:GetRespondingSpriteButton(target, sprite, category)
     return self.Spritor:GetRespondingSpriteButton(target, sprite, category)
@@ -108,13 +111,13 @@ end
 function Class:GetRecipeLine(target, inCount, outCount)
     return {
         type = "flow",
-        name = "GetRecipeLine " .. GetNextId(),
+        name = "GetRecipeLine " .. self:GetNextId(),
         direction = "horizontal",
         children = {
             self:GetLinePart(target.Input, inCount, true),
             {
                 type = "flow",
-                name = "GetRecipeLine inner " .. GetNextId(),
+                name = "GetRecipeLine inner " .. self:GetNextId(),
                 direction = "horizontal",
                 children = {
                     {type = "sprite", sprite = "go_to_arrow"},
@@ -197,7 +200,7 @@ function Class:GetTechnologyEffectsData(target)
     if not effects:Any() then
         return {
             type = "flow",
-            name = "GetTechnologyEffectsData no effects " .. GetNextId(),
+            name = "GetTechnologyEffectsData no effects " .. self:GetNextId(),
             direction = "horizontal",
             {
                 type = "label",
@@ -218,7 +221,7 @@ function Class:GetTechnologyEffectsData(target)
 
     return {
         type = "flow",
-        name = "GetTechnologyEffectsData " .. GetNextId(),
+        name = "GetTechnologyEffectsData " .. self:GetNextId(),
         direction = "vertical",
         children = effects:Select(
             function(effekt)
@@ -251,7 +254,7 @@ function Class:GetTechnologyEffectsPanel(target)
             {
                 {
                     type = "flow",
-                    name = "GetTechnologyEffectsPanel " .. GetNextId(),
+                    name = "GetTechnologyEffectsPanel " .. self:GetNextId(),
                     direction = "horizontal",
                     children = {
                         {
@@ -261,7 +264,7 @@ function Class:GetTechnologyEffectsPanel(target)
                         },
                         {
                             type = "flow",
-                            name = "GetTechnologyEffectsPanel inner " .. GetNextId(),
+                            name = "GetTechnologyEffectsPanel inner " .. self:GetNextId(),
                             direction = "horizontal",
                             style = "ingteb-flow-centered",
                             children = target.Ingredients:Select(
@@ -300,7 +303,7 @@ local function GetSubGroupTabPanel(subGroup, recipeLines)
     return {
         tab = {
             type = "tab",
-            name = "GetSubGroupTabPanel " .. GetNextId(),
+            name = "GetSubGroupTabPanel " .. self:GetNextId(),
             caption = caption,
             tooltip = group.localised_name,
             style = "ingteb-medium-tab",
@@ -313,7 +316,7 @@ function Class:GetSubGroupPanelContent(target, inCount, outCount)
     return {
         type = "flow",
         direction = "vertical",
-        name = "GetSubGroupPanelContent " .. GetNextId(),
+        name = "GetSubGroupPanelContent " .. self:GetNextId(),
         children = target:Select(
             function(recipe) return self:GetRecipeLine(recipe, inCount, outCount) end
         ),
@@ -326,7 +329,7 @@ function Class:GetGroupPanelContent(value, inCount, outCount)
         return {
             type = "flow",
             direction = "vertical",
-            name = "GetGroupPanelContent " .. GetNextId(),
+            name = "GetGroupPanelContent " .. self:GetNextId(),
             children = value:Select(
                 function(recipe) return self:GetRecipeLine(recipe, inCount, outCount) end
             ),
@@ -343,7 +346,7 @@ function Class:GetGroupPanelContent(value, inCount, outCount)
 
     return {
         type = "tabbed-pane",
-        name = "GetGroupPanelContent " .. GetNextId(),
+        name = "GetGroupPanelContent " .. self:GetNextId(),
         tabs = subGroups:Select(
             function(value)
                 local recipeLines = self:GetSubGroupPanelContent(value, inCount, outCount)
@@ -359,7 +362,7 @@ local function GetGroupTabPanel(value, content)
     return {
         tab = {
             type = "tab",
-            name = "GetGroupTabPanel " .. GetNextId(),
+            name = "GetGroupTabPanel " .. self:GetNextId(),
             caption = "[item-group=" .. group.name .. "]",
             tooltip = group.localised_name,
             style = "ingteb-medium-tab",
@@ -374,7 +377,7 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
         return {
             type = "flow",
             direction = "vertical",
-            name = "GetCraftigGroupData " .. GetNextId(),
+            name = "GetCraftigGroupData " .. self:GetNextId(),
             children = target:Select(
                 function(recipe)
                     return (self:GetRecipeLine(recipe, inCount, outCount))
@@ -407,7 +410,7 @@ function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
 
     local result = {
         type = "flow",
-        name = "GetCraftingGroupPanel " .. GetNextId(),
+        name = "GetCraftingGroupPanel " .. self:GetNextId(),
         direction = "vertical",
         children = {
             self:GetWorkersPanel(self.Database:GetCategory(category), inCount + outCount + 3),
@@ -480,7 +483,7 @@ function Class:GetUsefulLinksPanel(target)
     return {
         {
             type = "flow",
-            name = "GetUsefulLinksPanel " .. GetNextId(),
+            name = "GetUsefulLinksPanel " .. self:GetNextId(),
             direction = "vertical",
             children = children,
         },
@@ -541,7 +544,7 @@ function Class:GetTechnologyList(target)
         function(values)
             local frame = {
                 type = "flow",
-                name = "GetTechnologyList " .. GetNextId(),
+                name = "GetTechnologyList " .. self:GetNextId(),
                 direction = "horizontal",
                 children = self.Spritor:GetTiles(ingredientsCount - values[1].Ingredients:Count()) --
                 :Concat(
@@ -702,6 +705,7 @@ local function CreateMainPanel(rawTargets)
 end
 
 function Class:GetGui(target)
+    self.NextId = 0
     target:SortAll()
     dassert(
         not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
@@ -802,7 +806,7 @@ function Class:GetGui(target)
         }
     end
 
-    return {type = "flow", direction = "vertical", children = children}
+    return {type = "flow", name = "Panels", direction = "vertical", children = children}
 end
 
 function Class:OnGuiEvent(event)
