@@ -57,7 +57,7 @@ function Class:Execute(eventId, eventName)
             if result == false then handlers[identifier] = nil end
         end
 
-        self:RemoveIfEmpty(handlers, eventId)
+        -- self:RemoveIfEmpty(handlers, eventId)
     end
 end
 
