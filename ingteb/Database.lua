@@ -43,7 +43,7 @@ local Class = class:new(
     "Database", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         ProductionTimeUnit = {
-            cache = true,
+            cache = "player",
             get = function(self)
                 local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
                                      .value
