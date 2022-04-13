@@ -45,8 +45,6 @@ local Class = class:new(
     }
 )
 
-local self
-
 function Class:SelectRemindorByCommonKey(commonKey, location)
     local remindorTask = {RemindorTask = self.Database:GetProxyFromCommonKey(commonKey)}
     self.Modules.SelectRemindor:Open(remindorTask, location)
