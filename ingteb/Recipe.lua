@@ -59,7 +59,7 @@ Recipe.system.Properties = {
     },
 
     OrderValue = {
-        cache = true,
+        cache = "player",
         get = function(self)
             return --
             self.TypeOrder .. " " --

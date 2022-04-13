@@ -23,7 +23,7 @@ local Class = class:new(
             get = function(self) return self.ParentData.Settings.RemoveTaskWhenFulfilled end,
         },
         ParentData = {
-            cache = true,
+            cache = "player",
             get = function(self)
                 local playerSettings = settings.get_player_settings(self.Player)
                 return {

@@ -10,6 +10,7 @@ local UI = require("core.UI")
 
 local Class = class:new(
     "Common", nil, {
+        Player = {get = function(self) return self.Database.Player end},
         DebugLine = {get = function(self) return self.CommonKey end},
         ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
         Group = {cache = true, get = function(self) return self.Prototype.group end},
@@ -280,7 +281,7 @@ function Class:SealUp()
     self:SortAll()
 
     translation.add_requests(
-        self.Database.Player.index, {
+        self.Player.index, {
             {
                 dictionary = "Description",
                 internal = self.CommonKey,

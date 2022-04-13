@@ -115,7 +115,7 @@ local Class = class:new(
 
         IsResearched = {
             get = function(self)
-                return self.Database.Player.force.technologies[self.Prototype.name].researched
+                return self.Player.force.technologies[self.Prototype.name].researched
                            == true
             end,
         },
@@ -168,7 +168,7 @@ local Class = class:new(
         },
 
         NotResearchedPrerequisitesRaw = {
-            cache = true,
+            cache = "player",
             get = function(self)
                 local result = Dictionary:new{}
                 if self.IsResearched then return result end
@@ -326,7 +326,6 @@ local Class = class:new(
 )
 
 function Class:BeginMulipleQueueResearch(setting)
-    local player = self.Database.Player
     local queued = Array:new{}
     local message = "ingteb-utility.research-no-ready-prerequisite"
     repeat
@@ -351,7 +350,6 @@ function Class:BeginMulipleQueueResearch(setting)
 end
 
 function Class:BeginDirectQueueResearch()
-    local player = self.Database.Player
     local added = self.ResearchQueue:AddResearch(self.Name)
     if added then
         self.Database:Print{"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}

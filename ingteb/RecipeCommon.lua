@@ -17,7 +17,7 @@ Class.system.Properties = {
         end,
     },
     OrderValue = {
-        cache = true,
+        cache = "player",
         get = function(self)
             return self.TypeOrder --
             .. " R R " --

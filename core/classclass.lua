@@ -17,7 +17,7 @@ local function GetField(self, key, classInstance)
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
     end
-    
+
     local base = classInstance.system.BaseClass
     if base then
         return base.system.Metatable.__index(self, key)
@@ -110,7 +110,11 @@ function class:new(name, base, properties)
                 end
                 if value.cache then
                     dassert(not value.set)
-                    class.addCachedProperty(instance, self, key, value.get)
+                    dassert(
+                        value.cache == true or value.cache == "player", "invalid cache setting: "
+                            .. tostring(value.cache) .. ". Must true, false or 'player'"
+                    )
+                    class.addCachedProperty(instance, self, key, value.get, value.cache == "player")
                 end
             end
         end
