@@ -112,16 +112,16 @@ function Class:Open()
         }, --
         {"ingteb-utility.reminder-tasks"} --
     )
-    --dassert(self.TasksGui == result.Tasks)
-    --dassert(self.MainGui == result.Main)
+    -- dassert(self.TasksGui == result.Tasks)
+    -- dassert(self.MainGui == result.Main)
 end
 
 function Class:Refresh()
     if self.IsRefreshActive then
-        dassert(false)
+        -- Will happen because of autoamtic actions
         return
     end
-    
+
     self.IsRefreshActive = true
     self.Tasks = self.Tasks:Where(function(task) return task.IsRelevant end)
     self:CopyTasksToGlobal()
@@ -130,29 +130,19 @@ function Class:Refresh()
     self.IsRefreshActive = false
 end
 
-function Class:AddIcon(icon)
-    local gui = self.TasksGui
-    if not gui then return end
-    gui.add {type = "sprite", sprite = icon}
-end
-
 function Class:AppendTasks()
     if self.TasksGui then self.TasksGui.clear() end
-    if true then
-        self.Tasks:Select(function(task) self:AddIcon(task.Target.SpriteName) end)
-    else
-        self.Spritor:StartCollecting()
-        local data = {}
-        local required = {Things = 0, Settings = {}}
-        self.Tasks:Select(function(task) task:ScanRequired(required) end)
-        self.Tasks:Select(
-            function(task, index)
-                task:CreatePanel(
-                    self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
-                )
-            end
-        )
-    end
+    self.Spritor:StartCollecting()
+    local data = {}
+    local required = {Things = 0, Settings = {}}
+    self.Tasks:Select(function(task) task:ScanRequired(required) end)
+    self.Tasks:Select(
+        function(task, index)
+            task:CreatePanel(
+                self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
+            )
+        end
+    )
 end
 
 function Class:OnGuiDrag(event)

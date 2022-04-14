@@ -36,7 +36,7 @@ Item.system.Properties = {
     ResearchingTechnologies = {
         cache = true,
         get = function(self)
-            local list = self.Database.ResearchingTechnologyForItems[self.Prototype.name]
+            local list = self.Database.BackLinks.ResearchingTechnologyForItems[self.Prototype.name]
             if not list then return end
             return list:Select(
                 function(prototype)
@@ -153,7 +153,7 @@ Item.system.Properties = {
             local result = Dictionary:new()
             local prototype = self.Prototype
             for name in pairs(prototype.module_effects or {}) do
-                local entities = self.Database.EntitiesForModuleEffects[name]
+                local entities = self.Database.BackLinks.EntitiesForModuleEffects[name]
                 if entities then
                     entities:Select(
                         function(entityPrototype)

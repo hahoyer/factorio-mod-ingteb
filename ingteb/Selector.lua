@@ -168,7 +168,11 @@ function Class:GetTargetsGui()
         type = "flow",
         direction = "vertical",
         children = {
-            {type = "table", column_count = Constants.SelectorColumnCount, children = self:GetTargets()},
+            {
+                type = "table",
+                column_count = Constants.SelectorColumnCount,
+                children = self:GetTargets(),
+            },
             {type = "line", direction = "horizontal"},
             {type = "table", column_count = Constants.SelectorColumnCount},
         },

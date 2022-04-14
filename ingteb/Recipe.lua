@@ -13,7 +13,7 @@ Recipe.system.Properties = {
     Technologies = {
         cache = true,
         get = function(self)
-            local xreturn = (self.Database.TechnologiesForRecipe[self.Name] or Array:new{}) --
+            local xreturn = (self.Database.BackLinks.TechnologiesForRecipe[self.Name] or Array:new{}) --
             :Select(
                 function(prototype)
                     return self.Database:GetTechnology(nil, prototype)

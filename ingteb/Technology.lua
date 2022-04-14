@@ -200,7 +200,7 @@ local Class = class:new(
         Enables = {
             cache = true,
             get = function(self)
-                local enabledTechnologies = self.Database.EnabledTechnologiesForTechnology[self.Prototype
+                local enabledTechnologies = self.Database.BackLinks.EnabledTechnologiesForTechnology[self.Prototype
                                                 .name]
                 if enabledTechnologies then
                     return enabledTechnologies --

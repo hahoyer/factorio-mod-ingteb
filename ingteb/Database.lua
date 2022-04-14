@@ -43,6 +43,13 @@ local Class = class:new(
     "Database", nil, {
         Player = {get = function(self) return self.Parent.Player end},
         Global = {get = function(self) return self.Parent.Global end},
+        BackLinks = {
+            get = function(self)
+                if not global.Database then global.Database = {} end
+                if not global.Database.BackLinks then global.Database.BackLinks = {} end
+                return global.Database.BackLinks
+            end,
+        },
         ProductionTimeUnit = {
             cache = "player",
             get = function(self)
@@ -90,8 +97,8 @@ local Class = class:new(
                         end
                     end
                 end
-                result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount and maximumColumnCount
-                                         or result.Groups:Count() * 2
+                result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount
+                                         and maximumColumnCount or result.Groups:Count() * 2
                 log("database initialize Selector complete.")
                 return result
             end,
@@ -137,20 +144,21 @@ function Class:Ensure()
 
     log("database initialize start...")
     self:OnSettingsChanged()
-    self.UsedByRecipesForItems = {}
-    self.CreatedByRecipesForItems = {}
     self.CategoryNames = Dictionary:new{}
-    self.RecipesForCategory = {}
-    self.TechnologiesForRecipe = {}
-    self.EnabledTechnologiesForTechnology = {}
-    self.ResearchingTechnologyForItems = {}
-    self.ItemsForFuelCategory = {}
-    self.EntitiesForBurnersFuel = {}
-    self.WorkersForCategory = Dictionary:new{}
-    self.Resources = {}
-    self.ItemsForModuleEffects = {}
-    self.ItemsForModuleCategory = {}
-    self.EntitiesForModuleEffects = {}
+    local backLinks = self.BackLinks
+    backLinks.UsedByRecipesForItems = {}
+    backLinks.CreatedByRecipesForItems = {}
+    backLinks.RecipesForCategory = {}
+    backLinks.TechnologiesForRecipe = {}
+    backLinks.EnabledTechnologiesForTechnology = {}
+    backLinks.ResearchingTechnologyForItems = {}
+    backLinks.ItemsForFuelCategory = {}
+    backLinks.EntitiesForBurnersFuel = {}
+    backLinks.WorkersForCategory = {}
+    backLinks.Resources = {}
+    backLinks.ItemsForModuleEffects = {}
+    backLinks.ItemsForModuleCategory = {}
+    backLinks.EntitiesForModuleEffects = {}
     self.Proxies = {}
 
     log("database scan recipes ...")
@@ -167,18 +175,20 @@ function Class:Ensure()
     log("database special things...")
     self.CategoryNames:Select(
         function(value, categoryName)
-            EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
-            EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
+            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new{})
+            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new{})
             return self:GetCategory(categoryName)
         end
     )
     for name, prototype in pairs(game.fuel_category_prototypes) do
-        EnsureKey(self.ItemsForFuelCategory, name, Array:new())
+        EnsureKey(backLinks.ItemsForFuelCategory, name, Array:new())
     end
 
     log("database initialize recipes...")
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
+    log("database initialize cleanup...")
+    self.CategoryNames = nil
     log("database initialize complete.")
     self.IsInitialized = true
     return self
@@ -256,7 +266,7 @@ function Class:GetFuelCategory(name, prototype) --
 end
 
 function Class:GetFuelCategories()
-    return Dictionary:new(self.EntitiesForBurnersFuel) --
+    return Dictionary:new(self.BackLinks.EntitiesForBurnersFuel) --
     :Select(function(_, fuelTypeName) return fuelTypeName end)
 end
 
@@ -276,7 +286,7 @@ end
 ---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddWorkerForCategory(categoryName, prototype)
-    local data = EnsureKey(self.WorkersForCategory, categoryName, Dictionary:new{})
+    local data = EnsureKey(self.BackLinks.WorkersForCategory, categoryName, Dictionary:new{})
     data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
@@ -284,7 +294,7 @@ end
 ---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipesForCategory(categoryName, prototype)
-    local data = EnsureKey(self.RecipesForCategory, categoryName, Dictionary:new{})
+    local data = EnsureKey(self.BackLinks.RecipesForCategory, categoryName, Dictionary:new{})
     data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
@@ -375,7 +385,9 @@ function Class:ScanEntity(prototype)
     if prototype.burner_prototype then
         if prototype.burner_prototype.fuel_inventory_size > 0 then
             for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
-                EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
+                EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
+                    prototype.name
+                )
                 self:AddWorkerForCategory("burning." .. category, prototype)
             end
         else
@@ -424,7 +436,7 @@ function Class:ScanEntity(prototype)
     end
 
     for name, value in pairs(prototype.allowed_effects or {}) do
-        EnsureKey(self.EntitiesForModuleEffects, name, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.EntitiesForModuleEffects, name, Array:new()):Append(prototype)
     end
 end
 
@@ -433,16 +445,20 @@ function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-ax
 function Class:ScanTechnology(prototype)
     for _, value in pairs(prototype.effects or {}) do
         if value.type == "unlock-recipe" then
-            EnsureKey(self.TechnologiesForRecipe, value.recipe, Array:new()):Append(prototype)
+            EnsureKey(self.BackLinks.TechnologiesForRecipe, value.recipe, Array:new()):Append(
+                prototype
+            )
         end
     end
     for key, _ in pairs(prototype.prerequisites or {}) do
-        EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.EnabledTechnologiesForTechnology, key, Array:new()):Append(prototype)
     end
 
     for _, item in pairs(prototype.research_unit_ingredients or {}) do
         dassert(item.type == "item")
-        EnsureKey(self.ResearchingTechnologyForItems, item.name, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.ResearchingTechnologyForItems, item.name, Array:new()):Append(
+            prototype
+        )
     end
 
 end
@@ -450,7 +466,7 @@ end
 function Class:ScanFuel(prototype, domainName, subName)
     if prototype.fuel_value and prototype.fuel_value > 0 then
         local subName = subName or "~"
-        EnsureKey(self.ItemsForFuelCategory, subName, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.ItemsForFuelCategory, subName, Array:new()):Append(prototype)
         local categoryName = domainName .. "." .. subName
         self:AddRecipesForCategory(categoryName, prototype)
     end
@@ -476,11 +492,13 @@ function Class:ScanItem(prototype)
     end
 
     for name in pairs(prototype.module_effects or {}) do
-        EnsureKey(self.ItemsForModuleEffects, name, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.ItemsForModuleEffects, name, Array:new()):Append(prototype)
     end
 
     if prototype.category then
-        EnsureKey(self.ItemsForModuleCategory, prototype.category, Array:new()):Append(prototype)
+        EnsureKey(self.BackLinks.ItemsForModuleCategory, prototype.category, Array:new()):Append(
+            prototype
+        )
     end
 end
 
@@ -653,12 +671,13 @@ function Class:GetRecipesGroupByCategory(recipes)
 end
 
 function Class:GetUsedByRecipes(itemName)
-    local xreturn = self:GetRecipesGroupByCategory(self.UsedByRecipesForItems[itemName])
+    local xreturn = self:GetRecipesGroupByCategory(self.BackLinks.UsedByRecipesForItems[itemName])
     return xreturn
 end
 
 function Class:GetCreatedByRecipes(itemName)
-    local xreturn = self:GetRecipesGroupByCategory(self.CreatedByRecipesForItems[itemName])
+    local xreturn =
+        self:GetRecipesGroupByCategory(self.BackLinks.CreatedByRecipesForItems[itemName])
     return xreturn
 end
 
@@ -666,13 +685,13 @@ function Class:EnsureUsage(recipe, input, output)
     if input then
         for _, value in ipairs(input) do
             if value.type ~= "resource" then
-                EnsureRecipeForItem(self.UsedByRecipesForItems, value.name, recipe)
+                EnsureRecipeForItem(self.BackLinks.UsedByRecipesForItems, value.name, recipe)
             end
         end
     end
     if output then
         for _, value in ipairs(output) do
-            EnsureRecipeForItem(self.CreatedByRecipesForItems, value.name, recipe)
+            EnsureRecipeForItem(self.BackLinks.CreatedByRecipesForItems, value.name, recipe)
         end
     end
 end

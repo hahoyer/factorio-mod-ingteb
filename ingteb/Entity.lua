@@ -94,7 +94,7 @@ Class.system.Properties = {
             local xreturn = self.Database.Proxies.Category -- 
             :Where(
                 function(category)
-                    local workers = self.Database.WorkersForCategory[category.Name]
+                    local workers = self.Database.BackLinks.WorkersForCategory[category.Name]
                     return workers
                                and workers:Any(function(worker)
                             return worker == self.Prototype
@@ -176,7 +176,7 @@ Class.system.Properties = {
             local result = Dictionary:new()
             local prototype = self.Prototype
             for name, value in pairs(prototype.allowed_effects or {}) do
-                local items = self.Database.ItemsForModuleEffects[name]
+                local items = self.Database.BackLinks.ItemsForModuleEffects[name]
                 if items then
                     items:Select(
                         function(itemPrototype)
@@ -202,7 +202,8 @@ function Class:GetNumberOnSprite(category)
         return self.Prototype.target_temperature
     elseif category.Domain == "crafting" then
         return self.Prototype.crafting_speed
-    elseif category.Domain == "mining" or category.Domain == "fluid-mining" or category.Name == "hand-mining.steel-axe" then
+    elseif category.Domain == "mining" or category.Domain == "fluid-mining" or category.Name
+        == "hand-mining.steel-axe" then
         return self.Prototype.mining_speed
     elseif category.Domain == "rocket-launch" then
         return self.Speed / category.Speed

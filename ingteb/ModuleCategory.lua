@@ -13,7 +13,7 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return self.Database.ItemsForModuleCategory[self.Name] --
+            return self.Database.BackLinks.ItemsForModuleCategory[self.Name] --
             :Select(function(target) return self.Database:Get(target) end)
         end,
     },

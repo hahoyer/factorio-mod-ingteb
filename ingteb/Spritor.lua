@@ -7,6 +7,8 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local StackOfGoods = require("ingteb.StackOfGoods")
 
+local noWatcher = false
+
 local Class = class:new(
     "Spritor", nil, {
         Player = {get = function(self) return self.Parent.Player end},
@@ -83,9 +85,14 @@ function Class:UpdateGui(guiElement, target)
 end
 
 function Class:Close() return self.ChangeWatcher:Close(self) end
-function Class:StartCollecting() return self.ChangeWatcher:StartCollecting(self) end
+
+function Class:StartCollecting()
+    if noWatcher then return end
+    return self.ChangeWatcher:StartCollecting(self)
+end
 
 function Class:CollectForGuiClick(result, target)
+    if noWatcher then return end
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         local index = self.ChangeWatcher:CollectForGuiClick(self, target)
         result.ref = {"DynamicElements", index}
@@ -94,6 +101,7 @@ function Class:CollectForGuiClick(result, target)
 end
 
 function Class:RegisterDynamicElements(guiElements)
+    if noWatcher then return end
     return self.ChangeWatcher:RegisterDynamicElements(self, guiElements)
 end
 

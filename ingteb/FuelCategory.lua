@@ -11,7 +11,7 @@ FuelCategory.system.Properties = {
     Fuels = {
         cache = true,
         get = function(self)
-            return self.Database.ItemsForFuelCategory[self.Name] --
+            return self.Database.BackLinks.ItemsForFuelCategory[self.Name] --
             :Select(function(fuel) return self.Database:Get(fuel) end)
         end,
     },
@@ -39,7 +39,7 @@ FuelCategory.system.Properties = {
     Burners = {
         cache = true,
         get = function(self)
-            local result = Array:new(self.Database.EntitiesForBurnersFuel[self.Name]) --
+            local result = Array:new(self.Database.BackLinks.EntitiesForBurnersFuel[self.Name]) --
             :Select(function(workerName) return self.Database:GetEntity(workerName) end)
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result

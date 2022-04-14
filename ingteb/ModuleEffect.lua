@@ -12,7 +12,7 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return self.Database.ItemsForModuleEffects[self.Name] --
+            return self.Database.BackLinks.ItemsForModuleEffects[self.Name] --
             :Select(function(target) return self.Database:GetItem(nil, target) end)
         end,
     },
@@ -20,7 +20,7 @@ Class.system.Properties = {
     Entities = {
         cache = true,
         get = function(self)
-            return self.Database.EntitiesForModuleEffects[self.Name] --
+            return self.Database.BackLinks.EntitiesForModuleEffects[self.Name] --
             :Select(function(target) return self.Database:GetEntity(nil, target) end)
         end,
     },

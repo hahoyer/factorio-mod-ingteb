@@ -36,7 +36,7 @@ end
 Class.system.Properties = {
     OriginalWorkers = {
         get = function(self)
-            local workers = self.Database.WorkersForCategory[self.Name]
+            local workers = self.Database.BackLinks.WorkersForCategory[self.Name]
             if workers then
                 return workers:ToArray(
                     function(worker) return self.Database:GetEntity(nil, worker) end
@@ -105,7 +105,7 @@ Class.system.Properties = {
     RecipeList = {
         cache = true,
         get = function(self)
-            local recipeList = self.Database.RecipesForCategory[self.Name] --
+            local recipeList = self.Database.BackLinks.RecipesForCategory[self.Name] --
             local result = recipeList --
             :ToArray(
                 function(recipe)
