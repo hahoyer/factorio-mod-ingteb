@@ -202,7 +202,7 @@ function Class:GetNumberOnSprite(category)
         return self.Prototype.target_temperature
     elseif category.Domain == "crafting" then
         return self.Prototype.crafting_speed
-    elseif category.Domain == "mining" or category.Domain == "fluid-mining" then
+    elseif category.Domain == "mining" or category.Domain == "fluid-mining" or category.Name == "hand-mining.steel-axe" then
         return self.Prototype.mining_speed
     elseif category.Domain == "rocket-launch" then
         return self.Speed / category.Speed
