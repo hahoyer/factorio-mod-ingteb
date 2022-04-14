@@ -37,7 +37,7 @@ end
 
 function Class:GetNextId()
     self.NextId = self.NextId + 1
-    return self.NextId 
+    return self.NextId
 end
 
 ---Create the header for content
