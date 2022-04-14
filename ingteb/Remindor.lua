@@ -39,7 +39,7 @@ local Class = class:new(
         TasksGui = {
             get = function(self)
                 local gui = self.MainGui
-                if gui then return gui.Tasks or gui.children[2] end
+                if gui then return gui.Tasks or gui.children[2] or gui end
             end,
         },
         MainGui = {
@@ -112,38 +112,40 @@ function Class:Open()
         }, --
         {"ingteb-utility.reminder-tasks"} --
     )
-    dassert(self.TasksGui == result.Tasks)
-    dassert(self.MainGui == result.Main)
-    self:Refresh()
-end
-
-function Class:Reopen()
-    if self.MainGui then
-        self:Close()
-        self:Open()
-    end
-    self:Refresh()
+    --dassert(self.TasksGui == result.Tasks)
+    --dassert(self.MainGui == result.Main)
 end
 
 function Class:Refresh()
-    if self.IsRefreshActive then return end
+    if self.IsRefreshActive then
+        dassert(false)
+        return
+    end
+    
     self.IsRefreshActive = true
-    self:ForceRefresh()
+    self.Tasks = self.Tasks:Where(function(task) return task.IsRelevant end)
+    self:CopyTasksToGlobal()
+    if self.MainGui then self:AppendTasks() end
+    self.Tasks:Select(function(task) task:AutomaticActions() end)
     self.IsRefreshActive = false
 end
 
-function Class:ForceRefresh()
+function Class:AddIcon(icon)
+    local gui = self.TasksGui
+    if not gui then return end
+    gui.add {type = "sprite", sprite = icon}
+end
+
+function Class:AppendTasks()
     if self.TasksGui then self.TasksGui.clear() end
-
-    self.Tasks = self.Tasks:Where(function(task) return task.IsRelevant end)
-    self:CopyTasksToGlobal()
-
-    if self.MainGui then
+    if true then
+        self.Tasks:Select(function(task) self:AddIcon(task.Target.SpriteName) end)
+    else
         self.Spritor:StartCollecting()
         local data = {}
         local required = {Things = 0, Settings = {}}
         self.Tasks:Select(function(task) task:ScanRequired(required) end)
-        self.MaximumRequiredCount = self.Tasks:Select(
+        self.Tasks:Select(
             function(task, index)
                 task:CreatePanel(
                     self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
@@ -151,7 +153,6 @@ function Class:ForceRefresh()
             end
         )
     end
-    self.Tasks:Select(function(task) task:AutomaticActions() end)
 end
 
 function Class:OnGuiDrag(event)
