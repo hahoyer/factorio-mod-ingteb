@@ -1,4 +1,4 @@
-local translation = require("__flib__.translation")
+local localisation = require "__flib__.dictionary"
 local Number = require("core.Number")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
@@ -54,7 +54,7 @@ local Class = class:new(
             get = function(self)
                 if not global.Database then global.Database = {} end
                 if not global.Database.Proxies then global.Database.Proxies = {} end
-                return global.Database.Proxies 
+                return global.Database.Proxies
             end,
         },
         ProductionTimeUnit = {
@@ -168,9 +168,7 @@ function Class:Ensure()
     backLinks.EntitiesForModuleEffects = {}
     local proxies = self.Proxies
 
-    while next(proxies) do 
-        proxies[next(proxies) ] = nil
-    end
+    while next(proxies) do proxies[next(proxies)] = nil end
 
     log("database scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
@@ -652,25 +650,33 @@ function Class:GetCraftableCount(target)
 end
 
 function Class:GetTranslation(commonKey)
-    local dictionary = EnsureKey(self.Global, "Translation", Dictionary:new())
-    return EnsureKey(dictionary, commonKey, Dictionary:new())
+    local dictionary = EnsureKey(self.Global, "Localisation")
+    return EnsureKey(dictionary, commonKey)
 end
 
 function Class:OnStringTranslated(event)
-    local names, finished = translation.process_result(event)
-    if names then
-        local result = event.translated and event.result or false
-        for tag, keys in pairs(names) do
-            for _, key in ipairs(keys) do
-                local target = self:GetTranslation(key)
-                target[tag] = result
-            end
-        end
-    end
-    if finished then
-        -- dassert() 
-    end
+    local language_data = localisation.process_translation(event)
+    if not language_data then return end
+    self.Global.Localisation = language_data.dictionaries
 end
+
+function Class:OnInitialiseLocalisation()
+    localisation.init()
+    self.Localisation = {
+        Names = localisation.new("Names", true),
+        Descriptions = localisation.new("Descriptions", true),
+    }
+end
+
+function Class:AddTranslationRequest(commonKey, prototype)
+    if not self.Localisation then self:OnInitialiseLocalisation() end
+    self.Localisation.Names:add(commonKey, prototype.localised_name)
+    self.Localisation.Descriptions:add(commonKey, prototype.localised_description)
+end
+
+function Class:OnInitialise() self:OnInitialiseLocalisation() end
+
+function Class:OnConfigurationChanged() self:OnInitialiseLocalisation() end
 
 function Class:GetRecipesGroupByCategory(recipes)
     if recipes then

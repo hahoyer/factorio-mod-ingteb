@@ -1,6 +1,6 @@
 local events = require("__flib__.event")
-local gui = require("__flib__.gui-beta")
-local translation = require("__flib__.translation")
+local gui = require "__flib__.gui"
+local localisation = require "__flib__.dictionary"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -158,11 +158,7 @@ function Class:OnBackClicked(event)
     end
 end
 
-function Class:OnTranslationBatch(event)
-    if not global.__flib or not global.__flib.translation then translation.init() end
-    -- if translation.translating_players_count() == 0 then return false end
-    translation.iterate_batch(event)
-end
+function Class:OnTranslationBatch(event) localisation.check_skipped(event) end
 
 function Class:OnTickInitial(event)
     for _, player in pairs(game.players) do
@@ -175,6 +171,7 @@ function Class:OnTickInitial(event)
 end
 
 function Class:OnLoad()
+    localisation.load()
     dassert(global.Players)
     for _, player in pairs(global.Players) do
         dassert(player.History)
@@ -198,9 +195,7 @@ end
 function Class:OnPlayerRemoved(event)
     self.Player = event.player_index
     self.Global.Players[event.player_index] = nil
-
-    if translation.is_translating(event.player_index) then translation.cancel(event.player_index) end
-
+    localisation.cancel_translation(event.player_index)
 end
 
 function Class:OnStringTranslated(event)
@@ -218,6 +213,7 @@ function Class:OnInitialisePlayer()
     }
     self:EnsureMainButton()
     self.RestoreFromSaveDone = true
+    if self.Player.connected then localisation.translate(self.Player) end
 end
 
 function Class:OnSettingsChanged(event)
@@ -231,7 +227,7 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
-    translation.init()
+    self.Modules.Database:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
         self.Player = player
@@ -241,7 +237,12 @@ function Class:OnInitialise()
     self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
-function Class:OnConfigurationChanged() translation.init() end
+function Class:OnConfigurationChanged()
+    self.Modules.Database:OnConfigurationChanged()
+    for index, player in pairs(game.players) do
+        if player.connected then localisation.translate(player) end
+    end
+end
 
 function Class:RestoreFromSave()
     if self.RestoreFromSaveDone then return end

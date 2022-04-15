@@ -1,5 +1,5 @@
-local gui = require("__flib__.gui-beta")
-local translation = require("__flib__.translation")
+local gui = require "__flib__.gui"
+local localisation = require "__flib__.dictionary"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -297,20 +297,7 @@ function Class:SealUp()
     self.Database:EnsureUsage(self, self.RawInput, self.RawOutput)
     self:SortAll()
 
-    translation.add_requests(
-        self.Player.index, {
-            {
-                dictionary = "Description",
-                internal = self.CommonKey,
-                localised = self.Prototype.localised_description,
-            },
-            {
-                dictionary = "Name",
-                internal = self.CommonKey,
-                localised = self.Prototype.localised_name,
-            },
-        }
-    )
+    self.Database:AddTranslationRequest(self.CommonKey,self.Prototype)
     self:AssertValid()
     self.IsSealed = true
     return self

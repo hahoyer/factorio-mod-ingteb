@@ -7,7 +7,7 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local noWatcher = false
+local noWatcher = true
 
 local Class = class:new(
     "Spritor", nil, {
