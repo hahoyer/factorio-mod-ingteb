@@ -293,7 +293,7 @@ function Class:GetTechnologyEffectsPanel(target)
 
 end
 
-local function GetSubGroupTabPanel(subGroup, recipeLines)
+function Class:GetSubGroupTabPanel(subGroup, recipeLines)
     local group = subGroup[1].SubGroup
     local caption = group.name
     if subGroup and subGroup[1].Output[1] then
@@ -350,7 +350,7 @@ function Class:GetGroupPanelContent(value, inCount, outCount)
         tabs = subGroups:Select(
             function(value)
                 local recipeLines = self:GetSubGroupPanelContent(value, inCount, outCount)
-                return (GetSubGroupTabPanel(value, recipeLines))
+                return (self:GetSubGroupTabPanel(value, recipeLines))
             end
         ),
     }
