@@ -1,6 +1,6 @@
 local function EnsureIndent()
     if not global.System then global.System = {} end
-    if not global.System.Indent then global.System.Indent = 0 end
+    if not global.System.Indent then global.System.Indent = "" end
 end
 
 function AddIndent()
