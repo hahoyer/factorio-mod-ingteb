@@ -50,6 +50,13 @@ local Class = class:new(
                 return global.Database.BackLinks
             end,
         },
+        Proxies = {
+            get = function(self)
+                if not global.Database then global.Database = {} end
+                if not global.Database.Proxies then global.Database.Proxies = {} end
+                return global.Database.Proxies 
+            end,
+        },
         ProductionTimeUnit = {
             cache = "player",
             get = function(self)
@@ -159,7 +166,11 @@ function Class:Ensure()
     backLinks.ItemsForModuleEffects = {}
     backLinks.ItemsForModuleCategory = {}
     backLinks.EntitiesForModuleEffects = {}
-    self.Proxies = {}
+    local proxies = self.Proxies
+
+    while next(proxies) do 
+        proxies[next(proxies) ] = nil
+    end
 
     log("database scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
