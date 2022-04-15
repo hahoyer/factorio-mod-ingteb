@@ -284,6 +284,7 @@ end
 function Class:GetBonusFromEffect(target)
     local type = target.type
     local prototype = {
+        type = "Bonus",
         name = (type .. "-modifier-icon"):gsub("-", "_"),
         localised_name = {"gui-bonus." .. type},
         localised_description = {"modifier-description." .. type},
