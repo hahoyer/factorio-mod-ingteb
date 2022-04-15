@@ -357,7 +357,7 @@ function Class:GetGroupPanelContent(value, inCount, outCount)
 
 end
 
-local function GetGroupTabPanel(value, content)
+function Class:GetGroupTabPanel(value, content)
     local group = value[1].Group
     return {
         tab = {
@@ -396,7 +396,7 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
         tabs = groups:Select(
             function(value)
                 local content = self:GetGroupPanelContent(value, inCount, outCount)
-                return GetGroupTabPanel(value, content)
+                return self:GetGroupTabPanel(value, content)
             end
         ),
     }
