@@ -227,6 +227,7 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
+    EnsureDebugSupport()
     self.Modules.Database:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
@@ -238,6 +239,7 @@ function Class:OnInitialise()
 end
 
 function Class:OnConfigurationChanged()
+    EnsureDebugSupport()
     self.Modules.Database:OnConfigurationChanged()
     for index, player in pairs(game.players) do
         if player.connected then localisation.translate(player) end

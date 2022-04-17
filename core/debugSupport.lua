@@ -15,10 +15,18 @@ function ResetIndent(value)
     global.System.Indent = value
 end
 
-function ilog(text)
-    EnsureIndent()
-    log(global.System.Indent .. text)
+function ExecuteWithLog(targetFunction, tag, formatResult)
+    if not tag or type(tag) ~= "string" then tag = "" end
+    ilog(">>>" .. tag)
+    local indent = AddIndent()
+    local result = targetFunction()
+    ResetIndent(indent)
+    local resultTag = formatResult and " " .. formatResult(result) or ""
+    ilog("<<<" .. tag .. resultTag)
+    return result
 end
+
+function ilog(text) log(global.System and global.System.Indent or "" .. text) end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     function dlog(text) ilog(text) end
@@ -27,7 +35,9 @@ else
 end
 
 function ConditionalBreak(condition, data)
-    if condition then __DebugAdapter.breakpoint("ConditionalBreak " .. (data or "")) end
+    if condition then
+        __DebugAdapter.breakpoint("ConditionalBreak " .. (data or ""))
+    end
 end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
@@ -35,4 +45,6 @@ if (__DebugAdapter and __DebugAdapter.instrument) then
 else
     dassert = function(condition, ...) return condition end
 end
+
+function EnsureDebugSupport() EnsureIndent() end
 
