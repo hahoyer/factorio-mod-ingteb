@@ -26,7 +26,7 @@ function ExecuteWithLog(targetFunction, tag, formatResult)
     return result
 end
 
-function ilog(text) log(global.System and global.System.Indent or "" .. text) end
+function ilog(text) log((global.System and global.System.Indent or "") .. text) end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     function dlog(text) ilog(text) end
