@@ -7,7 +7,7 @@ local PlayerValueCache = require "core.PlayerValueCache"
 --- @param classInstance table
 --- @param name string then property name
 --- @param getter function the function that calulates the actual value
---- @param isCacheTypePlayer boolean when set the cache will be player specific. In that case instance should define a property Player
+--- @param isCacheTypePlayer boolean when set the cache will be player specific. In that case instance should define a property Player.
 function class.addCachedProperty(instance, classInstance, name, getter, isCacheTypePlayer)
     local className = classInstance.system.Name
     if not rawget(instance, "cache") then rawset(instance, "cache", {}) end
