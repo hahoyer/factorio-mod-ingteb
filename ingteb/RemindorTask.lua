@@ -1,4 +1,4 @@
-local gui = require("__flib__.gui-beta")
+local gui = require "__flib__.gui"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
