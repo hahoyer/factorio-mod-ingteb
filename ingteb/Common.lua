@@ -15,7 +15,7 @@ local Class = class:new(
         ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
         Group = {cache = true, get = function(self) return self.Prototype.group end},
         SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
-        Prototype = {
+        NoPrototype = {
             cache = true,
             get = function(self)
                 local realm = self.PrototypeData.Realm
@@ -350,9 +350,13 @@ function Class:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
-    local prototypeData = self:SplitPrototype(prototype)
+    -- local prototypeData = self:SplitPrototype(prototype)
     if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging 
-    local self = self:adopt{PrototypeData = prototypeData, Database = database}
+    local self = self:adopt {
+        Prototype = prototype,
+        -- PrototypeData = prototypeData,
+        Database = database
+    }
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
