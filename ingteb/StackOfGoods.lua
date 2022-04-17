@@ -35,7 +35,7 @@ local Class = class:new(
         ClickTarget = {get = function(self) return self.Goods.ClickTarget end},
         CommonKey = {
             get = function(self)
-                return self.Goods.CommonKey .. "/" .. self:GetAmountsKey()
+                return self.Goods.CommonKey .. "/" .. (self:GetAmountsKey() or "?")
             end,
         },
         SpriteName = {get = function(self) return self.Goods.SpriteName end},
