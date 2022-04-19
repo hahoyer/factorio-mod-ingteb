@@ -58,7 +58,6 @@ local Class = class:new(
             end,
         },
         ProductionTimeUnit = {
-            cache = "player",
             get = function(self)
                 local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
                     .value
@@ -115,18 +114,56 @@ local Class = class:new(
 
 function Class:new(parent) return self:adopt { Parent = parent } end
 
-function Class:OnSettingsChanged()
-    if Class:getCache(self) then
-        Class:getCache(self).ProductionTimeUnit.IsValid = false
-    end
-end
-
 function Class:GetItemsPerTickText(amounts, timeInSeconds)
     if not timeInSeconds then return "" end
     local amount = amounts.value or (amounts.max + amounts.min) / 2
     return " ("
         .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
         .. "[img=items-per-timeunit]" .. ")"
+end
+
+function Class:ScanBackLinks()
+    log("database scan backLinks ...")
+    local backLinks = self.BackLinks
+    backLinks.CategoryNames = Dictionary:new {}
+    backLinks.UsedByRecipesForItems = {}
+    backLinks.CreatedByRecipesForItems = {}
+    backLinks.RecipesForCategory = {}
+    backLinks.TechnologiesForRecipe = {}
+    backLinks.EnabledTechnologiesForTechnology = {}
+    backLinks.ResearchingTechnologyForItems = {}
+    backLinks.ItemsForFuelCategory = {}
+    backLinks.EntitiesForBurnersFuel = {}
+    backLinks.WorkersForCategory = {}
+    backLinks.Resources = {}
+    backLinks.ItemsForModuleEffects = {}
+    backLinks.ItemsForModuleCategory = {}
+    backLinks.EntitiesForModuleEffects = {}
+
+    log("database backLinks : scan recipes ...")
+    for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
+    log("database scan technologies ...")
+    for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
+    log("database backLinks : scan items ...")
+    for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
+    log("database backLinks : scan fluids ...")
+    for _, prototype in pairs(game.fluid_prototypes) do self:ScanFluid(prototype) end
+    log("database backLinks : scan entities ...")
+    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
+    log("database backLinks : scan fuel_category_prototypes ...")
+    for name, prototype in pairs(game.fuel_category_prototypes) do
+        EnsureKey(backLinks.ItemsForFuelCategory, name, Array:new())
+    end
+
+    log("database backLinks : ensure category-entrie ...")
+    backLinks.CategoryNames:Select(
+        function(value, categoryName)
+            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
+            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
+        end
+    )
+
+    log("database scan backLinks complete.")
 end
 
 function Class:Ensure()
@@ -154,53 +191,19 @@ function Class:Ensure()
     self.IsInitialized = "pending"
 
     log("database initialize start...")
-    self:OnSettingsChanged()
-    self.CategoryNames = Dictionary:new {}
-    local backLinks = self.BackLinks
-    backLinks.UsedByRecipesForItems = {}
-    backLinks.CreatedByRecipesForItems = {}
-    backLinks.RecipesForCategory = {}
-    backLinks.TechnologiesForRecipe = {}
-    backLinks.EnabledTechnologiesForTechnology = {}
-    backLinks.ResearchingTechnologyForItems = {}
-    backLinks.ItemsForFuelCategory = {}
-    backLinks.EntitiesForBurnersFuel = {}
-    backLinks.WorkersForCategory = {}
-    backLinks.Resources = {}
-    backLinks.ItemsForModuleEffects = {}
-    backLinks.ItemsForModuleCategory = {}
-    backLinks.EntitiesForModuleEffects = {}
-    local proxies = self.Proxies
+    self:ScanBackLinks()
 
+    local proxies = self.Proxies
     while next(proxies) do proxies[next(proxies)] = nil end
 
-    log("database scan recipes ...")
-    for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
-    log("database scan technologies ...")
-    for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
-    log("database scan items ...")
-    for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
-    log("database scan fluids ...")
-    for _, prototype in pairs(game.fluid_prototypes) do self:ScanFluid(prototype) end
-    log("database scan entities ...")
-    for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
-
-    log("database special things...")
-    self.CategoryNames:Select(
-        function(value, categoryName)
-            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
-            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
-            return self:GetCategory(categoryName)
+    log("database initialize categories and recipes ...")
+    self.BackLinks.CategoryNames:Select(
+        function(_, categoryName)
+            local recipes = self:GetCategory(categoryName).RecipeList
         end
     )
-    for name, prototype in pairs(game.fuel_category_prototypes) do
-        EnsureKey(backLinks.ItemsForFuelCategory, name, Array:new())
-    end
 
-    log("database initialize recipes...")
-    self.Proxies.Category:Select(function(category) return category.RecipeList end)
-
-    log("database initialize cleanup...")
+    log("database initialize cleanup ...")
     self.CategoryNames = nil
     log("database initialize complete.")
     self.IsInitialized = true
@@ -309,7 +312,7 @@ end
 function Class:AddWorkerForCategory(categoryName, prototype)
     local data = EnsureKey(self.BackLinks.WorkersForCategory, categoryName, Dictionary:new {})
     data[prototype.name] = prototype
-    self.CategoryNames[categoryName] = true
+    self.BackLinks.CategoryNames[categoryName] = true
 end
 
 ---@param categoryName string
@@ -317,7 +320,7 @@ end
 function Class:AddRecipesForCategory(categoryName, prototype)
     local data = EnsureKey(self.BackLinks.RecipesForCategory, categoryName, Dictionary:new {})
     data[prototype.name] = prototype
-    self.CategoryNames[categoryName] = true
+    self.BackLinks.CategoryNames[categoryName] = true
 end
 
 local function EnsureRecipeForItem(result, itemName, recipe)
@@ -396,11 +399,9 @@ function Class:ScanEntity(prototype)
         end
     end
 
-    for category, _ in pairs(prototype.resource_categories or {}) do
-        if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("fluid-mining." .. category, prototype)
-        end
-        self:AddWorkerForCategory("mining." .. category, prototype)
+    for categoryName, _ in pairs(prototype.resource_categories or {}) do
+        local domain = #prototype.fluidbox_prototypes > 0 and "fluid-mining" or "mining"
+        self:AddWorkerForCategory(domain .. categoryName, prototype)
     end
 
     if prototype.burner_prototype then
