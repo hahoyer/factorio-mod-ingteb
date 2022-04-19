@@ -11,9 +11,7 @@ It is a tribute to the help system of Evospace. I hope factorio players will lik
 The "remidor panel" is inspired by the one from Satisfactory. 
 
 ###todo: *(please feel free to rate)*
-- copy recipe *(See no way do this. Help welcome)*
 - provide information on recipe-combinations
-- multiplayer 
 - involve achievements
 - machine-column for labs
 - Improve recipe-column-layout in case of huge amount of recipes
@@ -27,10 +25,16 @@ The "remidor panel" is inspired by the one from Satisfactory.
   => ... *(I am open for suggestions)*
 - Reminder selector: Order things by technology level
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
-- Show energy-source
 - present multiple items_to_place_this of entity-prototypes
 - present limitations for modules
+- reminder panel grouping
+- reminder panel priorities
+- reminder panel load/save
 - ... *more suggestions?*
+
+###todo(or probably not): *(please feel free to complain)*
+- multiplayer *(See no way do this. Help welcome)*  
+- copy recipe *(See no way do this. Help welcome)*
 
 ###known issue: 
 - Multiplayer: Desync issue when loading a save file where reminder panel is open *(help welcome!)*
