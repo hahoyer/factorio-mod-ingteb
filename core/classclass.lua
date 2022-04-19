@@ -1,5 +1,5 @@
 require "core.debugSupport"
-local class = {name = "class"}
+local class = { name = "class" }
 
 local function GetInherited(self, key)
     if not self then return end
@@ -9,7 +9,7 @@ end
 local function GetField(self, key, classInstance)
     local accessors = classInstance.system.Properties[key]
     if accessors then
-        if accessors.cache then
+        if self.cache then
             return self.cache[accessors.class][key].Value
         else
             return accessors.get(self)
@@ -133,6 +133,12 @@ function class:new(name, base, properties)
             end,
         }
     )
+
+    classInstance.getCache = function(self, instance, targetClass)
+        if instance.cache then
+            return instance.cache[targetClass or self.class.name]
+        end
+    end
 
     return classInstance
 end
