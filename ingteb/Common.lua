@@ -10,11 +10,11 @@ local UI = require("core.UI")
 
 local Class = class:new(
     "Common", nil, {
-        Player = {get = function(self) return self.Database.Player end},
-        DebugLine = {get = function(self) return self.CommonKey end},
-        ClickTarget = {cache = true, get = function(self) return self.CommonKey end},
-        Group = {cache = true, get = function(self) return self.Prototype.group end},
-        SubGroup = {cache = true, get = function(self) return self.Prototype.subgroup end},
+        Player = { get = function(self) return self.Database.Player end },
+        DebugLine = { get = function(self) return self.CommonKey end },
+        ClickTarget = { cache = true, get = function(self) return self.CommonKey end },
+        Group = { cache = true, get = function(self) return self.Prototype.group end },
+        SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
         NoPrototype = {
             cache = true,
             get = function(self)
@@ -44,7 +44,7 @@ local Class = class:new(
                 if self.Translation.Name == false then name = "[" .. self.Name .. "]" end
 
                 if type then
-                    return {"", name, " (", {type}, ")"}
+                    return { "", name, " (", { type }, ")" }
                 else
                     return name
                 end
@@ -63,10 +63,10 @@ local Class = class:new(
 
         SpecialFunctions = {
             get = function(self)
-                return Array:new{ --
+                return Array:new { --
                     {
                         UICode = "--- l", --
-                        Action = function(self) return {Presenting = self} end,
+                        Action = function(self) return { Presenting = self } end,
                     },
                 }
 
@@ -75,7 +75,7 @@ local Class = class:new(
 
         AdditionalHelp = {
             get = function(self)
-                local result = Array:new{}
+                local result = Array:new {}
                 if self.HasDescription then
                     result:Append(self.LocalizedDescription)
                 elseif self.Entity and self.Entity.HasDescription then
@@ -90,11 +90,11 @@ local Class = class:new(
         ComponentHelp = {
             get = function(self)
                 if not self.Input then return {} end
-                local result = Array:new{
+                local result = Array:new {
                     {
                         "",
                         "[font=heading-1][color=#F8E1BC]",
-                        {"description.ingredients"},
+                        { "description.ingredients" },
                         ":[/color][/font]",
                     },
 
@@ -112,11 +112,11 @@ local Class = class:new(
                 )
 
                 if self.Time then
-                    result:Append{
+                    result:Append {
                         "",
                         "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
-                        {"description.crafting-time"},
-                        self.Database:GetItemsPerTickText({value = 1}, self.Time),
+                        { "description.crafting-time" },
+                        self.Database:GetItemsPerTickText({ value = 1 }, self.Time),
                     }
                 end
 
@@ -128,15 +128,15 @@ local Class = class:new(
         ProductHelp = {
             get = function(self)
                 if not self.Output or --
-                self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
+                    self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
                     and self.Output[1].Amounts.catalyst_amount == nil --
                 then return {} end
 
-                local result = Array:new{
+                local result = Array:new {
                     {
                         "",
                         "[font=heading-1][color=#F8E1BC]",
-                        {"description.products"},
+                        { "description.products" },
                         ":[/color][/font]",
                     },
 
@@ -161,19 +161,19 @@ local Class = class:new(
             cache = true,
             get = function(self)
                 if self.RawOutput then
-                    return Array:new(self.RawOutput) --
-                    :Select(
-                        function(product, index)
-                            local result = self.Database:GetStackOfGoods(product)
-                            if result then
-                                result.Source = {Recipe = self, ProductIndex = index}
-                            else
-                                self.IsHidden = true
+                    return Array:new(self.RawOutput)--
+                        :Select(
+                            function(product, index)
+                                local result = self.Database:GetStackOfGoods(product)
+                                if result then
+                                    result.Source = { Recipe = self, ProductIndex = index }
+                                else
+                                    self.IsHidden = true
+                                end
+                                return result
                             end
-                            return result
-                        end
-                    ) --
-                    :Where(function(value) return value end) --
+                        )--
+                        :Where(function(value) return value end) --
                 end
             end,
         },
@@ -181,27 +181,27 @@ local Class = class:new(
             cache = true,
             get = function(self)
                 if self.RawInput then
-                    return Array:new(self.RawInput) --
-                    :Select(
-                        function(ingredient, index)
-                            if ingredient.type == "resource" then
-                                return ingredient.value
-                            else
-                                local result = self.Database:GetStackOfGoods(ingredient)
-                                if result then
-                                    result.Source = {Recipe = self, IngredientIndex = index}
+                    return Array:new(self.RawInput)--
+                        :Select(
+                            function(ingredient, index)
+                                if ingredient.type == "resource" then
+                                    return ingredient.value
                                 else
-                                    self.IsHidden = true
+                                    local result = self.Database:GetStackOfGoods(ingredient)
+                                    if result then
+                                        result.Source = { Recipe = self, IngredientIndex = index }
+                                    else
+                                        self.IsHidden = true
+                                    end
+                                    return result
                                 end
-                                return result
                             end
-                        end
-                    ) --
-                    :Where(
-                        function(value)
-                            return not (value.flags and value.flags.hidden)
-                        end
-                    ) --
+                        )--
+                        :Where(
+                            function(value)
+                                return not (value.flags and value.flags.hidden)
+                            end
+                        ) --
                 end
             end,
         },
@@ -214,8 +214,8 @@ local Class = class:new(
             end,
         },
 
-        RichTextName = {get = function(self) return "[img=" .. self.SpriteName .. "]" end},
-        HelperHeaderText = {get = function(self) return self.LocalisedName end},
+        RichTextName = { get = function(self) return "[img=" .. self.SpriteName .. "]" end },
+        HelperHeaderText = { get = function(self) return self.LocalisedName end },
 
     }
 )
@@ -224,8 +224,8 @@ function Class:CreatePrototype(type, name)
     return {
         type = type,
         name = name,
-        localised_name = {"ingteb-name." .. type .. "-" .. name},
-        localised_description = {"ingteb-descrition." .. type .. "-" .. name},
+        localised_name = { "ingteb-name." .. type .. "-" .. name },
+        localised_description = { "ingteb-descrition." .. type .. "-" .. name },
     }
 end
 
@@ -243,37 +243,38 @@ end
 function Class:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end
 
 function Class:GetHandCraftingRequest(event) end
+
 function Class:GetResearchRequest(event) end
 
 function Class:GetSpecialFunctions(site)
-    local lines = Dictionary:new{}
-    self.SpecialFunctions --
-    :Select(
-        function(specialFunction)
-            if --
-            (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --        
-                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
-                local key = specialFunction.UICode
-                if (not lines[key]) then lines[key] = specialFunction end
-            end --
-        end
-    )
+    local lines = Dictionary:new {}
+    self.SpecialFunctions--
+        :Select(
+            function(specialFunction)
+                if --
+                (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --
+                    and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
+                    local key = specialFunction.UICode
+                    if (not lines[key]) then lines[key] = specialFunction end
+                end --
+            end
+        )
     return lines:ToArray()
 end
 
 function Class:GetFunctionalHelp(site)
-    return self:GetSpecialFunctions(site) --
-    :Where(function(specialFunction) return specialFunction.HelpText end) --
-    :Select(
-        function(specialFunction)
-            return UI.GetHelpTextForButtons({specialFunction.HelpText}, specialFunction.UICode)
-        end
-    ) --
-    :ToArray()
+    return self:GetSpecialFunctions(site)--
+        :Where(function(specialFunction) return specialFunction.HelpText end)--
+        :Select(
+            function(specialFunction)
+                return UI.GetHelpTextForButtons({ specialFunction.HelpText }, specialFunction.UICode)
+            end
+        )--
+        :ToArray()
 end
 
 function Class:GetHelperText(site)
-    local name = {"", "[font=default-large-bold]", self.HelperHeaderText, "[/font]"}
+    local name = { "", "[font=default-large-bold]", self.HelperHeaderText, "[/font]" }
     -- append(self.LocalizedDescription)
     local additionalHelp = self.AdditionalHelp
     local functionalHelp = self:GetFunctionalHelp(site)
@@ -297,7 +298,7 @@ function Class:SealUp()
     self.Database:EnsureUsage(self, self.RawInput, self.RawOutput)
     self:SortAll()
 
-    self.Database:AddTranslationRequest(self.CommonKey,self.Prototype)
+    self.Database:AddTranslationRequest(self.CommonKey, self.Prototype)
     self:AssertValid()
     self.IsSealed = true
     return self
@@ -307,9 +308,9 @@ function Class:GetNumberOnSprite(category) end
 
 function Class:GetAction(event)
     local message = gui.read_action(event)
-    local specialFunction = self:GetSpecialFunctions(message.module) --
-    :Where(function(specialFunction) return UI.IsMouseCode(event, specialFunction.UICode) end) --
-    :Top(nil, false)
+    local specialFunction = self:GetSpecialFunctions(message.module)--
+        :Where(function(specialFunction) return UI.IsMouseCode(event, specialFunction.UICode) end)--
+        :Top(nil, false)
 
     if specialFunction then return specialFunction.Action(self, event) end
 end
@@ -331,7 +332,7 @@ function Class:SplitPrototype(prototype)
     if objectName then
         local key = gameKeysForObjectName[prototype.object_name]
         if key then
-            return {Realm = "game", Group = key, Name = prototype.name}
+            return { Realm = "game", Group = key, Name = prototype.name }
         else
             dassert(
                 false, "Unexpected protptype: " .. type(prototype) .. " " .. prototype.object_name
@@ -342,7 +343,7 @@ function Class:SplitPrototype(prototype)
         dassert(prototype.name)
         dassert(prototype.localised_name)
         dassert(prototype.localised_description)
-        return {Realm = "constant", Value = prototype}
+        return { Realm = "constant", Value = prototype }
     end
 end
 
@@ -351,7 +352,7 @@ function Class:new(prototype, database)
     dassert(database)
 
     -- local prototypeData = self:SplitPrototype(prototype)
-    if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging 
+    if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging
     local self = self:adopt {
         Prototype = prototype,
         -- PrototypeData = prototypeData,
