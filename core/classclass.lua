@@ -7,13 +7,14 @@ local function GetInherited(self, key)
 end
 
 local function GetField(self, key, classInstance)
-    local accessors = classInstance.system.Properties[key]
-    if accessors then
-        if self.cache then
-            return self.cache[accessors.class][key].Value
-        else
-            return accessors.get(self)
+    local property = classInstance.system.Properties[key]
+    if property then
+        local classCache = self.cache and self.cache[property.class]
+        if classCache then
+            local cache = classCache[key]
+            if cache then return cache.Value end
         end
+        return property.get(self)
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
     end
@@ -32,14 +33,14 @@ end
 --- @param name string the name of the class
 --- @param base table class the base class - optional
 --- @param properties table initial properties - optional
---- @return table class new class 
+--- @return table class new class
 function class:new(name, base, properties)
     dassert(type(name) == "string")
     if base then
         dassert(base.class == class)
         dassert(
             not base.system.InstantiationType --
-            or base.system.InstantiationType == "Base", -- 
+            or base.system.InstantiationType == "Base", --
             name .. ": class " .. base.system.Name .. " cannot be used as base class."
         )
     end
@@ -51,7 +52,7 @@ function class:new(name, base, properties)
         BaseClass = base,
         Properties = properties or {},
     }
-    local classInstance = {system = systemValues, name = name, class = class}
+    local classInstance = { system = systemValues, name = name, class = class }
 
     function metatable:__index(key)
         local result = GetField(self, key, classInstance)
@@ -78,19 +79,19 @@ function class:new(name, base, properties)
     --- "Adopts" any table as instance of a class by providing metatable and property setup
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
     --- @param isMinimal boolean (optional) do change anything. For use in on_load.
-    --- @return table instance ... but patched 
+    --- @return table instance ... but patched
     function classInstance:adopt(instance, isMinimal)
         if not instance then instance = {} end
         if self.system.InstantiationType == "Singleton" and self.system.Instance then
             dassert(
                 self.system.Instance == instance,
-                    "Class " .. self.system.Name .. " has been intantiated already."
+                "Class " .. self.system.Name .. " has been intantiated already."
             )
             return instance
         end
         dassert(
             self.system.InstantiationType ~= "Base",
-                "Instances of class " .. self.system.Name .. " are not allowed."
+            "Instances of class " .. self.system.Name .. " are not allowed."
         )
 
         if not isMinimal then instance.class = self end
@@ -112,7 +113,7 @@ function class:new(name, base, properties)
                     dassert(not value.set)
                     dassert(
                         value.cache == true or value.cache == "player", "invalid cache setting: "
-                            .. tostring(value.cache) .. ". Must true, false or 'player'"
+                        .. tostring(value.cache) .. ". Must true, false or 'player'"
                     )
                     class.addCachedProperty(instance, self, key, value.get, value.cache == "player")
                 end
@@ -125,10 +126,10 @@ function class:new(name, base, properties)
     setmetatable(
         classInstance, {
             __debugline = function(self)
-                local result --
+                local result--
                 = name .. "{" --
-                .. (base and "BaseClass=" .. base.system.Name .. "," or "") --
-                .. "}"
+                    .. (base and "BaseClass=" .. base.system.Name .. "," or "") --
+                    .. "}"
                 return result
             end,
         }
