@@ -33,8 +33,11 @@ function Class:set_IsValid(value)
 end
 
 function Class:Ensure()
+    dassert(not self.IsBusy)
     if not self.isValid then
+        self.IsBusy = true
         self.value = rawget(self, "getValueFunction")(self.Client)
+        self.IsBusy = nil
         self.isValid = true
     end
 end
