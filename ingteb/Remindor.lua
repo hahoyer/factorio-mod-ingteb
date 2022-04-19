@@ -47,7 +47,7 @@ local Class = class:new(
                 local gui = mod_gui.get_frame_flow(self.Player)
                 if gui then
                     local xreturn = gui[Constants.ModName .. "." .. self.class.name]
-                    if xreturn then ilog("Remindor.MainGui =  " .. xreturn.index) end
+                    if xreturn then dlog("Remindor.MainGui =  " .. xreturn.index) end
                     return xreturn
                 end
             end,
