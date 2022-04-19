@@ -41,8 +41,8 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new(
     "Database", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
+        Player = { get = function(self) return self.Parent.Player end },
+        Global = { get = function(self) return self.Parent.Global end },
         BackLinks = {
             get = function(self)
                 if not global.Database then global.Database = {} end
@@ -61,7 +61,7 @@ local Class = class:new(
             cache = "player",
             get = function(self)
                 local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
-                                     .value
+                    .value
                 return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
             end,
         },
@@ -71,7 +71,7 @@ local Class = class:new(
                 log("database initialize Selector...")
                 local result = {}
                 local maximumColumnCount = 0
-                result.Groups = Dictionary:new{}
+                result.Groups = Dictionary:new {}
                 local targets = {
                     Item = game.item_prototypes,
                     Fluid = game.fluid_prototypes,
@@ -92,11 +92,11 @@ local Class = class:new(
                         if not IsHidden(type, goods) then
                             local grouping = --
                             (type == "Item" or type == "Fluid")
-                                and {goods.group.name, goods.subgroup.name} --
-                            or {"other", type}
+                                and { goods.group.name, goods.subgroup.name } --
+                                or { "other", type }
 
-                            local group = EnsureKey(result.Groups, grouping[1], Dictionary:new{})
-                            local subgroup = EnsureKey(group, grouping[2], Array:new{})
+                            local group = EnsureKey(result.Groups, grouping[1], Dictionary:new {})
+                            local subgroup = EnsureKey(group, grouping[2], Array:new {})
                             subgroup:Append(self:GetProxy(type, name, goods))
                             if maximumColumnCount < subgroup:Count() then
                                 maximumColumnCount = subgroup:Count()
@@ -105,7 +105,7 @@ local Class = class:new(
                     end
                 end
                 result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount
-                                         and maximumColumnCount or result.Groups:Count() * 2
+                    and maximumColumnCount or result.Groups:Count() * 2
                 log("database initialize Selector complete.")
                 return result
             end,
@@ -113,16 +113,20 @@ local Class = class:new(
     }
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt { Parent = parent } end
 
-function Class:OnSettingsChanged() self.cache.Database.ProductionTimeUnit.IsValid = false end
+function Class:OnSettingsChanged()
+    if Class:getCache(self) then
+        Class:getCache(self).ProductionTimeUnit.IsValid = false
+    end
+end
 
 function Class:GetItemsPerTickText(amounts, timeInSeconds)
     if not timeInSeconds then return "" end
     local amount = amounts.value or (amounts.max + amounts.min) / 2
     return " ("
-               .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
-               .. "[img=items-per-timeunit]" .. ")"
+        .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
+        .. "[img=items-per-timeunit]" .. ")"
 end
 
 function Class:Ensure()
@@ -151,7 +155,7 @@ function Class:Ensure()
 
     log("database initialize start...")
     self:OnSettingsChanged()
-    self.CategoryNames = Dictionary:new{}
+    self.CategoryNames = Dictionary:new {}
     local backLinks = self.BackLinks
     backLinks.UsedByRecipesForItems = {}
     backLinks.CreatedByRecipesForItems = {}
@@ -184,8 +188,8 @@ function Class:Ensure()
     log("database special things...")
     self.CategoryNames:Select(
         function(value, categoryName)
-            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new{})
-            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new{})
+            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
+            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
             return self:GetCategory(categoryName)
         end
     )
@@ -242,14 +246,21 @@ function Class:GetProxy(className, name, prototype)
 end
 
 function Class:GetFluid(name, prototype) return self:GetProxy("Fluid", name, prototype) end
+
 function Class:GetItem(name, prototype) return self:GetProxy("Item", name, prototype) end
+
 function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
+
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
+
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
+
 function Class:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+
 function Class:GetModuleCategory(name, prototype) --
     return self:GetProxy("ModuleCategory", name, prototype)
 end
+
 function Class:GetModuleEffect(name, prototype) --
     return self:GetProxy("ModuleEffect", name, prototype)
 end
@@ -275,8 +286,8 @@ function Class:GetFuelCategory(name, prototype) --
 end
 
 function Class:GetFuelCategories()
-    return Dictionary:new(self.BackLinks.EntitiesForBurnersFuel) --
-    :Select(function(_, fuelTypeName) return fuelTypeName end)
+    return Dictionary:new(self.BackLinks.EntitiesForBurnersFuel)--
+        :Select(function(_, fuelTypeName) return fuelTypeName end)
 end
 
 function Class:GetBonusFromEffect(target)
@@ -284,8 +295,8 @@ function Class:GetBonusFromEffect(target)
     local prototype = {
         type = "Bonus",
         name = (type .. "-modifier-icon"):gsub("-", "_"),
-        localised_name = {"gui-bonus." .. type},
-        localised_description = {"modifier-description." .. type},
+        localised_name = { "gui-bonus." .. type },
+        localised_description = { "modifier-description." .. type },
         modifier = target.modifier,
     }
 
@@ -296,7 +307,7 @@ end
 ---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddWorkerForCategory(categoryName, prototype)
-    local data = EnsureKey(self.BackLinks.WorkersForCategory, categoryName, Dictionary:new{})
+    local data = EnsureKey(self.BackLinks.WorkersForCategory, categoryName, Dictionary:new {})
     data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
@@ -304,13 +315,13 @@ end
 ---@param categoryName string
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipesForCategory(categoryName, prototype)
-    local data = EnsureKey(self.BackLinks.RecipesForCategory, categoryName, Dictionary:new{})
+    local data = EnsureKey(self.BackLinks.RecipesForCategory, categoryName, Dictionary:new {})
     data[prototype.name] = prototype
     self.CategoryNames[categoryName] = true
 end
 
 local function EnsureRecipeForItem(result, itemName, recipe)
-    EnsureKey(result, itemName, Array:new{}):Append(recipe)
+    EnsureKey(result, itemName, Array:new {}):Append(recipe)
 end
 
 local function IsValidBoiler(prototype)
@@ -323,15 +334,15 @@ local function IsValidBoiler(prototype)
         }
         return
     end
-    local inBoxes --
-    = fluidBoxes --
-    :Where(
-        function(box)
-            return box.production_type == "input" or box.production_type == "input-output"
-        end
-    ) --
-    local outBoxes = fluidBoxes --
-    :Where(function(box) return box.production_type == "output" end) --
+    local inBoxes--
+    = fluidBoxes--
+        :Where(
+            function(box)
+                return box.production_type == "input" or box.production_type == "input-output"
+            end
+        ) --
+    local outBoxes = fluidBoxes--
+        :Where(function(box) return box.production_type == "output" end) --
 
     local result = true
     if not inBoxes or inBoxes:Count() ~= 1 then
@@ -423,20 +434,20 @@ function Class:ScanEntity(prototype)
     end
 
     if prototype.mineable_properties --
-    and prototype.mineable_properties.minable --
-    and prototype.mineable_properties.products --
-    and not prototype.items_to_place_this --
+        and prototype.mineable_properties.minable --
+        and prototype.mineable_properties.products --
+        and not prototype.items_to_place_this --
     then
         local isFluidMining = prototype.mineable_properties.required_fluid --
-                                  or Array:new(prototype.mineable_properties.products) --
+            or Array:new(prototype.mineable_properties.products)--
             :Any(function(product) return product.type == "fluid" end) --
 
         local domain = not prototype.resource_category and "hand-mining" --
-        or isFluidMining and "fluid-mining" --
-        or "mining"
+            or isFluidMining and "fluid-mining" --
+            or "mining"
 
         local categoryName = not prototype.resource_category and "steel-axe" --
-                                 or prototype.resource_category
+            or prototype.resource_category
 
         self:AddRecipesForCategory(domain .. "." .. categoryName, prototype)
     end
@@ -525,9 +536,9 @@ function Class:GetStackOfGoods(target)
         temperature = target.temperature,
         catalyst_amount = target.catalyst_amount,
     }
-    local goods --
+    local goods--
     = target.type == "item" and self:GetItem(target.name) --
-    or target.type == "fluid" and self:GetFluid(target.name) --
+        or target.type == "fluid" and self:GetFluid(target.name) --
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
@@ -596,7 +607,8 @@ function Class:RefreshTechnology(target)
     dassert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
 end
-function Class:Print(text) self.Player.print {"", "[ingteb]", text} end
+
+function Class:Print(text) self.Player.print { "", "[ingteb]", text } end
 
 function Class:GetCountInInventory(goods)
     if goods.class == Proxy.Item then
@@ -621,23 +633,23 @@ function Class:GetCountInHand(goods)
 end
 
 --- Get craftable count and recipe for target (item or recipe)
----@param target table 
+---@param target table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
         local recipeCandidates = target.CreatedBy["crafting.crafting"]
         local result = 0
         local recipe
         if recipeCandidates then
-            recipeCandidates --
-            :Select(
-                function(recipeCandidate)
-                    local count = self:GetCraftableCount(recipeCandidate)
-                    if result < count then
-                        result = count
-                        recipe = recipeCandidate
+            recipeCandidates--
+                :Select(
+                    function(recipeCandidate)
+                        local count = self:GetCraftableCount(recipeCandidate)
+                        if result < count then
+                            result = count
+                            recipe = recipeCandidate
+                        end
                     end
-                end
-            ) --
+                ) --
         end
         return result, recipe
     elseif target.class == Proxy.Recipe then
@@ -681,11 +693,11 @@ function Class:OnConfigurationChanged() self:OnInitialiseLocalisation() end
 function Class:GetRecipesGroupByCategory(recipes)
     if recipes then
         local xreturn = recipes:ToGroup(
-            function(recipe) return {Key = recipe.Category.Name, Value = recipe} end
+            function(recipe) return { Key = recipe.Category.Name, Value = recipe } end
         )
         return xreturn
     end
-    return Dictionary:new{}
+    return Dictionary:new {}
 end
 
 function Class:GetUsedByRecipes(itemName)
@@ -695,7 +707,7 @@ end
 
 function Class:GetCreatedByRecipes(itemName)
     local xreturn =
-        self:GetRecipesGroupByCategory(self.BackLinks.CreatedByRecipesForItems[itemName])
+    self:GetRecipesGroupByCategory(self.BackLinks.CreatedByRecipesForItems[itemName])
     return xreturn
 end
 
@@ -715,4 +727,3 @@ function Class:EnsureUsage(recipe, input, output)
 end
 
 return Class
-
