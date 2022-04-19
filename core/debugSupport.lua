@@ -15,6 +15,10 @@ function ResetIndent(value)
     global.System.Indent = value
 end
 
+local function ilog(text) --
+    log((global.System and global.System.Indent or "") .. text)
+end
+
 function ExecuteWithLog(targetFunction, tag, formatResult)
     if not tag or type(tag) ~= "string" then tag = "" end
     ilog(">>>" .. tag)
@@ -25,8 +29,6 @@ function ExecuteWithLog(targetFunction, tag, formatResult)
     ilog("<<<" .. tag .. resultTag)
     return result
 end
-
-function ilog(text) log((global.System and global.System.Indent or "") .. text) end
 
 if (__DebugAdapter and __DebugAdapter.instrument) then
     function dlog(text) ilog(text) end
@@ -47,4 +49,3 @@ else
 end
 
 function EnsureDebugSupport() EnsureIndent() end
-
