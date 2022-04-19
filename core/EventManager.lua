@@ -78,14 +78,14 @@ end
 
 function Class:Enter(eventName, eventId, identifier)
     local data = {eventName, eventId, identifier}
-    -- ilog(">>>EnterEvent " .. FormatData(data))
+    -- dlog(">>>EnterEvent " .. FormatData(data))
     local oldIndent = nil -- AddIndent()
     self.Active = {data, self.Active, oldIndent}
 end
 
 function Class:Leave()
     -- ResetIndent(self.Active[3])
-    -- ilog("<<<LeaveEvent " .. FormatData(self.Active[1]))
+    -- dlog("<<<LeaveEvent " .. FormatData(self.Active[1]))
     self.Active = self.Active[2]
 end
 
