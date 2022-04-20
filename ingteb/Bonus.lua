@@ -10,12 +10,12 @@ local Bonus = class:new("Bonus", Common)
 
 Bonus.system.Properties = {
     NumberOnSprite = {get = function(self) return self.Prototype.modifier end},
+    SpriteType = { get = function(self) return "utility" end },
 }
 
 function Bonus:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
-    self.SpriteType = "utility"
     self.UsePercentage = true
 
     function self:SortAll() end

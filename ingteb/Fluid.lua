@@ -7,18 +7,16 @@ local Common = require("ingteb.Common")
 local Goods = require("ingteb.Goods")
 local class = require("core.class")
 
-local Fluid = class:new("Fluid", Goods)
+local Class = class:new("Fluid", Goods, {
+    SpriteType = { get = function(self) return "fluid" end },
+})
 
-function Fluid:new(name, prototype, database)
+function Class:new(name, prototype, database)
     local self = self:adopt(
         self.system.BaseClass:new(prototype or game.fluid_prototypes[name], database)
     )
-    self.SpriteType = "fluid"
-
     dassert(self.Prototype.object_name == "LuaFluidPrototype")
-
     return self
-
 end
 
-return Fluid
+return Class

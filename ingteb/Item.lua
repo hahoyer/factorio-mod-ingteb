@@ -8,6 +8,7 @@ local class = require("core.class")
 local Item = class:new("Item", Goods)
 
 Item.system.Properties = {
+    SpriteType = { get = function(self) return "item" end },
     Entity = {
         cache = true,
         get = function(self)
@@ -177,7 +178,6 @@ function Item:new(name, prototype, database)
             prototype or game.item_prototypes[name], database
         )
     )
-    self.SpriteType = "item"
 
     dassert(self.Prototype.object_name == "LuaItemPrototype")
 

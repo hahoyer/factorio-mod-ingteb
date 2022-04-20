@@ -23,11 +23,7 @@ local function GetPrototype(domain, subName)
         return game.fuel_category_prototypes[subName]
     elseif domain == "fluid-burning" then
         dassert(subName == "fluid")
-        return {
-            name = "fluid-burning",
-            localised_name = {"ingteb-utility.fluid-fuel-category"},
-            localised_description = {"ingteb-utility.fluid-fuel-category"},
-        }
+        return Helper.CreatePrototypeProxy { type = "fluid-burning", name = "fluid-burning" }
     else
         dassert()
     end
@@ -42,18 +38,18 @@ Class.system.Properties = {
                     function(worker) return self.Database:GetEntity(nil, worker) end
                 )
             else
-                return Array:new{}
+                return Array:new {}
             end
         end,
     },
 
     HelperHeaderText = {
-        get = function(self) return Array:new{"ingteb-utility.workers-for-recipes"} end,
+        get = function(self) return Array:new { "ingteb-utility.workers-for-recipes" } end,
     },
 
     AdditionalHelp = {
         get = function(self)
-            local result = Array:new{}
+            local result = Array:new {}
             if self.Name == "crafting.crafting" then return result end
 
             local name = self.LocalisedName
@@ -61,7 +57,7 @@ Class.system.Properties = {
                 name = {
                     "",
                     "[font=default-small]",
-                    {"ingteb-recipe-category-domain-name." .. self.Domain},
+                    { "ingteb-recipe-category-domain-name." .. self.Domain },
                     ": ",
                     name,
                     "[/font]",
@@ -74,7 +70,7 @@ Class.system.Properties = {
 
     SpecialFunctions = {
         get = function(self) --
-            return Array:new{
+            return Array:new {
                 -- {
                 --     UICode = "--- l",
                 --     HelpText = "ingteb-utility.category-settings",
@@ -106,27 +102,27 @@ Class.system.Properties = {
         cache = true,
         get = function(self)
             local recipeList = self.Database.BackLinks.RecipesForCategory[self.Name] --
-            local result = recipeList --
-            :ToArray(
-                function(recipe)
-                    if self.Domain == "crafting" then
-                        if recipe.hidden and not self.IsAutomatic then return end
-                        return self.Database:GetRecipe(nil, recipe)
-                    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
-                        == "hand-mining" then
-                        return self.Database:GetMiningRecipe(recipe.name)
-                    elseif self.Domain == "boiling" then
-                        return self.Database:GetBoilingRecipe(recipe.name, self.Prototype)
-                    elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
-                        return self.Database:GetBurningRecipe(nil, recipe)
-                    elseif self.Domain == "rocket-launch" then
-                        return self.Database:GetRocketLaunchRecipe(nil, recipe)
-                    else
-                        dassert()
+            local result = recipeList--
+                :ToArray(
+                    function(recipe)
+                        if self.Domain == "crafting" then
+                            if recipe.hidden and not self.IsAutomatic then return end
+                            return self.Database:GetRecipe(nil, recipe)
+                        elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
+                            == "hand-mining" then
+                            return self.Database:GetMiningRecipe(nil, recipe)
+                        elseif self.Domain == "boiling" then
+                            return self.Database:GetBoilingRecipe(nil, recipe)
+                        elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
+                            return self.Database:GetBurningRecipe(nil, recipe)
+                        elseif self.Domain == "rocket-launch" then
+                            return self.Database:GetRocketLaunchRecipe(nil, recipe)
+                        else
+                            dassert()
+                        end
                     end
-                end
-            ) --
-            :Where(function(recipe) return recipe end) --
+                )--
+                :Where(function(recipe) return recipe end) --
             return result
         end,
     },
@@ -135,27 +131,27 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            local rawResult = self.OriginalWorkers --
-            :Select(
-                function(worker)
-                    local result = worker.Prototype.max_energy_usage
-                    dassert(result and result > 0)
-                    return result
-                end
-            ) --
-            :Minimum()
+            local rawResult = self.OriginalWorkers--
+                :Select(
+                    function(worker)
+                        local result = worker.Prototype.max_energy_usage
+                        dassert(result and result > 0)
+                        return result
+                    end
+                )--
+                :Minimum()
             if rawResult then return rawResult * 60 end
         end,
     },
 
-    Speed = {
+    Time = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
             dassert(self.Domain == "rocket-launch")
-            return self.OriginalWorkers --
-            :Select(function(worker) return worker.Speed end) --
-            :Minimum()
+            return self.OriginalWorkers--
+                :Select(function(worker) return worker.Time end)--
+                :Minimum()
         end,
     },
 }
@@ -194,4 +190,3 @@ function Class:new(name, prototype, database)
 end
 
 return Class
-

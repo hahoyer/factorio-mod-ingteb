@@ -20,33 +20,13 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    dassert(name == nil)
+    dassert(not name)
     dassert(prototype)
-    local self = self:adopt(self.system.BaseClass:new(prototype, database))
-    self.Name = prototype.name
+    dassert(database)
+    
+    local self = self:adopt(self.system.BaseClass:new(nil, prototype, database))
     self.IsFluid = prototype.object_name == "LuaFluidPrototype"
-    self.IsHidden = true
-    self.SpriteType = self.IsFluid and "fluid" or "item"
-
-    local categoryName = self.IsFluid and "fluid-burning.fluid" or "burning."
-                             .. prototype.fuel_category
-    self.Category = self.Database:GetCategory(categoryName)
     self.FuelValue = prototype.fuel_value
-    self.TypeStringForLocalisation = "ingteb-utility.title-burning-recipe"
-
-    self.RawInput = {{type = self.IsFluid and "fluid" or "item", amount = 1, name = prototype.name}}
-    local output = not self.IsFluid and prototype.burnt_result
-    if output then
-        self.RawOutput = {{type = output.type, amount = 1, name = output.name}}
-    else
-        self.RawOutput = {}
-    end
-    function self:IsBefore(other)
-        if self == other then return false end
-        return self.OrderValue < other.OrderValue
-    end
-
-    function self:SortAll() end
 
     return self
 end

@@ -30,14 +30,12 @@ Goods.system.Properties = {
 
     OriginalUsedBy = {
         cache = true,
-        get = function(self) return self.Database:GetUsedByRecipes(self.Prototype.name) end,
+        get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
     },
 
     OriginalCreatedBy = {
         cache = true,
-        get = function(self) 
-            return self.Database:GetCreatedByRecipes(self.Prototype.name) 
-        end,
+        get = function(self) return self.Database:GetCreatedByRecipes(self.Prototype) end,
     },
 
     AdditionalHelp = {

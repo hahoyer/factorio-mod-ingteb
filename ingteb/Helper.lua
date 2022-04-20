@@ -85,13 +85,13 @@ local function EnsureMaxParameters(target, count)
     dassert(target[1] == "")
     local half = math.ceil(#target / 2)
 
-    local result1 = {""}
+    local result1 = { "" }
     for index = 2, half do table.insert(result1, target[index]) end
 
-    local result2 = {""}
+    local result2 = { "" }
     for index = half + 1, #target do table.insert(result2, target[index]) end
 
-    return {"", EnsureMaxParameters(result1, count), EnsureMaxParameters(result2, count)}
+    return { "", EnsureMaxParameters(result1, count), EnsureMaxParameters(result2, count) }
 end
 
 function Helper.ScrutinizeLocalisationString(target)
@@ -102,9 +102,9 @@ end
 
 function Helper.SpriteStyleFromCode(code)
     return code == "active" and "ingteb-light-button" --
-    or code == "not-researched" and "red_slot_button" --
-    or code == "researching" and "yellow_slot_button" --
-    or "slot_button"
+        or code == "not-researched" and "red_slot_button" --
+        or code == "researching" and "yellow_slot_button" --
+        or "slot_button"
 end
 
 ---Create frame and add content
@@ -115,7 +115,7 @@ end
 ---@param caption any LocalisedString
 ---@param options table
 --- buttons table[] flib.GuiBuildStructure
---- subModule string name of the subModule for location and actions 
+--- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreateFrameWithContent(moduleName, frame, content, caption, options)
     if not options then options = {} end
@@ -126,7 +126,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                 type = "frame",
                 direction = "vertical",
                 name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
-                ref = {"Main"},
+                ref = { "Main" },
                 actions = {
                     on_location_changed = {
                         module = moduleName,
@@ -155,7 +155,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                                 type = "empty-widget",
                                 name = "DragHandle",
                                 style = "flib_titlebar_drag_handle",
-                                ref = {"DragBar"},
+                                ref = { "DragBar" },
                             },
                             {
                                 type = "flow",
@@ -167,7 +167,7 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
                                 type = "sprite-button",
                                 name = "CloseButtom",
                                 sprite = "close_white",
-                                tooltip = {"gui.close"},
+                                tooltip = { "gui.close" },
                                 actions = {
                                     on_click = {
                                         module = moduleName,
@@ -196,7 +196,7 @@ end
 ---@param caption any LocalisedString
 ---@param options table
 --- buttons table[] flib.GuiBuildStructure
---- subModule string name of the subModule for location and actions 
+--- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
     if not options then options = {} end
@@ -226,7 +226,7 @@ end
 ---@param caption any LocalisedString
 ---@param options table
 --- buttons table[] flib.GuiBuildStructure
---- subModule string name of the subModule for location and actions 
+--- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreatePopupFrameWithContent(self, content, caption, options)
     local parentScreen = self.Player.opened
@@ -247,7 +247,7 @@ end
 ---@param caption any LocalisedString
 ---@param options table
 --- buttons table[] flib.GuiBuildStructure
---- subModule string name of the subModule for location and actions 
+--- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 function Helper.CreateLeftSideFrameWithContent(self, content, caption, options)
     if not options then options = {} end
@@ -265,20 +265,146 @@ end
 ---@param tail table Array of LocalizedText
 ---@return any LocalisedString
 function Helper.ConcatLocalisedText(top, tail)
-    local lines = Array:new{}
+    local lines = Array:new {}
     local function append(line)
         if line then
             lines:Append("\n")
             lines:Append(line)
         end
     end
+
     tail:Select(append)
     if lines:Any() then
         lines:InsertAt(1, "")
-        return {"", top, Helper.ScrutinizeLocalisationString(lines)}
+        return { "", top, Helper.ScrutinizeLocalisationString(lines) }
     end
     return top
 end
 
-return Helper
+function Helper.CreatePrototypeProxy(target)
+    local result = {}
+    for key, value in pairs(target) do
+        if key ~= "Prototype" and key ~= "Also" then
+            result[key] = value
+        end
+    end
 
+    local prototype = target.Prototype
+    if prototype then
+        if not result.type then
+            result.type = prototype.object_name == "LuaRecipePrototype" and "recipe"
+                or prototype.type
+        end
+
+        local also = { "name", "localised_name", "localised_description", "group", "subgroup", "order" }
+        for _, key in ipairs(also) do
+            if not result[key] then result[key] = prototype[key] end
+        end
+
+        if target.Also then
+            for _, key in ipairs(target.Also) do
+                result[key] = prototype[key]
+            end
+        end
+    end
+
+    dassert(result.type)
+    dassert(result.name)
+
+    if not result.localised_name then result.localised_name = { "ingteb-name." .. result.type .. "-" .. result.name } end
+    if not result.localised_description then result.localised_description = { "ingteb-descrition." .. result.type .. "-" .. result.name } end
+    return result
+end
+
+function Helper.CalculateHeaterRecipe(prototype)
+    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+    local inBox--
+    = fluidBoxes--
+        :Where(--
+            function(box)
+                return box.filter
+                    and (box.production_type == "input" or box.production_type == "input-output")
+            end
+        )--
+        :Top(false, false)--
+        .filter
+
+    local outBox = fluidBoxes--
+        :Where(function(box) return box.filter and box.production_type == "output" end)--
+        :Top(false, false)--
+        .filter
+
+    local inEnergy = (outBox.default_temperature - inBox.default_temperature) * inBox.heat_capacity
+    local outEnergy = (prototype.target_temperature - outBox.default_temperature)
+        * outBox.heat_capacity
+
+    local amount = 60 * prototype.max_energy_usage / (inEnergy + outEnergy)
+
+    return Helper.CreatePrototypeProxy { type = "boiling",
+        Prototype = prototype,
+        sprite_type = "entity",
+        hidden = true,
+        ingredients = { { type = "fluid", amount = amount, name = inBox.name } },
+        products = { { type = "fluid", amount = amount, name = outBox.name } },
+        category = prototype.name,
+    }
+end
+
+function Helper.IsValidBoiler(prototype)
+    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+    if not fluidBoxes then
+        log {
+            "mod-issue.boiler-without-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+    local inBoxes--
+    = fluidBoxes--
+        :Where(
+            function(box)
+                return box.production_type == "input" or box.production_type == "input-output"
+            end
+        ) --
+    local outBoxes = fluidBoxes--
+        :Where(function(box) return box.production_type == "output" end) --
+
+    local result = true
+    if not inBoxes or inBoxes:Count() ~= 1 then
+        log {
+            "mod-issue.boiler-no-unique-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    elseif not inBoxes[1].filter then
+        log {
+            "mod-issue.boiler-generic-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+
+    if not outBoxes or outBoxes:Count() ~= 1 then
+        log {
+            "mod-issue.boiler-no-unique-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    elseif not outBoxes[1].filter then
+        log {
+            "mod-issue.boiler-generic-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+
+    return result
+end
+
+
+return Helper

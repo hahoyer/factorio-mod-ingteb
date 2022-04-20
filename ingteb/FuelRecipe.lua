@@ -18,27 +18,19 @@ Class.system.Properties = {}
 function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
-    self.SpriteType = "entity"
     self.Time = 1
     self.Category = GetCategoryAndRegister(self, "fuelProcessing", name)
     self.TypeStringForLocalisation = "ingteb-utility.title-fuelProcessing-recipe"
 
-    local input = self.Database:GetStackOfGoods{type = prototype.type, amount = 1, name = name}
-    input.Source = {Recipe = self, ProductIndex = 1}
+    local input = self.Database:GetStackOfGoods { type = prototype.type, amount = 1, name = name }
+    input.Source = { Recipe = self, ProductIndex = 1 }
     input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
-    self.Input = Array:new{input}
+    self.Input = Array:new { input }
 
-    local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"}
+    local output = self.Database:GetStackOfGoods { type = "fluid", amount = 60, name = "steam" }
     output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
-    output.Source = {Recipe = self, IngredientIndex = 1}
-    self.Output = Array:new{output}
-
-    function self:IsBefore(other)
-        if self == other then return false end
-        return self.OrderValue < other.OrderValue
-    end
-
-    function self:SortAll() end
+    output.Source = { Recipe = self, IngredientIndex = 1 }
+    self.Output = Array:new { output }
 
     return self
 end

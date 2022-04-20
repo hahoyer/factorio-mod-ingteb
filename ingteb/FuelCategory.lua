@@ -1,4 +1,5 @@
 local Constants = require("Constants")
+local Helper = require "ingteb.Helper"
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
@@ -15,6 +16,7 @@ FuelCategory.system.Properties = {
             :Select(function(fuel) return self.Database:Get(fuel) end)
         end,
     },
+    SpriteType = { get = function(self) return "fuel-category" end },
     SpriteName = {
         cache = true,
         get = function(self)
@@ -57,10 +59,9 @@ function FuelCategory:new(name, prototype, database)
     dassert(name)
 
     if name == "fluid" and not prototype then
-        prototype = {
+        prototype = Helper.CreatePrototypeProxy{
+            type = "fuel-category",
             name = name,
-            localised_name = {"ingteb-utility.fluid-fuel-category"},
-            localised_description = {"ingteb-utility.fluid-fuel-category"},
         }
     end
 
@@ -69,8 +70,6 @@ function FuelCategory:new(name, prototype, database)
             prototype or game.fuel_category_prototypes[name], database
         )
     )
-
-    self.SpriteType = "fuel-category"
 
     function self:SortAll() end
 

@@ -10,6 +10,17 @@ local class = require("core.class")
 local Class = class:new("Entity", Common)
 
 Class.system.Properties = {
+    SpriteType = { get = function(self) return "entity" end },
+    UsedBy = {
+        cache = true,
+        get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
+    },
+
+    CreatedBy = {
+        cache = true,
+        get = function(self) return self.Database:GetCreatedByRecipes(self.Prototype) end,
+    },
+
     SpriteName = {
         get = function(self)
             -- special entity for handmining
@@ -157,12 +168,11 @@ Class.system.Properties = {
         end,
     },
 
-    Speed = {
+    Time = {
         cache = true,
         get = function(self) --
-            local result = 60.0
-                / (self.Prototype.rocket_rising_delay
-                    + self.Prototype.launch_wait_time)
+            local result =
+            (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time) / 60.0
             dassert(result and result > 0)
             return result
         end,
@@ -204,7 +214,7 @@ function Class:GetNumberOnSprite(category)
         == "hand-mining.steel-axe" then
         return self.Prototype.mining_speed
     elseif category.Domain == "rocket-launch" then
-        return self.Speed / category.Speed
+        return category.Time / self.Time
     else
         dassert(false)
     end
@@ -216,17 +226,12 @@ function Class:new(name, prototype, database)
             prototype or game.entity_prototypes[name], database
         )
     )
-    self.SpriteType = "entity"
-    if name then self.Name = name end
 
+    if name then self.Name = name end
     if self.Name == "character" then self.TypeSubOrder = -1 end
 
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
 
-    -- ConditionalBreak(self.Prototype.target_temperature)
-
-    self.UsedBy = Dictionary:new {}
-    self.CreatedBy = Dictionary:new {}
     self.Amounts = { value = 1 }
     self.HelpTextWhenUsedAsProduct = { "", self.RichTextName .. " ", self.Prototype.localised_name }
 

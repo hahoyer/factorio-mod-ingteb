@@ -9,23 +9,25 @@ local class = require("core.class")
 local Recipe = class:new("Recipe", Common)
 
 Recipe.system.Properties = {
+    SpriteType = { get = function(self) return "recipe" end },
+    TypeStringForLocalisation = { get = function(self) return "description.recipe" end },
 
     Technologies = {
         cache = true,
         get = function(self)
-            local xreturn = (self.Database.BackLinks.TechnologiesForRecipe[self.Name] or Array:new{}) --
-            :Select(
-                function(prototype)
-                    return self.Database:GetTechnology(nil, prototype)
-                end
-            )
+            local xreturn = (self.Database.BackLinks.TechnologiesForRecipe[self.Name] or Array:new {})--
+                :Select(
+                    function(prototype)
+                        return self.Database:GetTechnology(nil, prototype)
+                    end
+                )
             return xreturn
         end,
     },
 
     IsResearched = {
         get = function(self)
-            return --
+            return--
             not self.Technologies:Any() --
                 or self.Technologies:Any(function(technology)
                     return technology.IsResearched
@@ -35,9 +37,9 @@ Recipe.system.Properties = {
 
     NotResearchedTechnologiesForRecipe = {
         get = function(self)
-            local result = self.Technologies --
-            :Select(function(technology) return technology.NotResearchedPrerequisites end) --
-            :GetShortest()
+            local result = self.Technologies--
+                :Select(function(technology) return technology.NotResearchedPrerequisites end)--
+                :GetShortest()
             return result
         end,
     },
@@ -46,12 +48,12 @@ Recipe.system.Properties = {
         get = function(self)
             if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
 
-            local researched = self.Technologies --
-            :Where(function(technology) return technology.IsResearched end)
+            local researched = self.Technologies--
+                :Where(function(technology) return technology.IsResearched end)
             if researched:Any() then return researched:Top() end
 
-            local ready = self.Technologies --
-            :Where(function(technology) return technology.IsReady end)
+            local ready = self.Technologies--
+                :Where(function(technology) return technology.IsReady end)
             if ready:Any() then return ready:Top() end
 
             return self.Technologies:Top()
@@ -61,9 +63,9 @@ Recipe.system.Properties = {
     OrderValue = {
         cache = "player",
         get = function(self)
-            return --
+            return--
             self.TypeOrder .. " " --
-            .. (self.IsResearched and "R" or "r") .. " "
+                .. (self.IsResearched and "R" or "r") .. " "
                 .. (not self.IsResearched and self.Technology.IsReady and "R" or "r") .. " "
                 .. self.Prototype.group.order .. " " .. self.Prototype.subgroup.order .. " "
                 .. self.Prototype.order
@@ -101,8 +103,8 @@ Recipe.system.Properties = {
 
     SpriteStyle = {
         get = function(self)
-            if not self.IsResearched then return "not-researched" 
-            elseif self.Technology and self.Technology.IsResearching then return "researching" 
+            if not self.IsResearched then return "not-researched"
+            elseif self.Technology and self.Technology.IsResearching then return "researching"
             elseif self.NumberOnSprite then return "active" end
         end,
     },
@@ -136,7 +138,7 @@ Recipe.system.Properties = {
                 end
 
                 if outputAmount then
-                    return {"", outputAmount .. " x ", self.LocalisedName}
+                    return { "", outputAmount .. " x ", self.LocalisedName }
                 end
             end
             return self.LocalisedName
@@ -146,7 +148,7 @@ Recipe.system.Properties = {
     SpecialFunctions = {
         get = function(self) --
             local result = self.inherited.Recipe.SpecialFunctions.get(self)
-            return result:Concat{
+            return result:Concat {
                 {
                     UICode = "A-- l",
                     HelpText = "controls.craft",
@@ -154,7 +156,7 @@ Recipe.system.Properties = {
                         return self.HandCrafter and self.NumberOnSprite
                     end,
                     Action = function(self)
-                        return {HandCrafting = {count = 1, recipe = self.Name}}
+                        return { HandCrafting = { count = 1, recipe = self.Name } }
                     end,
                 },
                 {
@@ -164,7 +166,7 @@ Recipe.system.Properties = {
                         return self.HandCrafter and self.NumberOnSprite
                     end,
                     Action = function(self)
-                        return {HandCrafting = {count = 5, recipe = self.Name}}
+                        return { HandCrafting = { count = 5, recipe = self.Name } }
                     end,
                 },
                 {
@@ -175,7 +177,7 @@ Recipe.system.Properties = {
                     end,
 
                     Action = function(self)
-                        return {HandCrafting = {count = self.CraftableCount, recipe = self.Name}}
+                        return { HandCrafting = { count = self.CraftableCount, recipe = self.Name } }
                     end,
                 },
                 {
@@ -184,7 +186,7 @@ Recipe.system.Properties = {
                     IsAvailable = function(self)
                         return self.Technology and self.Technology.IsReady
                     end,
-                    Action = function(self) return {Research = self.Technology} end,
+                    Action = function(self) return { Research = self.Technology } end,
                 },
                 {
                     UICode = "-CS l",
@@ -193,7 +195,7 @@ Recipe.system.Properties = {
                         return self.Technology and self.Technology.IsNextGeneration
                     end,
                     Action = function(self)
-                        return {Research = self.Technology, Multiple = true}
+                        return { Research = self.Technology, Multiple = true }
                     end,
                 },
                 -- {
@@ -210,21 +212,22 @@ Recipe.system.Properties = {
             return RequiredThings:new(self.NotResearchedTechnologiesForRecipe, self.Input)
         end,
     },
+
 }
 
 function Recipe:GetCheapestWorkers()
-    if self.HandCrafter then return Array:new{self.HandCrafter} end
+    if self.HandCrafter then return Array:new { self.HandCrafter } end
     dassert()
 end
 
 function Recipe:GetWorkerCraftingQueue()
-    if self.HandCrafter then return Array:new{} end
+    if self.HandCrafter then return Array:new {} end
     local worker = self.Category.Workers:Select(
         function(worker)
             if worker.Item then
-                local result = self.CreatedBy --
-                :ToArray(function(recipes) return recipes end) --
-                :ConcatMany()
+                local result = self.CreatedBy--
+                    :ToArray(function(recipes) return recipes end)--
+                    :ConcatMany()
                 dassert()
             end
         end
@@ -245,21 +248,14 @@ function Recipe:SortAll() end
 
 function Recipe:new(name, prototype, database)
     local self = self:adopt(
-        self.system.BaseClass:new(
+        self.system.BaseClass:new(nil,
             prototype or game.recipe_prototypes[name], database
         )
     )
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
-    self.SpriteType = "recipe"
-    self.RawOutput = self.Prototype.products 
-    self.RawInput = self.Prototype.ingredients
-
-    self.TypeStringForLocalisation = "description.recipe"
-    self.IsHidden = self.Prototype.hidden
-    self.Time = self.Prototype.energy
-    self.IsRefreshRequired = {Research = true, MainInventory = true}
+    self.IsRefreshRequired = { Research = true, MainInventory = true }
 
     return self
 

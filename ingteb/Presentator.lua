@@ -5,14 +5,12 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local MiningRecipe = require("ingteb.MiningRecipe")
 local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
 local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
-local BoilingRecipe = require "ingteb.BoilingRecipe"
+local RecipeCommon = require "ingteb.RecipeCommon"
 local BurningRecipe = require "ingteb.BurningRecipe"
-local RocketLaunchRecipe = require "ingteb.RocketLaunchRecipe"
 local Spritor = require "ingteb.Spritor"
 
 local Class = class:new(
@@ -429,10 +427,8 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     local sampleClient = sampleCategogy.Value[1]
     dassert(
         sampleClient.class == Recipe --
-        or sampleClient.class == MiningRecipe --
-        or sampleClient.class == BoilingRecipe --
+        or sampleClient.class == RecipeCommon --
         or sampleClient.class == BurningRecipe --
-        or sampleClient.class == RocketLaunchRecipe --
         or sampleClient.class == Technology --
     )
 
@@ -445,7 +441,7 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     local outCount = target:Select(
         function(group)
             return group:Select(function(recipe) return recipe.Output:Count() end):Maximum()
-        end
+        end 
     ):Maximum()
 
     return {

@@ -10,6 +10,7 @@ local Class = class:new("ModuleCategory", Common)
 -- todo: present limitations
 
 Class.system.Properties = {
+    SpriteType = { get = function(self) return "item" end },
     Items = {
         cache = true,
         get = function(self)
@@ -66,15 +67,13 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    dassert(name)
+    dassert(database)
 
     local self = self:adopt(
         self.system.BaseClass:new(
             prototype or game.module_category_prototypes[name], database
         )
     )
-
-    self.SpriteType = "item"
 
     function self:SortAll() end
 

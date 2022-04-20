@@ -71,7 +71,7 @@ function Class:UpdateGui(guiElement, target)
     if target.class == StackOfGoods then
         target = StackOfGoods:new(target.Goods, target.Amounts, self.Database)
     else
-        target = self.Database:GetProxy(target.class.name, target.Name)
+        target = self.Database:GetProxyWithName(target.class.name, target.Name)
     end
     local helperText = self:GetHelperText(target)
     local number = target.NumberOnSprite

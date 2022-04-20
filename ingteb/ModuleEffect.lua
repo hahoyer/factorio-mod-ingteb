@@ -9,6 +9,7 @@ local class = require("core.class")
 local Class = class:new("ModuleEffect", Common)
 
 Class.system.Properties = {
+    SpriteType = { get = function(self) return "item" end },
     Items = {
         cache = true,
         get = function(self)
@@ -69,8 +70,6 @@ function Class:new(name, prototype, database)
             Common:CreatePrototype("ModuleEffect", name), database
         )
     )
-
-    self.SpriteType = "item"
 
     function self:SortAll() end
 

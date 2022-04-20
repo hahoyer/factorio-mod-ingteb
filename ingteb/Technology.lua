@@ -10,13 +10,15 @@ local ResearchQueue = require "ingteb.ResearchQueue"
 local ignore
 local Class = class:new(
     "Technology", Common, {
+        TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-technology" end },
+        SpriteType = { get = function(self) return "technology" end },
         Amount = {
             cache = true,
             get = function(self) --
                 local formula = self.Prototype.research_unit_count_formula
                 if formula then
                     local level = self.Prototype.level
-                    local result = game.evaluate_expression(formula, {L = level, l = level})
+                    local result = game.evaluate_expression(formula, { L = level, l = level })
                     return result
                 else
                     return self.Prototype.research_unit_count
@@ -27,14 +29,14 @@ local Class = class:new(
         Ingredients = {
             cache = true,
             get = function(self) --
-                return Array:new(self.Prototype.research_unit_ingredients) --
-                :Select(
-                    function(tag, index)
-                        local result = self.Database:GetStackOfGoods(tag)
-                        result.Source = {Technology = self, IngredientIndex = index}
-                        return result
-                    end
-                ) --
+                return Array:new(self.Prototype.research_unit_ingredients)--
+                    :Select(
+                        function(tag, index)
+                            local result = self.Database:GetStackOfGoods(tag)
+                            result.Source = { Technology = self, IngredientIndex = index }
+                            return result
+                        end
+                    ) --
             end,
 
         },
@@ -42,11 +44,11 @@ local Class = class:new(
         InputHelp = {
             cache = true,
             get = function(self) --
-                local result = Array:new{
+                local result = Array:new {
                     {
                         "",
                         "[font=heading-1][color=#F8E1BC]",
-                        {"gui-technology-preview.unit-ingredients"},
+                        { "gui-technology-preview.unit-ingredients" },
                         ":[/color][/font]",
                     },
 
@@ -56,11 +58,11 @@ local Class = class:new(
                 result:AppendMany(
                     ingredients:Select(
                         function(stack)
-                            return {"", stack.HelpTextWhenUsedAsProduct}
+                            return { "", stack.HelpTextWhenUsedAsProduct }
                         end
                     )
                 )
-                result:Append{
+                result:Append {
                     "",
                     "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
                 }
@@ -109,14 +111,14 @@ local Class = class:new(
             end,
         },
 
-        ResearchQueue = {get = function(self)
+        ResearchQueue = { get = function(self)
             return self.Database.Parent.Modules.ResearchQueue
-        end},
+        end },
 
         IsResearched = {
             get = function(self)
                 return self.Player.force.technologies[self.Prototype.name].researched
-                           == true
+                    == true
             end,
         },
         IsResearchedOrResearching = {
@@ -146,13 +148,13 @@ local Class = class:new(
 
         Prerequisites = {
             get = function(self)
-                return Dictionary:new(self.Prototype.prerequisites) --
-                :ToArray() --
-                :Select(
-                    function(technology)
-                        return self.Database:GetTechnology(nil, technology)
-                    end
-                )
+                return Dictionary:new(self.Prototype.prerequisites)--
+                    :ToArray()--
+                    :Select(
+                        function(technology)
+                            return self.Database:GetTechnology(nil, technology)
+                        end
+                    )
             end,
         },
 
@@ -170,7 +172,7 @@ local Class = class:new(
         NotResearchedPrerequisitesRaw = {
             cache = "player",
             get = function(self)
-                local result = Dictionary:new{}
+                local result = Dictionary:new {}
                 if self.IsResearched then return result end
                 dlog(self.CommonKey .. ">>>")
                 local oldIndent = AddIndent()
@@ -188,12 +190,12 @@ local Class = class:new(
 
         NotResearchedPrerequisites = {
             get = function(self)
-                return self.NotResearchedPrerequisitesRaw --
-                :ToArray(
-                    function(_, technologyName)
-                        return self.Database:GetTechnology(technologyName)
-                    end
-                )
+                return self.NotResearchedPrerequisitesRaw--
+                    :ToArray(
+                        function(_, technologyName)
+                            return self.Database:GetTechnology(technologyName)
+                        end
+                    )
             end,
         },
 
@@ -201,16 +203,16 @@ local Class = class:new(
             cache = true,
             get = function(self)
                 local enabledTechnologies = self.Database.BackLinks.EnabledTechnologiesForTechnology[self.Prototype
-                                                .name]
+                    .name]
                 if enabledTechnologies then
-                    return enabledTechnologies --
-                    :Select(
-                        function(technology)
-                            return self.Database:GetTechnology(nil, technology)
-                        end
-                    )
+                    return enabledTechnologies--
+                        :Select(
+                            function(technology)
+                                return self.Database:GetTechnology(nil, technology)
+                            end
+                        )
                 else
-                    return Array:new{}
+                    return Array:new {}
                 end
             end,
         },
@@ -218,13 +220,13 @@ local Class = class:new(
         EnablesHelp = {
             cache = true,
             get = function(self)
-                if not self.Enables:Any() then return Array:new{} end
+                if not self.Enables:Any() then return Array:new {} end
 
-                local result = Array:new{
+                local result = Array:new {
                     {
                         "",
                         "[font=heading-1][color=#F8E1BC]",
-                        {"ingteb-utility.technology-enables"},
+                        { "ingteb-utility.technology-enables" },
                         ":[/color][/font]",
                     },
 
@@ -232,8 +234,8 @@ local Class = class:new(
                         "",
                         self.Enables:Select(
                             function(effect) return effect.RichTextName end
-                        ) --
-                        :ToArray():Stringify(""),
+                        )--
+                            :ToArray():Stringify(""),
                     },
                 }
 
@@ -244,24 +246,24 @@ local Class = class:new(
         EnabledRecipes = {
             cache = true,
             get = function(self)
-                return Dictionary:new(self.Prototype.effects) --
-                :Where(function(effect) return effect.type == "unlock-recipe" end) --
-                :Select(function(effect)
-                    return self.Database:GetRecipe(effect.recipe)
-                end)
+                return Dictionary:new(self.Prototype.effects)--
+                    :Where(function(effect) return effect.type == "unlock-recipe" end)--
+                    :Select(function(effect)
+                        return self.Database:GetRecipe(effect.recipe)
+                    end)
             end,
         },
 
         EffectsHelp = {
             cache = true,
             get = function(self)
-                if not self.Effects:Any() then return Array:new{} end
+                if not self.Effects:Any() then return Array:new {} end
 
-                local result = Array:new{
+                local result = Array:new {
                     {
                         "",
                         "[font=heading-1][color=#F8E1BC]",
-                        {"gui-technology-preview.effects"},
+                        { "gui-technology-preview.effects" },
                         ":[/color][/font]",
                     },
 
@@ -269,8 +271,8 @@ local Class = class:new(
                         "",
                         self.Effects:Select(
                             function(effect) return effect.RichTextName end
-                        ) --
-                        :ToArray():Stringify(""),
+                        )--
+                            :ToArray():Stringify(""),
                     },
                 }
 
@@ -281,27 +283,27 @@ local Class = class:new(
         Effects = {
             cache = true,
             get = function(self)
-                return Dictionary:new(self.Prototype.effects) --
-                :Select(
-                    function(effect)
-                        if effect.type == "unlock-recipe" then
-                            return self.Database:GetRecipe(effect.recipe)
+                return Dictionary:new(self.Prototype.effects)--
+                    :Select(
+                        function(effect)
+                            if effect.type == "unlock-recipe" then
+                                return self.Database:GetRecipe(effect.recipe)
+                            end
+                            return self.Database:GetBonusFromEffect(effect)
                         end
-                        return self.Database:GetBonusFromEffect(effect)
-                    end
-                )
+                    )
             end,
         },
 
         SpecialFunctions = {
             get = function(self) --
                 local result = self.inherited.Technology.SpecialFunctions:get(self)
-                return result:Concat{
+                return result:Concat {
                     {
                         UICode = "-C- l",
                         HelpText = "gui-technology-preview.start-research",
                         IsAvailable = function(self) return self.IsReady end,
-                        Action = function(self) return {Research = self} end,
+                        Action = function(self) return { Research = self } end,
                     },
                     {
                         UICode = "-CS l",
@@ -310,7 +312,7 @@ local Class = class:new(
                             return self.IsNextGeneration
                         end,
                         Action = function(self)
-                            return {Research = self, Multiple = true}
+                            return { Research = self, Multiple = true }
                         end,
                     },
                     -- {
@@ -326,7 +328,7 @@ local Class = class:new(
 )
 
 function Class:BeginMulipleQueueResearch(setting)
-    local queued = Array:new{}
+    local queued = Array:new {}
     local message = "ingteb-utility.research-no-ready-prerequisite"
     repeat
         local ready = self.TopReadyPrerequisite
@@ -338,7 +340,7 @@ function Class:BeginMulipleQueueResearch(setting)
 
     queued:Select(
         function(technology)
-            self.Database:Print{
+            self.Database:Print {
                 "ingteb-utility.added-to-research-queue",
                 technology.Prototype.localised_name,
             }
@@ -346,16 +348,16 @@ function Class:BeginMulipleQueueResearch(setting)
             technology:Refresh()
         end
     )
-    if not queued:Any() then return {message, self.Prototype.localised_name} end
+    if not queued:Any() then return { message, self.Prototype.localised_name } end
 end
 
 function Class:BeginDirectQueueResearch()
     local added = self.ResearchQueue:AddResearch(self.Name)
     if added then
-        self.Database:Print{"ingteb-utility.added-to-research-queue", self.Prototype.localised_name}
+        self.Database:Print { "ingteb-utility.added-to-research-queue", self.Prototype.localised_name }
         self:Refresh()
     else
-        self.Database:Print{
+        self.Database:Print {
             "ingteb-utility.not-added-to-research-queue",
             self.Prototype.localised_name,
         }
@@ -392,10 +394,8 @@ function Class:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
-    self.SpriteType = "technology"
     self.Time = self.Prototype.research_unit_energy / 60
-    self.IsRefreshRequired = {Research = true}
-    self.TypeStringForLocalisation = "ingteb-utility.title-technology"
+    self.IsRefreshRequired = { Research = true }
 
     return self
 

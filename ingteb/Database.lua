@@ -1,14 +1,13 @@
 local localisation = require "__flib__.dictionary"
 local Number = require("core.Number")
 local Constants = require("Constants")
-local Helper = require("ingteb.Helper")
+local Helper = require "ingteb.Helper"
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 local TimeSpan = require("core.TimeSpan")
 local Proxy = {
-    BoilingRecipe = require("ingteb.BoilingRecipe"),
     Bonus = require("ingteb.Bonus"),
     BurningRecipe = require("ingteb.BurningRecipe"),
     Category = require("ingteb.Category"),
@@ -16,9 +15,8 @@ local Proxy = {
     FuelCategory = require("ingteb.FuelCategory"),
     Fluid = require("ingteb.Fluid"),
     Item = require("ingteb.Item"),
-    MiningRecipe = require("ingteb.MiningRecipe"),
     Recipe = require("ingteb.Recipe"),
-    RocketLaunchRecipe = require("ingteb.RocketLaunchRecipe"),
+    RecipeCommon = require "ingteb.RecipeCommon",
     Technology = require("ingteb.Technology"),
     ModuleCategory = require("ingteb.ModuleCategory"),
     ModuleEffect = require("ingteb.ModuleEffect"),
@@ -96,7 +94,7 @@ local Class = class:new(
 
                             local group = EnsureKey(result.Groups, grouping[1], Dictionary:new {})
                             local subgroup = EnsureKey(group, grouping[2], Array:new {})
-                            subgroup:Append(self:GetProxy(type, name, goods))
+                            subgroup:Append(self:GetProxy(type, nil, goods))
                             if maximumColumnCount < subgroup:Count() then
                                 maximumColumnCount = subgroup:Count()
                             end
@@ -126,8 +124,6 @@ function Class:ScanBackLinks()
     log("database scan backLinks ...")
     local backLinks = self.BackLinks
     backLinks.CategoryNames = Dictionary:new {}
-    backLinks.UsedByRecipesForItems = {}
-    backLinks.CreatedByRecipesForItems = {}
     backLinks.RecipesForCategory = {}
     backLinks.TechnologiesForRecipe = {}
     backLinks.EnabledTechnologiesForTechnology = {}
@@ -139,6 +135,10 @@ function Class:ScanBackLinks()
     backLinks.ItemsForModuleEffects = {}
     backLinks.ItemsForModuleCategory = {}
     backLinks.EntitiesForModuleEffects = {}
+    backLinks.Recipe = {
+        Input = { item = {}, fluid = {}, entity = {} },
+        Output = { item = {}, fluid = {} }
+    }
 
     log("database backLinks : scan recipes ...")
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
@@ -151,7 +151,7 @@ function Class:ScanBackLinks()
     log("database backLinks : scan entities ...")
     for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
     log("database backLinks : scan fuel_category_prototypes ...")
-    for name, prototype in pairs(game.fuel_category_prototypes) do
+    for name in pairs(game.fuel_category_prototypes) do
         EnsureKey(backLinks.ItemsForFuelCategory, name, Array:new())
     end
 
@@ -172,11 +172,9 @@ function Class:Ensure()
     local order = 1
     self.Order = {
         Recipe = 1,
-        MiningRecipe = 2,
-        BoilingRecipe = 3,
-        BurningRecipe = 3.4,
+        RecipeCommon = 2,
+        BurningRecipe = 3,
         FuelRecipe = 3.5,
-        RocketLaunchRecipe = 3.6,
         Technology = 4,
         Entity = 5,
         Bonus = 6,
@@ -219,13 +217,23 @@ end
 
 function Class:GetProxyFromPrototype(prototype)
     self:Ensure()
-    local objectType = prototype.object_name
+    local objectType = prototype.object_name or prototype.type
     if objectType == "LuaFluidPrototype" then
         return self:GetFluid(nil, prototype)
     elseif objectType == "LuaItemPrototype" then
         return self:GetItem(nil, prototype)
     elseif objectType == "LuaEntityPrototype" then
         return self:GetEntity(nil, prototype)
+    elseif objectType == "LuaRecipePrototype" then
+        return self:GetRecipe(nil, prototype)
+    elseif objectType == "burning" then
+        return self:GetBurningRecipe(nil, prototype)
+    elseif objectType == "boiling" then
+        return self:GetBoilingRecipe(nil, prototype)
+    elseif objectType == "mining" or objectType == "hand-mining" or objectType == "fluid-mining" then
+        return self:GetMiningRecipe(nil, prototype)
+    elseif objectType == "rocket-launch" then
+        return self:GetRocketLaunchRecipe(nil, prototype)
     else
         dassert(false)
     end
@@ -269,19 +277,23 @@ function Class:GetModuleEffect(name, prototype) --
 end
 
 function Class:GetMiningRecipe(name, prototype) --
-    return self:GetProxy("MiningRecipe", name, prototype)
+    dassert(not name)
+    return self:GetProxy("RecipeCommon", name, prototype)
 end
 
 function Class:GetBoilingRecipe(name, prototype) --
-    return self:GetProxy("BoilingRecipe", name, prototype)
+    dassert(not name)
+    return self:GetProxy("RecipeCommon", name, prototype)
 end
 
 function Class:GetBurningRecipe(name, prototype) --
+    dassert(not name)
     return self:GetProxy("BurningRecipe", name, prototype)
 end
 
 function Class:GetRocketLaunchRecipe(name, prototype) --
-    return self:GetProxy("RocketLaunchRecipe", name, prototype)
+    dassert(not name)
+    return self:GetProxy("RecipeCommon", name, prototype)
 end
 
 function Class:GetFuelCategory(name, prototype) --
@@ -295,7 +307,7 @@ end
 
 function Class:GetBonusFromEffect(target)
     local type = target.type
-    local prototype = {
+    local prototype = Helper.CreatePrototypeProxy {
         type = "Bonus",
         name = (type .. "-modifier-icon"):gsub("-", "_"),
         localised_name = { "gui-bonus." .. type },
@@ -304,7 +316,7 @@ function Class:GetBonusFromEffect(target)
     }
 
     local name = type .. "/" .. tostring(target.mining)
-    return self:GetProxy("Bonus", name, prototype)
+    return self:GetProxyWithName("Bonus", name, prototype)
 end
 
 ---@param categoryName string
@@ -315,72 +327,29 @@ function Class:AddWorkerForCategory(categoryName, prototype)
     self.BackLinks.CategoryNames[categoryName] = true
 end
 
----@param categoryName string
 ---@param prototype table LuaEntityPrototype
-function Class:AddRecipesForCategory(categoryName, prototype)
+function Class:AddRecipe(prototype)
+    local type = prototype.object_name == "LuaRecipePrototype" and "crafting" or prototype.type
+
+    dassert(type)
+    dassert(prototype.name)
+    dassert(prototype.ingredients)
+    dassert(prototype.products)
+    dassert(prototype.category)
+    dassert(prototype.object_name == "LuaRecipePrototype" or prototype.hidden)
+
+    local categoryName = type .. "." .. prototype.category
+
+    self.BackLinks.CategoryNames[categoryName] = true
+
     local data = EnsureKey(self.BackLinks.RecipesForCategory, categoryName, Dictionary:new {})
     data[prototype.name] = prototype
-    self.BackLinks.CategoryNames[categoryName] = true
-end
-
-local function EnsureRecipeForItem(result, itemName, recipe)
-    EnsureKey(result, itemName, Array:new {}):Append(recipe)
-end
-
-local function IsValidBoiler(prototype)
-    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
-    if not fluidBoxes then
-        log {
-            "mod-issue.boiler-without-fluidbox",
-            prototype.localised_name,
-            prototype.type .. "." .. prototype.name,
-        }
-        return
+    for _, value in ipairs(prototype.ingredients) do
+        EnsureKey(self.BackLinks.Recipe.Input[value.type], value.name, Array:new()):Append(prototype)
     end
-    local inBoxes--
-    = fluidBoxes--
-        :Where(
-            function(box)
-                return box.production_type == "input" or box.production_type == "input-output"
-            end
-        ) --
-    local outBoxes = fluidBoxes--
-        :Where(function(box) return box.production_type == "output" end) --
-
-    local result = true
-    if not inBoxes or inBoxes:Count() ~= 1 then
-        log {
-            "mod-issue.boiler-no-unique-input-fluidbox",
-            prototype.localised_name,
-            prototype.type .. "." .. prototype.name,
-        }
-        return
-    elseif not inBoxes[1].filter then
-        log {
-            "mod-issue.boiler-generic-input-fluidbox",
-            prototype.localised_name,
-            prototype.type .. "." .. prototype.name,
-        }
-        return
+    for _, value in ipairs(prototype.products) do
+        EnsureKey(self.BackLinks.Recipe.Output[value.type], value.name, Array:new()):Append(prototype)
     end
-
-    if not outBoxes or outBoxes:Count() ~= 1 then
-        log {
-            "mod-issue.boiler-no-unique-output-fluidbox",
-            prototype.localised_name,
-            prototype.type .. "." .. prototype.name,
-        }
-        return
-    elseif not outBoxes[1].filter then
-        log {
-            "mod-issue.boiler-generic-output-fluidbox",
-            prototype.localised_name,
-            prototype.type .. "." .. prototype.name,
-        }
-        return
-    end
-
-    return result
 end
 
 function Class:ScanEntity(prototype)
@@ -393,15 +362,18 @@ function Class:ScanEntity(prototype)
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting." .. category, prototype)
         if prototype.fixed_recipe then
-            self:AddRecipesForCategory(
-                "crafting." .. category, game.recipe_prototypes[prototype.fixed_recipe]
-            )
+            dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
+            self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
         end
     end
 
     for categoryName, _ in pairs(prototype.resource_categories or {}) do
-        local domain = #prototype.fluidbox_prototypes > 0 and "fluid-mining" or "mining"
-        self:AddWorkerForCategory(domain .. categoryName, prototype)
+        if categoryName == "basic-solid" then
+            self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
+        end
+        if #prototype.fluidbox_prototypes > 0 then
+            self:AddWorkerForCategory("fluid-mining" .. "." .. categoryName, prototype)
+        end
     end
 
     if prototype.burner_prototype then
@@ -421,9 +393,9 @@ function Class:ScanEntity(prototype)
         end
     end
 
-    if prototype.type == "boiler" and IsValidBoiler(prototype) then
+    if prototype.type == "boiler" and Helper.IsValidBoiler(prototype) then
         self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
-        self:AddRecipesForCategory("boiling." .. prototype.name, prototype)
+        self:AddRecipe(Helper.CalculateHeaterRecipe(prototype))
     end
 
     if prototype.type == "rocket-silo" then
@@ -450,7 +422,30 @@ function Class:ScanEntity(prototype)
         local categoryName = not prototype.resource_category and "steel-axe" --
             or prototype.resource_category
 
-        self:AddRecipesForCategory(domain .. "." .. categoryName, prototype)
+        local ingredients = { { type = "entity", name = prototype.name } }
+        local configuration = prototype.mineable_properties
+        if configuration.required_fluid then
+            table.insert(
+                ingredients, {
+                    type = "fluid",
+                    name = configuration.required_fluid,
+                    amount = configuration.fluid_amount,
+                }
+            )
+        end
+
+        self:AddRecipe(Helper.CreatePrototypeProxy
+        {
+            type = domain,
+            Prototype = prototype,
+            sprite_type = "entity",
+            hidden = true,
+            products = configuration.products,
+            ingredients = ingredients,
+            energy = configuration.mining_time,
+            category = categoryName,
+        }
+        )
     end
 
     if prototype.type == "character" and prototype.name == "character" then
@@ -485,19 +480,32 @@ function Class:ScanTechnology(prototype)
 
 end
 
-function Class:ScanFuel(prototype, domainName, subName)
+function Class:ScanFuel(prototype, domain, category, spriteType)
     if prototype.fuel_value and prototype.fuel_value > 0 then
-        local subName = subName or "~"
-        EnsureKey(self.BackLinks.ItemsForFuelCategory, subName, Array:new()):Append(prototype)
-        local categoryName = domainName .. "." .. subName
-        self:AddRecipesForCategory(categoryName, prototype)
+        local category = category or "~"
+        EnsureKey(self.BackLinks.ItemsForFuelCategory, category, Array:new()):Append(prototype)
+        local output = not self.IsFluid and prototype.burnt_result
+        self:AddRecipe(
+            Helper.CreatePrototypeProxy { --
+                type = domain,
+                Prototype = prototype,
+                hidden = true,
+                category = category,
+                sprite_type = spriteType,
+                Also = { "fuel_category", "fuel_value" },
+                ingredients = { { type = self.IsFluid and "fluid" or "item", amount = 1, name = prototype.name } },
+                products = output and { { type = output.type, amount = 1, name = output.name } } or {},
+
+            })
     end
 end
 
-function Class:ScanFluid(prototype) self:ScanFuel(prototype, "fluid-burning", "fluid") end
+function Class:ScanFluid(prototype)
+    self:ScanFuel(prototype, "fluid-burning", "fluid", "fluid")
+end
 
 function Class:ScanItem(prototype)
-    self:ScanFuel(prototype, "burning", prototype.fuel_category)
+    self:ScanFuel(prototype, "burning", prototype.fuel_category, "item")
 
     if prototype.burnt_result and not prototype.fuel_category then
         log {
@@ -510,7 +518,18 @@ function Class:ScanItem(prototype)
     end
 
     if #prototype.rocket_launch_products > 0 then
-        self:AddRecipesForCategory("rocket-launch.rocket-launch", prototype)
+        self:AddRecipe(
+            Helper.CreatePrototypeProxy {
+                type = "rocket-launch",
+                Prototype = prototype,
+                category = "rocket-launch",
+                sprite_type = "item",
+                hidden = true,
+                ingredients = { type = "item", amount = prototype.default_request_amount, name = prototype.name },
+                products = prototype.rocket_launch_products
+
+            }
+        )
     end
 
     for name in pairs(prototype.module_effects or {}) do
@@ -525,7 +544,7 @@ function Class:ScanItem(prototype)
 end
 
 function Class:ScanRecipe(prototype)
-    self:AddRecipesForCategory("crafting." .. prototype.category, prototype)
+    self:AddRecipe(prototype)
 end
 
 function Class:GetStackOfGoods(target)
@@ -570,7 +589,7 @@ function Class:Get(target)
     self:Ensure()
     dassert(className)
     dassert(name or prototype)
-    return self:GetProxy(className, name, prototype)
+    return self:GetProxyWithName(className, name, prototype)
 end
 
 function Class:GetFromSelection(target)
@@ -592,7 +611,7 @@ function Class:GetFromSelection(target)
     self:Ensure()
     dassert(className)
     dassert(name or prototype)
-    return self:GetProxy(className, name, prototype)
+    return self:GetProxyWithName(className, name, prototype)
 end
 
 function Class:BeginMulipleQueueResearch(target, setting)
@@ -691,40 +710,33 @@ function Class:OnInitialise() self:OnInitialiseLocalisation() end
 
 function Class:OnConfigurationChanged() self:OnInitialiseLocalisation() end
 
-function Class:GetRecipesGroupByCategory(recipes)
-    if recipes then
+function Class:GetRecipesGroupByCategory(target, prototype)
+    local type = prototype.object_name == "LuaFluidPrototype" and "fluid"
+        or prototype.object_name == "LuaItemPrototype" and "item"
+        or prototype.object_name == "LuaEntityPrototype" and "entity"
+        or prototype.type
+        local recipes 
+        if target[type] then recipes = target[type][prototype.name] end
+        if recipes then
         local xreturn = recipes:ToGroup(
-            function(recipe) return { Key = recipe.Category.Name, Value = recipe } end
+            function(recipe)
+                local proxy = self:GetProxyFromPrototype(recipe)
+                return { Key = proxy.Category.Name, Value = proxy }
+            end
         )
         return xreturn
     end
     return Dictionary:new {}
 end
 
-function Class:GetUsedByRecipes(itemName)
-    local xreturn = self:GetRecipesGroupByCategory(self.BackLinks.UsedByRecipesForItems[itemName])
+function Class:GetUsedByRecipes(prototype)
+    local xreturn = self:GetRecipesGroupByCategory(self.BackLinks.Recipe.Input, prototype)
     return xreturn
 end
 
-function Class:GetCreatedByRecipes(itemName)
-    local xreturn =
-    self:GetRecipesGroupByCategory(self.BackLinks.CreatedByRecipesForItems[itemName])
+function Class:GetCreatedByRecipes(prototype)
+    local xreturn = self:GetRecipesGroupByCategory(self.BackLinks.Recipe.Output, prototype)
     return xreturn
-end
-
-function Class:EnsureUsage(recipe, input, output)
-    if input then
-        for _, value in ipairs(input) do
-            if value.type ~= "resource" then
-                EnsureRecipeForItem(self.BackLinks.UsedByRecipesForItems, value.name, recipe)
-            end
-        end
-    end
-    if output then
-        for _, value in ipairs(output) do
-            EnsureRecipeForItem(self.BackLinks.CreatedByRecipesForItems, value.name, recipe)
-        end
-    end
 end
 
 return Class

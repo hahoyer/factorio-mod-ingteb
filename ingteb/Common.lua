@@ -157,59 +157,12 @@ local Class = class:new(
             end,
         },
 
-        Output = {
-            cache = true,
-            get = function(self)
-                if self.RawOutput then
-                    return Array:new(self.RawOutput)--
-                        :Select(
-                            function(product, index)
-                                local result = self.Database:GetStackOfGoods(product)
-                                if result then
-                                    result.Source = { Recipe = self, ProductIndex = index }
-                                else
-                                    self.IsHidden = true
-                                end
-                                return result
-                            end
-                        )--
-                        :Where(function(value) return value end) --
-                end
-            end,
-        },
-        Input = {
-            cache = true,
-            get = function(self)
-                if self.RawInput then
-                    return Array:new(self.RawInput)--
-                        :Select(
-                            function(ingredient, index)
-                                if ingredient.type == "resource" then
-                                    return ingredient.value
-                                else
-                                    local result = self.Database:GetStackOfGoods(ingredient)
-                                    if result then
-                                        result.Source = { Recipe = self, IngredientIndex = index }
-                                    else
-                                        self.IsHidden = true
-                                    end
-                                    return result
-                                end
-                            end
-                        )--
-                        :Where(
-                            function(value)
-                                return not (value.flags and value.flags.hidden)
-                            end
-                        ) --
-                end
-            end,
-        },
+        SpriteType = { get = function(self) return self.Prototype.type end },
 
         SpriteName = {
             cache = true,
             get = function(self)
-                local spriteType = self.SpriteType or self.Prototype.type
+                local spriteType = self.SpriteType
                 return spriteType .. "/" .. self.Prototype.name
             end,
         },
@@ -219,15 +172,6 @@ local Class = class:new(
 
     }
 )
-
-function Class:CreatePrototype(type, name)
-    return {
-        type = type,
-        name = name,
-        localised_name = { "ingteb-name." .. type .. "-" .. name },
-        localised_description = { "ingteb-descrition." .. type .. "-" .. name },
-    }
-end
 
 function Class:IsBefore(other)
     if self == other then return false end
@@ -288,14 +232,13 @@ function Class:AssertValid()
         log {
             "mod-issue.missing-worker",
             prototype.localised_name,
-            prototype.object_name .. "." .. prototype.name,
+            (prototype.object_name or prototype.type) .. "." .. prototype.name,
         }
     end
 end
 
 function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name
-    self.Database:EnsureUsage(self, self.RawInput, self.RawOutput)
     self:SortAll()
 
     self.Database:AddTranslationRequest(self.CommonKey, self.Prototype)

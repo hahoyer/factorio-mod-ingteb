@@ -9,6 +9,7 @@ local Number = require "core.Number"
 
 local Class = class:new(
     "StackOfGoods", Common, {
+        SpriteType = { get = function(self) return self.Goods.SpriteType end },
         NumberOnSprite = {
             get = function(self)
                 local amounts = self.Amounts
@@ -32,24 +33,24 @@ local Class = class:new(
                 return value * probability
             end,
         },
-        ClickTarget = {get = function(self) return self.Goods.ClickTarget end},
+        ClickTarget = { get = function(self) return self.Goods.ClickTarget end },
         CommonKey = {
             get = function(self)
                 return self.Goods.CommonKey .. "/" .. (self:GetAmountsKey() or "?")
             end,
         },
-        SpriteName = {get = function(self) return self.Goods.SpriteName end},
+        SpriteName = { get = function(self) return self.Goods.SpriteName end },
 
         AdditionalAmountsHelp = {
             get = function(self)
                 local amounts = self.Amounts
-                local results = Array:new{}
+                local results = Array:new {}
                 if amounts then
-                    local line = Array:new{}
+                    local line = Array:new {}
                     local catalyst = amounts.catalyst_amount or 0
 
                     if amounts.min or amounts.max then
-                        line:AppendMany{
+                        line:AppendMany {
                             ", ",
                             Number.Format3Digits((amounts.min or amounts.value) - catalyst) .. " - "
                                 .. Number.Format3Digits((amounts.max or amounts.value) - catalyst),
@@ -57,23 +58,23 @@ local Class = class:new(
                     end
 
                     if amounts.probability and amounts.probability ~= 1 then
-                        line:AppendMany{
+                        line:AppendMany {
                             ", ",
-                            {"description.probability"},
+                            { "description.probability" },
                             ": " .. Number.Format3Digits(amounts.probability * 100) .. "%",
                         }
                     end
                     if amounts.temperature then
-                        line:AppendMany{
+                        line:AppendMany {
                             ", ",
-                            {"description.temperature"},
+                            { "description.temperature" },
                             ": " .. amounts.temperature,
                         }
                     end
                     if amounts.catalyst_amount then
-                        line:AppendMany{
+                        line:AppendMany {
                             ", ",
-                            {"description.catalyst_amount"},
+                            { "description.catalyst_amount" },
                             ": " .. Number.Format3Digits(amounts.catalyst_amount),
                         }
                     end
@@ -101,22 +102,22 @@ local Class = class:new(
 
                     if amounts.min or amounts.max then
                         result = result .. --
-                        Number.Format3Digits((amounts.min or amounts.value) - catalyst) .. --
-                        " - " .. --
-                        Number.Format3Digits((amounts.max or amounts.value) - catalyst)
+                            Number.Format3Digits((amounts.min or amounts.value) - catalyst) .. --
+                            " - " .. --
+                            Number.Format3Digits((amounts.max or amounts.value) - catalyst)
                         showPlus = true
                     end
 
                     if amounts.probability and amounts.probability ~= 1 then
                         result = result .. "(" .. Number.Format3Digits(amounts.probability * 100)
-                                     .. "%)"
+                            .. "%)"
                         showPlus = true
                     end
 
                     if amounts.catalyst_amount then
                         if showPlus then result = result .. "+" end
                         result = result .. "[" .. Number.Format3Digits(amounts.catalyst_amount)
-                                     .. "]"
+                            .. "]"
                     end
 
                     if amounts.temperature then
@@ -155,13 +156,13 @@ local Class = class:new(
 
         SpecialFunctions = {
             get = function(self)
-                local result = Array:new{
+                local result = Array:new {
                     {
                         UICode = "--- r",
-                        IsRestricedTo = {Presentator = true},
+                        IsRestricedTo = { Presentator = true },
                         HelpText = "ingteb-utility.create-reminder-task",
                         Action = function(self)
-                            return {RemindorTask = self.Goods, Amounts = self.Amounts}
+                            return { RemindorTask = self.Goods, Amounts = self.Amounts }
                         end,
                     },
                 }
@@ -182,7 +183,7 @@ local Class = class:new(
             get = function(self)
                 local color
                 local amounts = self.Amounts.value
-                local counts = self.Goods.PlayerCounts or {Available = 0, Crafting = 0}
+                local counts = self.Goods.PlayerCounts or { Available = 0, Crafting = 0 }
                 if counts.Available >= self.Amounts.value then
                     color = "white"
                 elseif counts.Crafting >= self.Amounts.value then
@@ -265,7 +266,7 @@ function Class:Clone(factor)
             if amounts.min then amounts.min = amounts.min * factor end
             if amounts.max then amounts.max = amounts.max * factor end
         else
-            amounts = {value = factor}
+            amounts = { value = factor }
         end
     end
     return Class:new(self.Goods, amounts, self.Database)
@@ -282,7 +283,6 @@ function Class:new(goods, amounts, database)
     self.Goods = goods
     self.Amounts = amounts
     dassert(not amounts or amounts.value or amounts.probability)
-    self.SpriteType = goods.SpriteType
 
     return self
 
