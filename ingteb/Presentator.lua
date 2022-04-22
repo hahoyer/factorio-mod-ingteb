@@ -568,7 +568,7 @@ function Class:GetTechnologyList(target)
                                         },
                                         self:GetSpriteButton{
                                             SpriteName = "utility/clock",
-                                            NumberOnSprite = target.Time,
+                                                    NumberOnSprite = target.RelativeDuration,
                                         },
                                     },
                                 }

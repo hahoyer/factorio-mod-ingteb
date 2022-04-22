@@ -1,4 +1,5 @@
 local Constants = require("Constants")
+local Helper = require "ingteb.Helper"
 local Number = require("core.Number")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -13,24 +14,24 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.ItemsForModuleEffects[self.Name] --
-            :Select(function(target) return self.Database:GetItem(nil, target) end)
+            return self.Database.BackLinks.ItemsForModuleEffects[self.Name]--
+                :Select(function(target) return self.Database:GetItem(nil, target) end)
         end,
     },
 
     Entities = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.EntitiesForModuleEffects[self.Name] --
-            :Select(function(target) return self.Database:GetEntity(nil, target) end)
+            return self.Database.BackLinks.EntitiesForModuleEffects[self.Name]--
+                :Select(function(target) return self.Database:GetEntity(nil, target) end)
         end,
     },
 
     SpriteName = {
         cache = true,
         get = function(self)
-            local item = self.Items --
-            :Where(function(item) return item.Prototype.module_effects[self.Name] end):Top()
+            local item = self.Items--
+                :Where(function(item) return item.Prototype.module_effects[self.Name] end):Top()
             if item and game.is_valid_sprite_path(item.SpriteName) then
                 return item.SpriteName
             end
@@ -47,7 +48,7 @@ Class.system.Properties = {
 
     UsefulLinks = {
         cache = true,
-        get = function(self) return Array:new{self.Items, self.Entities} end,
+        get = function(self) return Array:new { self.Items, self.Entities } end,
     },
 
 }
@@ -67,7 +68,7 @@ function Class:new(name, prototype, database)
 
     local self = self:adopt(
         self.system.BaseClass:new(
-            Common:CreatePrototype("ModuleEffect", name), database
+            Helper.CreatePrototypeProxy { type = "ModuleEffect", name = name }, database
         )
     )
 
@@ -78,4 +79,3 @@ function Class:new(name, prototype, database)
 end
 
 return Class
-

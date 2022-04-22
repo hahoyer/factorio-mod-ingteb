@@ -1,4 +1,5 @@
 local Constants = require("Constants")
+local Number = require "core.Number"
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local RequiredThings = require("ingteb.RequiredThings")
@@ -26,6 +27,31 @@ Class.system.Properties = {
             -- special entity for handmining
             if self.Name == "(hand-miner)" then return "technology/steel-axe" end
             return self.inherited.Entity.SpriteName.get(self)
+        end,
+    },
+
+    AdditionalHelp = {
+        get = function(self)
+            local result = self.inherited.Entity.AdditionalHelp.get(self) --
+
+            local maximal = self.MaxinmalEnergyConsumption
+            if maximal then
+                result:Append {
+                    "",
+                    { "description.max-energy-consumption" },
+                    " " .. Number:new(maximal).Format3Digits .. "W",
+                }
+            end
+            local minimalConsumption = self.MaxinimalEnergyConsumption
+            if minimalConsumption then
+                result:Append {
+                    "",
+                    { "description.min-energy-consumption" },
+                    " " .. Number:new(minimalConsumption).Format3Digits .. "W",
+                }
+            end
+
+            return result
         end,
     },
 
@@ -66,6 +92,34 @@ Class.system.Properties = {
             if data then --
                 return --
             end
+        end,
+    },
+
+    MaximalEnergyConsumption = {
+        get = function(self)
+            local prototype = self.Prototype
+            local usage = prototype.max_energy_usage
+            if not usage then return end
+
+            local result = usage * 60
+            if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then
+                result = result / prototype.burner_prototype.effectivity
+            end
+            return result
+        end,
+    },
+
+    MinimalEnergyConsumption = {
+        get = function(self)
+            local prototype = self.Prototype
+            local usage = prototype.min_energy_usage
+            if not usage then return end
+
+            local result = usage * 60
+            if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then
+                result = result / prototype.burner_prototype.effectivity
+            end
+            return result
         end,
     },
 
@@ -168,16 +222,6 @@ Class.system.Properties = {
         end,
     },
 
-    Time = {
-        cache = true,
-        get = function(self) --
-            local result =
-            (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time) / 60.0
-            dassert(result and result > 0)
-            return result
-        end,
-    },
-
     Modules = {
         cache = true,
         get = function(self)
@@ -203,21 +247,30 @@ Class.system.Properties = {
 
 function Class:SortAll() end
 
-function Class:GetNumberOnSprite(category)
-    if category.Domain == "burning" or category.Domain == "fluid-burning" then
-        return self.Prototype.max_energy_usage * 60 / category.EnergyUsagePerSecond
+function Class:GetSpeedFactor(category)
+    if category.Domain == "rocket-launch" then
+        return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
+    elseif category.Domain == "burning" or category.Domain == "fluid-burning" then
+        return self.MaximalEnergyConsumption
     elseif category.Domain == "boiling" then
-        return self.Prototype.target_temperature
+        return 1
     elseif category.Domain == "crafting" then
-        return self.Prototype.crafting_speed
+        if self.Prototype.type == "character" then
+            return 1
+        else
+            return self.Prototype.crafting_speed
+        end
     elseif category.Domain == "mining" or category.Domain == "fluid-mining" or category.Name
         == "hand-mining.steel-axe" then
         return self.Prototype.mining_speed
-    elseif category.Domain == "rocket-launch" then
-        return category.Time / self.Time
     else
         dassert(false)
+        return 1
     end
+end
+
+function Class:GetNumberOnSprite(category)
+    return self:GetSpeedFactor(category) / category.SpeedFactor
 end
 
 function Class:new(name, prototype, database)

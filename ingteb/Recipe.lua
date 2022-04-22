@@ -207,6 +207,8 @@ Recipe.system.Properties = {
         end,
     },
 
+    Duration = { get = function(self) return self.Prototype.energy end },
+
     Required = {
         get = function(self)
             return RequiredThings:new(self.NotResearchedTechnologiesForRecipe, self.Input)

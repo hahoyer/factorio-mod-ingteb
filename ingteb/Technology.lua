@@ -64,7 +64,7 @@ local Class = class:new(
                 )
                 result:Append {
                     "",
-                    "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                    "[img=utility/clock][font=default-bold]" .. self.RelativeDuration .. " s[/font] ",
                 }
 
                 return result
@@ -80,6 +80,9 @@ local Class = class:new(
                 ) --
             end,
         },
+
+        Duration = { get = function(self) return self.Prototype.research_unit_energy end },
+        RelativeDuration = { get = function(self) return self.Duration / 60 end },
 
         NumberOnSprite = {
             get = function(self) --
@@ -394,7 +397,6 @@ function Class:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaTechnologyPrototype")
 
-    self.Time = self.Prototype.research_unit_energy / 60
     self.IsRefreshRequired = { Research = true }
 
     return self

@@ -105,18 +105,18 @@ local Class = class:new(
                             return {
                                 "",
                                 stack.HelpTextWhenUsedAsProduct,
-                                self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
+                                self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
                             }
                         end
                     )
                 )
 
-                if self.Time then
+                if self.RelativeDuration then
                     result:Append {
                         "",
-                        "[img=utility/clock][font=default-bold]" .. self.Time .. " s[/font] ",
+                        "[img=utility/clock][font=default-bold]" .. self.RelativeDuration .. " s[/font] ",
                         { "description.crafting-time" },
-                        self.Database:GetItemsPerTickText({ value = 1 }, self.Time),
+                        self.Database:GetItemsPerTickText({ value = 1 }, self.RelativeDuration),
                     }
                 end
 
@@ -147,7 +147,7 @@ local Class = class:new(
                             return {
                                 "",
                                 stack.HelpTextWhenUsedAsProduct,
-                                self.Database:GetItemsPerTickText(stack.Amounts, self.Time),
+                                self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
                             }
                         end
                     )
@@ -227,14 +227,37 @@ function Class:GetHelperText(site)
 end
 
 function Class:AssertValid()
-    if self.IsRecipe and not self.Workers:Any() then
-        local prototype = self.Prototype
-        log {
-            "mod-issue.missing-worker",
-            prototype.localised_name,
-            (prototype.object_name or prototype.type) .. "." .. prototype.name,
-        }
+    if self.IsRecipe then
+        if not self.Workers:Any() then
+            local prototype = self.Prototype
+            log {
+                "mod-issue.missing-worker",
+                prototype.localised_name,
+                (prototype.object_name or prototype.type) .. "." .. prototype.name,
+            }
+        end
+        dassert(type(self.RelativeDuration) == "number")
     end
+
+    local category = self.Category
+    if category and category.Domain == "burning" then
+        local prototype = self.Prototype
+        dlog(self.Name)
+        local indent = AddIndent()
+        dlog("fuel_value = " .. prototype.fuel_value)
+        dlog("category = " .. category.Name)
+        dlog("category.SpeedFactor = " .. category.SpeedFactor)
+
+        self.Workers:Select(function(worker)
+            dlog(worker.Name)
+            local indent = AddIndent()
+            dlog("SpeedFactor = " .. worker:GetSpeedFactor(category))
+            ResetIndent(indent)
+        end)
+
+        ResetIndent(indent)
+    end
+
 end
 
 function Class:SealUp()
@@ -242,8 +265,8 @@ function Class:SealUp()
     self:SortAll()
 
     self.Database:AddTranslationRequest(self.CommonKey, self.Prototype)
-    self:AssertValid()
     self.IsSealed = true
+    self:AssertValid()
     return self
 end
 

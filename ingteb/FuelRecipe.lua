@@ -18,7 +18,6 @@ Class.system.Properties = {}
 function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
-    self.Time = 1
     self.Category = GetCategoryAndRegister(self, "fuelProcessing", name)
     self.TypeStringForLocalisation = "ingteb-utility.title-fuelProcessing-recipe"
 

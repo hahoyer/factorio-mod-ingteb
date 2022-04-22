@@ -339,6 +339,9 @@ function Helper.CalculateHeaterRecipe(prototype)
         * outBox.heat_capacity
 
     local amount = 60 * prototype.max_energy_usage / (inEnergy + outEnergy)
+    if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then 
+        amount = amount / prototype.burner_prototype.effectivity
+    end
 
     return Helper.CreatePrototypeProxy { type = "boiling",
         Prototype = prototype,
@@ -347,6 +350,7 @@ function Helper.CalculateHeaterRecipe(prototype)
         ingredients = { { type = "fluid", amount = amount, name = inBox.name } },
         products = { { type = "fluid", amount = amount, name = outBox.name } },
         category = prototype.name,
+        
     }
 end
 

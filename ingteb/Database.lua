@@ -112,11 +112,11 @@ local Class = class:new(
 
 function Class:new(parent) return self:adopt { Parent = parent } end
 
-function Class:GetItemsPerTickText(amounts, timeInSeconds)
-    if not timeInSeconds then return "" end
+function Class:GetItemsPerTickText(amounts, ticks)
+    if not ticks then return "" end
     local amount = amounts.value or (amounts.max + amounts.min) / 2
     return " ("
-        .. Number:new(self.ProductionTimeUnit:getTicks() * amount / (timeInSeconds * 60)).Format3Digits
+        .. Number:new(self.ProductionTimeUnit:getTicks() * amount / ticks).Format3Digits
         .. "[img=items-per-timeunit]" .. ")"
 end
 
@@ -316,7 +316,7 @@ function Class:GetBonusFromEffect(target)
     }
 
     local name = type .. "/" .. tostring(target.mining)
-    return self:GetProxyWithName("Bonus", name, prototype)
+    return self:GetProxy("Bonus", name, prototype)
 end
 
 ---@param categoryName string
@@ -480,19 +480,21 @@ function Class:ScanTechnology(prototype)
 
 end
 
-function Class:ScanFuel(prototype, domain, category, spriteType)
+function Class:ScanFuel(prototype, domain, category, isFluid)
     if prototype.fuel_value and prototype.fuel_value > 0 then
         local category = category or "~"
         EnsureKey(self.BackLinks.ItemsForFuelCategory, category, Array:new()):Append(prototype)
-        local output = not self.IsFluid and prototype.burnt_result
+        local output = not isFluid and prototype.burnt_result
+        local also = { "fuel_value" }
+        if not isFluid then table.insert(also, "fuel_category") end
         self:AddRecipe(
             Helper.CreatePrototypeProxy { --
                 type = domain,
                 Prototype = prototype,
                 hidden = true,
                 category = category,
-                sprite_type = spriteType,
-                Also = { "fuel_category", "fuel_value" },
+                sprite_type = isFluid and "fluid" or "item",
+                Also = also,
                 ingredients = { { type = self.IsFluid and "fluid" or "item", amount = 1, name = prototype.name } },
                 products = output and { { type = output.type, amount = 1, name = output.name } } or {},
 
@@ -501,11 +503,11 @@ function Class:ScanFuel(prototype, domain, category, spriteType)
 end
 
 function Class:ScanFluid(prototype)
-    self:ScanFuel(prototype, "fluid-burning", "fluid", "fluid")
+    self:ScanFuel(prototype, "fluid-burning", "fluid", true)
 end
 
 function Class:ScanItem(prototype)
-    self:ScanFuel(prototype, "burning", prototype.fuel_category, "item")
+    self:ScanFuel(prototype, "burning", prototype.fuel_category)
 
     if prototype.burnt_result and not prototype.fuel_category then
         log {
@@ -525,7 +527,7 @@ function Class:ScanItem(prototype)
                 category = "rocket-launch",
                 sprite_type = "item",
                 hidden = true,
-                ingredients = { type = "item", amount = prototype.default_request_amount, name = prototype.name },
+                ingredients = { { type = "item", amount = prototype.default_request_amount, name = prototype.name } },
                 products = prototype.rocket_launch_products
 
             }
@@ -589,7 +591,7 @@ function Class:Get(target)
     self:Ensure()
     dassert(className)
     dassert(name or prototype)
-    return self:GetProxyWithName(className, name, prototype)
+    return self:GetProxy(className, name, prototype)
 end
 
 function Class:GetFromSelection(target)
@@ -611,7 +613,7 @@ function Class:GetFromSelection(target)
     self:Ensure()
     dassert(className)
     dassert(name or prototype)
-    return self:GetProxyWithName(className, name, prototype)
+    return self:GetProxy(className, name, prototype)
 end
 
 function Class:BeginMulipleQueueResearch(target, setting)

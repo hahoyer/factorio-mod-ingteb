@@ -127,31 +127,19 @@ Class.system.Properties = {
         end,
     },
 
-    EnergyUsagePerSecond = {
+    SpeedFactor = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            local rawResult = self.OriginalWorkers--
-                :Select(
-                    function(worker)
-                        local result = worker.Prototype.max_energy_usage
-                        dassert(result and result > 0)
-                        return result
-                    end
-                )--
-                :Minimum()
-            if rawResult then return rawResult * 60 end
-        end,
-    },
-
-    Time = {
-        cache = true,
-        get = function(self) --
-            dassert(self.IsSealed)
-            dassert(self.Domain == "rocket-launch")
-            return self.OriginalWorkers--
-                :Select(function(worker) return worker.Time end)--
-                :Minimum()
+            if self.Domain == "boiling" or self.Domain == "rocket-launch" then
+                return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
+            elseif self.Domain == "burning" then
+                return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
+            elseif self.Domain == "crafting" or self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining" then
+                return 1
+            else
+                dassert(false, "domain = " .. self.Domain)
+            end
         end,
     },
 }
@@ -173,6 +161,7 @@ function Class:AssertValid() end
 
 function Class:new(name, prototype, database)
     dassert(name)
+    dassert(not prototype or not prototype.object_name)
 
     local _, _, domain, subName = name:find("^(.-)%.(.*)$")
 

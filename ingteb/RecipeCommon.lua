@@ -35,7 +35,8 @@ Class.system.Properties = {
 
     IsHidden = { get = function(self) return self.Prototype.hidden end },
     Required = { get = function(self) return RequiredThings:new(nil, self.Input) end },
-    Time = { get = function(self) return self.Prototype.energy or self.Category.Time end },
+    RelativeDuration = { get = function(self) return self.Duration / self.Category.SpeedFactor end, },
+    Duration = { get = function(self) return 1 end, },
     SpriteType = { get = function(self) return self.Prototype.sprite_type end },
     TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-" .. self.Prototype.type .. "-recipe" end },
 
@@ -85,7 +86,7 @@ function Class:new(name, prototype, database)
     dassert(not name)
     dassert(prototype)
     dassert(database)
-    
+
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = prototype.name
 
