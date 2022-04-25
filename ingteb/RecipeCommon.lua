@@ -39,6 +39,7 @@ Class.system.Properties = {
     Duration = { get = function(self) return 1 end, },
     SpriteType = { get = function(self) return self.Prototype.sprite_type end },
     TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-" .. self.Prototype.type .. "-recipe" end },
+    IsEnabled = { get = function(self) return true end },
 
     Output = {
         cache = true,
