@@ -97,6 +97,15 @@ Class.system.Properties = {
             )
         end,
     },
+
+    IsEnabled = {
+        get = function(self)
+            local recipes = self.Recipes
+            dassert(recipes)
+            if recipes:Any(function(recipe) return recipe.IsResearched end) then return true end
+        end,
+    },
+
 }
 
 local function Sort(target)
