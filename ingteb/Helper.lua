@@ -194,7 +194,7 @@ end
 ---@param self table ingteb-module
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
----@param options table
+---@param options table 
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.

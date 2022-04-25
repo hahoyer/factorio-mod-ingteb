@@ -102,7 +102,7 @@ Class.system.Properties = {
         get = function(self)
             local recipes = self.Recipes
             dassert(recipes)
-            if recipes:Any(function(recipe) return recipe.IsResearched end) then return true end
+            if recipes:Any(function(recipe) return recipe.IsEnabled end) then return true end
         end,
     },
 

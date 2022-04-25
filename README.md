@@ -15,6 +15,7 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - involve achievements
 - machine-column for labs
 - Improve recipe-column-layout in case of huge amount of recipes
+- Keep tab-selection for huge presentator after refresh
 - Reminder task helpers for complex recipes. For instance "(recursively) add a task for all ingredients"
 - Reminder tasks for Recipes
 - Reminder tasks for Technologies

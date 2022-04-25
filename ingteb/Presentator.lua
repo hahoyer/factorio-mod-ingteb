@@ -5,6 +5,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local Configurations = require "Configurations"
 local Recipe = require("ingteb.Recipe")
 local Technology = require("ingteb.Technology")
 local Bonus = require("ingteb.Bonus")
@@ -24,8 +25,12 @@ local Class = class:new(
             return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
         end,
     },
-}
-)
+    Settings = { get = function(self)
+        if not self.Global.Presentator then self.Global.Presentator = {} end
+        if not self.Global.Presentator.Settings then self.Global.Presentator.Settings = {} end
+        return self.Global.Presentator.Settings
+    end }
+})
 
 function Class:new(parent)
     local self = self:adopt { Parent = parent }
@@ -133,17 +138,20 @@ function Class:GetRecipeLine(target, inCount, outCount)
 
 end
 
-function Class:PerformWorkerFilterCheck(worker)
-    return worker.IsEnabled
-end
-
-function Class:PerformRecipeFilterCheck(recipe)
-    return recipe.IsResearched
+function Class:PerformFilterCheck(domain, target)
+    local configurations = Configurations.PresentatorFilter
+    return configurations
+        :Any(function(configuration, name)
+            local setting = self.Settings[name]
+            local value = setting == nil and configuration.Default or setting
+            local xreturn = value and configuration.Check[domain](self, target)
+            return xreturn
+        end)
 end
 
 function Class:GetWorkersPanel(category, columnCount)
     local workers = category.Workers
-        :Where(function(worker) return self:PerformWorkerFilterCheck(worker) end)
+        :Where(function(worker) return self:PerformFilterCheck("Worker", worker) end)
     if not workers:Any() then
         workers = Array:new {
             {
@@ -444,7 +452,7 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     local target = target
         :Select(
             function(recipes)
-            return recipes:Where(function(recipe) return self:PerformRecipeFilterCheck(recipe)
+            return recipes:Where(function(recipe) return self:PerformFilterCheck("Recipe", recipe)
             end)
         end)
         :Where(function(recipes) return recipes:Any() end)
@@ -688,13 +696,29 @@ function Class:Close()
 end
 
 function Class:Open(target)
+    if not target then target = self.Database:GetProxyFromCommonKey(self.Global.History.Current)end
     log("opening Target = " .. target.CommonKey .. "...")
     self.Global.Links.Presentator = {}
     self.Spritor:StartCollecting()
     local guiData = self:GetGui(target)
     -- log("guiData= " .. serpent.block(guiData))
     if target.class == Entity and target.Item then target = target.Item end
-    local result = Helper.CreateFloatingFrameWithContent(self, guiData, target.LocalisedName)
+    local result = Helper.CreateFloatingFrameWithContent(
+        self,
+        guiData,
+        target.LocalisedName, {
+        buttons = Configurations.PresentatorFilter:ToArray(function(configuration, name)
+            local value = (self.Settings[name] or configuration.Default) == true
+            return {
+                type = "sprite-button",
+                sprite = configuration.Sprite[value],
+                actions = { on_click = { module = self.class.name, action = "Filter", filter = name, value = not value } },
+                style = "frame_action_button",
+                tooltip = { "ingteb-utility.presentator-setting-" .. name }
+            }
+
+        end),
+    })
     self.Spritor:RegisterDynamicElements(result.DynamicElements)
     log("opening Target = " .. target.CommonKey .. " ok.")
 end
@@ -824,6 +848,12 @@ function Class:GetGui(target)
     return { type = "flow", name = "Panels", direction = "vertical", children = children }
 end
 
+function Class:OnFilterChange(filter, value)
+    self:Close()
+    self.Settings[filter] = value
+    self:Open()
+end
+
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
@@ -834,20 +864,28 @@ function Class:OnGuiEvent(event)
         end
     elseif message.action == "Click" then
         self.Parent:OnGuiClick(event)
+    elseif message.action == "Filter" then
+        self:OnFilterChange(message.filter, message.value)
     else
         dassert()
     end
 end
 
-function Class:OnSettingsChanged(event) end
-
 function Class:RestoreFromSave(parent)
     self.Parent = parent
-    local current = self.Player.gui.screen[self.class.name]
+    local current = self.MainGui
     if current then
         current.destroy()
-        self:Open(self.Database:GetProxyFromCommonKey(self.Global.History.Current))
+        self:Open()
     end
 end
+
+function Class:OnResearchChanged(parent)
+    if self.MainGui then 
+        self:Close()
+        self:Open()
+    end
+end
+
 
 return Class

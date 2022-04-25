@@ -55,9 +55,8 @@ function Class:SelectRemindor(remindorTask, location)
 end
 
 function Class:PresentCurrentTargetFromHistory()
-    local target = self.Database:GetProxyFromCommonKey(self.Global.History.Current)
     self.Modules.Presentator:Close()
-    self.Modules.Presentator:Open(target)
+    self.Modules.Presentator:Open()
 end
 
 function Class:OnSelectorForeOrBackClick(event)
@@ -79,7 +78,6 @@ end
 
 function Class:PresentTarget(target, requestor)
     if self.CurrentFloating then self.CurrentFloating:Close() end
-    self.Modules.Presentator:Open(target)
     if requestor == "Presentator" then
         self.Global.History:AdvanceWith(target.CommonKey)
     elseif requestor == "Selector" or requestor == "Remindor" then
@@ -87,6 +85,7 @@ function Class:PresentTarget(target, requestor)
     else
         dassert()
     end
+    self.Modules.Presentator:Open()
 
 end
 
@@ -136,6 +135,7 @@ function Class:OnResearchChanged(event)
     for index in pairs(event.research.force.players) do
         self.Player = game.players[index]
         self.Modules.Remindor:OnResearchChanged()
+        self.Modules.Presentator:OnResearchChanged()
         self.Modules.ChangeWatcher:OnChanged()
     end
 end

@@ -7,7 +7,7 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local noWatcher = true
+--local noWatcher = true
 
 local Class = class:new(
     "Spritor", nil, {
@@ -71,7 +71,7 @@ function Class:UpdateGui(guiElement, target)
     if target.class == StackOfGoods then
         target = StackOfGoods:new(target.Goods, target.Amounts, self.Database)
     else
-        target = self.Database:GetProxyWithName(target.class.name, target.Name)
+        target = self.Database:GetProxy(target.class.name, target.Name)
     end
     local helperText = self:GetHelperText(target)
     local number = target.NumberOnSprite

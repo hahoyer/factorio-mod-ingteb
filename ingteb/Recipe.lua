@@ -25,12 +25,12 @@ Recipe.system.Properties = {
         end,
     },
 
-    IsResearched = {
+    IsEnabled = {
         get = function(self)
             return--
             not self.Technologies:Any() --
                 or self.Technologies:Any(function(technology)
-                    return technology.IsResearched
+                    return technology.IsEnabled
                 end)
         end,
     },
@@ -49,7 +49,7 @@ Recipe.system.Properties = {
             if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
 
             local researched = self.Technologies--
-                :Where(function(technology) return technology.IsResearched end)
+                :Where(function(technology) return technology.IsEnabled end)
             if researched:Any() then return researched:Top() end
 
             local ready = self.Technologies--
@@ -65,8 +65,8 @@ Recipe.system.Properties = {
         get = function(self)
             return--
             self.TypeOrder .. " " --
-                .. (self.IsResearched and "R" or "r") .. " "
-                .. (not self.IsResearched and self.Technology.IsReady and "R" or "r") .. " "
+                .. (self.IsEnabled and "R" or "r") .. " "
+                .. (not self.IsEnabled and self.Technology.IsReady and "R" or "r") .. " "
                 .. self.Prototype.group.order .. " " .. self.Prototype.subgroup.order .. " "
                 .. self.Prototype.order
         end,
@@ -103,7 +103,7 @@ Recipe.system.Properties = {
 
     SpriteStyle = {
         get = function(self)
-            if not self.IsResearched then return "not-researched"
+            if not self.IsEnabled then return "not-researched"
             elseif self.Technology and self.Technology.IsResearching then return "researching"
             elseif self.NumberOnSprite then return "active" end
         end,
