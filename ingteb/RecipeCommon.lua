@@ -47,11 +47,11 @@ Class.system.Properties = {
             return Array:new(self.Prototype.products)--
                 :Select(
                     function(product, index)
-                        local result = self.Database:GetStackOfGoods(product)
-                        dassert(result)
-                        result.Source = { Recipe = self, ProductIndex = index }
-                        return result
-                    end
+                    local result = self.Database:GetStackOfGoods(product)
+                    dassert(result)
+                    result.Source = { Recipe = self, ProductIndex = index }
+                    return result
+                end
                 )--
                 :Where(function(value) return value end) --
         end,
@@ -62,20 +62,20 @@ Class.system.Properties = {
             return Array:new(self.Prototype.ingredients)--
                 :Select(
                     function(ingredient, index)
-                        if ingredient.type == "entity" then
-                            return self.Database:GetEntity(ingredient.name)
-                        else
-                            local result = self.Database:GetStackOfGoods(ingredient)
-                            dassert(result)
-                            result.Source = { Recipe = self, IngredientIndex = index }
-                            return result
-                        end
+                    if ingredient.type == "entity" then
+                        return self.Database:GetEntity(ingredient.name)
+                    else
+                        local result = self.Database:GetStackOfGoods(ingredient)
+                        dassert(result)
+                        result.Source = { Recipe = self, IngredientIndex = index }
+                        return result
                     end
+                end
                 )--
                 :Where(
                     function(value)
-                        return not (value.flags and value.flags.hidden)
-                    end
+                    return not (value.flags and value.flags.hidden)
+                end
                 ) --
         end,
     },
