@@ -131,9 +131,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            if self.Domain == "boiling" or self.Domain == "rocket-launch" then
-                return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
-            elseif self.Domain == "burning" then
+            if self.Domain == "boiling" or self.Domain == "rocket-launch" or self.Domain == "burning" or self.Domain == "fluid-burning" then
                 return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
             elseif self.Domain == "crafting" or self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining" then
                 return 1
