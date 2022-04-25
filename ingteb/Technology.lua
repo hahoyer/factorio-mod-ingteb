@@ -321,13 +321,13 @@ local Class = class:new(
             return result:Concat {
                 {
                     UICode = "-C- l",
-                    HelpText = "gui-technology-preview.start-research",
+                    HelpTextTag = "gui-technology-preview.start-research",
                     IsAvailable = function(self) return self.IsReady end,
                     Action = function(self) return { Research = self } end,
                 },
                 {
                     UICode = "-CS l",
-                    HelpText = "ingteb-utility.multiple-research",
+                    HelpTextTag = "ingteb-utility.multiple-research",
                     IsAvailable = function(self)
                         return self.IsNextGeneration
                     end,
@@ -338,7 +338,7 @@ local Class = class:new(
                 -- {
                 --     UICode = "--- r",
                 --     IsRestricedTo = {Presentator = true},
-                --     HelpText = "ingteb-utility.create-reminder-task",
+                --     HelpTextTag = "ingteb-utility.create-reminder-task",
                 --     Action = function(self) return {RemindorTask = self} end,
                 -- },
             }

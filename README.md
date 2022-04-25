@@ -19,11 +19,6 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Reminder task helpers for complex recipes. For instance "(recursively) add a task for all ingredients"
 - Reminder tasks for Recipes
 - Reminder tasks for Technologies
-- Several filter options
-  => by category
-  => by mod
-  => by hidden/hidden_from_player_crafting 
-  => ... *(I am open for suggestions)*
 - Reminder selector: Order things by technology level
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
 - present multiple items_to_place_this of entity-prototypes
@@ -36,6 +31,8 @@ The "remidor panel" is inspired by the one from Satisfactory.
 ###todo(or probably not): *(please feel free to complain)*
 - multiplayer *(See no way do this. Help welcome)*  
 - copy recipe *(See no way do this. Help welcome)*
+- Several filter options
+  => by mod *(See no way do this. Help welcome)*
 
 ###known issue: 
 - Multiplayer: Desync issue when loading a save file where reminder panel is open *(help welcome!)*

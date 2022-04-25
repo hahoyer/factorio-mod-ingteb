@@ -25,7 +25,7 @@ local Class = class:new("Goods", Common)
 
 Class.system.Properties = {
     OriginalRecipeList = {
-        get = function(self) return self.Entity and self.Entity.RecipeList or Dictionary:new{} end,
+        get = function(self) return self.Entity and self.Entity.RecipeList or Dictionary:new {} end,
     },
 
     OriginalUsedBy = {
@@ -42,9 +42,9 @@ Class.system.Properties = {
         get = function(self)
             local result = self.inherited.Goods.AdditionalHelp.get(self) --
             if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
-                result:Append{
+                result:Append {
                     "",
-                    {"description.fuel-value"},
+                    { "description.fuel-value" },
                     " " .. FormatEnergy(self.Prototype.fuel_value),
                 }
             end
@@ -55,12 +55,12 @@ Class.system.Properties = {
     SpecialFunctions = {
         get = function(self)
             local result = self.inherited.Goods.SpecialFunctions.get(self)
-            return result:Concat{
+            return result:Concat {
                 {
                     UICode = "--- r",
-                    HelpText = "ingteb-utility.create-reminder-task",
+                    HelpTextTag = "ingteb-utility.create-reminder-task",
                     Action = function(self, event)
-                        return {RemindorTask = self, Count = event.element.number}
+                        return { RemindorTask = self, Count = event.element.number }
                     end,
                 },
             }
@@ -71,16 +71,16 @@ Class.system.Properties = {
     Recipes = {
         cache = true,
         get = function(self)
-            return self.CreatedBy:ToArray(function(recipes) return recipes end) --
-            :ConcatMany()
+            return self.CreatedBy:ToArray(function(recipes) return recipes end)--
+                :ConcatMany()
         end,
     },
 
     Workers = {
         cache = true,
         get = function(self)
-            local result = self.Recipes:Select(function(recipe) return recipe.Workers end) --
-            :UnionMany()
+            local result = self.Recipes:Select(function(recipe) return recipe.Workers end)--
+                :UnionMany()
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
         end,
@@ -88,13 +88,13 @@ Class.system.Properties = {
 
     Required = {
         get = function(self)
-            return self.Recipes:Select(function(recipe) return recipe.Required end) --
-            :Aggregate(
-                function(c, n)
+            return self.Recipes:Select(function(recipe) return recipe.Required end)--
+                :Aggregate(
+                    function(c, n)
                     if not c then return n end
                     dassert()
                 end
-            )
+                )
         end,
     },
 
@@ -109,30 +109,30 @@ Class.system.Properties = {
 }
 
 local function Sort(target)
-    local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)
+    local targetArray = target:ToArray(function(value, key) return { Value = value, Key = key } end)
     targetArray:Sort(
         function(a, b)
-            if a == b then return false end
-            local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
-            local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
-            if aOrder ~= bOrder then return aOrder > bOrder end
+        if a == b then return false end
+        local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
+        local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
+        if aOrder ~= bOrder then return aOrder > bOrder end
 
-            local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            return aSubOrder > bSubOrder
+        local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
+        local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
+        return aSubOrder > bSubOrder
 
-        end
+    end
     )
 
     return targetArray:ToDictionary(
         function(value)
-            value.Value:Sort(
-                function(a, b) --
-                    return a:IsBefore(b)
-                end
-            )
-            return value
+        value.Value:Sort(
+            function(a, b) --
+            return a:IsBefore(b)
         end
+        )
+        return value
+    end
     )
 
 end

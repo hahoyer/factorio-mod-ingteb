@@ -199,6 +199,16 @@ data:extend(
             mipmap_count = 2,
             flags = {"gui-icon"},
         },
+        {
+            type = "sprite",
+            name = "color_picker_white",
+            filename = Constants.GraphicsPath .. "color-picker-white.png",
+            priority = "extra-high-no-scale",
+            size = 32,
+            scale = 0.5,
+            mipmap_count = 2,
+            flags = {"gui-icon"},
+        },
     }
 )
 

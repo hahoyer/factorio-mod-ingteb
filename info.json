@@ -3,8 +3,7 @@
     "version": "0.4.2",
     "name": "ingteb",
     "author": "ixu",
-    "description":
-    "Ingame technology browser including...\n    - backwards search: report any place where it is referenced\n    - initiate research from information panels\n    - initiate crafting from information panels\n    - \"pipette\": selection from information panels\n    - reminder panel with autoresearch and autocrafting\n    [de, en, ja, zn-CH]",
+    "description": "Ingame technology browser including...\n    - backwards search: report any place where it is referenced\n    - initiate research from information panels\n    - initiate crafting from information panels\n    - \"pipette\": selection from information panels\n    - filter information panel by research status\n    - reminder panel with autoresearch and autocrafting\n    [de, en, ja, zn-CH]",
     "factorio_version": "1.1",
     "dependencies": [
         "base >= 1.1.0",

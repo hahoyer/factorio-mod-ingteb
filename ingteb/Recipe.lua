@@ -161,7 +161,7 @@ Recipe.system.Properties = {
             return result:Concat {
                 {
                     UICode = "A-- l",
-                    HelpText = "controls.craft",
+                    HelpTextTag = "controls.craft",
                     IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
@@ -171,7 +171,7 @@ Recipe.system.Properties = {
                 },
                 {
                     UICode = "A-- r",
-                    HelpText = "controls.craft-5",
+                    HelpTextTag = "controls.craft-5",
                     IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
@@ -181,7 +181,7 @@ Recipe.system.Properties = {
                 },
                 {
                     UICode = "--S l",
-                    HelpText = "controls.craft-all",
+                    HelpTextTag = "controls.craft-all",
                     IsAvailable = function(self)
                         return self.HandCrafter and self.NumberOnSprite
                     end,
@@ -192,7 +192,7 @@ Recipe.system.Properties = {
                 },
                 {
                     UICode = "-C- l",
-                    HelpText = "gui-technology-preview.start-research",
+                    HelpTextTag = "gui-technology-preview.start-research",
                     IsAvailable = function(self)
                         return self.Technology and self.Technology.IsReady
                     end,
@@ -200,7 +200,7 @@ Recipe.system.Properties = {
                 },
                 {
                     UICode = "-CS l",
-                    HelpText = "ingteb-utility.multiple-research",
+                    HelpTextTag = "ingteb-utility.multiple-research",
                     IsAvailable = function(self)
                         return self.Technology and self.Technology.IsNextGeneration
                     end,
@@ -210,7 +210,7 @@ Recipe.system.Properties = {
                 },
                 -- {
                 --     UICode = "--- r",
-                --     HelpText = "ingteb-utility.create-reminder-task",
+                --     HelpTextTag = "ingteb-utility.create-reminder-task",
                 --     Action = function(self) return {RemindorTask = self} end,
                 -- },
             }

@@ -10,167 +10,167 @@ local UI = require("core.UI")
 
 local Class = class:new(
     "Common", nil, {
-        Player = { get = function(self) return self.Database.Player end },
-        DebugLine = { get = function(self) return self.CommonKey end },
-        ClickTarget = { cache = true, get = function(self) return self.CommonKey end },
-        Group = { cache = true, get = function(self) return self.Prototype.group end },
-        SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
-        NoPrototype = {
-            cache = true,
-            get = function(self)
-                local realm = self.PrototypeData.Realm
-                if realm == "game" then
-                    return game[self.PrototypeData.Group][self.PrototypeData.Name]
-                elseif realm == "constant" then
-                    return self.PrototypeData.Value
-                else
-                    dassert(false, "invalid realm: " .. realm)
-                end
-            end,
-        },
-        TypeOrder = {
-            cache = true,
-            get = function(self) return self.Database.Order[self.class.name] end,
-        },
+    Player = { get = function(self) return self.Database.Player end },
+    DebugLine = { get = function(self) return self.CommonKey end },
+    ClickTarget = { cache = true, get = function(self) return self.CommonKey end },
+    Group = { cache = true, get = function(self) return self.Prototype.group end },
+    SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
+    NoPrototype = {
+        cache = true,
+        get = function(self)
+            local realm = self.PrototypeData.Realm
+            if realm == "game" then
+                return game[self.PrototypeData.Group][self.PrototypeData.Name]
+            elseif realm == "constant" then
+                return self.PrototypeData.Value
+            else
+                dassert(false, "invalid realm: " .. realm)
+            end
+        end,
+    },
+    TypeOrder = {
+        cache = true,
+        get = function(self) return self.Database.Order[self.class.name] end,
+    },
 
-        Translation = { --
-            get = function(self) return self.Database:GetTranslation(self.CommonKey) end,
-        },
+    Translation = { --
+        get = function(self) return self.Database:GetTranslation(self.CommonKey) end,
+    },
 
-        LocalisedName = {
-            get = function(self)
-                local type = self.TypeStringForLocalisation
-                local name = self.Prototype.localised_name
-                if self.Translation.Name == false then name = "[" .. self.Name .. "]" end
+    LocalisedName = {
+        get = function(self)
+            local type = self.TypeStringForLocalisation
+            local name = self.Prototype.localised_name
+            if self.Translation.Name == false then name = "[" .. self.Name .. "]" end
 
-                if type then
-                    return { "", name, " (", { type }, ")" }
-                else
-                    return name
-                end
-            end,
-        },
+            if type then
+                return { "", name, " (", { type }, ")" }
+            else
+                return name
+            end
+        end,
+    },
 
-        HasDescription = {
-            get = function(self) return type(self.Translation.Description) == "string" end,
-        },
+    HasDescription = {
+        get = function(self) return type(self.Translation.Description) == "string" end,
+    },
 
-        SearchText = {
-            get = function(self)
-                return type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
-            end,
-        },
+    SearchText = {
+        get = function(self)
+            return type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
+        end,
+    },
 
-        SpecialFunctions = {
-            get = function(self)
-                return Array:new { --
-                    {
-                        UICode = "--- l", --
-                        Action = function(self) return { Presenting = self } end,
-                    },
-                }
+    SpecialFunctions = {
+        get = function(self)
+            return Array:new { --
+                {
+                    UICode = "--- l", --
+                    Action = function(self) return { Presenting = self } end,
+                },
+            }
 
-            end,
-        },
+        end,
+    },
 
-        AdditionalHelp = {
-            get = function(self)
-                local result = Array:new {}
-                if self.HasDescription then
-                    result:Append(self.LocalizedDescription)
-                elseif self.Entity and self.Entity.HasDescription then
-                    result:Append(self.Entity.LocalizedDescription)
-                end
-                result:AppendMany(self.ComponentHelp)
-                result:AppendMany(self.ProductHelp)
-                return result
-            end,
-        },
+    AdditionalHelp = {
+        get = function(self)
+            local result = Array:new {}
+            if self.HasDescription then
+                result:Append(self.LocalizedDescription)
+            elseif self.Entity and self.Entity.HasDescription then
+                result:Append(self.Entity.LocalizedDescription)
+            end
+            result:AppendMany(self.ComponentHelp)
+            result:AppendMany(self.ProductHelp)
+            return result
+        end,
+    },
 
-        ComponentHelp = {
-            get = function(self)
-                if not self.Input then return {} end
-                local result = Array:new {
-                    {
+    ComponentHelp = {
+        get = function(self)
+            if not self.Input then return {} end
+            local result = Array:new {
+                {
+                    "",
+                    "[font=heading-1][color=#F8E1BC]",
+                    { "description.ingredients" },
+                    ":[/color][/font]",
+                },
+
+            }
+            result:AppendMany(
+                self.Input:Select(
+                    function(stack)
+                    return {
                         "",
-                        "[font=heading-1][color=#F8E1BC]",
-                        { "description.ingredients" },
-                        ":[/color][/font]",
-                    },
-
-                }
-                result:AppendMany(
-                    self.Input:Select(
-                        function(stack)
-                            return {
-                                "",
-                                stack.HelpTextWhenUsedAsProduct,
-                                self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
-                            }
-                        end
-                    )
-                )
-
-                if self.RelativeDuration then
-                    result:Append {
-                        "",
-                        "[img=utility/clock][font=default-bold]" .. self.RelativeDuration .. " s[/font] ",
-                        { "description.crafting-time" },
-                        self.Database:GetItemsPerTickText({ value = 1 }, self.RelativeDuration),
+                        stack.HelpTextWhenUsedAsProduct,
+                        self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
                     }
                 end
-
-                return result
-
-            end,
-        },
-
-        ProductHelp = {
-            get = function(self)
-                if not self.Output or --
-                    self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
-                    and self.Output[1].Amounts.catalyst_amount == nil --
-                then return {} end
-
-                local result = Array:new {
-                    {
-                        "",
-                        "[font=heading-1][color=#F8E1BC]",
-                        { "description.products" },
-                        ":[/color][/font]",
-                    },
-
-                }
-                result:AppendMany(
-                    self.Output:Select(
-                        function(stack)
-                            return {
-                                "",
-                                stack.HelpTextWhenUsedAsProduct,
-                                self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
-                            }
-                        end
-                    )
                 )
+            )
 
-                return result
-            end,
-        },
+            if self.RelativeDuration then
+                result:Append {
+                    "",
+                    "[img=utility/clock][font=default-bold]" .. self.RelativeDuration .. " s[/font] ",
+                    { "description.crafting-time" },
+                    self.Database:GetItemsPerTickText({ value = 1 }, self.RelativeDuration),
+                }
+            end
 
-        SpriteType = { get = function(self) return self.Prototype.type end },
+            return result
 
-        SpriteName = {
-            cache = true,
-            get = function(self)
-                local spriteType = self.SpriteType
-                return spriteType .. "/" .. self.Prototype.name
-            end,
-        },
+        end,
+    },
 
-        RichTextName = { get = function(self) return "[img=" .. self.SpriteName .. "]" end },
-        HelperHeaderText = { get = function(self) return self.LocalisedName end },
+    ProductHelp = {
+        get = function(self)
+            if not self.Output or --
+                self.Output:Count() == 1 and self.Output[1].Amounts.value == 1
+                and self.Output[1].Amounts.catalyst_amount == nil --
+            then return {} end
 
-    }
+            local result = Array:new {
+                {
+                    "",
+                    "[font=heading-1][color=#F8E1BC]",
+                    { "description.products" },
+                    ":[/color][/font]",
+                },
+
+            }
+            result:AppendMany(
+                self.Output:Select(
+                    function(stack)
+                    return {
+                        "",
+                        stack.HelpTextWhenUsedAsProduct,
+                        self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
+                    }
+                end
+                )
+            )
+
+            return result
+        end,
+    },
+
+    SpriteType = { get = function(self) return self.Prototype.type end },
+
+    SpriteName = {
+        cache = true,
+        get = function(self)
+            local spriteType = self.SpriteType
+            return spriteType .. "/" .. self.Prototype.name
+        end,
+    },
+
+    RichTextName = { get = function(self) return "[img=" .. self.SpriteName .. "]" end },
+    HelperHeaderText = { get = function(self) return self.LocalisedName end },
+
+}
 )
 
 function Class:IsBefore(other)
@@ -195,24 +195,27 @@ function Class:GetSpecialFunctions(site)
     self.SpecialFunctions--
         :Select(
             function(specialFunction)
-                if --
-                (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --
-                    and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
-                    local key = specialFunction.UICode
-                    if (not lines[key]) then lines[key] = specialFunction end
-                end --
-            end
+            if --
+            (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --
+                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
+                local key = specialFunction.UICode
+                if (not lines[key]) then lines[key] = specialFunction end
+            end --
+        end
         )
     return lines:ToArray()
 end
 
 function Class:GetFunctionalHelp(site)
     return self:GetSpecialFunctions(site)--
-        :Where(function(specialFunction) return specialFunction.HelpText end)--
+        :Where(function(specialFunction) return specialFunction.HelpTextTag end)--
         :Select(
             function(specialFunction)
-                return UI.GetHelpTextForButtons({ specialFunction.HelpText }, specialFunction.UICode)
-            end
+            local text = specialFunction.HelpTextItems or {}
+            table.insert(text, 1, specialFunction.HelpTextTag)
+            local xreturn = UI.GetHelpTextForButtons(text, specialFunction.UICode)
+            return xreturn
+        end
         )--
         :ToArray()
 end

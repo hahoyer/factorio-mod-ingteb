@@ -129,14 +129,14 @@ Class.system.Properties = {
             return self.Categories--
                 :Where(
                     function(category)
-                        return category.Domain == "burning" or category.Domain == "fluid-burning"
-                    end
+                    return category.Domain == "burning" or category.Domain == "fluid-burning"
+                end
                 )--
                 :ToArray(
                     function(category)
-                        local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
-                        return self.Database:GetFuelCategory(name)
-                    end
+                    local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
+                    return self.Database:GetFuelCategory(name)
+                end
                 )
         end,
     },
@@ -159,10 +159,10 @@ Class.system.Properties = {
             local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
                 :Where(
                     function(workers)
-                        return workers and workers:Any(
-                            function(_, name) return name == self.Prototype.name end
-                        )
-                    end
+                    return workers and workers:Any(
+                        function(_, name) return name == self.Prototype.name end
+                    )
+                end
                 )--
                 :Select(function(_, categoryName) return self.Database:GetCategory(categoryName) end)
             return xreturn
@@ -189,7 +189,8 @@ Class.system.Properties = {
                 },
                 {
                     UICode = "-C- l",
-                    HelpText = "controls.smart-pipette",
+                    HelpTextTag = "",
+                    HelpTextItems = { "[img=color_picker_white]", { "controls.smart-pipette" } },
                     Action = function(self)
                         return { Selecting = self.Item, Entity = self }
                     end,
@@ -197,7 +198,7 @@ Class.system.Properties = {
                 {
                     UICode = "--- r",
                     IsRestricedTo = { Presentator = true, Remindor = true },
-                    HelpText = "ingteb-utility.create-reminder-task",
+                    HelpTextTag = "ingteb-utility.create-reminder-task",
                     Action = function(self) return { RemindorTask = self.Item } end,
                 },
             }
@@ -226,7 +227,7 @@ Class.system.Properties = {
         get = function(self)
             if self.Item then return self.Item.IsEnabled end
             if self.Prototype.name == "character" then return true end
-            dassert() 
+            dassert()
         end,
     },
 
@@ -240,11 +241,11 @@ Class.system.Properties = {
                 if items then
                     items:Select(
                         function(itemPrototype)
-                            local item = self.Database:GetItem(nil, itemPrototype)
-                            if result[item] ~= false then
-                                result[item] = value
-                            end
+                        local item = self.Database:GetItem(nil, itemPrototype)
+                        if result[item] ~= false then
+                            result[item] = value
                         end
+                    end
                     )
                 end
             end

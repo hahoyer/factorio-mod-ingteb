@@ -73,7 +73,7 @@ Class.system.Properties = {
             return Array:new {
                 -- {
                 --     UICode = "--- l",
-                --     HelpText = "ingteb-utility.category-settings",
+                --     HelpTextTag = "ingteb-utility.category-settings",
                 --     Action = function(self) return {Settings = self} end,
                 -- },
             }
@@ -105,22 +105,22 @@ Class.system.Properties = {
             local result = recipeList--
                 :ToArray(
                     function(recipe)
-                        if self.Domain == "crafting" then
-                            if recipe.hidden and not self.IsAutomatic then return end
-                            return self.Database:GetRecipe(nil, recipe)
-                        elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
-                            == "hand-mining" then
-                            return self.Database:GetMiningRecipe(nil, recipe)
-                        elseif self.Domain == "boiling" then
-                            return self.Database:GetBoilingRecipe(nil, recipe)
-                        elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
-                            return self.Database:GetBurningRecipe(nil, recipe)
-                        elseif self.Domain == "rocket-launch" then
-                            return self.Database:GetRocketLaunchRecipe(nil, recipe)
-                        else
-                            dassert()
-                        end
+                    if self.Domain == "crafting" then
+                        if recipe.hidden and not self.IsAutomatic then return end
+                        return self.Database:GetRecipe(nil, recipe)
+                    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
+                        == "hand-mining" then
+                        return self.Database:GetMiningRecipe(nil, recipe)
+                    elseif self.Domain == "boiling" then
+                        return self.Database:GetBoilingRecipe(nil, recipe)
+                    elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
+                        return self.Database:GetBurningRecipe(nil, recipe)
+                    elseif self.Domain == "rocket-launch" then
+                        return self.Database:GetRocketLaunchRecipe(nil, recipe)
+                    else
+                        dassert()
                     end
+                end
                 )--
                 :Where(function(recipe) return recipe end) --
             return result
