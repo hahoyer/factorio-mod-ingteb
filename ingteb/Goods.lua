@@ -21,9 +21,9 @@ local function FormatEnergy(value)
 
 end
 
-local Goods = class:new("Goods", Common)
+local Class = class:new("Goods", Common)
 
-Goods.system.Properties = {
+Class.system.Properties = {
     OriginalRecipeList = {
         get = function(self) return self.Entity and self.Entity.RecipeList or Dictionary:new{} end,
     },
@@ -128,7 +128,7 @@ local function Sort(target)
 
 end
 
-function Goods:SortAll()
+function Class:SortAll()
     if not self.RecipeList then self.RecipeList = self.OriginalRecipeList end
     if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
     if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
@@ -138,13 +138,13 @@ function Goods:SortAll()
     self.UsedBy = Sort(self.UsedBy)
 end
 
-function Goods:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
+function Class:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
 
-function Goods:new(prototype, database)
+function Class:new(prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
 
     return self
 
 end
 
-return Goods
+return Class
