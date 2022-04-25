@@ -18,8 +18,8 @@ Recipe.system.Properties = {
             local xreturn = (self.Database.BackLinks.TechnologiesForRecipe[self.Name] or Array:new {})--
                 :Select(
                     function(prototype)
-                        return self.Database:GetTechnology(nil, prototype)
-                    end
+                    return self.Database:GetTechnology(nil, prototype)
+                end
                 )
             return xreturn
         end,
@@ -32,6 +32,16 @@ Recipe.system.Properties = {
                 or self.Technologies:Any(function(technology)
                     return technology.IsEnabled
                 end)
+        end,
+    },
+
+    IsInitial = {
+        get = function(self)
+            return--
+            not self.IsHidden
+                and not self.Technology
+                and self.Prototype
+                and self.Prototype.enabled
         end,
     },
 
@@ -226,13 +236,13 @@ function Recipe:GetWorkerCraftingQueue()
     if self.HandCrafter then return Array:new {} end
     local worker = self.Category.Workers:Select(
         function(worker)
-            if worker.Item then
-                local result = self.CreatedBy--
-                    :ToArray(function(recipes) return recipes end)--
-                    :ConcatMany()
-                dassert()
-            end
+        if worker.Item then
+            local result = self.CreatedBy--
+                :ToArray(function(recipes) return recipes end)--
+                :ConcatMany()
+            dassert()
         end
+    end
     )
     dassert()
 end

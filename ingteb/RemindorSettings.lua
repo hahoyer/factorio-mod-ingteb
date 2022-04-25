@@ -1,5 +1,6 @@
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
+local Configurations = require "Configurations"
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -19,30 +20,8 @@ local Class = class:new(
     }
 )
 
-local setup = {
-    AutoResearch = {
-        Name = "ingteb-utility.select-remindor-autoresearch-help",
-        SpriteList = {"technology_black", "technology_white"},
-        off = {Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off"},
-        ["1"] = {Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1"},
-        all = {Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all"},
-    },
-    AutoCrafting = {
-        Name = "ingteb-utility.select-remindor-autocrafting-help",
-        SpriteList = {"slot_icon_robot_material_black", "slot_icon_robot_material"},
-        [true] = {Next = false, Name = "ingteb-utility.settings-switch-on"},
-        [false] = {Next = true, Name = "ingteb-utility.settings-switch-off"},
-    },
-    RemoveTaskWhenFulfilled = {
-        Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
-        SpriteList = {"trash", "trash_white"},
-        [true] = {Next = false, Name = "ingteb-utility.settings-switch-on"},
-        [false] = {Next = true, Name = "ingteb-utility.settings-switch-off"},
-    },
-}
-
 function Class:GetHelp(tag)
-    local setup = setup[tag]
+    local setup = Configurations.Remindor[tag]
     local additionalLines = Array:new{}
     local currentValue = self.Local[tag]
     if currentValue ~= nil then
@@ -82,7 +61,7 @@ function Class:GetButton(tag, required)
     end
     local value = self.Local[tag]
     if value == nil then value = self.Default[tag] end
-    local sprite = setup[tag].SpriteList[(value == false or value == "off") and 1 or 2]
+    local sprite = Configurations.Remindor[tag].SpriteList[(value == false or value == "off") and 1 or 2]
 
     return {
         {
@@ -115,7 +94,7 @@ function Class:OnClick(event)
     if event.button == defines.mouse_button_type.right then
         if value == nil then newValue = self.Default[tag] end
     elseif self.Local[tag] ~= nil then
-        newValue = setup[tag][value].Next
+        newValue = Configurations.Remindor[tag][value].Next
     end
 
     self.Local[tag] = newValue

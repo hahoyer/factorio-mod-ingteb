@@ -25,10 +25,10 @@ local Class = class:new(
             return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
         end,
     },
-    Settings = { get = function(self)
+    Filter = { get = function(self)
         if not self.Global.Presentator then self.Global.Presentator = {} end
-        if not self.Global.Presentator.Settings then self.Global.Presentator.Settings = {} end
-        return self.Global.Presentator.Settings
+        if not self.Global.Presentator.Filter then self.Global.Presentator.Filter = {} end
+        return self.Global.Presentator.Filter
     end }
 })
 
@@ -142,8 +142,8 @@ function Class:PerformFilterCheck(domain, target)
     local configurations = Configurations.PresentatorFilter
     return configurations
         :Any(function(configuration, name)
-            local setting = self.Settings[name]
-            local value = setting == nil and configuration.Default or setting
+            local filter = self.Filter[name]
+            local value = filter == nil and configuration.Default or filter
             local xreturn = value and configuration.Check[domain](self, target)
             return xreturn
         end)
@@ -696,7 +696,7 @@ function Class:Close()
 end
 
 function Class:Open(target)
-    if not target then target = self.Database:GetProxyFromCommonKey(self.Global.History.Current)end
+    if not target then target = self.Database:GetProxyFromCommonKey(self.Global.History.Current) end
     log("opening Target = " .. target.CommonKey .. "...")
     self.Global.Links.Presentator = {}
     self.Spritor:StartCollecting()
@@ -708,13 +708,14 @@ function Class:Open(target)
         guiData,
         target.LocalisedName, {
         buttons = Configurations.PresentatorFilter:ToArray(function(configuration, name)
-            local value = (self.Settings[name] or configuration.Default) == true
+            local value = self.Filter[name]
+            if value == nil then value = configuration.Default or false end
             return {
                 type = "sprite-button",
                 sprite = configuration.Sprite[value],
                 actions = { on_click = { module = self.class.name, action = "Filter", filter = name, value = not value } },
                 style = "frame_action_button",
-                tooltip = { "ingteb-utility.presentator-setting-" .. name }
+                tooltip = { "ingteb-presentator-setting." .. name }
             }
 
         end),
@@ -849,9 +850,7 @@ function Class:GetGui(target)
 end
 
 function Class:OnFilterChange(filter, value)
-    self:Close()
-    self.Settings[filter] = value
-    self:Open()
+    self.Filter[filter] = value
 end
 
 function Class:OnGuiEvent(event)
@@ -865,7 +864,9 @@ function Class:OnGuiEvent(event)
     elseif message.action == "Click" then
         self.Parent:OnGuiClick(event)
     elseif message.action == "Filter" then
+        self:Close()
         self:OnFilterChange(message.filter, message.value)
+        self:Open()
     else
         dassert()
     end
@@ -881,11 +882,10 @@ function Class:RestoreFromSave(parent)
 end
 
 function Class:OnResearchChanged(parent)
-    if self.MainGui then 
+    if self.MainGui then
         self:Close()
         self:Open()
     end
 end
-
 
 return Class
