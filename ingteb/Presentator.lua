@@ -133,8 +133,17 @@ function Class:GetRecipeLine(target, inCount, outCount)
 
 end
 
+function Class:PerformWorkerFilterCheck(worker)
+    return worker.IsEnabled
+end
+
+function Class:PerformRecipeFilterCheck(recipe)
+    return recipe.IsResearched
+end
+
 function Class:GetWorkersPanel(category, columnCount)
     local workers = category.Workers
+        :Where(function(worker) return self:PerformWorkerFilterCheck(worker) end)
     if not workers:Any() then
         workers = Array:new{
             {
@@ -431,6 +440,16 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
         or sampleClient.class == BurningRecipe --
         or sampleClient.class == Technology --
     )
+
+    local target = target
+        :Select(
+            function(recipes)
+            return recipes:Where(function(recipe) return self:PerformRecipeFilterCheck(recipe)
+            end)
+        end)
+        :Where(function(recipes) return recipes:Any() end)
+
+    if not target:Any() then return {} end
 
     local inCount = target:Select(
         function(group)
