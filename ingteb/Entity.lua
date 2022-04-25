@@ -222,6 +222,14 @@ Class.system.Properties = {
         end,
     },
 
+    IsEnabled = {
+        get = function(self)
+            if self.Item then return self.Item.IsEnabled end
+            if self.Prototype.name == "character" then return true end
+            dassert() 
+        end,
+    },
+
     Modules = {
         cache = true,
         get = function(self)
