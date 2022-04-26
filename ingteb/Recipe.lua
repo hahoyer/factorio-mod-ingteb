@@ -25,23 +25,20 @@ Recipe.system.Properties = {
         end,
     },
 
-    IsEnabled = {
+    IsEnabled = { get = function(self) return not self.Technology or self.IsEnabledByTechnology end, },
+
+    IsPossible = {
         get = function(self)
-            return--
-            not self.Technologies:Any() --
-                or self.Technologies:Any(function(technology)
-                    return technology.IsEnabled
-                end)
+            return (self.IsHidden or self.Technology or self.Prototype.enabled) and self.Category.Workers:Any()
         end,
     },
 
-    IsInitial = {
+    IsEnabledByTechnology = {
         get = function(self)
             return--
-            not self.IsHidden
-                and not self.Technology
-                and self.Prototype
-                and self.Prototype.enabled
+            self.Technologies:Any(function(technology)
+                return technology.IsEnabled
+            end)
         end,
     },
 

@@ -206,6 +206,12 @@ Class.system.Properties = {
         end,
     },
 
+    HasSelectableRecipes = {
+        get = function(self) --
+            return self.Prototype.type == "assembling-machine" and not self.Prototype.fixed_recipe
+        end,
+    },
+
     HasAutomaticRecipes = {
         cache = true,
         get = function(self)

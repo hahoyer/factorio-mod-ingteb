@@ -34,12 +34,15 @@ Class.system.Properties = {
     },
 
     IsHidden = { get = function(self) return self.Prototype.hidden end },
+    IsSelectable = { get = function(self) return not self.IsHidden and self.Category.HasSelectableRecipes end, },
+    IsAutomatic = { get = function(self) return self.IsHidden or self.Category.HasAutomaticRecipes end, },
+    IsEnabled = { get = function(self) return true end },
+    IsPossible = { get = function(self) return true end },
     Required = { get = function(self) return RequiredThings:new(nil, self.Input) end },
     RelativeDuration = { get = function(self) return self.Duration / self.Category.SpeedFactor end, },
     Duration = { get = function(self) return 1 end, },
     SpriteType = { get = function(self) return self.Prototype.sprite_type end },
     TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-" .. self.Prototype.type .. "-recipe" end },
-    IsEnabled = { get = function(self) return true end },
 
     Output = {
         cache = true,

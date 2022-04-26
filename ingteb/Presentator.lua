@@ -138,17 +138,6 @@ function Class:GetRecipeLine(target, inCount, outCount)
 
 end
 
-function Class:PerformFilterCheck(domain, target)
-    local configurations = Configurations.PresentatorFilter
-    return configurations
-        :Any(function(configuration, name)
-            local filter = self.Filter[name]
-            local value = filter == nil and configuration.Default or filter
-            local xreturn = value and configuration.Check[domain](self, target)
-            return xreturn
-        end)
-end
-
 function Class:GetWorkersPanel(category, columnCount)
     local workers = category.Workers
         :Where(function(worker) return self:PerformFilterCheck("Worker", worker) end)
@@ -706,20 +695,9 @@ function Class:Open(target)
     local result = Helper.CreateFloatingFrameWithContent(
         self,
         guiData,
-        target.LocalisedName, {
-        buttons = Configurations.PresentatorFilter:ToArray(function(configuration, name)
-            local value = self.Filter[name]
-            if value == nil then value = configuration.Default or false end
-            return {
-                type = "sprite-button",
-                sprite = configuration.Sprite[value],
-                actions = { on_click = { module = self.class.name, action = "Filter", filter = name, value = not value } },
-                style = "frame_action_button",
-                tooltip = { "ingteb-presentator-setting." .. name }
-            }
-
-        end),
-    })
+        target.LocalisedName,
+        { buttons = self:GetFilterButtons(), }
+    )
     self.Spritor:RegisterDynamicElements(result.DynamicElements)
     log("opening Target = " .. target.CommonKey .. " ok.")
 end
@@ -847,6 +825,36 @@ function Class:GetGui(target)
     end
 
     return { type = "flow", name = "Panels", direction = "vertical", children = children }
+end
+
+function Class:PerformFilterItemCheck(domain, target, configuration, name)
+    local filter = self.Filter[name]
+    local value = filter == nil and configuration.Default or filter
+    local xreturn = value and configuration.Check[domain](self, target)
+    return xreturn
+end
+
+function Class:PerformFilterCheck(domain, target)
+    local results = Configurations.Presentator.Filter
+        :Select(function(configuration, name)
+            return self:PerformFilterItemCheck(domain, target, configuration, name)
+        end)
+
+    return  Configurations.Presentator.FilterRule(results)
+end
+
+function Class:GetFilterButtons()
+    return Configurations.Presentator.Filter:ToArray(function(configuration, name)
+        local value = self.Filter[name]
+        if value == nil then value = configuration.Default or false end
+        return {
+            type = "sprite-button",
+            sprite = configuration.Sprite[value],
+            actions = { on_click = { module = self.class.name, action = "Filter", filter = name, value = not value } },
+            style = "frame_action_button",
+            tooltip = { "ingteb-presentator-setting." .. name }
+        }
+    end)
 end
 
 function Class:OnFilterChange(filter, value)

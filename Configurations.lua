@@ -3,91 +3,94 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local Result = {
-    PresentatorFilter = Dictionary:new {
-        Initial = {
-            Default = true,
-            Check = {
-                Worker = function(self, target) return target.IsEnabled end,
-                Recipe = function(self, target) return target.IsInitial end,
+    Presentator = {
+        Filter = Dictionary:new {
+            Selectable = {
+                Default = true,
+                Check = {
+                    Worker = function(self, target) return true end,
+                    Recipe = function(self, target) return target.IsSelectable end,
+                },
+                Sprite = {
+                    [true] = "factorio"
+                }
+
             },
-            Sprite = {
-                [true] = "factorio"
-            }
+            Automatic = {
+                Default = true,
+                Check = {
+                    Worker = function(self, target) return true end,
+                    Recipe = function(self, target) return target.IsAutomatic end,
+                },
+                Sprite = {
+                    [true] = "automatic-recipe"
+                }
 
-        },
-        Automatic = {
-            Default = true,
-            Check = {
-                Worker = function(self, target) return target.IsEnabled end,
-                Recipe = function(self, target) return target.IsHidden end,
             },
-            Sprite = {
-                [true] = "automatic-recipe"
-            }
+            Enabled = {
+                Root = true,
+                Default = true,
+                Check = {
+                    Worker = function(self, target) return target.IsEnabled end,
+                    Recipe = function(self, target) return target.IsEnabled end,
+                },
+                Sprite = {
+                    [false] = "utility/check_mark",
+                    [true] = "utility/check_mark_white"
+                }
 
-        },
-        Enabled = {
-            Default = true,
-            Check = {
-                Worker = function(self, target) return target.IsEnabled end,
-                Recipe = function(self, target) return 
-                    target.IsEnabled 
-                    and not target.IsInitial
-                    and not target.IsHidden
-                end,
             },
-            Sprite = {
-                [false] = "utility/check_mark",
-                [true] = "utility/check_mark_white"
-            }
-
-        },
-        Edge = {
-            Default = true,
-            Check = { Worker = function(self, target) return target.IsEnabled end,
-                Recipe = function(self, target) return target.Technology and target.Technology.IsReadyRaw end, },
-            Sprite = {
-                [false] = "utility/expand_dark",
-                [true] = "utility/expand"
-            }
-        },
-        NextGeneration = {
-            Default = true,
-            Check = { Worker = function(self, target) return true end,
-                Recipe = function(self, target) return target.Technology and target.Technology.IsNextGenerationRaw end, }
-            , Sprite = {
-                [false] = "utility/slot_icon_module_black",
-                [true] = "utility/slot_icon_module"
-            }
-        },
-        Impossible = {
-            Check = {
-                Worker = function(self, target) return target.IsEnabled end,
-                Recipe = function(self, target)
-                    return not target.IsHidden
-                        and not target.Technology
-                        and (not target.Prototype or not target.Prototype.enabled)
-                end,
+            Edge = {
+                Root = true,
+                Default = true,
+                Check = { Worker = function(self, target) return target.IsEnabled end,
+                    Recipe = function(self, target) return target.Technology and target.Technology.IsReadyRaw end, },
+                Sprite = {
+                    [false] = "utility/expand_dark",
+                    [true] = "utility/expand"
+                }
             },
-            Sprite = {
-                [true] = "utility/crafting_machine_recipe_not_unlocked"
-            }
+            NextGeneration = {
+                Root = true,
+                Default = true,
+                Check = { Worker = function(self, target) return true end,
+                    Recipe = function(self, target) return target.Technology and target.Technology.IsNextGenerationRaw end, }
+                , Sprite = {
+                    [false] = "utility/slot_icon_module_black",
+                    [true] = "utility/slot_icon_module"
+                }
+            },
+            Impossible = {
+                Default = false,
+                Check = {
+                    Worker = function(self, target) return true end,
+                    Recipe = function(self, target) return not target.IsPossible end,
+                },
+                Sprite = {
+                    [true] = "utility/crafting_machine_recipe_not_unlocked"
+                }
 
+            },
+            -- All = {
+            --     Default = true,
+            --     Check = { Worker = function(self, target) return true end
+            --         , Recipe = function(self, target) return true end,
+            --     },
+            --     Sprite = { [true] = "infinity" },
+            -- },
+
+            -- NextWorkers = {
+            --     Check = { Worker = function(self, target) return true end
+            --         , Recipe = function(self, target) return false end,
+            --     },
+            --     Sprite = { [true] = "infinity" },
+            -- },
         },
-        -- All = {
-        --     Default = true,
-        --     Check = { Worker = function(self, target) return true end
-        --         , Recipe = function(self, target) return true end,
-        --     },
-        --     Sprite = { [true] = "infinity" },
-        -- },
-
-        -- NextWorkers = {
-        --     Check = { Worker = function(self, target) return true end
-        --         , Recipe = function(self, target) return false end,
-        --     },
-        --     Sprite = { [true] = "infinity" },
-        -- },
+        FilterRule = function(results)
+            return (results.Selectable or results.Automatic or results.Impossible)
+                and
+                (results.Enabled or results.Edge or results.NextGeneration)
+        end
     }
 
 }

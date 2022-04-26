@@ -240,6 +240,11 @@ function Class:AssertValid()
             }
         end
         dassert(type(self.RelativeDuration) == "number")
+        if self.class.name == "Recipe" then
+            dassert(self.Category.Domain == "crafting")
+        else
+            dassert(self.Category.Domain ~= "crafting")
+        end
     end
 
     local category = self.Category

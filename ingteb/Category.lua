@@ -80,10 +80,18 @@ Class.system.Properties = {
         end,
     },
 
-    IsAutomatic = {
+    HasAutomaticRecipes = {
         cache = true,
         get = function(self)
             return self.Workers:Any(function(worker) return worker.HasAutomaticRecipes end)
+        end,
+    },
+
+    HasSelectableRecipes = {
+        get = function(self) --
+            dassert(self.IsSealed)
+            return self.Domain == "crafting" 
+            and self.Workers:Any(function(worker) return worker.HasSelectableRecipes end)
         end,
     },
 
@@ -106,7 +114,7 @@ Class.system.Properties = {
                 :ToArray(
                     function(recipe)
                     if self.Domain == "crafting" then
-                        if recipe.hidden and not self.IsAutomatic then return end
+                        if recipe.hidden and not self.HasAutomaticRecipes then return end
                         return self.Database:GetRecipe(nil, recipe)
                     elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
                         == "hand-mining" then
