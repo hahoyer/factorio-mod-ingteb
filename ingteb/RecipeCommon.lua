@@ -34,8 +34,8 @@ Class.system.Properties = {
     },
 
     IsHidden = { get = function(self) return self.Prototype.hidden end },
-    IsSelectable = { get = function(self) return not self.IsHidden and self.Category.HasSelectableRecipes end, },
-    IsAutomatic = { get = function(self) return self.IsHidden or self.Category.HasAutomaticRecipes end, },
+    IsSelectable = { get = function(self) return self.IsPossible and not self.IsHidden and self.Category.HasSelectableRecipes end, },
+    IsAutomatic = { get = function(self) return self.IsPossible and (self.IsHidden or self.Category.HasAutomaticRecipes) end, },
     IsEnabled = { get = function(self) return true end },
     IsPossible = { get = function(self) return true end },
     Required = { get = function(self) return RequiredThings:new(nil, self.Input) end },

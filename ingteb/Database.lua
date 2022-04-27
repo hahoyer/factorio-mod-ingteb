@@ -39,75 +39,75 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new(
     "Database", nil, {
-        Player = { get = function(self) return self.Parent.Player end },
-        Global = { get = function(self) return self.Parent.Global end },
-        BackLinks = {
-            get = function(self)
-                if not global.Database then global.Database = {} end
-                if not global.Database.BackLinks then global.Database.BackLinks = {} end
-                return global.Database.BackLinks
-            end,
-        },
-        Proxies = {
-            get = function(self)
-                if not global.Database then global.Database = {} end
-                if not global.Database.Proxies then global.Database.Proxies = {} end
-                return global.Database.Proxies
-            end,
-        },
-        ProductionTimeUnit = {
-            get = function(self)
-                local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
-                    .value
-                return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
-            end,
-        },
-        Selector = {
-            cache = true,
-            get = function(self)
-                log("database initialize Selector...")
-                local result = {}
-                local maximumColumnCount = 0
-                result.Groups = Dictionary:new {}
-                local targets = {
-                    Item = game.item_prototypes,
-                    Fluid = game.fluid_prototypes,
-                    FuelCategory = game.fuel_category_prototypes,
-                    ModuleCategory = game.module_category_prototypes,
-                }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    BackLinks = {
+        get = function(self)
+            if not global.Database then global.Database = {} end
+            if not global.Database.BackLinks then global.Database.BackLinks = {} end
+            return global.Database.BackLinks
+        end,
+    },
+    Proxies = {
+        get = function(self)
+            if not global.Database then global.Database = {} end
+            if not global.Database.Proxies then global.Database.Proxies = {} end
+            return global.Database.Proxies
+        end,
+    },
+    ProductionTimeUnit = {
+        get = function(self)
+            local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
+                .value
+            return TimeSpan.FromString(rawValue) or Constants.ProductionTimeUnit
+        end,
+    },
+    Selector = {
+        cache = true,
+        get = function(self)
+            log("database initialize Selector...")
+            local result = {}
+            local maximumColumnCount = 0
+            result.Groups = Dictionary:new {}
+            local targets = {
+                Item = game.item_prototypes,
+                Fluid = game.fluid_prototypes,
+                FuelCategory = game.fuel_category_prototypes,
+                ModuleCategory = game.module_category_prototypes,
+            }
 
-                local function IsHidden(type, goods)
-                    if type == "Item" then
-                        return goods.flags and goods.flags.hidden
-                    elseif type == "Fluid" then
-                        return goods.hidden
-                    end
+            local function IsHidden(type, goods)
+                if type == "Item" then
+                    return goods.flags and goods.flags.hidden
+                elseif type == "Fluid" then
+                    return goods.hidden
                 end
+            end
 
-                for type, domain in pairs(targets) do
-                    for name, goods in pairs(domain) do
-                        if not IsHidden(type, goods) then
-                            local grouping = --
-                            (type == "Item" or type == "Fluid")
-                                and { goods.group.name, goods.subgroup.name } --
-                                or { "other", type }
+            for type, domain in pairs(targets) do
+                for name, goods in pairs(domain) do
+                    if not IsHidden(type, goods) then
+                        local grouping = --
+                        (type == "Item" or type == "Fluid")
+                            and { goods.group.name, goods.subgroup.name } --
+                            or { "other", type }
 
-                            local group = EnsureKey(result.Groups, grouping[1], Dictionary:new {})
-                            local subgroup = EnsureKey(group, grouping[2], Array:new {})
-                            subgroup:Append(self:GetProxy(type, nil, goods))
-                            if maximumColumnCount < subgroup:Count() then
-                                maximumColumnCount = subgroup:Count()
-                            end
+                        local group = EnsureKey(result.Groups, grouping[1], Dictionary:new {})
+                        local subgroup = EnsureKey(group, grouping[2], Array:new {})
+                        subgroup:Append(self:GetProxy(type, nil, goods))
+                        if maximumColumnCount < subgroup:Count() then
+                            maximumColumnCount = subgroup:Count()
                         end
                     end
                 end
-                result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount
-                    and maximumColumnCount or result.Groups:Count() * 2
-                log("database initialize Selector complete.")
-                return result
-            end,
-        },
-    }
+            end
+            result.ColumnCount = maximumColumnCount < Constants.SelectorColumnCount
+                and maximumColumnCount or result.Groups:Count() * 2
+            log("database initialize Selector complete.")
+            return result
+        end,
+    },
+}
 )
 
 function Class:new(parent) return self:adopt { Parent = parent } end
@@ -155,12 +155,15 @@ function Class:ScanBackLinks()
         EnsureKey(backLinks.ItemsForFuelCategory, name, Array:new())
     end
 
-    log("database backLinks : ensure category-entrie ...")
+    log("database backLinks : scan player ...")
+    self:AddWorkerForCategory("hand-mining.steel-axe", self.Player.character.prototype)
+
+    log("database backLinks : ensure category-entries ...")
     backLinks.CategoryNames:Select(
         function(value, categoryName)
-            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
-            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
-        end
+        EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
+        EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
+    end
     )
 
     log("database scan backLinks complete.")
@@ -197,8 +200,8 @@ function Class:Ensure()
     log("database initialize categories and recipes ...")
     self.BackLinks.CategoryNames:Select(
         function(_, categoryName)
-            local recipes = self:GetCategory(categoryName).RecipeList
-        end
+        local recipes = self:GetCategory(categoryName).RecipeList
+    end
     )
 
     log("database initialize cleanup ...")
@@ -427,29 +430,25 @@ function Class:ScanEntity(prototype)
         if configuration.required_fluid then
             table.insert(
                 ingredients, {
-                    type = "fluid",
-                    name = configuration.required_fluid,
-                    amount = configuration.fluid_amount,
-                }
+                type = "fluid",
+                name = configuration.required_fluid,
+                amount = configuration.fluid_amount,
+            }
             )
         end
 
         self:AddRecipe(Helper.CreatePrototypeProxy
-        {
-            type = domain,
-            Prototype = prototype,
-            sprite_type = "entity",
-            hidden = true,
-            products = configuration.products,
-            ingredients = ingredients,
-            energy = configuration.mining_time,
-            category = categoryName,
-        }
+            {
+                type = domain,
+                Prototype = prototype,
+                sprite_type = "entity",
+                hidden = true,
+                products = configuration.products,
+                ingredients = ingredients,
+                energy = configuration.mining_time,
+                category = categoryName,
+            }
         )
-    end
-
-    if prototype.type == "character" and prototype.name == "character" then
-        self:AddWorkerForCategory("hand-mining.steel-axe", prototype)
     end
 
     for name, value in pairs(prototype.allowed_effects or {}) do
@@ -665,12 +664,12 @@ function Class:GetCraftableCount(target)
             recipeCandidates--
                 :Select(
                     function(recipeCandidate)
-                        local count = self:GetCraftableCount(recipeCandidate)
-                        if result < count then
-                            result = count
-                            recipe = recipeCandidate
-                        end
+                    local count = self:GetCraftableCount(recipeCandidate)
+                    if result < count then
+                        result = count
+                        recipe = recipeCandidate
                     end
+                end
                 ) --
         end
         return result, recipe
@@ -717,14 +716,14 @@ function Class:GetRecipesGroupByCategory(target, prototype)
         or prototype.object_name == "LuaItemPrototype" and "item"
         or prototype.object_name == "LuaEntityPrototype" and "entity"
         or prototype.type
-        local recipes 
-        if target[type] then recipes = target[type][prototype.name] end
-        if recipes then
+    local recipes
+    if target[type] then recipes = target[type][prototype.name] end
+    if recipes then
         local xreturn = recipes:ToGroup(
             function(recipe)
-                local proxy = self:GetProxyFromPrototype(recipe)
-                return { Key = proxy.Category.Name, Value = proxy }
-            end
+            local proxy = self:GetProxyFromPrototype(recipe)
+            return { Key = proxy.Category.Name, Value = proxy }
+        end
         )
         return xreturn
     end

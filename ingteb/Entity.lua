@@ -224,7 +224,7 @@ Class.system.Properties = {
     Required = {
         get = function(self)
             if self.Item then return self.Item.Required end
-            if self.Prototype.name ~= "character" then dassert() end
+            if self.Prototype.type ~= "character" then dassert() end
             return RequiredThings:new()
         end,
     },
@@ -232,8 +232,7 @@ Class.system.Properties = {
     IsEnabled = {
         get = function(self)
             if self.Item then return self.Item.IsEnabled end
-            if self.Prototype.name == "character" then return true end
-            dassert()
+            if self.Prototype.type == "character" then return true end
         end,
     },
 

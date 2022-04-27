@@ -248,7 +248,7 @@ function Class:AssertValid()
     end
 
     local category = self.Category
-    if category and category.Domain == "burning" then
+    if false and category and category.Domain == "burning" then
         local prototype = self.Prototype
         dlog(self.Name)
         local indent = AddIndent()

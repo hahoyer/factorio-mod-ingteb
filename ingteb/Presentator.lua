@@ -142,6 +142,7 @@ function Class:GetWorkersPanel(category, columnCount)
     local workers = category.Workers
         :Where(function(worker) return self:PerformFilterCheck("Worker", worker) end)
     if not workers:Any() then
+        if category.Workers:Any() then return end
         workers = Array:new {
             {
                 SpriteName = "utility/crafting_machine_recipe_not_unlocked",
@@ -411,19 +412,22 @@ function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
     dassert(type(category) == "string")
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
-
-    local result = {
-        type = "flow",
-        name = "GetCraftingGroupPanel " .. self:GetNextId(),
-        direction = "vertical",
-        children = {
-            self:GetWorkersPanel(self.Database:GetCategory(category), inCount + outCount + 3),
-            { type = "line", direction = "horizontal" },
-            self:GetCraftigGroupData(target, inCount, outCount),
-            { type = "line", direction = "horizontal" },
-        },
-    }
-    return result
+    local workersPanel = self:GetWorkersPanel(self.Database:GetCategory(category), inCount + outCount + 3)
+    local craftingGroupData = self:GetCraftigGroupData(target, inCount, outCount)
+    if workersPanel and craftingGroupData then
+        local result = {
+            type = "flow",
+            name = "GetCraftingGroupPanel " .. self:GetNextId(),
+            direction = "vertical",
+            children = {
+                workersPanel,
+                { type = "line", direction = "horizontal" },
+                craftingGroupData,
+                { type = "line", direction = "horizontal" },
+            },
+        }
+        return result
+    end
 end
 
 function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
@@ -506,15 +510,21 @@ function Class:GetRecipePanel(target)
     if not target.IsRecipe then return {} end
     local inCount = math.min(target.Input:Count(), maximalCount)
     local outCount = math.min(target.Output:Count(), maximalCount)
-    return {
-        GetContentPanel(
-            { "", target.RichTextName }, { "ingteb-utility.recipe-information" }, {
-            self:GetWorkersPanel(target.Category, inCount + outCount + 3),
-            { type = "line", direction = "horizontal" },
-            self:GetRecipeLine(target, inCount, outCount),
+    local workersPanel = self:GetWorkersPanel(target.Category, inCount + outCount + 3)
+    local recipeLine = self:GetRecipeLine(target, inCount, outCount)
+    if workersPanel and recipeLine then
+        return {
+            GetContentPanel(
+                { "", target.RichTextName },
+                { "ingteb-utility.recipe-information" },
+                {
+                workersPanel,
+                { type = "line", direction = "horizontal" },
+                recipeLine,
+            }
+            ),
         }
-        ),
-    }
+    end
 end
 
 local function Extend(items, nextItems)
@@ -840,7 +850,7 @@ function Class:PerformFilterCheck(domain, target)
             return self:PerformFilterItemCheck(domain, target, configuration, name)
         end)
 
-    return  Configurations.Presentator.FilterRule(results)
+    return Configurations.Presentator.FilterRule(results)
 end
 
 function Class:GetFilterButtons()
