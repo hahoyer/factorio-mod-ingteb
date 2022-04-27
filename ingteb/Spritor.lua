@@ -68,6 +68,8 @@ function Class:CreateSpriteAndRegister(frame, target, sprite)
 end
 
 function Class:UpdateGui(guiElement, target)
+    if not guiElement or not guiElement.valid then return end
+
     if target.class == StackOfGoods then
         target = StackOfGoods:new(target.Goods, target.Amounts, self.Database)
     else
@@ -77,11 +79,9 @@ function Class:UpdateGui(guiElement, target)
     local number = target.NumberOnSprite
     local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
 
-    if guiElement.valid then
-        guiElement.tooltip = helperText
-        guiElement.number = number
-        guiElement.style = style
-    end
+    guiElement.tooltip = helperText
+    guiElement.number = number
+    guiElement.style = style
 end
 
 function Class:Close() return self.ChangeWatcher:Close(self) end
