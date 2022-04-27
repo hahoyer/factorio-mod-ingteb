@@ -5,7 +5,6 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
-
 local Recipe = class:new("Recipe", Common)
 
 Recipe.system.Properties = {
