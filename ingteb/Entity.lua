@@ -96,6 +96,7 @@ Class.system.Properties = {
     },
 
     MaximalEnergyConsumption = {
+        cache = true,
         get = function(self)
             local prototype = self.Prototype
             local usage = prototype.max_energy_usage
@@ -110,6 +111,7 @@ Class.system.Properties = {
     },
 
     MinimalEnergyConsumption = {
+        cache = true,
         get = function(self)
             local prototype = self.Prototype
             local usage = prototype.min_energy_usage
@@ -207,6 +209,7 @@ Class.system.Properties = {
     },
 
     HasSelectableRecipes = {
+        cache = true,
         get = function(self) --
             return self.Prototype.type == "assembling-machine" and not self.Prototype.fixed_recipe
         end,

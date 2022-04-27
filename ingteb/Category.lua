@@ -88,6 +88,7 @@ Class.system.Properties = {
     },
 
     HasSelectableRecipes = {
+        cache = true,
         get = function(self) --
             dassert(self.IsSealed)
             return self.Domain == "crafting" 

@@ -25,9 +25,13 @@ Recipe.system.Properties = {
         end,
     },
 
-    IsEnabled = { get = function(self) return not self.Technology or self.IsEnabledByTechnology end, },
+    IsEnabled = {
+        cache = true,
+        get = function(self) return not self.Technology or self.IsEnabledByTechnology end,
+    },
 
     IsPossible = {
+        cache = true,
         get = function(self)
             return (self.IsHidden or self.Technology or self.Prototype.enabled) and self.Category.Workers:Any()
         end,
