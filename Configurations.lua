@@ -60,17 +60,6 @@ local Result = {
                     [true] = "utility/slot_icon_module"
                 }
             },
-            Impossible = {
-                Default = false,
-                Check = {
-                    Worker = function(self, target) return true end,
-                    Recipe = function(self, target) return not target.IsPossible end,
-                },
-                Sprite = {
-                    [true] = "utility/crafting_machine_recipe_not_unlocked"
-                }
-
-            },
             -- All = {
             --     Default = true,
             --     Check = { Worker = function(self, target) return true end
@@ -87,7 +76,7 @@ local Result = {
             -- },
         },
         FilterRule = function(results)
-            return (results.Selectable or results.Automatic or results.Impossible)
+            return (results.Selectable or results.Automatic)
                 and
                 (results.Enabled or results.Edge or results.NextGeneration)
         end

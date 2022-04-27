@@ -58,4 +58,11 @@ data:extend{
 		default_value = false,
         order = "d3",
     },
+    {
+        type = "bool-setting",
+        name = "ingteb_show-impossible-recipes",
+        setting_type = "runtime-per-user",
+		default_value = false,
+        order = "d4",
+    },
 }

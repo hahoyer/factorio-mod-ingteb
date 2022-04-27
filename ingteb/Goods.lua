@@ -24,18 +24,58 @@ end
 local Class = class:new("Goods", Common)
 
 Class.system.Properties = {
-    OriginalRecipeList = {
-        get = function(self) return self.Entity and self.Entity.RecipeList or Dictionary:new {} end,
+    Recipes = {
+        get = function(self) return self.Entity and self.Entity.Recipes or Dictionary:new {} end,
     },
 
-    OriginalUsedBy = {
+    AllUsedBy = {
         cache = true,
         get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
     },
 
-    OriginalCreatedBy = {
+    AllCreatedBy = {
         cache = true,
         get = function(self) return self.Database:GetCreatedByRecipes(self.Prototype) end,
+    },
+
+    PossibleUsedBy = {
+        cache = true,
+        get = function(self)
+            return self.AllUsedBy--
+                :Select(function(recipes) return recipes:Where(function(recipe) return recipe.IsPossible end) end)--
+                :Where(function(recipes) return recipes:Any() end) --
+        end,
+    },
+
+    PossibleCreatedBy = {
+        cache = true,
+        get = function(self)
+            return self.AllCreatedBy--
+                :Select(function(recipes) return recipes:Where(function(recipe) return recipe.IsPossible end) end)--
+                :Where(function(recipes) return recipes:Any() end) --
+        end,
+    },
+
+    UsedBy = {
+        get = function(self)
+            local playerSettings = settings.get_player_settings(self.Player)
+            if playerSettings["ingteb_show-impossible-recipes"].value then
+                return self.PossibleUsedBy
+            else
+                return self.AllUsedBy
+            end
+        end,
+    },
+
+    CreatedBy = {
+        get = function(self)
+            local playerSettings = settings.get_player_settings(self.Player)
+            if playerSettings["ingteb_show-impossible-recipes"].value then
+                return self.PossibleCreatedBy
+            else
+                return self.AllCreatedBy
+            end
+        end,
     },
 
     AdditionalHelp = {
@@ -68,7 +108,7 @@ Class.system.Properties = {
         end,
     },
 
-    Recipes = {
+    AllRecipes = {
         cache = true,
         get = function(self)
             return self.CreatedBy:ToArray(function(recipes) return recipes end)--
@@ -79,7 +119,7 @@ Class.system.Properties = {
     Workers = {
         cache = true,
         get = function(self)
-            local result = self.Recipes:Select(function(recipe) return recipe.Workers end)--
+            local result = self.AllRecipes:Select(function(recipe) return recipe.Workers end)--
                 :UnionMany()
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
@@ -88,7 +128,7 @@ Class.system.Properties = {
 
     Required = {
         get = function(self)
-            return self.Recipes:Select(function(recipe) return recipe.Required end)--
+            return self.AllRecipes:Select(function(recipe) return recipe.Required end)--
                 :Aggregate(
                     function(c, n)
                     if not c then return n end
@@ -100,7 +140,7 @@ Class.system.Properties = {
 
     IsEnabled = {
         get = function(self)
-            local recipes = self.Recipes
+            local recipes = self.AllRecipes
             dassert(recipes)
             if recipes:Any(function(recipe) return recipe.IsEnabled end) then return true end
         end,
@@ -108,43 +148,7 @@ Class.system.Properties = {
 
 }
 
-local function Sort(target)
-    local targetArray = target:ToArray(function(value, key) return { Value = value, Key = key } end)
-    targetArray:Sort(
-        function(a, b)
-        if a == b then return false end
-        local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
-        local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
-        if aOrder ~= bOrder then return aOrder > bOrder end
-
-        local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-        local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-        return aSubOrder > bSubOrder
-
-    end
-    )
-
-    return targetArray:ToDictionary(
-        function(value)
-        value.Value:Sort(
-            function(a, b) --
-            return a:IsBefore(b)
-        end
-        )
-        return value
-    end
-    )
-
-end
-
 function Class:SortAll()
-    if not self.RecipeList then self.RecipeList = self.OriginalRecipeList end
-    if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
-    if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
-
-    self.RecipeList = Sort(self.RecipeList)
-    self.CreatedBy = Sort(self.CreatedBy)
-    self.UsedBy = Sort(self.UsedBy)
 end
 
 function Class:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end

@@ -200,7 +200,7 @@ function Class:Ensure()
     log("database initialize categories and recipes ...")
     self.BackLinks.CategoryNames:Select(
         function(_, categoryName)
-        local recipes = self:GetCategory(categoryName).RecipeList
+        local recipes = self:GetCategory(categoryName).AllRecipes
     end
     )
 

@@ -26,6 +26,9 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - reminder panel grouping
 - reminder panel priorities
 - reminder panel load/save
+- Show steam-processors
+- Show energy consumption/production as tooltip on arrow-sprites in recipe lines
+- Do not show impossible recipes/workers anywhere (according to setting!)
 - ... *more suggestions?*
 
 ###todo(or probably not): *(please feel free to complain)*

@@ -171,12 +171,30 @@ Class.system.Properties = {
         end,
     },
 
-    RecipeList = {
+    AllRecipes = {
         cache = true,
         get = function(self)
             return self.Categories--
-                :Select(function(category) return category.RecipeList end)--
+                :Select(function(category) return category.AllRecipes end)--
                 :Where(function(recipes) return recipes:Any() end) --
+        end,
+    },
+    PossibleRecipes = {
+        cache = true,
+        get = function(self)
+            return self.Categories--
+                :Select(function(category) return category.PossibleRecipes end)--
+                :Where(function(recipes) return recipes:Any() end) --
+        end,
+    },
+    Recipes = {
+        get = function(self)
+            local playerSettings = settings.get_player_settings(self.Player)
+            if playerSettings["ingteb_show-impossible-recipes"].value then 
+                return self.PossibleRecipes
+            else
+                return self.AllRecipes
+            end
         end,
     },
 

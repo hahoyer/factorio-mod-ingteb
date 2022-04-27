@@ -91,8 +91,8 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            return self.Domain == "crafting" 
-            and self.Workers:Any(function(worker) return worker.HasSelectableRecipes end)
+            return self.Domain == "crafting"
+                and self.Workers:Any(function(worker) return worker.HasSelectableRecipes end)
         end,
     },
 
@@ -107,7 +107,14 @@ Class.system.Properties = {
         end,
     },
 
-    RecipeList = {
+    PossibleRecipes = {
+        cache = true,
+        get = function(self)
+            return self.AllRecipes:Where(function(recipe) return recipe.IsPossible end)
+        end,
+    },
+
+    AllRecipes = {
         cache = true,
         get = function(self)
             local recipeList = self.Database.BackLinks.RecipesForCategory[self.Name] --
@@ -131,8 +138,20 @@ Class.system.Properties = {
                     end
                 end
                 )--
-                :Where(function(recipe) return recipe end) --
+                :Where(function(recipe) return recipe end)--
+
             return result
+        end,
+    },
+
+    Recipes = {
+        get = function(self)
+            local playerSettings = settings.get_player_settings(self.Player)
+            if playerSettings["ingteb_show-impossible-recipes"].value then
+                return self.AllRecipes
+            else
+                return self.PossibleRecipes
+            end
         end,
     },
 

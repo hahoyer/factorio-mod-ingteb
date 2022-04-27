@@ -211,7 +211,7 @@ end
 function Class:GetBelongingWorkers(recipe)
     local results = self.Workers:Where(
         function(worker)
-            local result = worker.RecipeList:Any(
+            local result = worker.Recipes:Any(
                 function(category, name)
                     local result = category:Contains(recipe)
                     return result

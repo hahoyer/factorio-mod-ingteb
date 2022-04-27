@@ -432,9 +432,9 @@ end
 
 function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     if not target or not target:Any() then return {} end
-    local sampleCategogy = target:Top()
-    dassert(type(sampleCategogy.Key) == "string")
-    local sampleClient = sampleCategogy.Value[1]
+    local sampleCategory = target:Top()
+    dassert(type(sampleCategory.Key) == "string")
+    local sampleClient = sampleCategory.Value[1]
     dassert(
         sampleClient.class == Recipe --
         or sampleClient.class == RecipeCommon --
@@ -736,7 +736,7 @@ function Class:GetGui(target)
     self.NextId = 0
     target:SortAll()
     dassert(
-        not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
+        not target.Recipes or not next(target.Recipes) or type(next(target.Recipes))
         == "string"
     )
     dassert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
@@ -747,7 +747,7 @@ function Class:GetGui(target)
     )
 
     local columnCount--
-    = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
+    = (target.Recipes and target.Recipes:Any() and 1 or 0) --
         + (target.IsRecipe and 1 or 0) --
         + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
         + (target.Effects and target.Effects:Any() and 1 or 0) --
@@ -808,8 +808,8 @@ function Class:GetGui(target)
                                 { "ingteb-utility.technologies-enabled" }
 
                             ),
-                            RecipeList = self:GetCraftingGroupsPanel(
-                                target.RecipeList,
+                            Recipes = self:GetCraftingGroupsPanel(
+                                target.Recipes,
                                 target.RichTextName .. "[img=utility/change_recipe]",
                                 { "ingteb-utility.recipes-for-worker" }
                             ),
