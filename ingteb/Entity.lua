@@ -184,16 +184,16 @@ Class.system.Properties = {
         get = function(self)
             return self.Categories--
                 :Select(function(category) return category.PossibleRecipes end)--
-                :Where(function(recipes) return recipes:Any() end) --
+                :Where(function(recipes) return recipes:Any() and recipes[1].Category.Workers:Any() end)
         end,
     },
     Recipes = {
         get = function(self)
             local playerSettings = settings.get_player_settings(self.Player)
-            if playerSettings["ingteb_show-impossible-recipes"].value then 
-                return self.PossibleRecipes
-            else
+            if playerSettings["ingteb_show-impossible-recipes"].value then
                 return self.AllRecipes
+            else
+                return self.PossibleRecipes
             end
         end,
     },

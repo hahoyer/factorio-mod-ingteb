@@ -3,6 +3,8 @@ Version: 0.4.2
 Date: 2022-04-27
   Changes:
     - refactor for fixing desyncs
+    - filter options for presentator
+    - user setting: show impossible recipes (otherwise they got filtered)
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2022-04-11

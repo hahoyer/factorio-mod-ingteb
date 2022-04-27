@@ -43,7 +43,8 @@ Class.system.Properties = {
         get = function(self)
             return self.AllUsedBy--
                 :Select(function(recipes) return recipes:Where(function(recipe) return recipe.IsPossible end) end)--
-                :Where(function(recipes) return recipes:Any() end) --
+                :Where(function(recipes) return recipes:Any() and recipes[1].Category.Workers:Any() end)
+            --
         end,
     },
 
@@ -52,7 +53,7 @@ Class.system.Properties = {
         get = function(self)
             return self.AllCreatedBy--
                 :Select(function(recipes) return recipes:Where(function(recipe) return recipe.IsPossible end) end)--
-                :Where(function(recipes) return recipes:Any() end) --
+                :Where(function(recipes) return recipes:Any() and recipes[1].Category.Workers:Any() end)
         end,
     },
 
@@ -60,9 +61,9 @@ Class.system.Properties = {
         get = function(self)
             local playerSettings = settings.get_player_settings(self.Player)
             if playerSettings["ingteb_show-impossible-recipes"].value then
-                return self.PossibleUsedBy
-            else
                 return self.AllUsedBy
+            else
+                return self.PossibleUsedBy
             end
         end,
     },
@@ -71,9 +72,9 @@ Class.system.Properties = {
         get = function(self)
             local playerSettings = settings.get_player_settings(self.Player)
             if playerSettings["ingteb_show-impossible-recipes"].value then
-                return self.PossibleCreatedBy
-            else
                 return self.AllCreatedBy
+            else
+                return self.PossibleCreatedBy
             end
         end,
     },

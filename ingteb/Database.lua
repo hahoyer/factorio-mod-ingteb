@@ -725,6 +725,7 @@ function Class:GetRecipesGroupByCategory(target, prototype)
             return { Key = proxy.Category.Name, Value = proxy }
         end
         )
+
         return xreturn
     end
     return Dictionary:new {}
