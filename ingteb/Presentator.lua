@@ -127,7 +127,7 @@ function Class:GetRecipeLine(target, inCount, outCount)
                     self:GetTechnologyButton(target),
                     self:GetRespondingSpriteButton(target),
                     self:GetRespondingSpriteButton(
-                        { SpriteName = "utility/clock", NumberOnSprite = target.Time }
+                        { SpriteName = "utility/clock", NumberOnSprite = target.RelativeDuration }
                     ),
                     { type = "sprite", sprite = "go_to_arrow" },
                 },
@@ -284,7 +284,7 @@ function Class:GetTechnologyEffectsPanel(target)
                         ):Concat {
                             self:GetSpriteButton {
                                 SpriteName = "utility/clock",
-                                NumberOnSprite = target.Time,
+                                NumberOnSprite = target.RelativeDuration,
                             },
                         },
                     },
