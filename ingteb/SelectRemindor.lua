@@ -63,7 +63,7 @@ end
 function Class:Setup(action)
     self.Target = action.RemindorTask
     self.Count = action.Count or 1
-    self.Recipes = self.Target.Recipes
+    self.Recipes = self.Target.AllRecipes
     self.Workers = self.Target.Workers
     self.Recipe = self.Recipes[1]
     self.Worker = self:GetBelongingWorkers(self.Recipe):Top()
