@@ -371,9 +371,7 @@ function Class:ScanEntity(prototype)
     end
 
     for categoryName, _ in pairs(prototype.resource_categories or {}) do
-        if categoryName == "basic-solid" then
-            self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
-        end
+        self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
         if #prototype.fluidbox_prototypes > 0 then
             self:AddWorkerForCategory("fluid-mining" .. "." .. categoryName, prototype)
         end
@@ -682,9 +680,10 @@ function Class:GetCraftableCount(target)
     end
 end
 
-function Class:GetTranslation(commonKey)
-    local dictionary = EnsureKey(self.Global, "Localisation")
-    return EnsureKey(dictionary, commonKey)
+function Class:GetTranslation(commonKey, tag)
+    local dictionary = self.Global.Localisation[tag]
+    local result = dictionary[commonKey]
+    if result ~= commonKey then return result end
 end
 
 function Class:OnStringTranslated(event)

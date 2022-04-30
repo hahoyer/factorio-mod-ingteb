@@ -224,7 +224,7 @@ end
 function Class:AddRemindorTask(selection)
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
-    local task = index and self.Tasks[index] or Task:new(selection, self)
+    local task 
     if index then
         task = self.Tasks[index]
         self.Tasks:Remove(index)

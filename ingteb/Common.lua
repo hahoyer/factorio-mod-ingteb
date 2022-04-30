@@ -33,15 +33,11 @@ local Class = class:new(
         get = function(self) return self.Database.Order[self.class.name] end,
     },
 
-    Translation = { --
-        get = function(self) return self.Database:GetTranslation(self.CommonKey) end,
-    },
-
     LocalisedName = {
         get = function(self)
             local type = self.TypeStringForLocalisation
             local name = self.Prototype.localised_name
-            if self.Translation.Name == false then name = "[" .. self.Name .. "]" end
+            if not self.TranslatedName then name = "[" .. self.Name .. "]" end
 
             if type then
                 return { "", name, " (", { type }, ")" }
@@ -51,13 +47,17 @@ local Class = class:new(
         end,
     },
 
+    TranslatedName = { --
+        get = function(self) return self.Database:GetTranslation(self.CommonKey, "Names") end,
+    },
+
     HasDescription = {
-        get = function(self) return type(self.Translation.Description) == "string" end,
+        get = function(self) return self.Database:GetTranslation(self.CommonKey, "Descriptions") ~= nil end,
     },
 
     SearchText = {
         get = function(self)
-            return type(self.Translation.Name) == "string" and self.Translation.Name or self.Name
+            return self.TranslatedName or self.Name
         end,
     },
 

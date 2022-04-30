@@ -23,11 +23,15 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
 - present multiple items_to_place_this of entity-prototypes
 - present limitations for modules
-- reminder panel grouping
-- reminder panel priorities
-- reminder panel load/save
+- Reminder panel grouping
+- Reminder panel priorities
+- Reminder panel load/save
 - Show steam-processors
 - Show energy consumption/production as tooltip on arrow-sprites in recipe lines
+- Reminder-selector:  Sort recipes/workers
+- Reminder-selector:  Filter recipes/workers like in Presentator
+- Reminder: remove researches
+- Reminder: indicator for available/not available workers
 - ... *more suggestions?*
 
 ###todo(or probably not): *(please feel free to complain)*
@@ -36,7 +40,7 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Several filter options
   => by mod *(See no way do this. Help welcome)*
 
-###known issue: 
+###known issue:
 - Multiplayer: Desync issue when loading a save file where reminder panel is open *(help welcome!)*
 - When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. (As a workaround, you can temporarily use the replacement mod [Improved Research Queue with interface](https://mods.factorio.com/mod/sonaxaton-research-queue-with-interface) instead of [Improved Research Queue](https://mods.factorio.com/mod/sonaxaton-research-queue).)
 
