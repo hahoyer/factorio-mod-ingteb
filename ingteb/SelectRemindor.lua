@@ -1,5 +1,6 @@
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
+local Configurations = require "Configurations"
 local Helper = require("ingteb.Helper")
 local RemindorSettings = require "ingteb.RemindorSettings"
 local Table = require("core.Table")
@@ -10,36 +11,36 @@ local UI = require("core.UI")
 
 local Class = class:new(
     "SelectRemindor", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Database end},
-        LocalSettings = {get = function(self) return self.Global.SelectRemindor.Settings end},
-        DefaultSettings = {get = function(self) return self.Parent.Modules.Remindor end},
-        Memento = {
-            get = function(self)
-                return {
-                    Target = self.Target.CommonKey,
-                    Count = self.Count,
-                    Worker = self.Worker.CommonKey,
-                    Recipe = self.Recipe.CommonKey,
-                    CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":"
-                        .. self.Recipe.Name,
-                    Settings = self.Global.SelectRemindor.Settings,
-                }
-            end,
-        },
-        MainGui = {
-            get = function(self)
-                return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
-            end,
-        },
-    }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    Database = { get = function(self) return self.Parent.Database end },
+    LocalSettings = { get = function(self) return self.Global.SelectRemindor.Settings end },
+    DefaultSettings = { get = function(self) return self.Parent.Modules.Remindor end },
+    Memento = {
+        get = function(self)
+            return {
+                Target = self.Target.CommonKey,
+                Count = self.Count,
+                Worker = self.Worker.CommonKey,
+                Recipe = self.Recipe.CommonKey,
+                CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":"
+                    .. self.Recipe.Name,
+                Settings = self.Global.SelectRemindor.Settings,
+            }
+        end,
+    },
+    MainGui = {
+        get = function(self)
+            return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
+        end,
+    },
+}
 
 )
 
 function Class:new(parent)
-    local self = self:adopt{Parent = parent}
-    self.Settings = RemindorSettings:new(self, {ButtonSize = 28})
+    local self = self:adopt { Parent = parent }
+    self.Settings = RemindorSettings:new(self, { ButtonSize = 28 })
     return self
 end
 
@@ -72,17 +73,17 @@ end
 function Class:CreateGui()
     Helper.CreatePopupFrameWithContent(
         self, self:GetGui(), --
-        {"ingteb-utility.select-reminder"}, --
+        { "ingteb-utility.select-reminder" }, --
         {
-            buttons = {
-                {
-                    type = "sprite-button",
-                    sprite = "utility/check_mark_white",
-                    actions = {on_click = {module = self.class.name, action = "Enter"}},
-                    style = "frame_action_button",
-                },
+        buttons = {
+            {
+                type = "sprite-button",
+                sprite = "utility/check_mark_white",
+                actions = { on_click = { module = self.class.name, action = "Enter" } },
+                style = "frame_action_button",
             },
-        }
+        },
+    }
     )
 end
 
@@ -92,7 +93,7 @@ function Class:Close()
 end
 
 function Class:OnSettingsChanged(event)
-    -- dassert()   
+    -- dassert()
 end
 
 function Class:DestroyGui()
@@ -116,36 +117,6 @@ end
 function Class:RestoreFromSave(parent)
     self.Parent = parent
     self:Close()
-end
-
-function Class:GetWorkerSpriteStyle(target)
-    if target == self.Worker then return true end
-    if not self:GetBelongingWorkers(self.Recipe):Contains(target) then return false end
-end
-
-function Class:GetRecipeSpriteStyle(target)
-    if target == self.Recipe then return true end
-    if not self:GetBelongingRecipes(self.Worker):Contains(target) then return false end
-end
-
-function Class:GetSpriteButton(target)
-    local styleCode
-    if target.IsRecipe then
-        styleCode = self:GetRecipeSpriteStyle(target)
-    else
-        styleCode = self:GetWorkerSpriteStyle(target)
-    end
-
-    local sprite = target.SpriteName
-    if sprite == "fuel-category/chemical" then sprite = "chemical" end
-
-    return {
-        type = "sprite-button",
-        sprite = sprite,
-        actions = {on_click = {module = self.class.name, action = "Click", key = target.CommonKey}},
-        style = Helper.SpriteStyleFromCode(styleCode),
-        tooltip = target:GetHelperText(self.class.name),
-    }
 end
 
 function Class:OnGuiEvent(event)
@@ -189,36 +160,88 @@ end
 
 function Class:OnTextChanged(value) self.Count = tonumber(value) end
 
-function Class:CreateSelection(target)
-    return target:Select(function(object) return self:GetSpriteButton(object) end)
+function Class:GetSpriteStyle(key)
+    local type = key == 0 and "Current" or key == 1 and "Enabled" or key == 2 and "Edge" or key == 3 and "NextGeneration"
+    return Configurations.SelectRemindor.SpriteStyle[type]
 end
 
-function Class:GetLinePart(children)
-    local count = math.min(6, children:Count())
+function Class:GetWorkerSpriteStyle(target, key)
+    return self:GetSpriteStyle(target == self.Worker and 0 or key)
+end
 
-    local result = {type = "flow", direction = "horizontal", children = children}
+function Class:GetRecipeSpriteStyle(target, key)
+    return self:GetSpriteStyle(target == self.Recipe and 0 or key)
+end
 
-    if children:Count() <= count then return result end
+function Class:GetSpriteButton(target, key)
+    local style = (target.IsRecipe and Class.GetRecipeSpriteStyle or Class.GetWorkerSpriteStyle)(self, target, key)
+
+    local sprite = target.SpriteName
+    if sprite == "fuel-category/chemical" then sprite = "chemical" end
+
     return {
-        type = "scroll-pane",
+        type = "sprite-button",
+        sprite = sprite,
+        actions = { on_click = { module = self.class.name, action = "Click", key = target.CommonKey } },
+        style = style,
+        tooltip = target:GetHelperText(self.class.name),
+    }
+end
+
+function Class:CreateRecipeGroups()
+    return self.Recipes:ToGroup(function(recipe)
+        local key = recipe.IsEnabled and 1
+            or recipe.Technology and recipe.Technology.IsReadyRaw and 2
+            or 3
+        return { Key = key, Value = recipe }
+    end)
+end
+
+function Class:CreateWorkerGroups()
+
+    return self.Workers:ToGroup(function(worker)
+        return { Key = worker.IsEnabled and 1 or 3, Value = worker }
+    end)
+end
+
+function Class:GetLinePart(children, key)
+    local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end)
+    local result = { direction = "horizontal", children = sprites }
+
+    local count = children:Count()
+    if count <= 1 then result.type = "flow"
+    elseif count <= 6 then result.type = "frame"
+    else
+        result.type = "scroll-pane"
+        result.vertical_scroll_policy = "never"
+        result.style = "ingteb-scroll-6x1"
+    end
+    return result
+end
+
+function Class:GetLineGroupPart(children)
+    local lineParts = children:ToArray(function(group, key) return self:GetLinePart(group, key) end)
+    if children:Count() == 1 and lineParts[1].type == "frame" then lineParts[1].type = "flow" end
+
+    local result = { type = "flow", direction = "horizontal", children = lineParts }
+    return {
+        type = "flow",
         direction = "horizontal",
-        vertical_scroll_policy = "never",
-        style = "ingteb-scroll-6x1",
-        children = {result},
+        children = { result },
     }
 end
 
 function Class:GetBelongingWorkers(recipe)
     local results = self.Workers:Where(
         function(worker)
-            local result = worker.Recipes:Any(
-                function(category, name)
-                    local result = category:Contains(recipe)
-                    return result
-                end
-            )
+        local result = worker.Recipes:Any(
+            function(category, name)
+            local result = category:Contains(recipe)
             return result
         end
+        )
+        return result
+    end
     )
     return results
 end
@@ -226,10 +249,10 @@ end
 function Class:GetBelongingRecipes(worker)
     local results = self.Recipes:Where(
         function(recipe)
-            local workers = self:GetBelongingWorkers(recipe)
-            local result = workers:Contains(worker)
-            return result
-        end
+        local workers = self:GetBelongingWorkers(recipe)
+        local result = workers:Contains(worker)
+        return result
+    end
     )
     return results
 end
@@ -239,7 +262,7 @@ function Class:GetTargetGui()
         type = "flow",
         direction = "horizontal",
         children = {
-            {type = "label", caption = {"ingteb-utility.select-target"}},
+            { type = "label", caption = { "ingteb-utility.select-target" } },
             {
                 type = "sprite",
                 sprite = self.Target.SpriteName,
@@ -251,14 +274,14 @@ function Class:GetTargetGui()
                 allow_negative = true,
                 allow_decimal = true,
                 text = self.Count,
-                style_mods = {maximal_width = 60, height = 26},
-                actions = {on_text_changed = {module = self.class.name, action = "CountChanged"}},
+                style_mods = { maximal_width = 60, height = 26 },
+                actions = { on_text_changed = { module = self.class.name, action = "CountChanged" } },
             },
             {
                 type = "flow",
                 direction = "horizontal",
-                style_mods = {horizontal_align = "right", horizontally_stretchable = "on"},
-                children = {self.Settings:GetGui()},
+                style_mods = { horizontal_align = "right", horizontally_stretchable = "on" },
+                children = { self.Settings:GetGui() },
             },
         },
     }
@@ -269,15 +292,15 @@ function Class:GetWorkersGui()
         type = "flow",
         direction = "horizontal",
         children = {
-            {type = "label", caption = {"ingteb-utility.select-worker"}},
+            { type = "label", caption = { "ingteb-utility.select-worker" } },
             {
                 type = "sprite",
                 sprite = self.Worker.SpriteName,
-                ref = {"Worker"},
+                ref = { "Worker" },
                 tooltip = self.Worker:GetHelperText(self.class.name),
             },
-            {type = "label", caption = {"ingteb-utility.select-variants"}},
-            self:GetLinePart(self:CreateSelection(self.Workers)),
+            { type = "label", caption = { "ingteb-utility.select-variants" } },
+            self:GetLineGroupPart(self:CreateWorkerGroups()),
         },
     }
 end
@@ -287,15 +310,15 @@ function Class:GetRecipesGui()
         type = "flow",
         direction = "horizontal",
         children = {
-            {type = "label", caption = {"ingteb-utility.select-recipe"}},
+            { type = "label", caption = { "ingteb-utility.select-recipe" } },
             {
                 type = "sprite",
                 sprite = self.Recipe.SpriteName,
-                ref = {"Recipe"},
+                ref = { "Recipe" },
                 tooltip = self.Worker:GetHelperText(self.class.name),
             },
-            {type = "label", caption = {"ingteb-utility.select-variants"}},
-            self:GetLinePart(self:CreateSelection(self.Recipes)),
+            { type = "label", caption = { "ingteb-utility.select-variants" } },
+            self:GetLineGroupPart(self:CreateRecipeGroups()),
         },
     }
 end
@@ -303,12 +326,12 @@ end
 function Class:GetSettingsGui() return self.Settings:GetGui() end
 
 function Class:GetGui()
-    local children = Array:new{
-        {self:GetTargetGui()},
-        self.Workers:Count() > 1 and {self:GetWorkersGui()} or {},
-        self.Recipes:Count() > 1 and {self:GetRecipesGui()} or {},
+    local children = Array:new {
+        { self:GetTargetGui() },
+        self.Workers:Count() > 1 and { self:GetWorkersGui() } or {},
+        self.Recipes:Count() > 1 and { self:GetRecipesGui() } or {},
     }
-    return {type = "flow", direction = "vertical", children = children:ConcatMany()}
+    return { type = "flow", direction = "vertical", children = children:ConcatMany() }
 end
 
 return Class

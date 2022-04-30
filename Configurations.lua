@@ -106,4 +106,13 @@ Result.Remindor = {
     },
 }
 
+Result.SelectRemindor = {
+    SpriteStyle = {
+        Current = "ingteb-light-button",
+        Enabled = "slot_button",
+        Edge = "yellow_slot_button",
+        NextGeneration = "red_slot_button"
+    }
+}
+
 return Result
