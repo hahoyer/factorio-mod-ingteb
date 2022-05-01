@@ -15,10 +15,14 @@ for index, player in pairs(game.players) do
     local sr = ReplaceName(player.gui.screen, "SelectRemindor")
     local r = ReplaceName(mod_gui.get_frame_flow(player), "Remindor")
 
-    if p or s or sr or r then
-        local message = "[img=ingteb] migration to 0.4.2"
+    local l = not global.Players[index].Localisation
+    if l then
+        global.Players[index].Localisation = nil
+    end
+
+    if l or p or s or sr or r then
+        local message = "[img=ingteb] migration to 0.5.0"
         player.print(message)
         log(player.name .. ": " .. message)
     end
 end
-
