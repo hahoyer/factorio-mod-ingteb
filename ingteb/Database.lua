@@ -484,15 +484,16 @@ function Class:ScanFuel(prototype, domain, category, isFluid)
         local output = not isFluid and prototype.burnt_result
         local also = { "fuel_value" }
         if not isFluid then table.insert(also, "fuel_category") end
+        local type = isFluid and "fluid" or "item"
         self:AddRecipe(
             Helper.CreatePrototypeProxy { --
                 type = domain,
                 Prototype = prototype,
                 hidden = true,
                 category = category,
-                sprite_type = isFluid and "fluid" or "item",
+                sprite_type = type,
                 Also = also,
-                ingredients = { { type = self.IsFluid and "fluid" or "item", amount = 1, name = prototype.name } },
+                ingredients = { { type = type, amount = 1, name = prototype.name } },
                 products = output and { { type = output.type, amount = 1, name = output.name } } or {},
 
             })
