@@ -325,13 +325,8 @@ function Class:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
-    -- local prototypeData = self:SplitPrototype(prototype)
     if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging
-    local self = self:adopt {
-        Prototype = prototype,
-        -- PrototypeData = prototypeData,
-        Database = database
-    }
+    local self = self:adopt { Prototype = prototype, Database = database }
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
