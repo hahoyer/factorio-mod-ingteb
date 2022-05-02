@@ -2,7 +2,7 @@ local Dictionary = {}
 local Array = {}
 
 function Dictionary:Clone(predicate)
-    local result = Dictionary:new{}
+    local result = Dictionary:new {}
     for key, value in pairs(self) do
         if not predicate or predicate(value, key) then result[key] = value end
     end
@@ -10,14 +10,16 @@ function Dictionary:Clone(predicate)
 end
 
 function Array:Clone(predicate)
-    local result = Array:new{}
-    for index, value in ipairs(self) do
+    local result = Array:new {}
+    for index = 1, #self do
+        local value = self[index]
         if not predicate or predicate(value, index) then result:Append(value) end
     end
     return result
 end
 
 function Dictionary:Where(predicate) return self:Clone(predicate) end
+
 function Array:Where(predicate) return self:Clone(predicate) end
 
 function Array:Sort(order) table.sort(self, order) end
@@ -35,14 +37,14 @@ function Array:Except(other) return self:Where(function(entry) return not other:
 function Dictionary:Except(other) return self:Where(function(_, key) return not other[key] end) end
 
 function Array:IntersectMany()
-    if not self:Any() then return Array:new{} end
+    if not self:Any() then return Array:new {} end
     local result = self[1]
     for index = 2, #self do result = result:Intersection(self[index]) end
     return result
 end
 
 function Array:UnionMany()
-    if not self:Any() then return Array:new{} end
+    if not self:Any() then return Array:new {} end
     local result = self[1]
     for index = 2, #self do result = result:Union(self[index]) end
     return result
@@ -73,14 +75,24 @@ function Array:FromNumber(number)
 end
 
 function Dictionary:Select(transformation)
-    local result = Dictionary:new{}
+    local result = Dictionary:new {}
     for key, value in pairs(self) do result[key] = transformation(value, key) end
     return result
 end
 
 function Array:Select(transformation)
-    local result = Array:new{}
-    for key, value in ipairs(self) do result:Append(transformation(value, key)) end
+    local result = Array:new {}
+    for index = 1, #self do
+        if self[index] then result:Append(transformation(self[index], index)) end
+    end
+    return result
+end
+
+function Array:Compact()
+    local result = Array:new {}
+    for index = 1, #self do
+        if self[index] then result:Append(self[index]) end
+    end
     return result
 end
 
@@ -150,9 +162,11 @@ function Dictionary:Count(predicate)
 end
 
 function Array:Count(predicate)
+    if not predicate then return #self end
     local result = 0
-    for key, value in ipairs(self) do
-        if not predicate or predicate(value, key) then result = result + 1 end
+    for index = 1, #self do
+        local value = self[index]
+        if predicate(value, index) then result = result + 1 end
     end
     return result
 end
@@ -163,7 +177,10 @@ function Dictionary:All(predicate)
 end
 
 function Array:All(predicate)
-    for key, value in ipairs(self) do if not predicate(value, key) then return false end end
+    for index = 1, #self do
+        local value = self[index]
+        if not predicate(value, index) then return false end
+    end
     return true
 end
 
@@ -175,19 +192,23 @@ function Dictionary:Any(predicate)
 end
 
 function Array:Any(predicate)
-    for key, value in ipairs(self) do
-        if not predicate or predicate(value, key) then return true end
+    for index = 1, #self do
+        local value = self[index]
+        if not predicate or predicate(value, index) then return true end
     end
     return nil
 end
 
 function Array:Contains(item)
-    for key, value in ipairs(self) do if value == item then return true end end
+    for index = 1, #self do
+        local value = self[index]
+        if value == item then return true end
+    end
     return nil
 end
 
 function Dictionary:ToDictionary(getPair)
-    local result = Dictionary:new{}
+    local result = Dictionary:new {}
     for key, value in pairs(self) do
         if getPair then
             local pair = getPair(value, key)
@@ -201,7 +222,7 @@ end
 
 function Array:GetUniqueEntries(predicate)
     local result = self:ToDictionary(
-        function(value) return {Key = predicate(value), Value = value} end
+        function(value) return { Key = predicate(value), Value = value } end
     ):ToArray(function(value) return value end)
     return result
 end
@@ -228,46 +249,51 @@ function Array:GetShortest()
 end
 
 function Array:ToDictionary(getPair)
-    local result = Dictionary:new{}
-    for key, value in ipairs(self) do
+    local result = Dictionary:new {}
+    for index = 1, #self do
+        local value = self[index]
         if getPair then
-            local pair = getPair(value, key)
+            local pair = getPair(value, index)
             result[pair.Key] = pair.Value
         else
-            result[key] = value
+            result[index] = value
         end
     end
     return result
 end
 
 function Array:ToGroup(getPair)
-    local result = Dictionary:new{}
-    for key, value in ipairs(self) do
+    local result = Dictionary:new {}
+    for index = 1, #self do
+        local value = self[index]
         if getPair then
-            local pair = getPair(value, key)
-            local current = result[pair.Key] or Array:new{}
+            local pair = getPair(value, index)
+            local current = result[pair.Key] or Array:new {}
             current:Append(pair.Value)
             result[pair.Key] = current
         else
-            local current = result[key] or Array:new{}
+            local current = result[index] or Array:new {}
             current:Append(value)
-            result[key] = current
+            result[index] = current
         end
     end
     return result
 end
 
 function Dictionary:ToArray(getItem)
-    local result = Array:new{}
+    local result = Array:new {}
     if not getItem then getItem = function(value) return value end end
-    for key, value in pairs(self) do result:Append(getItem(value,key)) end
+    for key, value in pairs(self) do result:Append(getItem(value, key)) end
     return result
 end
 
 function Array:ToArray(getItem)
-    local result = Array:new{}
+    local result = Array:new {}
     if not getItem then getItem = function(value) return value end end
-    for key, value in ipairs(self) do result:Append(getItem(value)) end
+    for index = 1, #self do
+        local value = self[index]
+        result:Append(getItem(value))
+    end
     return result
 end
 
@@ -287,12 +313,13 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
             error(
 
                 onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                    .. ").", 1
+                .. ").", 1
             )
         end
     end
     return self[1]
 end
+
 --- Get the first element
 ---@param allowEmpty boolean optional default: true
 ---@param allowMultiple boolean optional default: true
@@ -301,15 +328,15 @@ end
 function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     local result
     for key, value in pairs(self) do
-        if allowMultiple ~= false then return {Key = key, Value = value} end
+        if allowMultiple ~= false then return { Key = key, Value = value } end
         if result then
             error(
 
                 onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                    .. ").", 1
+                .. ").", 1
             )
         end
-        result = {Key = key, Value = value}
+        result = { Key = key, Value = value }
     end
 
     if result then return result end
@@ -330,7 +357,7 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
             error(
 
                 onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                    .. ").", 1
+                .. ").", 1
             )
         end
     end
@@ -342,9 +369,9 @@ function Array:Stringify(delimiter)
     local actualDelimiter = ""
     self:Select(
         function(element)
-            result = result .. actualDelimiter .. element
-            actualDelimiter = delimiter or ""
-        end
+        result = result .. actualDelimiter .. element
+        actualDelimiter = delimiter or ""
+    end
     )
     return result
 end
@@ -356,27 +383,35 @@ function Array:Concat(otherArray)
     end
     if not otherArray or #otherArray == 0 then return self end
 
-    local result = Array:new{}
+    local result = Array:new {}
     result:AppendMany(self)
     result:AppendMany(otherArray)
     return result
 end
 
 function Array:ConcatMany()
-    local result = Array:new{}
-    for _, values in ipairs(self) do for _, value in ipairs(values) do result:Append(value) end end
+    local result = Array:new {}
+    for _, values in ipairs(self) do
+        for index = 1, #values do
+            local value = values[index]
+            result:Append(value)
+        end
+    end
     return result
 end
 
 function Array:Aggregate(combinator)
     local result
-    for key, value in ipairs(self) do result = combinator(result, value, key) end
+    for index = 1, #self do
+        local value = self[index]
+        result = combinator(result, value, index)
+    end
     return result
 end
 
 function Dictionary:Aggregate(combinator)
     local result
-    for key, value in ipairs(self) do result = combinator(result, value, key) end
+    for key, value in pairs(self) do result = combinator(result, value, key) end
     return result
 end
 
@@ -394,26 +429,32 @@ end
 function Array:Take(count)
     if #self <= count then return self end
 
-    local result = Array:new{}
+    local result = Array:new {}
     for index = 1, count do result:Append(self[index]) end
     return result
 end
 
 function Array:Skip(count)
     if count <= 0 then return self end
-    local result = Array:new{}
+    local result = Array:new {}
     for index = 1 + count, #self do result:Append(self[index]) end
     return result
 end
 
 function Array:Remove(index) return table.remove(self, index) end
+
 function Array:Append(value) return table.insert(self, value) end
 
-function Array:AppendMany(values) for _, value in ipairs(values) do table.insert(self, value) end end
+function Array:AppendMany(values)
+    for index = 1, #values do
+        local value = values[index]
+        table.insert(self, value)
+    end
+end
 
 function Array:InsertAt(position, value) return table.insert(self, position, value) end
 
-local Table = {Array = Array, Dictionary = Dictionary}
+local Table = { Array = Array, Dictionary = Dictionary }
 
 function Table.new(self, target)
     if #target == 0 and next(target) then
