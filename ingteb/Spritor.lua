@@ -11,19 +11,19 @@ local StackOfGoods = require("ingteb.StackOfGoods")
 
 local Class = class:new(
     "Spritor", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Database end},
-        ChangeWatcher = {cache = true, get = function(self) return self.Parent.ChangeWatcher end},
-    }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    Database = { get = function(self) return self.Parent.Database end },
+    ChangeWatcher = { cache = true, get = function(self) return self.Parent.ChangeWatcher end },
+}
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt { Parent = parent } end
 
 function Class:GetSpriteButton(target, sprite, category)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
-    if not target then return {type = "sprite-button", sprite = sprite, style = style} end
+    if not target then return { type = "sprite-button", sprite = sprite, style = style } end
     local sprite = target.SpriteName
     if sprite == "fuel-category/chemical" then sprite = "chemical" end
 
@@ -95,7 +95,7 @@ function Class:CollectForGuiClick(result, target)
     if noWatcher then return end
     if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         local index = self.ChangeWatcher:CollectForGuiClick(self, target)
-        result.ref = {"DynamicElements", index}
+        result.ref = { "DynamicElements", index }
     end
     return result
 end
@@ -106,12 +106,12 @@ function Class:RegisterDynamicElements(guiElements)
 end
 
 function Class:GetTiles(count)
-    return Array:FromNumber(count) --
-    :Select(function() return {type = "sprite", style = "ingteb-un-button"} end)
+    return Array:FromNumber(count)--
+        :Select(function() return { type = "sprite", style = "ingteb-un-button" } end)
 end
 
 function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
-    local count = math.min(6, maximumCount or target:Count())
+    local count = math.min(Constants.MaximumEntriesInRecipeList, maximumCount or target:Count())
 
     local children = Array:new()
     children:AppendMany(
@@ -134,8 +134,8 @@ function Class:GetLinePart(target, maximumCount, isRightAligned, tooltip)
         type = "scroll-pane",
         direction = "horizontal",
         vertical_scroll_policy = "never",
-        style = "ingteb-scroll-6x1",
-        children = {result},
+        style = "ingteb-recipe-scroll",
+        children = { result },
     }
 
 end
@@ -154,15 +154,15 @@ function Class:GetLine(target, tooltip)
         function(element) children:Append(self:GetRespondingSpriteButton(element)) end
     )
 
-    local result = {type = "flow", direction = "horizontal", tooltip = tooltip, children = children}
-    if count <= 6 then return result end
+    local result = { type = "flow", direction = "horizontal", tooltip = tooltip, children = children }
+    if count <= Constants.MaximumEntriesInRecipeList then return result end
 
     return {
         type = "scroll-pane",
         direction = "horizontal",
         vertical_scroll_policy = "never",
-        style = "ingteb-scroll-6x1",
-        children = {result},
+        style = "ingteb-recipe-scroll",
+        children = { result },
     }
 
 end

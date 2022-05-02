@@ -36,7 +36,7 @@ local Class = class:new(
     ClickTarget = { get = function(self) return self.Goods.ClickTarget end },
     CommonKey = {
         get = function(self)
-            return self.Goods.CommonKey .. "/" .. (self:GetAmountsKey() or "?")
+            return self.Goods.CommonKey .. "/" .. (self.AmountsKey or "?")
         end,
     },
     SpriteName = { get = function(self) return self.Goods.SpriteName end },
@@ -213,32 +213,33 @@ local Class = class:new(
             }
         end,
     },
+
+    AmountsKey = {
+        get = function(self)
+            local amounts = self.Amounts
+            if not amounts then return end
+
+            local probability = (amounts.probability or 1)
+            local value = amounts.value
+
+            if not value then
+                if not amounts.min then
+                    value = amounts.max
+                elseif not amounts.max then
+                    value = amounts.min
+                else
+                    value = (amounts.max + amounts.min) / 2
+                end
+            elseif type(value) ~= "number" then
+                return
+            end
+
+            return tostring(value * probability)
+        end }
 }
 
 )
 
-function Class:GetAmountsKey()
-    local amounts = self.Amounts
-    if not amounts then return end
-
-    local probability = (amounts.probability or 1)
-    local value = amounts.value
-
-    if not value then
-        if not amounts.min then
-            value = amounts.max
-        elseif not amounts.max then
-            value = amounts.min
-        else
-            value = (amounts.max + amounts.min) / 2
-        end
-    elseif type(value) ~= "number" then
-        return
-    end
-
-    return tostring(value * probability)
-
-end
 
 function Class:AddOption(other)
     local otherAmounts = other.Amounts

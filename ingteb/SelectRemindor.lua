@@ -206,30 +206,29 @@ end
 
 function Class:GetLinePart(children, key)
     local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end)
-    local result = { type = "flow", direction = "horizontal", children = sprites }
+    local result = { direction = "horizontal", children = sprites }
 
     local count = children:Count()
-    if count <= 1 then return result
-    elseif count <= 6 then return { type = "frame", direction = "horizontal", children = { result } }
+    if count <= Constants.MaximumEntriesInRecipeList then
+        result.type = "frame"
+        result.style_mods = { left_padding = 0, right_padding = 2, top_padding = 1, bottom_padding = 1 }
     else
-        return {
-            type = "scroll-pane",
-            direction = "horizontal",
-            vertical_scroll_policy = "never",
-            style = "ingteb-scroll-6x1",
-            children = { result }
-        }
+        result.type = "scroll-pane"
+        result.vertical_scroll_policy = "never"
+        result.style = "ingteb-recipe-scroll"
     end
+    return result
 end
 
 function Class:GetLineGroupPart(children)
     local lineParts = children:ToArray(function(group, key) return self:GetLinePart(group, key) end)
-
-    local result = { type = "flow", direction = "horizontal", children = lineParts }
+    if #lineParts == 1 and lineParts[1].type == "frame" then
+        lineParts = lineParts[1].children
+    end
     return {
         type = "flow",
         direction = "horizontal",
-        children = { result },
+        children = lineParts,
     }
 end
 

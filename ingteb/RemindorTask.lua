@@ -22,7 +22,7 @@ local Class = class:new(
         get = function(self)
             return {
                 AutoResearch = self.Recipe.Required.Technologies:Any(),
-                AutoCrafting = self.Worker.Name == "character" and self.Recipe.Category.IsCraftingDomain ,
+                AutoCrafting = self.Worker.Name == "character" and self.Recipe.Category.IsCraftingDomain,
             }
         end,
     },
@@ -216,6 +216,28 @@ function Class:GetLineFooter(key)
 end
 
 function Class:GetGui(key, data, isTop, isBottom, required)
+    local children = self
+        :GetRequired(data)
+        :Select(function(group)
+            local result = self.Parent.Spritor:GetLinePart(group)
+            if result.type == "flow" then
+                result.type = "frame"
+                result.style_mods = { left_padding = 0, right_padding = 2, top_padding = 1, bottom_padding = 1 }
+            end
+            return result
+        end)
+
+    if #children == 1 and children[1].type == "frame" then
+        children = children[1].children
+    end
+
+    local dataLine =
+    {
+        type = "flow",
+        direction = "horizontal",
+        children = children
+    }
+
     return {
         type = "frame",
         direction = "horizontal",
@@ -227,7 +249,7 @@ function Class:GetGui(key, data, isTop, isBottom, required)
             self.Parent.Spritor:GetRespondingSpriteButton(self.Worker),
             self.Parent.Spritor:GetRespondingSpriteButton(self.Recipe),
             self:GetSettingsGui(required.Settings),
-            self.Parent.Spritor:GetLinePart(self:GetRequired(data), required.Things),
+            dataLine,
             self:GetLineFooter(key),
         },
     }
@@ -259,11 +281,12 @@ function Class:GetRequired(data)
                 :Top().Amounts.value
 
             local count = inventory --
-                - self.RemainingAmountForAutocrafting * stack.Amounts.value / countByRecipe
+                - self.RemainingAmount * stack.Amounts.value / countByRecipe
 
             local value = math.min(count, 0)
             data[key] = math.max(count, 0)
-            return stack.Goods:CreateStack(value ~= 0 and { value = value } or nil)
+            local xreturn = stack.Goods:CreateStack(value ~= 0 and { value = value } or nil)
+            return xreturn
         end
         ) --
         or nil

@@ -94,10 +94,18 @@ local function EnsureMaxParameters(target, count)
     return { "", EnsureMaxParameters(result1, count), EnsureMaxParameters(result2, count) }
 end
 
+local function StripArray(target)
+    if target.object_name == "Array" then 
+        return target:Strip()
+    else
+        return target
+    end
+end
+
 function Helper.ScrutinizeLocalisationString(target)
     if type(target) ~= "table" then return target end
     for index = 2, #target do target[index] = Helper.ScrutinizeLocalisationString(target[index]) end
-    return EnsureMaxParameters(target, 20)
+    return StripArray(EnsureMaxParameters(target, 20))
 end
 
 function Helper.SpriteStyleFromCode(code)

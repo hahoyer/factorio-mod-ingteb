@@ -8,17 +8,16 @@ local class = require("core.class")
 local RequiredThings = class:new("RequiredThings", nil)
 
 function RequiredThings:new(technologies, stackOfGoods)
-    local self = self:adopt{
-        Technologies = technologies or Array:new{}, 
+    local self = self:adopt {
+        Technologies = technologies or Array:new {},
         StackOfGoods = Dictionary:new()
     }
 
     if stackOfGoods then
         stackOfGoods:Select(
             function(stack) 
-                local key = stack.Goods and stack.Goods.CommonKey or stack.CommonKey
-                self.StackOfGoods[key] = stack:Clone() 
-            end
+                self.StackOfGoods[stack.Goods.CommonKey] = stack:Clone()
+             end
         )
     end
     return self
@@ -33,12 +32,36 @@ function RequiredThings:Count()
 end
 
 function RequiredThings:GetData()
-    return self.Technologies:Concat(self.StackOfGoods:ToArray())
+    local technologies = self.Technologies
+        :ToArray()
+        :ToGroup(function(value)
+            return {
+                Key = value.IsResearching and "Researching" or value.IsReady and "Edge" or "Next",
+                Value = value
+            }
+        end)
+    local stacks = self.StackOfGoods
+        :ToArray()
+        :ToGroup(function(stack)
+            return {
+                Key = type(stack.NumberOnSprite) == "number" and stack.NumberOnSprite < 0 and "Missing" or "Available",
+                Value = stack
+            }
+        end)
+    return Array:new
+        {
+            technologies.Researching,
+            technologies.Edge,
+            technologies.Next,
+            stacks.Missing,
+            stacks.Available
+        }
+        :Compact()
 end
 
 function RequiredThings:Except(other)
     local result = RequiredThings:new()
-    result.Technologies = self.Technologies:Except(other.Technologies) 
+    result.Technologies = self.Technologies:Except(other.Technologies)
 
     result.StackOfGoods = self.StackOfGoods:Except(other.StackOfGoods)
 
@@ -46,9 +69,8 @@ function RequiredThings:Except(other)
 end
 
 function RequiredThings:RemoveThings(other)
-    self.Technologies = self.Technologies:Except(other.Technologies) 
+    self.Technologies = self.Technologies:Except(other.Technologies)
     self.StackOfGoods = self.StackOfGoods:Except(other.StackOfGoods)
 end
 
 return RequiredThings
-

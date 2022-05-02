@@ -2,7 +2,7 @@ local Dictionary = {}
 local Array = {}
 
 function Dictionary:Clone(predicate)
-    local result = Dictionary:new {}
+    local result = Dictionary:new{}
     for key, value in pairs(self) do
         if not predicate or predicate(value, key) then result[key] = value end
     end
@@ -10,7 +10,7 @@ function Dictionary:Clone(predicate)
 end
 
 function Array:Clone(predicate)
-    local result = Array:new {}
+    local result = Array:new{}
     for index = 1, #self do
         local value = self[index]
         if not predicate or predicate(value, index) then result:Append(value) end
@@ -37,14 +37,14 @@ function Array:Except(other) return self:Where(function(entry) return not other:
 function Dictionary:Except(other) return self:Where(function(_, key) return not other[key] end) end
 
 function Array:IntersectMany()
-    if not self:Any() then return Array:new {} end
+    if not self:Any() then return Array:new{} end
     local result = self[1]
     for index = 2, #self do result = result:Intersection(self[index]) end
     return result
 end
 
 function Array:UnionMany()
-    if not self:Any() then return Array:new {} end
+    if not self:Any() then return Array:new{} end
     local result = self[1]
     for index = 2, #self do result = result:Union(self[index]) end
     return result
@@ -65,7 +65,20 @@ function Array:new(target)
     if getmetatable(target) == "private" then target = Array.Clone(target) end
     setmetatable(target, self)
     self.__index = self
+    target:EnsureLength()
     return target
+end
+
+function Array:__len() return self.Length end
+
+function Array:EnsureLength()
+    local index = next(self)
+    local result = 0
+    while index do
+        if type(index) == "number" and index > result then result = index end
+        index = next(self, index)
+    end
+    self.Length = result
 end
 
 function Array:FromNumber(number)
@@ -75,13 +88,13 @@ function Array:FromNumber(number)
 end
 
 function Dictionary:Select(transformation)
-    local result = Dictionary:new {}
+    local result = Dictionary:new{}
     for key, value in pairs(self) do result[key] = transformation(value, key) end
     return result
 end
 
 function Array:Select(transformation)
-    local result = Array:new {}
+    local result = Array:new{}
     for index = 1, #self do
         if self[index] then result:Append(transformation(self[index], index)) end
     end
@@ -89,9 +102,15 @@ function Array:Select(transformation)
 end
 
 function Array:Compact()
-    local result = Array:new {}
+    local result = Array:new{}
+    for index = 1, #self do if self[index] then result:Append(self[index]) end end
+    return result
+end
+
+function Array:Strip(doNotCompact)
+    local result = {}
     for index = 1, #self do
-        if self[index] then result:Append(self[index]) end
+        if doNotCompact or self[index] then table.insert(result, self[index]) end
     end
     return result
 end
@@ -208,7 +227,7 @@ function Array:Contains(item)
 end
 
 function Dictionary:ToDictionary(getPair)
-    local result = Dictionary:new {}
+    local result = Dictionary:new{}
     for key, value in pairs(self) do
         if getPair then
             local pair = getPair(value, key)
@@ -221,9 +240,9 @@ function Dictionary:ToDictionary(getPair)
 end
 
 function Array:GetUniqueEntries(predicate)
-    local result = self:ToDictionary(
-        function(value) return { Key = predicate(value), Value = value } end
-    ):ToArray(function(value) return value end)
+    local result = self:ToDictionary(function(value)
+        return {Key = predicate(value), Value = value}
+    end):ToArray(function(value) return value end)
     return result
 end
 
@@ -249,7 +268,7 @@ function Array:GetShortest()
 end
 
 function Array:ToDictionary(getPair)
-    local result = Dictionary:new {}
+    local result = Dictionary:new{}
     for index = 1, #self do
         local value = self[index]
         if getPair then
@@ -263,16 +282,16 @@ function Array:ToDictionary(getPair)
 end
 
 function Array:ToGroup(getPair)
-    local result = Dictionary:new {}
+    local result = Dictionary:new{}
     for index = 1, #self do
         local value = self[index]
         if getPair then
             local pair = getPair(value, index)
-            local current = result[pair.Key] or Array:new {}
+            local current = result[pair.Key] or Array:new{}
             current:Append(pair.Value)
             result[pair.Key] = current
         else
-            local current = result[index] or Array:new {}
+            local current = result[index] or Array:new{}
             current:Append(value)
             result[index] = current
         end
@@ -281,14 +300,14 @@ function Array:ToGroup(getPair)
 end
 
 function Dictionary:ToArray(getItem)
-    local result = Array:new {}
+    local result = Array:new{}
     if not getItem then getItem = function(value) return value end end
     for key, value in pairs(self) do result:Append(getItem(value, key)) end
     return result
 end
 
 function Array:ToArray(getItem)
-    local result = Array:new {}
+    local result = Array:new{}
     if not getItem then getItem = function(value) return value end end
     for index = 1, #self do
         local value = self[index]
@@ -310,11 +329,8 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
         return
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
-            error(
-
-                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                .. ").", 1
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" ..
+                      #self .. ").", 1)
         end
     end
     return self[1]
@@ -328,15 +344,12 @@ end
 function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     local result
     for key, value in pairs(self) do
-        if allowMultiple ~= false then return { Key = key, Value = value } end
+        if allowMultiple ~= false then return {Key = key, Value = value} end
         if result then
-            error(
-
-                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                .. ").", 1
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" ..
+                      #self .. ").", 1)
         end
-        result = { Key = key, Value = value }
+        result = {Key = key, Value = value}
     end
 
     if result then return result end
@@ -354,11 +367,8 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
         return
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
-            error(
-
-                onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self
-                .. ").", 1
-            )
+            error(onMultiple and onMultiple(#self) or "Array contains more than one element (" ..
+                      #self .. ").", 1)
         end
     end
     return self[#self]
@@ -367,12 +377,10 @@ end
 function Array:Stringify(delimiter)
     local result = ""
     local actualDelimiter = ""
-    self:Select(
-        function(element)
+    self:Select(function(element)
         result = result .. actualDelimiter .. element
         actualDelimiter = delimiter or ""
-    end
-    )
+    end)
     return result
 end
 
@@ -383,14 +391,14 @@ function Array:Concat(otherArray)
     end
     if not otherArray or #otherArray == 0 then return self end
 
-    local result = Array:new {}
+    local result = Array:new{}
     result:AppendMany(self)
     result:AppendMany(otherArray)
     return result
 end
 
 function Array:ConcatMany()
-    local result = Array:new {}
+    local result = Array:new{}
     for _, values in ipairs(self) do
         for index = 1, #values do
             local value = values[index]
@@ -429,32 +437,41 @@ end
 function Array:Take(count)
     if #self <= count then return self end
 
-    local result = Array:new {}
+    local result = Array:new{}
     for index = 1, count do result:Append(self[index]) end
     return result
 end
 
 function Array:Skip(count)
     if count <= 0 then return self end
-    local result = Array:new {}
+    local result = Array:new{}
     for index = 1 + count, #self do result:Append(self[index]) end
     return result
 end
 
-function Array:Remove(index) return table.remove(self, index) end
-
-function Array:Append(value) return table.insert(self, value) end
-
-function Array:AppendMany(values)
-    for index = 1, #values do
-        local value = values[index]
-        table.insert(self, value)
-    end
+function Array:Remove(index)
+    self.Length = #self - 1
+    return table.remove(self, index)
 end
 
-function Array:InsertAt(position, value) return table.insert(self, position, value) end
+function Array:Append(value)
+    self.Length = #self + 1
+    self[#self] = value
+    return value
+end
 
-local Table = { Array = Array, Dictionary = Dictionary }
+function Array:AppendMany(values)
+    local offset = #self
+    self.Length = #self + #values
+    for index = 1, #values do self[offset + index] = values[index] end
+end
+
+function Array:InsertAt(position, value)
+    self.Length = #self + 1
+    return table.insert(self, position, value)
+end
+
+local Table = {Array = Array, Dictionary = Dictionary}
 
 function Table.new(self, target)
     if #target == 0 and next(target) then
@@ -490,4 +507,50 @@ function Table.AppendForKey(self, key, target)
     end
 end
 
+local function UnittestArray()
+    local a = Array:new{"1", "2", "3"}
+    dassert(#a == 3)
+
+    local a = Array:new{nil, "2", "3"}
+    dassert(#a == 3)
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    dassert(#a == 5)
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a[3] = nil
+    dassert(#a == 5)
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a:Remove(1)
+    dassert(#a == 4)
+    dassert(a[1] == "2")
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a:Append(nil)
+    dassert(#a == 6)
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a:InsertAt(3, nil)
+    dassert(#a == 6)
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a:InsertAt(1, nil)
+    dassert(#a == 6)
+    dassert(a[6] == "5")
+
+    local a = Array:new{nil, "2", "3", nil, "5"}
+    a:Append(nil)
+    dassert(#a == 6)
+    dassert(a[6] == nil)
+
+    -- dassert(false)
+end
+
+local function Unittest()
+    UnittestArray()
+    return true
+end
+
+dassert(Unittest())
 return Table
