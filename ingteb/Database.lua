@@ -423,7 +423,7 @@ function Class:ScanEntity(prototype)
         local categoryName = not prototype.resource_category and "steel-axe" --
             or prototype.resource_category
 
-        local ingredients = { { type = "entity", name = prototype.name } }
+        local ingredients = { { type = "entity", amount = 1, name = prototype.name } }
         local configuration = prototype.mineable_properties
         if configuration.required_fluid then
             table.insert(
@@ -559,6 +559,8 @@ function Class:GetStackOfGoods(target)
     local goods--
     = target.type == "item" and self:GetItem(target.name) --
         or target.type == "fluid" and self:GetFluid(target.name) --
+        or target.type == "entity" and self:GetEntity(target.name) --
+        dassert(goods)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 

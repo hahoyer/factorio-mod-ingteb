@@ -91,7 +91,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            return self.Domain == "crafting"
+            return self.IsCraftingDomain
                 and self.Workers:Any(function(worker) return worker.HasSelectableRecipes end)
         end,
     },
@@ -121,11 +121,10 @@ Class.system.Properties = {
             local result = recipeList--
                 :ToArray(
                     function(recipe)
-                    if self.Domain == "crafting" then
+                    if self.IsCraftingDomain then
                         if recipe.hidden and not self.HasAutomaticRecipes then return end
                         return self.Database:GetRecipe(nil, recipe)
-                    elseif self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain
-                        == "hand-mining" then
+                    elseif self.IsMiningDomain then
                         return self.Database:GetMiningRecipe(nil, recipe)
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(nil, recipe)
@@ -138,7 +137,7 @@ Class.system.Properties = {
                     end
                 end
                 )--
-                :Where(function(recipe) return recipe end)--
+                :Where(function(recipe) return recipe end) --
 
             return result
         end,
@@ -161,13 +160,21 @@ Class.system.Properties = {
             dassert(self.IsSealed)
             if self.Domain == "boiling" or self.Domain == "rocket-launch" or self.Domain == "burning" or self.Domain == "fluid-burning" then
                 return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
-            elseif self.Domain == "crafting" or self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining" then
+            elseif self.IsCraftingDomain or self.IsMiningDomain then
                 return 1
             else
                 dassert(false, "domain = " .. self.Domain)
             end
         end,
     },
+
+    IsMiningDomain = {
+        get = function(self) --
+            return self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining"
+        end,
+    },
+
+    IsCraftingDomain = { get = function(self) return self.Domain == "crafting" end, },
 }
 
 function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end

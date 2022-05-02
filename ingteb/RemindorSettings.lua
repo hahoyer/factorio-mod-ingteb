@@ -15,7 +15,7 @@ local Class = class:new(
         Database = {get = function(self) return self.Parent.Database end},
         Local = {get = function(self) return self.Parent.LocalSettings end},
         Default = {get = function(self) return self.Parent.DefaultSettings end},
-        IsIrrelevant = {get = function(self) return self.Parent.IsIrrelevantSettings end},
+        IsRelevant = {get = function(self) return self.Parent.IsRelevantSettings end},
 
     }
 )
@@ -50,7 +50,8 @@ end
 function Class:GetButton(tag, required)
     local help = self:GetHelp(tag)
     if required and not required[tag] then return {} end
-    if self.IsIrrelevant and self.IsIrrelevant[tag] then
+    local isRelevant = self.IsRelevant and self.IsRelevant[tag]
+    if not isRelevant then
         return {
             {
                 type = "sprite",

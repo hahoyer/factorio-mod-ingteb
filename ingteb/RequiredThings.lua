@@ -8,11 +8,17 @@ local class = require("core.class")
 local RequiredThings = class:new("RequiredThings", nil)
 
 function RequiredThings:new(technologies, stackOfGoods)
-    local self = self:adopt{Technologies = technologies or Array:new{}, StackOfGoods = Dictionary:new()}
+    local self = self:adopt{
+        Technologies = technologies or Array:new{}, 
+        StackOfGoods = Dictionary:new()
+    }
 
     if stackOfGoods then
         stackOfGoods:Select(
-            function(stack) self.StackOfGoods[stack.Goods.CommonKey] = stack:Clone() end
+            function(stack) 
+                local key = stack.Goods and stack.Goods.CommonKey or stack.CommonKey
+                self.StackOfGoods[key] = stack:Clone() 
+            end
         )
     end
     return self

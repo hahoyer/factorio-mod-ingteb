@@ -65,14 +65,10 @@ Class.system.Properties = {
             return Array:new(self.Prototype.ingredients)--
                 :Select(
                     function(ingredient, index)
-                    if ingredient.type == "entity" then
-                        return self.Database:GetEntity(ingredient.name)
-                    else
-                        local result = self.Database:GetStackOfGoods(ingredient)
-                        dassert(result)
-                        result.Source = { Recipe = self, IngredientIndex = index }
-                        return result
-                    end
+                    local result = self.Database:GetStackOfGoods(ingredient)
+                    dassert(result)
+                    result.Source = { Recipe = self, IngredientIndex = index }
+                    return result
                 end
                 )--
                 :Where(

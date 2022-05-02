@@ -308,6 +308,8 @@ function Class:GetNumberOnSprite(category)
     return self:GetSpeedFactor(category) / category.SpeedFactor
 end
 
+function Class:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
+
 function Class:new(name, prototype, database)
     local self = self:adopt(
         self.system.BaseClass:new(

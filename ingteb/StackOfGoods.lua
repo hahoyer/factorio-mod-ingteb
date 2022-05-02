@@ -278,6 +278,7 @@ function Class:new(goods, amounts, database)
     dassert(
         self.Prototype.object_name == "LuaItemPrototype" --
         or self.Prototype.object_name == "LuaFluidPrototype"
+        or self.Prototype.object_name == "LuaEntityPrototype"
     )
 
     self.Goods = goods
