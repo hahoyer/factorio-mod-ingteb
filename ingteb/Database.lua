@@ -15,6 +15,7 @@ local Proxy = {
     FuelCategory = require("ingteb.FuelCategory"),
     Fluid = require("ingteb.Fluid"),
     Item = require("ingteb.Item"),
+    Resource = require "ingteb.Resource",
     Recipe = require("ingteb.Recipe"),
     RecipeCommon = require "ingteb.RecipeCommon",
     Technology = require("ingteb.Technology"),
@@ -136,7 +137,7 @@ function Class:ScanBackLinks()
     backLinks.ItemsForModuleCategory = {}
     backLinks.EntitiesForModuleEffects = {}
     backLinks.Recipe = {
-        Input = { item = {}, fluid = {}, entity = {} },
+        Input = { item = {}, fluid = {}, resource = {} },
         Output = { item = {}, fluid = {} }
     }
 
@@ -264,6 +265,8 @@ function Class:GetFluid(name, prototype) return self:GetProxy("Fluid", name, pro
 function Class:GetItem(name, prototype) return self:GetProxy("Item", name, prototype) end
 
 function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
+
+function Class:GetResource(name, prototype) return self:GetProxy("Resource", name, prototype) end
 
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 
@@ -423,7 +426,7 @@ function Class:ScanEntity(prototype)
         local categoryName = not prototype.resource_category and "steel-axe" --
             or prototype.resource_category
 
-        local ingredients = { { type = "entity", amount = 1, name = prototype.name } }
+        local ingredients = { { type = "resource", amount = 1, name = prototype.name } }
         local configuration = prototype.mineable_properties
         if configuration.required_fluid then
             table.insert(
@@ -559,8 +562,8 @@ function Class:GetStackOfGoods(target)
     local goods--
     = target.type == "item" and self:GetItem(target.name) --
         or target.type == "fluid" and self:GetFluid(target.name) --
-        or target.type == "entity" and self:GetEntity(target.name) --
-        dassert(goods)
+        or target.type == "resource" and self:GetResource(target.name) --
+    dassert(goods)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
@@ -600,7 +603,10 @@ function Class:GetFromSelection(target)
     if target.base_type == "item" then
         className = "Item"
     elseif target.base_type == "entity" then
-        className = "Entity"
+        if target.derived_type == "resource"
+        then className = "Resource"
+        else className = "Entity"
+        end
     elseif target.base_type == "recipe" then
         className = "Recipe"
     elseif target.base_type == "technology" then
@@ -716,7 +722,7 @@ function Class:OnConfigurationChanged() self:OnInitialiseLocalisation() end
 function Class:GetRecipesGroupByCategory(target, prototype)
     local type = prototype.object_name == "LuaFluidPrototype" and "fluid"
         or prototype.object_name == "LuaItemPrototype" and "item"
-        or prototype.object_name == "LuaEntityPrototype" and "entity"
+        or prototype.object_name == "LuaEntityPrototype" and "resource"
         or prototype.type
     local recipes
     if target[type] then recipes = target[type][prototype.name] end

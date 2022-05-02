@@ -123,7 +123,7 @@ function Class:FindTargets(selected)
     if selected then
         local result = self.Database:GetFromSelection(selected)
         if result then
-            if result.class.name ~= "Entity" or result.IsResource then
+            if result.class.name ~= "Entity" then
                 return {result}
             else
                 return {result.Item}

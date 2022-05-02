@@ -69,17 +69,7 @@ Class.system.Properties = {
         end,
     },
 
-    IsResource = {
-        cache = true,
-        get = function(self)
-            local prototype = self.Prototype
-            if not prototype.mineable_properties --
-                or not prototype.mineable_properties.minable --
-                or not prototype.mineable_properties.products --
-            then return end
-            return not prototype.items_to_place_this
-        end,
-    },
+    IsResource = { get = function(self) return false end },
 
     -- not used at the moment
     EnergySourceProperties = {
@@ -289,14 +279,13 @@ function Class:GetSpeedFactor(category)
         return self.MaximalEnergyConsumption
     elseif category.Domain == "boiling" then
         return 1
-    elseif category.Domain == "crafting" then
+    elseif category.IsCraftingDomain then
         if self.Prototype.type == "character" then
             return 1
         else
             return self.Prototype.crafting_speed
         end
-    elseif category.Domain == "mining" or category.Domain == "fluid-mining" or category.Name
-        == "hand-mining.steel-axe" then
+    elseif category.IsMiningDomain then
         return self.Prototype.mining_speed
     else
         dassert(false)
@@ -308,9 +297,8 @@ function Class:GetNumberOnSprite(category)
     return self:GetSpeedFactor(category) / category.SpeedFactor
 end
 
-function Class:CreateStack(amounts) return self.Database:CreateStackFromGoods(self, amounts) end
-
 function Class:new(name, prototype, database)
+
     local self = self:adopt(
         self.system.BaseClass:new(
             prototype or game.entity_prototypes[name], database
@@ -320,16 +308,13 @@ function Class:new(name, prototype, database)
     if name then self.Name = name end
     if self.Name == "character" then self.TypeSubOrder = -1 end
 
+    local prototype = self.Prototype
+
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
+    dassert(self.Prototype.type ~= "resource")
 
-    self.Amounts = { value = 1 }
     self.HelpTextWhenUsedAsProduct = { "", self.RichTextName .. " ", self.Prototype.localised_name }
-
-    if self.IsResource then
-        self.TypeStringForLocalisation = "ingteb-utility.title-resource"
-    else
-        self.TypeStringForLocalisation = "ingteb-utility.title-entity"
-    end
+    self.TypeStringForLocalisation = "ingteb-utility.title-entity"
 
     return self
 
