@@ -182,7 +182,7 @@ local Class = class:new(
         get = function(self)
             if self.IsResearchedOrResearching then return end
             if self.IsReady then return self end
-            for _, technology in pairs(self.Prerequisites) do
+            for _, technology in pairs(self.Prerequisites:Strip()) do
                 local result = technology.TopReadyPrerequisite
                 if result then return result end
             end
@@ -196,7 +196,7 @@ local Class = class:new(
             if self.IsEnabled then return result end
             dlog(self.CommonKey .. ">>>")
             local oldIndent = AddIndent()
-            for _, technology in pairs(self.Prerequisites) do
+            for _, technology in pairs(self.Prerequisites:Strip()) do
                 local prerequisites = technology.NotResearchedPrerequisitesRaw
                 result:AppendMany(prerequisites)
             end
