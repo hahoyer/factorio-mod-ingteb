@@ -56,7 +56,7 @@ FuelCategory.system.Properties = {
 }
 
 function FuelCategory:new(name, prototype, database)
-    dassert(name)
+    dassert(name or prototype)
 
     if name == "fluid" and not prototype then
         prototype = Helper.CreatePrototypeProxy{
