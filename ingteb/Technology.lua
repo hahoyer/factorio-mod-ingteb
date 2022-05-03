@@ -10,7 +10,7 @@ local ResearchQueue = require "ingteb.ResearchQueue"
 local ignore
 local Class = class:new(
     "Technology", Common, {
-    TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-technology" end },
+    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.technology" end },
     SpriteType = { get = function(self) return "technology" end },
     Amount = {
         cache = true,

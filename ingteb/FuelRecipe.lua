@@ -8,6 +8,10 @@ local class = require("core.class")
 
 local Class = class:new("FuelRecipe", Common)
 
+Class.system.Properties = {
+    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.fuelProcessing-recipe" end },
+}
+
 local function GetCategoryAndRegister(self, domain, category)
     local result = self.Database:GetCategory(domain .. "." .. category)
     return result
@@ -19,7 +23,6 @@ function Class:new(name, prototype, database)
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = name
     self.Category = GetCategoryAndRegister(self, "fuelProcessing", name)
-    self.TypeStringForLocalisation = "ingteb-utility.title-fuelProcessing-recipe"
 
     local input = self.Database:GetStackOfGoods { type = prototype.type, amount = 1, name = name }
     input.Source = { Recipe = self, ProductIndex = 1 }

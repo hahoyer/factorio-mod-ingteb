@@ -12,6 +12,7 @@ local Class = class:new("Entity", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "entity" end },
+    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.entity" end },
     UsedBy = {
         cache = true,
         get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
@@ -314,7 +315,6 @@ function Class:new(name, prototype, database)
     dassert(self.Prototype.type ~= "resource")
 
     self.HelpTextWhenUsedAsProduct = { "", self.RichTextName .. " ", self.Prototype.localised_name }
-    self.TypeStringForLocalisation = "ingteb-utility.title-entity"
 
     return self
 

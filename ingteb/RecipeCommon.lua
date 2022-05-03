@@ -42,7 +42,7 @@ Class.system.Properties = {
     RelativeDuration = { get = function(self) return self.Duration / self.Category.SpeedFactor end, },
     Duration = { get = function(self) return 1 end, },
     SpriteType = { get = function(self) return self.Prototype.sprite_type end },
-    TypeStringForLocalisation = { get = function(self) return "ingteb-utility.title-" .. self.Prototype.type .. "-recipe" end },
+    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name." .. self.Prototype.type .. "-recipe" end },
 
     Output = {
         cache = true,
