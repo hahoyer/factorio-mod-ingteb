@@ -450,8 +450,9 @@ function Array:Skip(count)
 end
 
 function Array:Remove(index)
+    local result =  table.remove(self, index)
     self.Length = #self - 1
-    return table.remove(self, index)
+    return result
 end
 
 function Array:Append(value)
@@ -542,6 +543,12 @@ local function UnittestArray()
     local a = Array:new{nil, "2", "3", nil, "5"}
     a:Append(nil)
     dassert(#a == 6)
+    dassert(a[6] == nil)
+
+    local a = Array:new{"1", "2", "3", "4", "5", "6"}
+    a:Remove(1)
+    dassert(#a == 5)
+    dassert(a[5] == "6")
     dassert(a[6] == nil)
 
     -- dassert(false)
