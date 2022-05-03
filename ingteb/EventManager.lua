@@ -128,6 +128,15 @@ function Class:OnStackChanged(event)
     self.Modules.ChangeWatcher:OnChanged()
 end
 
+function Class:OnResearchCancelled(event)
+    Dictionary:new(event.research):Select(function(count, name)
+        if count > 0 then
+            self:OnResearchChanged{
+                name = event.name, tick = event.tick, research = event.force.technologies[name]}
+        end
+    end)
+end
+
 function Class:OnResearchChanged(event)
     if not self.Modules.Database.IsInitialized then return end
     self.Database:OnResearchChanged(event)
@@ -339,6 +348,7 @@ function Class:new()
     self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
     self:SetHandler(defines.events.on_research_canceled, self.OnResearchChanged)
+    --self:SetHandler(defines.events.on_research_cancelled, self.OnResearchCancelled)
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
