@@ -204,7 +204,7 @@ function Class:CreateWorkerGroups()
 end
 
 function Class:GetLinePart(children, key)
-    local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end):Strip()
+    local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end)
     local result = { type = "flow", direction = "horizontal", children = sprites }
 
     local count = children:Count()
