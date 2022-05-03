@@ -41,6 +41,9 @@ local Class = class:new(
     },
     SpriteName = { get = function(self) return self.Goods.SpriteName end },
 
+    TranslatedName = { get = function(self) return self.Goods.TranslatedName end, },
+    HasDescription = { get = function(self) return self.Goods.HasDescription end, },
+
     AdditionalAmountsHelp = {
         get = function(self)
             local amounts = self.Amounts
