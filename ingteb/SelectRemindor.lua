@@ -198,37 +198,42 @@ function Class:CreateRecipeGroups()
 end
 
 function Class:CreateWorkerGroups()
-
     return self.Workers:ToGroup(function(worker)
         return { Key = worker.IsEnabled and 1 or 3, Value = worker }
     end)
 end
 
 function Class:GetLinePart(children, key)
-    local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end)
-    local result = { direction = "horizontal", children = sprites }
+    local sprites = children:Select(function(child) return self:GetSpriteButton(child, key) end):Strip()
+    local result = { type = "flow", direction = "horizontal", children = sprites }
 
     local count = children:Count()
     if count <= Constants.MaximumEntriesInRecipeList then
         result.type = "frame"
         result.style_mods = { left_padding = 0, right_padding = 2, top_padding = 1, bottom_padding = 1 }
     else
-        result.type = "scroll-pane"
-        result.vertical_scroll_policy = "never"
-        result.style = "ingteb-recipe-scroll"
+        result = {
+            type = "scroll-pane",
+            direction = "horizontal",
+            vertical_scroll_policy = "never",
+            style = "ingteb-recipe-scroll",
+            children = Array:new { result },
+        }
     end
     return result
 end
 
 function Class:GetLineGroupPart(children)
-    local lineParts = children:ToArray(function(group, key) return self:GetLinePart(group, key) end)
+    local lineParts = children:ToArray(
+        function(group, key) return self:GetLinePart(group, key) end
+    )
     if #lineParts == 1 and lineParts[1].type == "frame" then
         lineParts = lineParts[1].children
     end
     return {
         type = "flow",
         direction = "horizontal",
-        children = lineParts,
+        children = lineParts:Strip(),
     }
 end
 
@@ -332,7 +337,7 @@ function Class:GetGui()
         self.Workers:Count() > 1 and { self:GetWorkersGui() } or {},
         self.Recipes:Count() > 1 and { self:GetRecipesGui() } or {},
     }
-    return { type = "flow", direction = "vertical", children = children:ConcatMany() }
+    return { type = "flow", direction = "vertical", children = children:ConcatMany():Strip() }
 end
 
 return Class
