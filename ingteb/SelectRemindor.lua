@@ -16,6 +16,16 @@ local Class = class:new(
     Database = { get = function(self) return self.Parent.Database end },
     LocalSettings = { get = function(self) return self.Global.SelectRemindor.Settings end },
     DefaultSettings = { get = function(self) return self.Parent.Modules.Remindor end },
+    IsRelevantSettings = {
+        get = function(self)
+            return {
+                AutoResearch = true,
+                AutoCrafting = true,
+                RemoveTaskWhenFulfilled = true,
+            }
+        end,
+    },
+
     Memento = {
         get = function(self)
             return {

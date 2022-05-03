@@ -23,6 +23,7 @@ local Class = class:new(
             return {
                 AutoResearch = self.Recipe.Required.Technologies:Any(),
                 AutoCrafting = self.Worker.Name == "character" and self.Recipe.Category.IsCraftingDomain,
+                RemoveTaskWhenFulfilled = true,
             }
         end,
     },
