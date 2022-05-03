@@ -273,7 +273,7 @@ end
 ---@param tail table Array of LocalizedText
 ---@return any LocalisedString
 function Helper.ConcatLocalisedText(top, tail)
-    local lines = Array:new {}
+    local lines = Array:new{}
     local function append(line)
         if line then
             lines:Append("\n")
@@ -282,11 +282,12 @@ function Helper.ConcatLocalisedText(top, tail)
     end
 
     tail:Select(append)
+    local result = top
     if lines:Any() then
         lines:InsertAt(1, "")
-        return { "", top, Helper.ScrutinizeLocalisationString(lines) }
+        result = {"", top, lines}
     end
-    return top
+    return Helper.ScrutinizeLocalisationString(result)
 end
 
 function Helper.CreatePrototypeProxy(target)
