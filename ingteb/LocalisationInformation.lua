@@ -17,6 +17,7 @@ function Class:new(parent) return self:adopt { Parent = parent } end
 function Class:CreateDictionaries()
     local names = localisation.new("Names")
     local descriptions = localisation.new("Descriptions")
+    log("localisation initialize ...")
 
     for _, type in pairs { "entity", "fluid", "item", "recipe", "recipe_category", "technology", "fuel_category", "resource_category" } do
         local key = type .. "_prototypes"
@@ -70,14 +71,16 @@ function Class:OnTranslationBatch(event) localisation.check_skipped(event) end
 
 function Class:OnStringTranslated(event)
     local language_data = localisation.process_translation(event)
+    local result = Array:new()
     if language_data then
-        return Array:new(language_data.players)
+        result =  Array:new(language_data.players)
             :Select(function(index)
                 global.Players[index].Localisation = language_data.dictionaries
                 return index
             end)
     end
-    return Array:new()
+    log("localisation initialize complete.")
+    return result
 end
 
 return Class

@@ -71,6 +71,13 @@ function Class.SerializeForMigration(tasks)
     return Array:new(tasks):Select(function(task) return Task.GetMemento(task) end)
 end
 
+function Class:IsValidTask(task)
+    if not self.Database:GetProxyFromCommonKey(task.Target) then return false end
+    if not self.Database:GetProxyFromCommonKey(task.Worker) then return false end
+    if not self.Database:GetProxyFromCommonKey(task.Recipe) then return false end
+    return true
+end
+
 function Class:CreateTasksFromGlobal()
     if not self.Global.Remindor then
         self.Global.Remindor = {}
@@ -80,7 +87,11 @@ function Class:CreateTasksFromGlobal()
 
     local tasks = self.Global.Remindor.Tasks or {}
     self.Global.Remindor.Tasks = Array:new()
-    for _, task in ipairs(tasks) do self.Tasks:Append(Task:new(task, self)) end
+    for _, task in ipairs(tasks) do
+        if self:IsValidTask(task) then
+            self.Tasks:Append(Task:new(task, self))
+        end
+    end
 end
 
 function Class:RestoreFromSave(parent)

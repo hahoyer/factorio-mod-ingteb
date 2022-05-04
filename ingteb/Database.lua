@@ -230,7 +230,7 @@ function Class:GetProxyFromPrototype(prototype)
         return self:GetEntity(nil, prototype)
     elseif objectType == "LuaRecipePrototype" then
         return self:GetRecipe(nil, prototype)
-    elseif objectType == "burning" then
+    elseif objectType == "burning" or objectType == "fluid-burning" then
         return self:GetBurningRecipe(nil, prototype)
     elseif objectType == "boiling" then
         return self:GetBoilingRecipe(nil, prototype)
@@ -250,13 +250,15 @@ function Class:GetProxy(className, name, prototype)
     local result = data[key]
     dassert(result ~= "pending")
 
-    if not result then
-        data[key] = "pending"
-        result = Proxy[className]:new(name, prototype, self)
-        data[key] = result
+    if result then return result end
+    if result == false then return end
+
+    data[key] = "pending"
+    result = Proxy[className]:new(name, prototype, self)
+    data[key] = result or false
+    if result then
         result:SealUp()
     end
-
     return result
 end
 
