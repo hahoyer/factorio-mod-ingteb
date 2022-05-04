@@ -12,7 +12,7 @@ local result = {
     GraphicsPath = "__" .. modName .. "__/graphics/",
     SelectorColumnCount = 12,
     ProductionTimeUnitInTicks = TimeSpan.FromMinutes(1),
-    UpdateCountPerTick = 5,
+    UpdateCountPerTick = 1,
     MaximumEntriesInRecipeList = 7,
 }
 
