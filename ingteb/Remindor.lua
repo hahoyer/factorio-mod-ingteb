@@ -13,50 +13,50 @@ local Spritor = require "ingteb.Spritor"
 
 local Class = class:new(
     "Remindor", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Database end},
-        ChangeWatcher = {get = function(self) return self.Parent.Modules.ChangeWatcher end},
-        AutoResearch = {get = function(self) return self.ParentData.Settings.AutoResearch end},
-        AutoCrafting = {get = function(self) return self.ParentData.Settings.AutoCrafting end},
-        RemoveTaskWhenFulfilled = {
-            get = function(self) return self.ParentData.Settings.RemoveTaskWhenFulfilled end,
-        },
-        ParentData = {
-            cache = "player",
-            get = function(self)
-                local playerSettings = settings.get_player_settings(self.Player)
-                return {
-                    Settings = {
-                        AutoResearch = playerSettings["ingteb_reminder-task-autoresearch"].value,
-                        AutoCrafting = playerSettings["ingteb_reminder-task-autocrafting"].value,
-                        RemoveTaskWhenFulfilled = playerSettings["ingteb_reminder-task-remove-when-fulfilled"]
-                            .value,
-                    },
-                }
-            end,
-        },
-        TasksGui = {
-            get = function(self)
-                local gui = self.MainGui
-                if gui then return gui.Tasks or gui.children[2] or gui end
-            end,
-        },
-        MainGui = {
-            get = function(self)
-                local gui = mod_gui.get_frame_flow(self.Player)
-                if gui then
-                    local xreturn = gui[Constants.ModName .. "." .. self.class.name]
-                    --if xreturn then dlog("Remindor.MainGui =  " .. xreturn.index) end
-                    return xreturn
-                end
-            end,
-        },
-    }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    Database = { get = function(self) return self.Parent.Database end },
+    ChangeWatcher = { get = function(self) return self.Parent.Modules.ChangeWatcher end },
+    AutoResearch = { get = function(self) return self.ParentData.Settings.AutoResearch end },
+    AutoCrafting = { get = function(self) return self.ParentData.Settings.AutoCrafting end },
+    RemoveTaskWhenFulfilled = {
+        get = function(self) return self.ParentData.Settings.RemoveTaskWhenFulfilled end,
+    },
+    ParentData = {
+        cache = "player",
+        get = function(self)
+            local playerSettings = settings.get_player_settings(self.Player)
+            return {
+                Settings = {
+                    AutoResearch = playerSettings["ingteb_reminder-task-autoresearch"].value,
+                    AutoCrafting = playerSettings["ingteb_reminder-task-autocrafting"].value,
+                    RemoveTaskWhenFulfilled = playerSettings["ingteb_reminder-task-remove-when-fulfilled"]
+                        .value,
+                },
+            }
+        end,
+    },
+    TasksGui = {
+        get = function(self)
+            local gui = self.MainGui
+            if gui then return gui.Tasks or gui.children[2] or gui end
+        end,
+    },
+    MainGui = {
+        get = function(self)
+            local gui = mod_gui.get_frame_flow(self.Player)
+            if gui then
+                local xreturn = gui[Constants.ModName .. "." .. self.class.name]
+                --if xreturn then dlog("Remindor.MainGui =  " .. xreturn.index) end
+                return xreturn
+            end
+        end,
+    },
+}
 )
 
 function Class:new(parent)
-    local self = self:adopt{Parent = parent}
+    local self = self:adopt { Parent = parent }
     self.Spritor = Spritor:new(self)
     self.Tasks = Array:new()
     return self
@@ -106,11 +106,11 @@ function Class:Open()
         {
             type = "flow",
             name = "Tasks",
-            ref = {"Tasks"},
+            ref = { "Tasks" },
             direction = "vertical",
-            style_mods = {horizontally_stretchable = "on"},
+            style_mods = { horizontally_stretchable = "on" },
         }, --
-        {"ingteb-utility.reminder-tasks"} --
+        { "ingteb-utility.reminder-tasks" }--
     )
     -- dassert(self.TasksGui == result.Tasks)
     -- dassert(self.MainGui == result.Main)
@@ -134,14 +134,14 @@ function Class:AppendTasks()
     if self.TasksGui then self.TasksGui.clear() end
     self.Spritor:StartCollecting()
     local data = {}
-    local required = {Things = 0, Settings = {}}
+    local required = { Things = 0, Settings = {} }
     self.Tasks:Select(function(task) task:ScanRequired(required) end)
     self.Tasks:Select(
         function(task, index)
-            task:CreatePanel(
-                self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
-            )
-        end
+        task:CreatePanel(
+            self.TasksGui, task.CommonKey, data, index == 1, index == #self.Tasks, required
+        )
+    end
     )
 end
 
@@ -224,7 +224,7 @@ end
 function Class:AddRemindorTask(selection)
     local key = selection.CommonKey
     local index = self:GetTaskIndex(key)
-    local task 
+    local task
     if index then
         task = self.Tasks[index]
         self.Tasks:Remove(index)
@@ -247,8 +247,12 @@ function Class:OnSettingsChanged()
     self:Refresh()
 end
 
+function Class:OnStringTranslated() self:Refresh() end
+
 function Class:OnMainInventoryChanged() self:Refresh() end
+
 function Class:OnStackChanged() self:Refresh() end
+
 function Class:OnResearchChanged() self:Refresh() end
 
 return Class

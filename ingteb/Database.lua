@@ -1,12 +1,12 @@
-local localisation = require "__flib__.dictionary"
 local Number = require("core.Number")
 local Constants = require("Constants")
+local Configurations = require("Configurations").Database
 local Helper = require "ingteb.Helper"
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local TimeSpan = require("core.TimeSpan")   
+local TimeSpan = require("core.TimeSpan")
 local Proxy = {
     Bonus = require("ingteb.Bonus"),
     BurningRecipe = require("ingteb.BurningRecipe"),
@@ -603,7 +603,7 @@ function Class:GetFromSelection(target)
     if target.base_type == "item" then
         className = "Item"
     elseif target.base_type == "entity" then
-        if target.derived_type == "resource"
+        if Configurations.ResourceTypes[target.derived_type]
         then className = "Resource"
         else className = "Entity"
         end
@@ -633,8 +633,8 @@ function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) e
 
 function Class:OnResearchQueueChanged(event)
     Dictionary:new(event.research)
-        :Select(function(_, name) 
-            self:GetTechnology(name):Refresh() 
+        :Select(function(_, name)
+            self:GetTechnology(name):Refresh()
         end)
 end
 
@@ -696,35 +696,8 @@ function Class:GetCraftableCount(target)
     end
 end
 
-function Class:GetTranslation(commonKey, tag)
-    local dictionary = self.Global.Localisation[tag]
-    local result = dictionary[commonKey]
-    if result ~= commonKey then return result end
+function Class:GetType(target, prototype)
 end
-
-function Class:OnStringTranslated(event)
-    local language_data = localisation.process_translation(event)
-    if not language_data then return end
-    self.Global.Localisation = language_data.dictionaries
-end
-
-function Class:OnInitialiseLocalisation()
-    localisation.init()
-    self.Localisation = {
-        Names = localisation.new("Names", true),
-        Descriptions = localisation.new("Descriptions", true),
-    }
-end
-
-function Class:AddTranslationRequest(commonKey, prototype)
-    if not self.Localisation then self:OnInitialiseLocalisation() end
-    self.Localisation.Names:add(commonKey, prototype.localised_name)
-    self.Localisation.Descriptions:add(commonKey, prototype.localised_description)
-end
-
-function Class:OnInitialise() self:OnInitialiseLocalisation() end
-
-function Class:OnConfigurationChanged() self:OnInitialiseLocalisation() end
 
 function Class:GetRecipesGroupByCategory(target, prototype)
     local type = prototype.object_name == "LuaFluidPrototype" and "fluid"
@@ -756,6 +729,11 @@ function Class:GetCreatedByRecipes(prototype)
     return xreturn
 end
 
-function Class:OnSettingsChanged() end
+function Class:GetTranslation(type, name, tag)
+    local dictionary = self.Global.Localisation[tag]
+    if not dictionary then return end
+    local result = dictionary[type .. "." .. name]
+    return result
+end
 
 return Class

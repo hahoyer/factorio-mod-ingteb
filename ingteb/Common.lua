@@ -8,6 +8,18 @@ local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
 
+local gameKeyFromObjectName = {
+    ["LuaRecipeCategoryPrototype"] = "recipe_category_prototypes",
+    ["LuaEntityPrototype"] = "entity_prototypes",
+    ["LuaFuelCategoryPrototype"] = "fuel_category_prototypes",
+    ["LuaResourceCategoryPrototype"] = "resource_category_prototypes",
+    ["LuaTechnologyPrototype"] = "technology_prototypes",
+    ["LuaRecipePrototype"] = "recipe_prototypes",
+    ["LuaItemPrototype"] = "item_prototypes",
+    ["LuaFluidPrototype"] = "fluid_prototypes",
+    ["LuaModuleCategoryPrototype"] = "module_category_prototypes",
+}
+
 local Class = class:new(
     "Common", nil, {
     Player = { get = function(self) return self.Database.Player end },
@@ -28,6 +40,13 @@ local Class = class:new(
             end
         end,
     },
+    GameKeyForLocalisation = {
+        get = function(self)
+            local object_name = self.Prototype.object_name or self.Prototype.object_name_prototype
+            return gameKeyFromObjectName[object_name]
+        end,
+    },
+
     TypeOrder = {
         cache = true,
         get = function(self) return self.Database.Order[self.class.name] end,
@@ -48,11 +67,25 @@ local Class = class:new(
     },
 
     TranslatedName = { --
-        get = function(self) return self.Database:GetTranslation(self.CommonKey, "Names") end,
+        get = function(self)
+            local gameKey = self.GameKeyForLocalisation
+            if gameKey then
+                return self.Database:GetTranslation(gameKey, self.Name, "Names")
+            else
+                return true
+            end
+        end,
     },
 
-    HasDescription = {
-        get = function(self) return self.Database:GetTranslation(self.CommonKey, "Descriptions") ~= nil end,
+    TranslatedDescription = {
+        get = function(self)
+            local gameKey = self.GameKeyForLocalisation
+            if gameKey then
+                return self.Database:GetTranslation(self.GameKeyForLocalisation, self.Name, "Descriptions")
+            else
+                return true
+            end
+        end,
     },
 
     SearchText = {
@@ -76,9 +109,9 @@ local Class = class:new(
     AdditionalHelp = {
         get = function(self)
             local result = Array:new {}
-            if self.HasDescription then
+            if self.TranslatedDescription then
                 result:Append(self.LocalizedDescription)
-            elseif self.Entity and self.Entity.HasDescription then
+            elseif self.Entity and self.Entity.TranslatedDescription then
                 result:Append(self.Entity.LocalizedDescription)
             end
             result:AppendMany(self.ComponentHelp)
@@ -271,8 +304,6 @@ end
 function Class:SealUp()
     self.CommonKey = self.class.name .. "." .. self.Name
     self:SortAll()
-
-    self.Database:AddTranslationRequest(self.CommonKey, self.Prototype)
     self.IsSealed = true
     self:AssertValid()
     return self
@@ -289,22 +320,10 @@ function Class:GetAction(event)
     if specialFunction then return specialFunction.Action(self, event) end
 end
 
-local gameKeysForObjectName = {
-    ["LuaRecipeCategoryPrototype"] = "recipe_category_prototypes",
-    ["LuaEntityPrototype"] = "entity_prototypes",
-    ["LuaFuelCategoryPrototype"] = "fuel_category_prototypes",
-    ["LuaResourceCategoryPrototype"] = "resource_category_prototypes",
-    ["LuaTechnologyPrototype"] = "technology_prototypes",
-    ["LuaRecipePrototype"] = "recipe_prototypes",
-    ["LuaItemPrototype"] = "item_prototypes",
-    ["LuaFluidPrototype"] = "fluid_prototypes",
-    ["LuaModuleCategoryPrototype"] = "module_category_prototypes",
-}
-
 function Class:SplitPrototype(prototype)
     local objectName = prototype.object_name
     if objectName then
-        local key = gameKeysForObjectName[prototype.object_name]
+        local key = gameKeyFromObjectName[prototype.object_name]
         if key then
             return { Realm = "game", Group = key, Name = prototype.name }
         else

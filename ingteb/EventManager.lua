@@ -1,6 +1,5 @@
 local events = require("__flib__.event")
 local gui = require "__flib__.gui"
-local localisation = require "__flib__.dictionary"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -19,38 +18,45 @@ local ChangeWatcher = require("ingteb.ChangeWatcher")
 local Remindor = require("ingteb.Remindor")
 local SelectRemindor = require("ingteb.SelectRemindor")
 local ResearchQueue = require("ingteb.ResearchQueue")
+local LocalisationInformation = require("ingteb.LocalisationInformation")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
 
 local Class = class:new(
     "EventManager", core.EventManager, {
-        CurrentFloating = {
-            get = function(self)
-                if self.Modules.Selector.MainGui then
-                    return self.Modules.Selector
-                elseif self.Modules.Presentator.MainGui then
-                    return self.Modules.Presentator
-                end
-            end,
-        },
-        Database = {
-            get = function(self)
-                local result = self.Modules.Database
-                result:Ensure()
-                return result
-            end,
-        },
-    }
+    CurrentFloating = {
+        get = function(self)
+            if self.Modules.Selector.MainGui then
+                return self.Modules.Selector
+            elseif self.Modules.Presentator.MainGui then
+                return self.Modules.Presentator
+            end
+        end,
+    },
+    Database = {
+        get = function(self)
+            local result = self.Modules.Database
+            result:Ensure()
+            return result
+        end,
+    },
+    LocalisationInformation = {
+        get = function(self)
+            local result = self.Modules.LocalisationInformation
+            return result
+        end,
+    },
+}
 )
 
-function Class:InitialiseOnResearchQueueChanged() 
+function Class:InitialiseOnResearchQueueChanged()
     defines.events.on_research_queue_changed = remote.call("on_research_queue_changed", "get_event_name")
     self:SetHandler(defines.events.on_research_queue_changed, self.OnResearchQueueChanged)
 end
 
 function Class:SelectRemindorByCommonKey(commonKey, location)
-    local remindorTask = {RemindorTask = self.Database:GetProxyFromCommonKey(commonKey)}
+    local remindorTask = { RemindorTask = self.Database:GetProxyFromCommonKey(commonKey) }
     self.Modules.SelectRemindor:Open(remindorTask, location)
 end
 
@@ -135,8 +141,8 @@ end
 function Class:OnResearchCancelled(event)
     Dictionary:new(event.research):Select(function(count, name)
         if count > 0 then
-            self:OnResearchChanged{
-                name = event.name, tick = event.tick, research = event.force.technologies[name]}
+            self:OnResearchChanged {
+                name = event.name, tick = event.tick, research = event.force.technologies[name] }
         end
     end)
 end
@@ -171,7 +177,9 @@ function Class:OnBackClicked(event)
     end
 end
 
-function Class:OnTranslationBatch(event) localisation.check_skipped(event) end
+function Class:OnTranslationBatch(event)
+    self.Modules.LocalisationInformation:OnTranslationBatch(event)
+end
 
 function Class:OnTickInitial(event)
     for _, player in pairs(game.players) do
@@ -183,7 +191,7 @@ function Class:OnTickInitial(event)
 end
 
 function Class:OnLoad()
-    localisation.load()
+    self.Modules.LocalisationInformation:OnLoad()
     dassert(global.Players)
     for _, player in pairs(global.Players) do
         dassert(player.History)
@@ -195,37 +203,43 @@ end
 function Class:EnsureMainButton() self.Modules.Gui:EnsureMainButton() end
 
 function Class:OnPlayerCreated(event)
+    self.Modules.LocalisationInformation:OnPlayerCreated(event)
     self.Player = event.player_index
     self:OnInitialisePlayer()
 end
 
 function Class:OnPlayerJoined(event)
+    self.Modules.LocalisationInformation:OnPlayerJoined(event)
     self.Player = event.player_index
     self:OnInitialisePlayer()
 end
 
-function Class:OnPlayerRemoved(event)
+function Class:OnPlayerLeft(event)
+    self.Modules.LocalisationInformation:OnPlayerLeft(event)
     self.Player = event.player_index
     self.Global.Players[event.player_index] = nil
-    localisation.cancel_translation(event.player_index)
 end
 
 function Class:OnStringTranslated(event)
-    self.Player = event.player_index
-    self.Database:OnStringTranslated(event)
+    self.Modules.LocalisationInformation
+        :OnStringTranslated(event)
+        :Select(function(playerIndex)
+            self.Player = playerIndex
+            self.Modules.Presentator:OnStringTranslated()
+            self.Modules.Remindor:OnStringTranslated()
+        end)
 end
 
 function Class:OnInitialisePlayer()
     global.Players[self.Player.index] = {
         Index = self.Player.index,
-        Links = {Presentator = {}},
+        Links = { Presentator = {} },
         Location = {},
         History = History:new(),
         Remindor = {},
     }
     self:EnsureMainButton()
     self.RestoreFromSaveDone = true
-    if self.Player.connected then localisation.translate(self.Player) end
 end
 
 function Class:OnSettingsChanged(event)
@@ -236,10 +250,12 @@ function Class:OnSettingsChanged(event)
     self.Modules.SelectRemindor:OnSettingsChanged(event)
     self.Modules.Remindor:OnSettingsChanged(event)
     self.Modules.Database:OnSettingsChanged(event)
+    self.Modules.LocalisationInformation:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
-    self:InitialiseOnResearchQueueChanged() 
+    self.Modules.LocalisationInformation:OnInitialise()
+    self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
     self.Modules.Database:OnInitialise()
     global.Players = {}
@@ -250,13 +266,10 @@ function Class:OnInitialise()
     end
 end
 
-function Class:OnConfigurationChanged()
-    self:InitialiseOnResearchQueueChanged() 
+function Class:OnConfigurationChanged(event)
+    self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
-    self.Modules.Database:OnConfigurationChanged()
-    for index, player in pairs(game.players) do
-        if player.connected then localisation.translate(player) end
-    end
+    self.Modules.LocalisationInformation:OnConfigurationChanged(event)
 end
 
 function Class:RestoreFromSave()
@@ -288,9 +301,9 @@ function Class:OnGuiClick(event)
                     player.cursor_stack.clear()
                     player.cursor_ghost = action.Selecting.Prototype
                 else
-                    local inventory = player --
-                    .get_main_inventory() --
-                    .find_item_stack(action.Selecting.Name)
+                    local inventory = player--
+                        .get_main_inventory()--
+                        .find_item_stack(action.Selecting.Name)
                     player.cursor_stack.set_stack(inventory)
                 end
             end
@@ -320,7 +333,7 @@ function Class:OnGuiClick(event)
 end
 
 function Class:new()
-    local self = self:adopt{}
+    local self = self:adopt {}
     self.Modules = {
         Selector = Selector:new(self),
         Presentator = Presentator:new(self),
@@ -330,6 +343,7 @@ function Class:new()
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
         ResearchQueue = ResearchQueue:new(self),
+        LocalisationInformation = LocalisationInformation:new(self),
     }
 
     self.MainInventoryChangedWatcherTick = {}
@@ -340,7 +354,8 @@ function Class:new()
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler("on_configuration_changed", self.OnConfigurationChanged)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
-    --  self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+    self:SetHandler(defines.events.on_player_left_game, self.OnPlayerLeft)
+    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "OnTickInitial")
     self:SetHandler(defines.events.on_tick, self.OnTranslationBatch, "OnTranslationBatch")
     self:SetHandler(defines.events.on_tick, self.ChangeWatcher, "ChangeWatcher")
@@ -354,26 +369,26 @@ function Class:new()
     self:SetHandler(defines.events.on_string_translated, self.OnStringTranslated)
     gui.hook_events(
         function(event)
-            self.Player = event.player_index
-            if event.element and event.element.get_mod() ~= script.mod_name then return end
-            local message = gui.read_action(event)  
-            if event.name == defines.events.on_gui_location_changed then
-                self.Global.Location[message.module] = event.element.location
-            elseif message then
-                if message.module then
-                    self.Modules[message.module]:OnGuiEvent(event)
-                else
-                    dassert()
-                end
-            elseif event.element and event.element.tags then
+        self.Player = event.player_index
+        if event.element and event.element.get_mod() ~= script.mod_name then return end
+        local message = gui.read_action(event)
+        if event.name == defines.events.on_gui_location_changed then
+            self.Global.Location[message.module] = event.element.location
+        elseif message then
+            if message.module then
+                self.Modules[message.module]:OnGuiEvent(event)
             else
-                dassert(
-                    event.name == defines.events.on_gui_opened --
-                    or event.name == defines.events.on_gui_selected_tab_changed --
-                    or event.name == defines.events.on_gui_closed --
-                )
+                dassert()
             end
+        elseif event.element and event.element.tags then
+        else
+            dassert(
+                event.name == defines.events.on_gui_opened --
+                or event.name == defines.events.on_gui_selected_tab_changed --
+                or event.name == defines.events.on_gui_closed--
+            )
         end
+    end
     )
 
     return self

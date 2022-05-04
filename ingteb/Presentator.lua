@@ -899,13 +899,19 @@ function Class:RestoreFromSave(parent)
     end
 end
 
-function Class:OnSettingsChanged() end
-
-function Class:OnResearchChanged(parent)
+function Class:Refresh()
     if self.MainGui then
         self:Close()
         self:Open()
     end
+end
+
+function Class:OnStringTranslated()
+    self:Refresh()
+end
+
+function Class:OnResearchChanged()
+    self:Refresh()
 end
 
 return Class

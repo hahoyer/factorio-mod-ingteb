@@ -305,6 +305,8 @@ function Helper.CreatePrototypeProxy(target)
                 or prototype.type
         end
 
+        result.object_name_prototype = prototype.object_name
+
         local also = { "name", "localised_name", "localised_description", "group", "subgroup", "order" }
         for _, key in ipairs(also) do
             if not result[key] then result[key] = prototype[key] end
