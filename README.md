@@ -1,5 +1,9 @@
 #Provides an ingame technology browser.
-It is a simple help system. With H (configurable) you get to an item what it is made of and where it is needed. This works in a lot of different places. In the help system you can get more information about the items with one click. 
+It is a help system. 
+All places where a Game object is referenced are listed with this object. 
+For example, for an item, all recipes that process it and that create it are displayed. If it is an assembly machine, all recipes that this machine can process are also displayed, and so on. 
+This is the general principle of this mod. 
+The displayed icons also show dynamic information. For example, a recipe shows whether it has already been researched and if so, how much handcrafting is possible for the player with the available inventory.
 Also, you can trigger certain actions directly from the help system. 
 - Research
 - Handcrafting
@@ -19,7 +23,6 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Reminder task helpers for complex recipes. For instance "(recursively) add a task for all ingredients"
 - Reminder tasks for Recipes
 - Reminder tasks for Technologies
-- Reminder selector: Order things by technology level
 - Ping for objects ("Where the hell are there some more iron plates lying around?")
 - present multiple items_to_place_this of entity-prototypes
 - present limitations for modules
@@ -28,10 +31,10 @@ The "remidor panel" is inspired by the one from Satisfactory.
 - Reminder panel load/save
 - Show steam-processors
 - Show energy consumption/production as tooltip on arrow-sprites in recipe lines
-- Reminder-selector:  Sort recipes/workers
-- Reminder-selector:  Filter recipes/workers like in Presentator
 - Reminder: remove researches
 - Reminder: indicator for available/not available workers
+- Presentator: tooltips for tab-group icons
+- Present research-status in tooltip of recipes and technologies 
 - ... *more suggestions?*
 
 ###todo(or probably not): *(please feel free to complain)*
