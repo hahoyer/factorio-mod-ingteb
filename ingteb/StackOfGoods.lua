@@ -39,10 +39,10 @@ local Class = class:new(
             return self.Goods.CommonKey .. "/" .. (self.AmountsKey or "?")
         end,
     },
-    SpriteName = { get = function(self) return self.Goods.SpriteName end },
 
+    SpriteName = { get = function(self) return self.Goods.SpriteName end },
     TranslatedName = { get = function(self) return self.Goods.TranslatedName end, },
-    TranslatedDescription = { get = function(self) return self.Goods.TranslatedDescription end, },
+    TranslatedDescription = { get = function(self) end, },
 
     AdditionalAmountsHelp = {
         get = function(self)
@@ -143,8 +143,7 @@ local Class = class:new(
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.inherited.StackOfGoods.AdditionalHelp.get(self) --
-            if self.Goods then result:AppendMany(self.Goods.AdditionalHelp) end
+            local result = self.Goods.AdditionalHelp 
             result:AppendMany(self.AdditionalAmountsHelp)
             result:AppendMany(self.CustomAdditionalHelp)
             return result

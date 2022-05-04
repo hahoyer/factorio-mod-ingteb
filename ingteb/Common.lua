@@ -66,6 +66,12 @@ local Class = class:new(
         end,
     },
 
+    LocalizedDescription = {
+        get = function(self)
+            return { "ingteb-utility.remark-style", self.Prototype.localised_description, }
+        end
+    },
+
     TranslatedName = { --
         get = function(self)
             local gameKey = self.GameKeyForLocalisation
@@ -349,10 +355,6 @@ function Class:new(prototype, database)
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0
-    self.LocalizedDescription = {
-        "ingteb-utility.remark-style",
-        self.Prototype.localised_description,
-    }
 
     return self
 
