@@ -6,7 +6,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
-local TimeSpan = require("core.TimeSpan")
+local TimeSpan = require("core.TimeSpan")   
 local Proxy = {
     Bonus = require("ingteb.Bonus"),
     BurningRecipe = require("ingteb.BurningRecipe"),
@@ -631,6 +631,13 @@ end
 
 function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
 
+function Class:OnResearchQueueChanged(event)
+    Dictionary:new(event.research)
+        :Select(function(_, name) 
+            self:GetTechnology(name):Refresh() 
+        end)
+end
+
 function Class:RefreshTechnology(target)
     dassert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
@@ -748,5 +755,7 @@ function Class:GetCreatedByRecipes(prototype)
     local xreturn = self:GetRecipesGroupByCategory(self.BackLinks.Recipe.Output, prototype)
     return xreturn
 end
+
+function Class:OnSettingsChanged() end
 
 return Class

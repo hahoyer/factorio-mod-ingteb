@@ -7,6 +7,7 @@ Date: 2022-05-02
     - user setting: show impossible recipes (otherwise they got filtered)
     - reminder selector: better grouping of workers and recipes
     - [tech] Array class got Length field to be able to handle nil values
+    - [tech] Use mod on_research_queue_changed
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2022-04-11

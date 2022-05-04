@@ -10,7 +10,6 @@ local History = require("ingteb.History")
 local class = require("core.class")
 local core = {
     EventManager = require("core.EventManager"),
-    OnResearchCanceled = require("core.OnResearchCanceled"),
 }
 local Gui = require("ingteb.Gui")
 local Selector = require("ingteb.Selector")
@@ -44,6 +43,11 @@ local Class = class:new(
         },
     }
 )
+
+function Class:InitialiseOnResearchQueueChanged() 
+    defines.events.on_research_queue_changed = remote.call("on_research_queue_changed", "get_event_name")
+    self:SetHandler(defines.events.on_research_queue_changed, self.OnResearchQueueChanged)
+end
 
 function Class:SelectRemindorByCommonKey(commonKey, location)
     local remindorTask = {RemindorTask = self.Database:GetProxyFromCommonKey(commonKey)}
@@ -137,11 +141,11 @@ function Class:OnResearchCancelled(event)
     end)
 end
 
-function Class:OnResearchChanged(event)
+function Class:OnResearchQueueChanged(event)
     if not self.Modules.Database.IsInitialized then return end
-    self.Database:OnResearchChanged(event)
+    self.Database:OnResearchQueueChanged(event)
 
-    for index in pairs(event.research.force.players) do
+    for index in pairs(event.force.players) do
         self.Player = game.players[index]
         self.Modules.Remindor:OnResearchChanged()
         self.Modules.Presentator:OnResearchChanged()
@@ -175,7 +179,6 @@ function Class:OnTickInitial(event)
         self:EnsureMainButton()
         if event.tick > 0 then self:RestoreFromSave() end
     end
-    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
     return false
 end
 
@@ -236,6 +239,7 @@ function Class:OnSettingsChanged(event)
 end
 
 function Class:OnInitialise()
+    self:InitialiseOnResearchQueueChanged() 
     EnsureDebugSupport()
     self.Modules.Database:OnInitialise()
     global.Players = {}
@@ -244,10 +248,10 @@ function Class:OnInitialise()
         global.Players[index] = {}
         self:OnInitialisePlayer()
     end
-    self.Modules.OnResearchCanceled:RefreshResearchQueueCopies()
 end
 
 function Class:OnConfigurationChanged()
+    self:InitialiseOnResearchQueueChanged() 
     EnsureDebugSupport()
     self.Modules.Database:OnConfigurationChanged()
     for index, player in pairs(game.players) do
@@ -326,7 +330,6 @@ function Class:new()
         Remindor = Remindor:new(self),
         SelectRemindor = SelectRemindor:new(self),
         ResearchQueue = ResearchQueue:new(self),
-        OnResearchCanceled = core.OnResearchCanceled:new(self),
     }
 
     self.MainInventoryChangedWatcherTick = {}
@@ -337,7 +340,7 @@ function Class:new()
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler("on_configuration_changed", self.OnConfigurationChanged)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerCreated)
-    --    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+    --  self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "OnTickInitial")
     self:SetHandler(defines.events.on_tick, self.OnTranslationBatch, "OnTranslationBatch")
     self:SetHandler(defines.events.on_tick, self.ChangeWatcher, "ChangeWatcher")
@@ -345,10 +348,6 @@ function Class:new()
 
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
-    self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged, self.class.name)
-    self:SetHandler(defines.events.on_research_started, self.OnResearchChanged, self.class.name)
-    self:SetHandler(defines.events.on_research_canceled, self.OnResearchChanged)
-    --self:SetHandler(defines.events.on_research_cancelled, self.OnResearchCancelled)
     self:SetHandler(defines.events.on_runtime_mod_setting_changed, self.OnSettingsChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
@@ -357,7 +356,7 @@ function Class:new()
         function(event)
             self.Player = event.player_index
             if event.element and event.element.get_mod() ~= script.mod_name then return end
-            local message = gui.read_action(event)
+            local message = gui.read_action(event)  
             if event.name == defines.events.on_gui_location_changed then
                 self.Global.Location[message.module] = event.element.location
             elseif message then

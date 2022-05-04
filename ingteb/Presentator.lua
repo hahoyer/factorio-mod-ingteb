@@ -899,6 +899,8 @@ function Class:RestoreFromSave(parent)
     end
 end
 
+function Class:OnSettingsChanged() end
+
 function Class:OnResearchChanged(parent)
     if self.MainGui then
         self:Close()
