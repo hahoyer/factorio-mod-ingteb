@@ -80,39 +80,48 @@ local Result = {
                 and
                 (results.Enabled or results.Edge or results.NextGeneration)
         end
+    },
+
+    Remindor = {
+        AutoResearch = {
+            Name = "ingteb-utility.select-remindor-autoresearch-help",
+            SpriteList = { "technology_black", "technology_white" },
+            off = { Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off" },
+            ["1"] = { Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1" },
+            all = { Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all" },
+        },
+        AutoCrafting = {
+            Name = "ingteb-utility.select-remindor-autocrafting-help",
+            SpriteList = { "slot_icon_robot_material_black", "slot_icon_robot_material" },
+            [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
+            [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
+        },
+        RemoveTaskWhenFulfilled = {
+            Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
+            SpriteList = { "trash", "trash_white" },
+            [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
+            [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
+        },
+    },
+
+    SelectRemindor = {
+        SpriteStyle = {
+            Current = "ingteb-light-button",
+            Enabled = "slot_button",
+            Edge = "yellow_slot_button",
+            NextGeneration = "red_slot_button"
+        }
+    },
+
+    Database = {
+        ResourceTypes = {
+            resource = true,
+            tree = true,
+            fish = true,
+            ["simple-entity"] = true,
+        }
     }
 
-}
-
-Result.Remindor = {
-    AutoResearch = {
-        Name = "ingteb-utility.select-remindor-autoresearch-help",
-        SpriteList = { "technology_black", "technology_white" },
-        off = { Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off" },
-        ["1"] = { Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1" },
-        all = { Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all" },
-    },
-    AutoCrafting = {
-        Name = "ingteb-utility.select-remindor-autocrafting-help",
-        SpriteList = { "slot_icon_robot_material_black", "slot_icon_robot_material" },
-        [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
-        [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
-    },
-    RemoveTaskWhenFulfilled = {
-        Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
-        SpriteList = { "trash", "trash_white" },
-        [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
-        [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
-    },
-}
-
-Result.SelectRemindor = {
-    SpriteStyle = {
-        Current = "ingteb-light-button",
-        Enabled = "slot_button",
-        Edge = "yellow_slot_button",
-        NextGeneration = "red_slot_button"
-    }
 }
 
 return Result

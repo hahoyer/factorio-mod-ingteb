@@ -1,4 +1,5 @@
 local Constants = require("Constants")
+local Configurations= require "Configurations"
 local Number = require "core.Number"
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -35,7 +36,7 @@ function Class:new(name, prototype, database)
     if name then self.Name = name end
 
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
-    dassert(self.Prototype.type == "resource")
+    dassert(Configurations.Database.ResourceTypes[self.Prototype.type])
 
 
     return self
