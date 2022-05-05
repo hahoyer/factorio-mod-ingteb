@@ -30,7 +30,7 @@ end
 
 function Class:OnInitialise()
     localisation.init()
-    self.Global.Localisation = {}
+    global.Localisation = {}
     self:CreateDictionaries()
 end
 
