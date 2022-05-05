@@ -257,7 +257,6 @@ function Class:OnInitialise()
     self.Modules.LocalisationInformation:OnInitialise()
     self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
-    self.Modules.Database:OnInitialise()
     global.Players = {}
     for index, player in pairs(game.players) do
         self.Player = player
