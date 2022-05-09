@@ -177,22 +177,23 @@ local function IsList(target)
     end
 end
 
-function Class:ScanListElement(value, options, path, proxy, index)
-    local targetName = options.GetName and options.GetName(value) or value.name or value
-    dassert(type(targetName) == "string")
-    local targetType = GetObjectType(value) or value.type or options.Type or value.name or value
-    dassert(type(targetType) == "string")
-    self:SetBackLink(targetType, targetName, path, proxy, index)
-end
-
-function Class:ScanNamedListElement(name, value, options, path, proxy)
+function Class:ScanElement(key, value, options, path, proxy)
     if value then
-        self:SetBackLink(value ~= true and GetObjectType(value) or options.Type, name, path, proxy)
-    end
-end
+        local targetType =
+        value ~= true and (GetObjectType(value)
+            or value.type)
+            or options.Type
+            or value.name
+            or value
+        dassert(type(targetType) == "string")
+        local targetName =
+        type(key) == "string" and key
+            or options.GetName and options.GetName(value)
+            or value.name or value
+        dassert(type(targetName) == "string")
 
-function Class:ScanElement(value, options, path, proxy)
-    self:SetBackLink(value.type or options.Type, value.name, path, proxy)
+        self:SetBackLink(targetType, targetName, path, proxy, type(key) == "number" and key)
+    end
 end
 
 function Class:ScanList(value, options, path, proxy)
@@ -200,14 +201,14 @@ function Class:ScanList(value, options, path, proxy)
         if options.GetValue then
             self[options.GetValue](self, value, path, proxy, index)
         else
-            self:ScanListElement(value, options, path, proxy, index)
+            self:ScanElement(index, value, options, path, proxy)
         end
     end
 end
 
 function Class:ScanNamedList(value, options, path, proxy)
-    for name, value in ipairs(value) do
-        self:ScanNamedListElement(name, value, options, path, proxy)
+    for name, value in pairs(value) do
+        self:ScanElement(name, value, options, path, proxy)
     end
 end
 
@@ -253,7 +254,7 @@ function Class:ScanValue(proxy, prototype, property, options)
     elseif type(value) == "table" and options.IsList then
         self:ScanNamedList(value, options, path, proxy)
     elseif type(value) == "table" then
-        self:ScanElement(value, options, path, proxy)
+        self:ScanElement(nil, value, options, path, proxy)
     elseif type(value) == "string" then
         self:SetBackLink(options.Type or property, value, path, proxy)
     else
