@@ -82,26 +82,25 @@ local Result = {
         end
     },
 
-    Remindor = {
-        AutoResearch = {
-            Name = "ingteb-utility.select-remindor-autoresearch-help",
-            SpriteList = { "technology_black", "technology_white" },
-            off = { Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off" },
-            ["1"] = { Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1" },
-            all = { Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all" },
-        },
-        AutoCrafting = {
-            Name = "ingteb-utility.select-remindor-autocrafting-help",
-            SpriteList = { "slot_icon_robot_material_black", "slot_icon_robot_material" },
-            [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
-            [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
-        },
-        RemoveTaskWhenFulfilled = {
-            Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
-            SpriteList = { "trash", "trash_white" },
-            [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
-            [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
-        },
+    Remindor = { AutoResearch = {
+        Name = "ingteb-utility.select-remindor-autoresearch-help",
+        SpriteList = { "technology_black", "technology_white" },
+        off = { Next = "1", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-off" },
+        ["1"] = { Next = "all", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-1" },
+        all = { Next = "off", Name = "string-mod-setting.ingteb_reminder-task-autoresearch-all" },
+    },
+    AutoCrafting = {
+        Name = "ingteb-utility.select-remindor-autocrafting-help",
+        SpriteList = { "slot_icon_robot_material_black", "slot_icon_robot_material" },
+        [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
+        [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
+    },
+    RemoveTaskWhenFulfilled = {
+        Name = "ingteb-utility.select-remindor-remove-when-fulfilled-help",
+        SpriteList = { "trash", "trash_white" },
+        [true] = { Next = false, Name = "ingteb-utility.settings-switch-on" },
+        [false] = { Next = true, Name = "ingteb-utility.settings-switch-off" },
+    },
     },
 
     SelectRemindor = {
@@ -119,6 +118,55 @@ local Result = {
             tree = true,
             fish = true,
             ["simple-entity"] = true,
+        },
+        BackLinkMetaData = {
+            LuaEntityPrototype = {
+                group = {},
+                subgroup = {},
+                type = { Type = "entityType" },
+                mineable_properties = { Properties = { "products" } },
+                fluidbox_prototypes = { GetName = function(value) return value.filter and value.filter.name or "" end },
+                items_to_place_this = { Type = "item" },
+                fast_replaceable_group = {},
+                next_upgrade = {},
+                related_underground_belt = {},
+                burner_prototype = { Properties = { "fuel_categories" }, Type = "fuel_category", IsList = true },
+                resource_categories = { Type = "resource_category", IsList = true },
+                crafting_categories = { Type = "recipe_category", IsList = true },
+                fluid = {},
+                fixed_recipe = { Type = "recipe" },
+                lab_inputs = { Type = "item" },
+                rocket_entity_prototype = {},
+                resource_category = {},
+                attack_parameters = { Properties = { "ammo_categories" }, Type = "ammo_category" },
+            },
+            LuaFluidPrototype = {
+                group = {},
+                subgroup = {},
+            },
+            LuaItemPrototype = {
+                group = {},
+                subgroup = {},
+                burnt_result = {},
+                fuel_category = {},
+                place_result = {},
+                rocket_launch_products = {},
+                module_effects = { Type = "module_effect", IsList = true },
+                category = { Type = "module_category" },
+            },
+            LuaRecipePrototype = {
+                category = {},
+                group = {},
+                ingredients = {},
+                main_product = {},
+                products = {},
+                subgroup = {},
+            },
+            LuaTechnologyPrototype = {
+                effects = { GetValue = "GetTechnologyEffect" },
+                prerequisites = { IsList = true },
+                research_unit_ingredients = {},
+            },
         }
     }
 
