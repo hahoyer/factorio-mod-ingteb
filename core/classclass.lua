@@ -22,8 +22,8 @@ local function GetField(self, key, classInstance)
     if property then
         local result = GetProperty(self, key, classInstance, property)
         if __DebugAdapter then
-            if not rawget(self, "system") then rawset(self, "system", {}) end
-            if not rawget(self.system, "LastValue") then rawset(self.system, "LastValue", {}) end
+            if not rawget(self, "system") then self.system= {} end
+            if not rawget(self.system, "LastValue") then self.system.LastValue= {} end
             if not self.system.LastValue[classInstance.name] then self.system.LastValue[classInstance.name] = {} end
             self.system.LastValue[classInstance.name][key] = result or "nil"
         end

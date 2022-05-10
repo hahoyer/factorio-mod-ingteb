@@ -10,8 +10,8 @@ local PlayerValueCache = require "core.PlayerValueCache"
 --- @param isCacheTypePlayer boolean when set the cache will be player specific. In that case instance should define a property Player.
 function class.addCachedProperty(instance, classInstance, name, getter, isCacheTypePlayer)
     local className = classInstance.system.Name
-    if not rawget(instance, "system") then rawset(instance, "system", {}) end
-    if not rawget(instance.system, "Cache") then rawset(instance.system, "Cache", {}) end
+    if not rawget(instance, "system") then instance.system={} end
+    if not rawget(instance.system, "Cache") then instance.system.Cache= {} end
     if not instance.system.Cache[className] then instance.system.Cache[className] = {} end
     instance.system.Cache[className][name] = --
     isCacheTypePlayer and PlayerValueCache:new(instance, getter) or --
