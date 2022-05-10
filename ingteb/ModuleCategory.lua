@@ -11,11 +11,13 @@ local Class = class:new("ModuleCategory", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
+    BackLinkName = { get = function(self) return "module_category" end },
     Items = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.ItemsForModuleCategory[self.Name] --
-            :Select(function(target) return self.Database:Get(target) end)
+            return Table:new(self.BackLinks.category.item) --
+            :ToArray(function(_,name) return self.Database:GetItem(name) end)
+            
         end,
     },
 

@@ -623,11 +623,11 @@ function Class:GetRecipesGroupByCategory(target, prototype)
         or prototype.object_name == "LuaEntityPrototype" and "resource"
         or prototype.type
     local recipes
-    if target[type] then recipes = target[type][prototype.name] end
+    if target.recipe[type] then recipes = Table:new(target.recipe[type][prototype.name]) end
     if recipes then
         local xreturn = recipes:ToGroup(
-            function(recipe)
-            local proxy = self:GetProxyFromPrototype(recipe)
+            function(_,recipeName)
+            local proxy = self:GetRecipe(recipeName)
             return { Key = proxy.Category.Name, Value = proxy }
         end
         )

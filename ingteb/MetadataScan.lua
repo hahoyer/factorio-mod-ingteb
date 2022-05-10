@@ -58,8 +58,8 @@ function Class:SetBackLink(targetType, targetName, propertyName, proxy, index)
     dassert(type(proxy.Type) == "string")
     dassert(type(proxy.Name) == "string")
     local other = self:GetBackProxy(targetType, targetName)
-    local backLinks = CoreHelper.EnsureKey(other, propertyName)
-    local backLink = { Type = proxy.Type, Name = proxy.Name, Index = index, Proxy = proxy }
+    local backLinks = CoreHelper.EnsureKeys(other, { propertyName, proxy.Type, proxy.Name })
+    local backLink = { Index = index, Proxy = proxy }
     table.insert(backLinks, backLink)
 end
 

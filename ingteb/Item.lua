@@ -9,6 +9,7 @@ local Item = class:new("Item", Goods)
 
 Item.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
+    BackLinkName = { get = function(self) return "item" end },
     Entity = {
         cache = true,
         get = function(self)
@@ -37,7 +38,7 @@ Item.system.Properties = {
     ResearchingTechnologies = {
         cache = true,
         get = function(self)
-            local list = self.Database.BackLinks.ResearchingTechnologyForItems[self.Prototype.name]
+            local list = self.BackLinks.
             if not list then return end
             return list:Select(
                 function(prototype)
