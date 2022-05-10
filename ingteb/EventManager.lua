@@ -19,6 +19,7 @@ local Remindor = require("ingteb.Remindor")
 local SelectRemindor = require("ingteb.SelectRemindor")
 local ResearchQueue = require("ingteb.ResearchQueue")
 local LocalisationInformation = require("ingteb.LocalisationInformation")
+local MetadataScan = require("ingteb.MetadataScan")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -255,6 +256,7 @@ end
 
 function Class:OnInitialise()
     self.Modules.LocalisationInformation:OnInitialise()
+    self.Modules.MetadataScan:OnInitialise()
     self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
     global.Players = {}
@@ -269,6 +271,7 @@ function Class:OnConfigurationChanged(event)
     self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
     self.Modules.LocalisationInformation:OnConfigurationChanged(event)
+    self.Modules.MetadataScan:OnConfigurationChanged(event)
 end
 
 function Class:RestoreFromSave()
@@ -343,6 +346,7 @@ function Class:new()
         SelectRemindor = SelectRemindor:new(self),
         ResearchQueue = ResearchQueue:new(self),
         LocalisationInformation = LocalisationInformation:new(self),
+        MetadataScan = MetadataScan:new(self),
     }
 
     self.MainInventoryChangedWatcherTick = {}
