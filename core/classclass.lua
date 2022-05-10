@@ -14,7 +14,9 @@ local function GetField(self, key, classInstance)
             local cache = classCache[key]
             if cache then return cache.Value end
         end
-        return property.get(self)
+        local get = property.get
+        dassert(get, "Property '"..key.."' of class '"..classInstance.name .."' has no getter")
+        return get(self)
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
     end
@@ -62,6 +64,7 @@ function class:new(name, --[[optional]]base, --[[optional]]properties)
     function metatable:__newindex(key, value)
         local accessors = classInstance.system.Properties[key]
         if accessors then
+            dassert(accessors.set, "Property '"..key.."' of class '"..classInstance.name .."' has no setter")
             return accessors.set(self, value)
         elseif base then
             return base.system.Metatable.__newindex(self, key, value)
