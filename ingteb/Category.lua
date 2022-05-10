@@ -159,7 +159,12 @@ Class.system.Properties = {
         get = function(self) --
             dassert(self.IsSealed)
             if self.Domain == "boiling" or self.Domain == "rocket-launch" or self.Domain == "burning" or self.Domain == "fluid-burning" then
-                return self.OriginalWorkers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
+                local workers = self.OriginalWorkers
+                if workers:Any() then
+                    return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
+                else
+                    return 1
+                end
             elseif self.IsCraftingDomain or self.IsMiningDomain then
                 return 1
             else
