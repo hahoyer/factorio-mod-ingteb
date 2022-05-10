@@ -1,4 +1,6 @@
 local Constants = require("Constants")
+local Configurations1 = require("Configurations")
+local Configurations = require("Configurations").Category
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -30,16 +32,13 @@ local function GetPrototype(domain, subName)
 end
 
 Class.system.Properties = {
+    BackLinkType = { get = function(self) return Configurations.Domains[self.Domain].BackLinkType end },
+    BackLinkName = { get = function(self) return self.SubName end },
     OriginalWorkers = {
         get = function(self)
-            local workers = self.Database.BackLinks.WorkersForCategory[self.Name]
-            if workers then
-                return workers:ToArray(
-                    function(worker) return self.Database:GetEntity(nil, worker) end
-                )
-            else
-                return Array:new {}
-            end
+            return Dictionary
+                :new((self.BackLinks.crafting_categories or {}).entity or {})
+                :ToArray(function(_, name) return self.Database:GetEntity(name) end)
         end,
     },
 

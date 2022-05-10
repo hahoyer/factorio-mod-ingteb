@@ -96,6 +96,14 @@ local Class = class:new(
 
 function Class:new(parent) return self:adopt { Parent = parent } end
 
+function Class:GetItemsPerTickText(amounts, ticks)
+    if not ticks then return "" end
+    local amount = amounts.value or (amounts.max + amounts.min) / 2
+    return " ("
+        .. Number:new(self.ProductionTimeUnit:getTicks() * amount / ticks).Format3Digits
+        .. "[img=items-per-timeunit]" .. ")"
+end
+
 function Class:Ensure()
     if self.IsInitialized then return self end
     self.Order = {
@@ -507,7 +515,7 @@ end
 function Class:GetClassName(target)
     if target.Type == "item" then return "Item"
     else
-    dassert()
+        dassert()
     end
 end
 
@@ -617,24 +625,14 @@ function Class:GetCraftableCount(target)
     end
 end
 
-function Class:GetRecipesGroupByCategory(target, prototype)
-    local type = prototype.object_name == "LuaFluidPrototype" and "fluid"
-        or prototype.object_name == "LuaItemPrototype" and "item"
-        or prototype.object_name == "LuaEntityPrototype" and "resource"
-        or prototype.type
-    local recipes
-    if target.recipe[type] then recipes = Table:new(target.recipe[type][prototype.name]) end
-    if recipes then
-        local xreturn = recipes:ToGroup(
-            function(_,recipeName)
+function Class:GetRecipesGroupByCategory(target)
+    return Dictionary:new(target.recipe or {})
+        :ToGroup(
+            function(_, recipeName)
             local proxy = self:GetRecipe(recipeName)
             return { Key = proxy.Category.Name, Value = proxy }
         end
         )
-
-        return xreturn
-    end
-    return Dictionary:new {}
 end
 
 function Class:GetBackLinkFromPrototype(prototype)
@@ -642,12 +640,12 @@ function Class:GetBackLinkFromPrototype(prototype)
 end
 
 function Class:GetUsedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).ingredients, prototype)
+    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).ingredients)
     return xreturn
 end
 
 function Class:GetCreatedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).products, prototype)
+    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).products)
     return xreturn
 end
 

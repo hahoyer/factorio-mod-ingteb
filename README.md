@@ -44,6 +44,7 @@ The "remidor panel" is inspired by the one from Satisfactory.
   => by mod *(See no way do this. Help welcome)*
 
 ###known issue:
+- Presentator: if there are only UsefulLinks, they are not presented
 - Multiplayer: Desync issue when loading a save file where reminder panel is open *(help welcome!)*
 - When using a research queue handler like the one from sonaxaton, ingteb-research may behave strange. (As a workaround, you can temporarily use the replacement mod [Improved Research Queue with interface](https://mods.factorio.com/mod/sonaxaton-research-queue-with-interface) instead of [Improved Research Queue](https://mods.factorio.com/mod/sonaxaton-research-queue).)
 

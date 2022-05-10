@@ -9,7 +9,7 @@ local Item = class:new("Item", Goods)
 
 Item.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    BackLinkName = { get = function(self) return "item" end },
+    BackLinkType = { get = function(self) return "item" end },
     Entity = {
         cache = true,
         get = function(self)

@@ -11,7 +11,7 @@ local Class = class:new("ModuleCategory", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    BackLinkName = { get = function(self) return "module_category" end },
+    BackLinkType = { get = function(self) return "module_category" end },
     Items = {
         cache = true,
         get = function(self)

@@ -27,8 +27,9 @@ local Class = class:new(
     ClickTarget = { cache = true, get = function(self) return self.CommonKey end },
     Group = { cache = true, get = function(self) return self.Prototype.group end },
     SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
-    BackLinkName = {},
-    BackLinks = { get = function(self) return self.Database.BackLinks[self.BackLinkName][self.Name] end, },
+    BackLinkName = { get = function(self) return self.Name end },
+    BackLinkType = { },
+    BackLinks = { get = function(self) return self.Database.BackLinks[self.BackLinkType][self.BackLinkName] end, },
     NoPrototype = {
         cache = true,
         get = function(self)

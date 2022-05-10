@@ -25,7 +25,7 @@ function Class:Scan()
 end
 
 function Class:GetBackProxyAny(targetType, targetName, prototype)
-    -- dassert(not (targetType == "group" and targetName == "logistics"))
+    dassert(not (targetType == "category" and targetName ~= "slogistics"))
     dassert(type(targetType) == "string")
     dassert(type(targetName) == "string")
     local result = CoreHelper.EnsureKeys(global, { "Game", targetType, targetName })
@@ -55,6 +55,7 @@ function Class:GetFilteredProxy(prototype)
 end
 
 function Class:SetBackLink(targetType, targetName, propertyName, proxy, index)
+    dassert(type(proxy.Type) == "string")
     dassert(type(proxy.Type) == "string")
     dassert(type(proxy.Name) == "string")
     local other = self:GetBackProxy(targetType, targetName)

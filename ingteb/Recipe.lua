@@ -9,17 +9,15 @@ local Recipe = class:new("Recipe", Common)
 
 Recipe.system.Properties = {
     SpriteType = { get = function(self) return "recipe" end },
+    BackLinkType = { get = function(self) return "recipe" end },
     TypeStringForLocalisation = { get = function(self) return "description.recipe" end },
 
     Technologies = {
         cache = true,
         get = function(self)
-            local xreturn = (self.Database.BackLinks.TechnologiesForRecipe[self.Name] or Array:new {})--
-                :Select(
-                    function(prototype)
-                    return self.Database:GetTechnology(nil, prototype)
-                end
-                )
+            local xreturn = Dictionary
+                :new((self.BackLinks.effects or {}).technology or {})--
+                :Select(function(_, name) return self.Database:GetTechnology(name) end)
             return xreturn
         end,
     },

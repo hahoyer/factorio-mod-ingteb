@@ -155,7 +155,7 @@ local Result = {
                 category = { Type = "module_category" },
             },
             LuaRecipePrototype = {
-                category = {},
+                category = { Type = "recipe_category" },
                 group = {},
                 ingredients = {},
                 main_product = {},
@@ -168,8 +168,13 @@ local Result = {
                 research_unit_ingredients = {},
             },
         }
-    }
-
+    },
+    Category = {
+        Domains = {
+            crafting = { BackLinkType = "recipe_category" }
+        }
+     }
 }
+
 
 return Result
