@@ -7,10 +7,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
 
-local Class = class:new(
-    "LocalisationInformation", nil, {
-}
-)
+local Class = class:new("LocalisationInformation", nil, {})
 
 function Class:new(parent) return self:adopt { Parent = parent } end
 
@@ -73,7 +70,7 @@ function Class:OnStringTranslated(event)
     local language_data = localisation.process_translation(event)
     local result = Array:new()
     if language_data then
-        result =  Array:new(language_data.players)
+        result = Array:new(language_data.players)
             :Select(function(index)
                 global.Players[index].Localisation = language_data.dictionaries
                 return index
