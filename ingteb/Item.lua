@@ -46,7 +46,7 @@ Item.system.Properties = {
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.inherited.Item.AdditionalHelp.get(self) --
+            local result = self.system.Inherited.Item.AdditionalHelp.get(self) --
 
             if self.Prototype.fuel_acceleration_multiplier
                 and self.Prototype.fuel_acceleration_multiplier ~= 1 then
@@ -93,7 +93,7 @@ Item.system.Properties = {
     SpecialFunctions = {
         get = function(self) --
             local count, recipe = self.Database:GetCraftableCount(self)
-            local result = self.inherited.Item.SpecialFunctions.get(self)
+            local result = self.system.Inherited.Item.SpecialFunctions.get(self)
             return result:Concat {
                 {
                     UICode = "-C- l",

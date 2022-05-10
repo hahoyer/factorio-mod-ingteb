@@ -27,13 +27,13 @@ Class.system.Properties = {
         get = function(self)
             -- special entity for handmining
             if self.Name == "(hand-miner)" then return "technology/steel-axe" end
-            return self.inherited.Entity.SpriteName.get(self)
+            return self.system.Inherited.Entity.SpriteName.get(self)
         end,
     },
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.inherited.Entity.AdditionalHelp.get(self) --
+            local result = self.system.Inherited.Entity.AdditionalHelp.get(self) --
 
             local maximal = self.MaxinmalEnergyConsumption
             if maximal then
@@ -191,7 +191,7 @@ Class.system.Properties = {
 
     SpecialFunctions = {
         get = function(self)
-            local inherited = self.inherited.Entity.SpecialFunctions.get(self)
+            local inherited = self.system.Inherited.Entity.SpecialFunctions.get(self)
             if not self.Item then return inherited end
             local result = Array:new {
                 {

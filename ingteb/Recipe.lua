@@ -157,7 +157,7 @@ Recipe.system.Properties = {
 
     SpecialFunctions = {
         get = function(self) --
-            local result = self.inherited.Recipe.SpecialFunctions.get(self)
+            local result = self.system.Inherited.Recipe.SpecialFunctions.get(self)
             return result:Concat {
                 {
                     UICode = "A-- l",

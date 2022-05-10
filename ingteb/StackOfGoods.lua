@@ -169,7 +169,7 @@ local Class = class:new(
                 },
             }
 
-            result:AppendMany(self.inherited.StackOfGoods.SpecialFunctions.get(self))
+            result:AppendMany(self.system.Inherited.StackOfGoods.SpecialFunctions.get(self))
             if self.Goods and self.Goods.SpecialFunctions then
                 result:AppendMany(self.Goods.SpecialFunctions)
             end

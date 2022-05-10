@@ -6,17 +6,28 @@ local function GetInherited(self, key)
     return self.system.Properties[key] or GetInherited(self.system.BaseClass, key)
 end
 
+local function GetProperty(self, key, classInstance, property)
+    local classCache = self.system.Cache and self.system.Cache[property.class]
+    if classCache then
+        local cache = classCache[key]
+        if cache then return cache.Value end
+    end
+    local get = property.get
+    dassert(get, "Property '" .. key .. "' of class '" .. classInstance.name .. "' has no getter")
+    return get(self)
+end
+
 local function GetField(self, key, classInstance)
     local property = classInstance.system.Properties[key]
     if property then
-        local classCache = self.cache and self.cache[property.class]
-        if classCache then
-            local cache = classCache[key]
-            if cache then return cache.Value end
+        local result = GetProperty(self, key, classInstance, property)
+        if __DebugAdapter then
+            if not rawget(self, "system") then rawset(self, "system", {}) end
+            if not rawget(self.system, "LastValue") then rawset(self.system, "LastValue", {}) end
+            if not self.system.LastValue[classInstance.name] then self.system.LastValue[classInstance.name] = {} end
+            self.system.LastValue[classInstance.name][key] = result or "nil"
         end
-        local get = property.get
-        dassert(get, "Property '"..key.."' of class '"..classInstance.name .."' has no getter")
-        return get(self)
+        return result
     elseif rawget(classInstance, key) ~= nil then
         return classInstance[key]
     end
@@ -36,7 +47,7 @@ end
 --- @param base table class the base class
 --- @param properties table initial properties
 --- @return table class new class
-function class:new(name, --[[optional]]base, --[[optional]]properties)
+function class:new(name, --[[optional]] base, --[[optional]] properties)
     dassert(type(name) == "string")
     if base then
         dassert(base.class == class)
@@ -64,7 +75,7 @@ function class:new(name, --[[optional]]base, --[[optional]]properties)
     function metatable:__newindex(key, value)
         local accessors = classInstance.system.Properties[key]
         if accessors then
-            dassert(accessors.set, "Property '"..key.."' of class '"..classInstance.name .."' has no setter")
+            dassert(accessors.set, "Property '" .. key .. "' of class '" .. classInstance.name .. "' has no setter")
             return accessors.set(self, value)
         elseif base then
             return base.system.Metatable.__newindex(self, key, value)
@@ -83,7 +94,7 @@ function class:new(name, --[[optional]]base, --[[optional]]properties)
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
     --- @param isMinimal boolean (optional) do change anything. For use in on_load.
     --- @return table instance ... but patched
-    function classInstance:adopt(instance, --[[optional]]isMinimal)
+    function classInstance:adopt(instance, --[[optional]] isMinimal)
         if not instance then instance = {} end
         if self.system.InstantiationType == "Singleton" and self.system.Instance then
             dassert(
@@ -100,17 +111,19 @@ function class:new(name, --[[optional]]base, --[[optional]]properties)
         if not isMinimal then instance.class = self end
         setmetatable(instance, self.system.Metatable)
         if not isMinimal then
+            if not rawget(instance, "system") then rawset(instance, "system", {}) end
+
             for key, value in pairs(self.system.Properties) do
                 value.class = self.name
                 local inherited = GetInherited(self.system.BaseClass, key)
                 if inherited then
-                    if not rawget(instance, "inherited") then
-                        instance.inherited = {}
+                    if not rawget(instance.system, "Inherited") then
+                        instance.system.Inherited = {}
                     end
-                    if not instance.inherited[self.name] then
-                        instance.inherited[self.name] = {}
+                    if not instance.system.Inherited[self.name] then
+                        instance.system.Inherited[self.name] = {}
                     end
-                    instance.inherited[self.name][key] = inherited
+                    instance.system.Inherited[self.name][key] = inherited
                 end
                 if value.cache then
                     dassert(not value.set)
@@ -128,14 +141,14 @@ function class:new(name, --[[optional]]base, --[[optional]]properties)
 
     setmetatable(
         classInstance, {
-            __debugline = function(self)
-                local result--
-                = name .. "{" --
-                    .. (base and "BaseClass=" .. base.system.Name .. "," or "") --
-                    .. "}"
-                return result
-            end,
-        }
+        __debugline = function(self)
+            local result--
+            = name .. "{" --
+                .. (base and "BaseClass=" .. base.system.Name .. "," or "") --
+                .. "}"
+            return result
+        end,
+    }
     )
 
     classInstance.getCache = function(self, instance, targetClass)

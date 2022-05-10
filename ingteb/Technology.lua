@@ -94,7 +94,7 @@ local Class = class:new(
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.inherited.Technology.AdditionalHelp.get(self) --
+            local result = self.system.Inherited.Technology.AdditionalHelp.get(self) --
             result:AppendMany(self.InputHelp)
             result:AppendMany(self.EffectsHelp)
             result:AppendMany(self.EnablesHelp)
@@ -317,7 +317,7 @@ local Class = class:new(
 
     SpecialFunctions = {
         get = function(self) --
-            local result = self.inherited.Technology.SpecialFunctions:get(self)
+            local result = self.system.Inherited.Technology.SpecialFunctions:get(self)
             return result:Concat {
                 {
                     UICode = "-C- l",

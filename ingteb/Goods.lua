@@ -81,7 +81,7 @@ Class.system.Properties = {
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.inherited.Goods.AdditionalHelp.get(self) --
+            local result = self.system.Inherited.Goods.AdditionalHelp.get(self) --
             if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
                 result:Append {
                     "",
@@ -95,7 +95,7 @@ Class.system.Properties = {
 
     SpecialFunctions = {
         get = function(self)
-            local result = self.inherited.Goods.SpecialFunctions.get(self)
+            local result = self.system.Inherited.Goods.SpecialFunctions.get(self)
             return result:Concat {
                 {
                     UICode = "--- r",
