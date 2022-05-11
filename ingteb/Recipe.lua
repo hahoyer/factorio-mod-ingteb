@@ -17,7 +17,7 @@ Recipe.system.Properties = {
         get = function(self)
             local xreturn = Dictionary
                 :new((self.BackLinks.effects or {}).technology or {})--
-                :Select(function(_, name) return self.Database:GetTechnology(name) end)
+                :ToArray(function(_, name) return self.Database:GetTechnology(name) end)
             return xreturn
         end,
     },

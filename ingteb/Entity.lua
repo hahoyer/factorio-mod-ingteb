@@ -12,6 +12,7 @@ local Class = class:new("Entity", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "entity" end },
+    BackLinkType = { get = function(self) return "entity" end },
     TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.entity" end },
     UsedBy = {
         cache = true,
@@ -134,17 +135,7 @@ Class.system.Properties = {
         end,
     },
 
-    UsefulLinks = {
-        cache = true,
-        get = function(self)
-            return Array:new {
-                self.FuelCategories,
-                self.Modules--
-                    :Where(function(value) return value end)--
-                    :ToArray(function(_, module) return module end),
-            }
-        end,
-    },
+    UsefulLinks = { get = function(self) return Array:new { self.FuelCategories, self.Modules, } end, },
 
     Categories = {
         cache = true,
@@ -248,25 +239,21 @@ Class.system.Properties = {
         end,
     },
 
-    Modules = {
-        cache = true,
+    Modules = { get = function(self) return self.AllowedEffects:Select(function(effect) return effect.Items end):ConcatMany() end, },
+
+    AllowedEffects = {
         get = function(self)
-            local result = Dictionary:new()
-            local prototype = self.Prototype
-            for name, value in pairs(prototype.allowed_effects or {}) do
-                local items = self.Database.BackLinks.ItemsForModuleEffects[name]
-                if items then
-                    items:Select(
-                        function(itemPrototype)
-                        local item = self.Database:GetItem(nil, itemPrototype)
-                        if result[item] ~= false then
-                            result[item] = value
-                        end
-                    end
-                    )
-                end
-            end
-            return result
+            return Dictionary:new(self.Prototype.allowed_effects or {})
+                :Where(function(value) return value end)
+                :ToArray(function(_, name) return self.Database:GetModuleEffect(name) end)
+        end,
+    },
+
+    NotAllowedEffects = {
+        get = function(self)
+            return Dictionary:new(self.Prototype.allowed_effects or {})
+                :Where(function(value) return not value end)
+                :ToArray(function(_, name) return self.Database:GetModuleEffect(name) end)
         end,
     },
 }

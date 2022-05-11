@@ -1,4 +1,6 @@
-return
+-- Generated 2022-05-11T14:15:15.4184986+02:00 by FactorioApi 22.1.0.0 
+-- see https://github.com/hahoyer/factorio/tree/master/src/FApi
+return 
 {
     LuaBurnerPrototype = 
         {
@@ -12,13 +14,20 @@ return
         {
             buffer_capacity = true,
             drain = true,
-            object_name = true,
-            usage_priority = true
+            usage_priority = true,
+            object_name = true
         },
         LuaEntityPrototype = 
         {
-            attack_parameters = true,
+            type = true,
+            name = true,
+            is_building = true,
+            items_to_place_this = true,
             autoplace_specification = true,
+            fast_replaceable_group = true,
+            mineable_properties = true,
+            allowed_effects = true,
+            attack_parameters = true,
             base_productivity = true,
             burner_prototype = true,
             burns_fluid = true,
@@ -28,7 +37,6 @@ return
             effectivity = true,
             electric_energy_source_prototype = true,
             energy_usage = true,
-            fast_replaceable_group = true,
             fixed_recipe = true,
             flags = true,
             fluid = true,
@@ -36,31 +44,22 @@ return
             fluid_energy_source_prototype = true,
             fluid_usage_per_tick = true,
             fluidbox_prototypes = true,
-            group = true,
             heat_buffer_prototype = true,
             heat_energy_source_prototype = true,
             infinite_resource = true,
             ingredient_count = true,
-            is_building = true,
             item_slot_count = true,
-            items_to_place_this = true,
             lab_inputs = true,
             launch_wait_time = true,
-            localised_description = true,
-            localised_name = true,
             max_energy = true,
             max_energy_production = true,
             max_energy_usage = true,
             maximum_temperature = true,
-            mineable_properties = true,
             mining_speed = true,
             module_inventory_size = true,
-            name = true,
             neighbour_bonus = true,
             next_upgrade = true,
             normal_resource_amount = true,
-            object_name = true,
-            order = true,
             pumping_speed = true,
             related_underground_belt = true,
             researching_speed = true,
@@ -75,10 +74,14 @@ return
             speed = true,
             speed_multiplier_when_out_of_energy = true,
             stack = true,
-            subgroup = true,
             target_temperature = true,
-            type = true,
-            void_energy_source_prototype = true
+            void_energy_source_prototype = true,
+            localised_name = true,
+            localised_description = true,
+            group = true,
+            subgroup = true,
+            order = true,
+            object_name = true
         },
         LuaFluidBoxPrototype = 
         {
@@ -87,10 +90,10 @@ return
             index = true,
             maximum_temperature = true,
             minimum_temperature = true,
-            object_name = true,
             pipe_connections = true,
             production_type = true,
-            volume = true
+            volume = true,
+            object_name = true
         },
         LuaFluidEnergySourcePrototype = 
         {
@@ -99,32 +102,32 @@ return
             fluid_box = true,
             fluid_usage_per_tick = true,
             maximum_temperature = true,
-            object_name = true,
-            scale_fluid_usage = true
+            scale_fluid_usage = true,
+            object_name = true
         },
         LuaFluidPrototype = 
         {
+            name = true,
             default_temperature = true,
             fuel_value = true,
             gas_temperature = true,
-            group = true,
             heat_capacity = true,
             hidden = true,
-            localised_description = true,
-            localised_name = true,
             max_temperature = true,
-            name = true,
-            object_name = true,
+            localised_name = true,
+            localised_description = true,
+            group = true,
+            subgroup = true,
             order = true,
-            subgroup = true
+            object_name = true
         },
         LuaFuelCategoryPrototype = 
         {
-            localised_description = true,
-            localised_name = true,
             name = true,
-            object_name = true,
-            order = true
+            localised_name = true,
+            localised_description = true,
+            order = true,
+            object_name = true
         },
         LuaHeatEnergySourcePrototype = 
         {
@@ -132,11 +135,14 @@ return
             heat_buffer_prototype = true,
             max_temperature = true,
             min_working_temperature = true,
-            object_name = true,
-            specific_heat = true
+            specific_heat = true,
+            object_name = true
         },
         LuaItemPrototype = 
         {
+            type = true,
+            name = true,
+            place_result = true,
             attack_parameters = true,
             burnt_result = true,
             category = true,
@@ -144,86 +150,83 @@ return
             flags = true,
             fuel_category = true,
             fuel_value = true,
-            group = true,
             infinite = true,
             inventory_size = true,
             inventory_size_bonus = true,
-            localised_description = true,
-            localised_name = true,
             module_effects = true,
-            name = true,
-            object_name = true,
-            order = true,
-            place_result = true,
             repair_result = true,
             rocket_launch_products = true,
             speed = true,
             stack_size = true,
             stackable = true,
-            subgroup = true,
             tier = true,
-            type = true
+            localised_name = true,
+            localised_description = true,
+            group = true,
+            subgroup = true,
+            order = true,
+            object_name = true
         },
         LuaModuleCategoryPrototype = 
         {
-            localised_description = true,
-            localised_name = true,
             name = true,
-            object_name = true,
-            order = true
+            localised_name = true,
+            localised_description = true,
+            order = true,
+            object_name = true
         },
         LuaRecipeCategoryPrototype = 
         {
-            localised_description = true,
-            localised_name = true,
             name = true,
-            object_name = true,
-            order = true
+            localised_name = true,
+            localised_description = true,
+            order = true,
+            object_name = true
         },
         LuaRecipePrototype = 
         {
+            name = true,
             category = true,
             enabled = true,
             energy = true,
-            group = true,
             hidden = true,
             hidden_from_player_crafting = true,
             ingredients = true,
-            localised_description = true,
-            localised_name = true,
             main_product = true,
-            name = true,
-            object_name = true,
-            order = true,
             products = true,
+            unlock_results = true,
+            localised_name = true,
+            localised_description = true,
+            group = true,
             subgroup = true,
-            unlock_results = true
+            order = true,
+            object_name = true
         },
         LuaResourceCategoryPrototype = 
         {
-            localised_description = true,
-            localised_name = true,
             name = true,
-            object_name = true,
-            order = true
+            localised_name = true,
+            localised_description = true,
+            order = true,
+            object_name = true
         },
         LuaTechnologyPrototype = 
         {
+            name = true,
             effects = true,
             enabled = true,
             hidden = true,
             level = true,
-            localised_description = true,
-            localised_name = true,
             max_level = true,
-            name = true,
-            object_name = true,
-            order = true,
             prerequisites = true,
             research_unit_count = true,
             research_unit_count_formula = true,
             research_unit_energy = true,
             research_unit_ingredients = true,
-            upgrade = true
+            upgrade = true,
+            localised_name = true,
+            localised_description = true,
+            order = true,
+            object_name = true
         }
 }

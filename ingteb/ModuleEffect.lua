@@ -11,21 +11,9 @@ local Class = class:new("ModuleEffect", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    Items = {
-        cache = true,
-        get = function(self)
-            return self.Database.BackLinks.ItemsForModuleEffects[self.Name]--
-                :Select(function(target) return self.Database:GetItem(nil, target) end)
-        end,
-    },
-
-    Entities = {
-        cache = true,
-        get = function(self)
-            return self.Database.BackLinks.EntitiesForModuleEffects[self.Name]--
-                :Select(function(target) return self.Database:GetEntity(nil, target) end)
-        end,
-    },
+    BackLinkType = { get = function(self) return "module_effect" end },
+    Items = { get = function(self) return self:GetBackLinkArray("module_effects", "item") end, },
+    Entities = { get = function(self) return self:GetBackLinkArray("allowed_effects", "entity") end, },
 
     SpriteName = {
         cache = true,

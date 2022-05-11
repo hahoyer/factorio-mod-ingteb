@@ -278,6 +278,7 @@ function Class:RestoreFromSave()
     if self.RestoreFromSaveDone then return end
     self.RestoreFromSaveDone = true
     self.Global.Index = self.Player.index
+    self.Modules.MetadataScan:RestoreFromSave(self)
     self.Modules.Selector:RestoreFromSave(self)
     self.Modules.Presentator:RestoreFromSave(self)
     self.Modules.SelectRemindor:RestoreFromSave(self)

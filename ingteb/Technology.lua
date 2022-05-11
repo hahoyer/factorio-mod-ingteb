@@ -12,6 +12,7 @@ local Class = class:new(
     "Technology", Common, {
     TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.technology" end },
     SpriteType = { get = function(self) return "technology" end },
+    BackLinkType = { get = function(self) return "technology" end },
     Amount = {
         cache = true,
         get = function(self) --
@@ -221,20 +222,7 @@ local Class = class:new(
 
     Enables = {
         cache = true,
-        get = function(self)
-            local enabledTechnologies = self.Database.BackLinks.EnabledTechnologiesForTechnology[self.Prototype
-                .name]
-            if enabledTechnologies then
-                return enabledTechnologies--
-                    :Select(
-                        function(technology)
-                        return self.Database:GetTechnology(nil, technology)
-                    end
-                    )
-            else
-                return Array:new {}
-            end
-        end,
+        get = function(self) return self:GetBackLinkArray("prerequisites", "technology") end,
     },
 
     EnablesHelp = {

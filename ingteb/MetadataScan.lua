@@ -14,6 +14,8 @@ local Class = class:new("MetadataScan", nil, {})
 function Class:new(parent) return self:adopt { Parent = parent } end
 
 function Class:Scan()
+    global.Game = {}
+
     for _, type in pairs { "entity", "fluid", "item", "recipe", "technology" } do
         local key = type .. "_prototypes"
         for name, prototype in pairs(game[key]) do
@@ -28,7 +30,7 @@ function Class:GetBackProxyAny(targetType, targetName, prototype)
     dassert(not (targetType == "category" and targetName ~= "slogistics"))
     dassert(type(targetType) == "string")
     dassert(type(targetName) == "string")
-    local result = CoreHelper.EnsureKeys(global, { "Game", targetType, targetName })
+    local result = CoreHelper.EnsureKeys(global.Game, { targetType, targetName })
     CoreHelper.EnsureKey(result, "Type", targetType)
     CoreHelper.EnsureKey(result, "Name", targetName)
     if result.Prototype then
@@ -65,8 +67,6 @@ function Class:SetBackLink(targetType, targetName, propertyName, proxy, index)
 end
 
 function Class:ScanPrototype(targetType, prototype)
-    local proxy = self:GetBackProxyRoot(targetType, prototype.name, prototype)
-
     if (__DebugAdapter and __DebugAdapter.instrument) then
         prototype = self:GetFilteredProxy(prototype)
 
@@ -75,6 +75,8 @@ function Class:ScanPrototype(targetType, prototype)
 
         dassert(not unKnown:Any())
     end
+
+    local proxy = self:GetBackProxyRoot(targetType, prototype.name, prototype)
 
     return Dictionary
         :new(Configurations.BackLinkMetaData[prototype.object_name])
@@ -130,11 +132,7 @@ end
 
 function Class:ScanList(value, options, path, proxy)
     for index, value in ipairs(value) do
-        if options.GetValue then
-            self[options.GetValue](self, value, path, proxy, index)
-        else
-            self:ScanElement(index, value, options, path, proxy)
-        end
+        self:ScanElement(index, value, options, path, proxy)
     end
 end
 
@@ -145,13 +143,21 @@ function Class:ScanNamedList(value, options, path, proxy)
 end
 
 function Class:ScanElement(key, value, options, path, proxy)
-    if not value then return end
-    local targetType =
-    value ~= true and (CoreHelper.GetObjectType(value)
-        or value.type)
-        or options.Type
-        or value.name
-        or value
+    if options.GetValue then
+        return self[options.GetValue](self, key, value, path, proxy)
+    end
+
+    if value == nil then return end
+    local targetType = options.Type
+    if type(value) == "boolean" then
+        dassert(options.Type, "Boolean property requires Type in options: " .. serpent.block(options))
+    else
+        targetType = (CoreHelper.GetObjectType(value) or value.type)
+            or targetType
+            or value.name
+            or value
+    end
+
     dassert(type(targetType) == "string")
     local targetName =
     type(key) == "string" and key
@@ -163,9 +169,9 @@ function Class:ScanElement(key, value, options, path, proxy)
     self:SetBackLink(targetType, targetName, path, proxy, index)
 end
 
-function Class:GetTechnologyEffect(value, path, proxy, index)
+function Class:GetTechnologyEffect(key, value, path, proxy)
     local targetType = value.type
-    self:SetBackLink("effect", targetType, path, proxy, index)
+    self:SetBackLink("effect", targetType, path, proxy, key)
     Dictionary
         :new(value)
         :Select(function(value, name)
@@ -173,7 +179,7 @@ function Class:GetTechnologyEffect(value, path, proxy, index)
             local targetType = (name == "ammo_category" or name == "recipe") and name
                 or name == "turret_id" and "entity"
                 or dassert(false)
-            self:SetBackLink(targetType, value, path, proxy, index)
+            self:SetBackLink(targetType, value, path, proxy, key)
         end)
 end
 
@@ -188,6 +194,10 @@ function Class:OnConfigurationChanged(event)
 end
 
 function Class:OnMigration()
+    self:Scan()
+end
+
+function Class:RestoreFromSave()
     self:Scan()
 end
 

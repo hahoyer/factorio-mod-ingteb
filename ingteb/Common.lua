@@ -28,7 +28,7 @@ local Class = class:new(
     Group = { cache = true, get = function(self) return self.Prototype.group end },
     SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
     BackLinkName = { get = function(self) return self.Name end },
-    BackLinkType = { },
+    BackLinkType = {},
     BackLinks = { get = function(self) return self.Database.BackLinks[self.BackLinkType][self.BackLinkName] end, },
     NoPrototype = {
         cache = true,
@@ -226,6 +226,17 @@ function Class:IsBefore(other)
     return self.Prototype.order < other.Prototype.order
 end
 
+function Class:GetBackLinkArray(propertyName, typeName)
+    local variants = self.BackLinks[propertyName]
+    if not variants then return Array:new() end
+    dassert(typeName, "typeName can be " .. next(variants) .. ".")
+    local proxies = variants[typeName]
+    if not proxies then return Array:new() end
+    return Dictionary
+        :new(proxies)
+        :ToArray(function(_, name) return self.Database:GetFromBackLink { Type = typeName, Name = name } end)
+end
+
 function Class:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end
 
 function Class:GetHandCraftingRequest(event) end
@@ -353,8 +364,17 @@ function Class:new(prototype, database)
     dassert(prototype)
     dassert(database)
 
-    if __DebugAdapter then self.CommonKey = "?pending" end -- required for debugging
-    local self = self:adopt { Prototype = prototype, Database = database }
+    local filterdPrototype
+    if __DebugAdapter then
+        self.CommonKey = "?pending" -- required for debugging
+        filterdPrototype = database:GetFilteredProxy(prototype)
+    end
+
+    local self = self:adopt {
+        Prototype = prototype,
+        Database = database,
+        FilterdPrototype = filterdPrototype
+    }
     self.IsSealed = false
     self.Name = self.Prototype.name
     self.TypeSubOrder = 0

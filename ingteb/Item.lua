@@ -20,17 +20,14 @@ Item.system.Properties = {
     },
 
     UsefulLinks = {
-        cache = true,
+        --cache = true,
         get = function(self)
             local result = Array:new {}
 
             if self.Fuel then result:Append(Array:new { self.Fuel.Category }) end
             if self.Entity then result:AppendMany(self.Entity.UsefulLinks) end
-
-            local moduleTargets = self.ModuleTargets--
-                :Where(function(value) return value end)--
-                :ToArray(function(_, module) return module end)
-            if moduleTargets:Any() then result:Append(moduleTargets) end
+            result:Append(self.ModuleEffects)
+            result:Append(self.ModuleTargets)
             return result
         end,
     },
@@ -133,38 +130,31 @@ Item.system.Properties = {
 
     IsRefreshRequired = { get = function(self) return { MainInventory = true } end },
 
-    ModuleEffectsHelp = {
-        cache = true,
+    ModuleEffects = {
         get = function(self)
-            local result = Array:new()
-            local prototype = self.Prototype
-            for name, effect in pairs(prototype.module_effects or {}) do
-                result:Append(self.Database:GetModuleEffect(name):GetEffectHelp(effect))
+            local result = Dictionary
+                :new(self.Prototype.module_effects or {})
+                :Where(function(value) return value.Bonus ~= 0 end)
+                :ToArray(function(_, name) return self.Database:GetModuleEffect(name) end)
+            return result
+        end,
+    },
 
-            end
+    ModuleEffectsHelp = {
+        get = function(self)
+            local result = Dictionary
+                :new(self.Prototype.module_effects or {})
+                :Where(function(value) return value.Bonus ~= 0 end)
+                :ToArray(function(value, name) self.Database:GetModuleEffect(name):GetEffectHelp(value) end)
             return result
         end,
     },
 
     ModuleTargets = {
-        cache = true,
         get = function(self)
-            local result = Dictionary:new()
-            local prototype = self.Prototype
-            for name in pairs(prototype.module_effects or {}) do
-                local entities = self.Database.BackLinks.EntitiesForModuleEffects[name]
-                if entities then
-                    entities:Select(
-                        function(entityPrototype)
-                        local entity = self.Database:GetEntity(nil, entityPrototype)
-                        if result[entity] ~= false then
-                            local modules = entity.Modules
-                            result[entity] = modules[self]
-                        end
-                    end
-                    )
-                end
-            end
+            local result = self.ModuleEffects
+                :Select(function(effect) return effect.Entities end)
+                :ConcatMany()
             return result
         end,
     },

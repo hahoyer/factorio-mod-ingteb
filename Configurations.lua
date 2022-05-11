@@ -124,6 +124,7 @@ local Result = {
                 group = {},
                 subgroup = {},
                 type = { Type = "entityType" },
+                allowed_effects = { Type = "module_effect", IsList = true },
                 mineable_properties = { Properties = { "products" } },
                 fluidbox_prototypes = { GetName = function(value) return value.filter and value.filter.name or "" end },
                 items_to_place_this = { Type = "item" },

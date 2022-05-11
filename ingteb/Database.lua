@@ -1,5 +1,4 @@
-local MetaData = require "lib.MetaData"
-local UnusedMetaData = require "ingteb.UnusedMetaData"
+local MetaDataScan = require "ingteb.MetaDataScan"
 local CoreHelper = require "core.Helper"
 local Number = require("core.Number")
 local Constants = require("Constants")
@@ -509,11 +508,13 @@ function Class:Get(target)
 end
 
 function Class:GetPrototype(target)
-    return target.Proxy.Prototype
+    return target.Proxy and target.Proxy.Prototype
 end
 
 function Class:GetClassName(target)
     if target.Type == "item" then return "Item"
+    elseif target.Type == "entity" then return "Entity"
+    elseif target.Type == "technology" then return "Technology"
     else
         dassert()
     end
@@ -522,7 +523,9 @@ end
 function Class:GetFromBackLink(target)
     local className = self:GetClassName(target)
     local prototype = self:GetPrototype(target)
-    dassert(prototype)
+    dassert(type(className) == "string")
+    dassert(not target.Name or type(target.Name) == "string")
+    dassert(target.Name or prototype)
     return self:GetProxy(className, target.Name, prototype)
 end
 
@@ -626,7 +629,8 @@ function Class:GetCraftableCount(target)
 end
 
 function Class:GetRecipesGroupByCategory(target)
-    return Dictionary:new(target.recipe or {})
+    if not target or not target.recipe then return Dictionary:new() end
+    return Dictionary:new(target.recipe)
         :ToGroup(
             function(_, recipeName)
             local proxy = self:GetRecipe(recipeName)
@@ -655,5 +659,7 @@ function Class:GetTranslation(type, name, tag)
     local result = dictionary[type .. "." .. name]
     return result
 end
+
+function Class:GetFilteredProxy(prototype) return MetaDataScan:GetFilteredProxy(prototype) end
 
 return Class
