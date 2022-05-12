@@ -1,6 +1,5 @@
 local Constants = require("Constants")
-local Configurations1 = require("Configurations")
-local Configurations = require("Configurations").Category
+local Configurations = require("Configurations").Database
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
@@ -15,24 +14,24 @@ local function GetPrototype(domain, subName)
         return game.recipe_category_prototypes[subName]
     elseif subName == "steel-axe" then
         return game.technology_prototypes["steel-axe"]
-    elseif domain == "mining" or domain == "fluid-mining" then
+    elseif domain == "mining" or domain == "fluid_mining" then
         return game.resource_category_prototypes[subName]
     elseif domain == "boiling" or domain == "researching" then
         return game.entity_prototypes[subName]
-    elseif domain == "rocket-launch" then
+    elseif domain == "rocket_launch" then
         return game.entity_prototypes["rocket-silo-rocket"]
     elseif domain == "burning" then
         return game.fuel_category_prototypes[subName]
-    elseif domain == "fluid-burning" then
+    elseif domain == "fluid_burning" then
         dassert(subName == "fluid")
-        return Helper.CreatePrototypeProxy { type = "fluid-burning", name = "fluid-burning" }
+        return Helper.CreatePrototypeProxy { type = "fluid_burning", name = "fluid_burning" }
     else
         dassert()
     end
 end
 
 Class.system.Properties = {
-    BackLinkType = { get = function(self) return Configurations.Domains[self.Domain].BackLinkType end },
+    BackLinkType = { get = function(self) return Configurations.RecipeDomains[self.Domain].BackLinkType end },
     BackLinkName = { get = function(self) return self.SubName end },
     OriginalWorkers = {
         get = function(self)
@@ -98,7 +97,7 @@ Class.system.Properties = {
     LineSprite = {
         cache = true,
         get = function(self)
-            if self.Domain == "burning" or self.Domain == "fluid-burning" then
+            if self.Domain == "burning" or self.Domain == "fluid_burning" then
                 return "utility/slot_icon_fuel_black"
             else
                 return "utility/change_recipe"
@@ -116,7 +115,7 @@ Class.system.Properties = {
     AllRecipes = {
         cache = true,
         get = function(self)
-            local recipeList = self.Database.BackLinks.RecipesForCategory[self.Name] --
+            local recipeList = self:GetBackLinkArray("category", "recipe")
             local result = recipeList--
                 :ToArray(
                     function(recipe)
@@ -127,9 +126,9 @@ Class.system.Properties = {
                         return self.Database:GetMiningRecipe(nil, recipe)
                     elseif self.Domain == "boiling" then
                         return self.Database:GetBoilingRecipe(nil, recipe)
-                    elseif self.Domain == "burning" or self.Domain == "fluid-burning" then
+                    elseif self.Domain == "burning" or self.Domain == "fluid_burning" then
                         return self.Database:GetBurningRecipe(nil, recipe)
-                    elseif self.Domain == "rocket-launch" then
+                    elseif self.Domain == "rocket_launch" then
                         return self.Database:GetRocketLaunchRecipe(nil, recipe)
                     else
                         dassert()
@@ -157,7 +156,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            if self.Domain == "boiling" or self.Domain == "rocket-launch" or self.Domain == "burning" or self.Domain == "fluid-burning" then
+            if self.Domain == "boiling" or self.Domain == "rocket_launch" or self.Domain == "burning" or self.Domain == "fluid_burning" then
                 local workers = self.OriginalWorkers
                 if workers:Any() then
                     return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
@@ -174,7 +173,7 @@ Class.system.Properties = {
 
     IsMiningDomain = {
         get = function(self) --
-            return self.Domain == "mining" or self.Domain == "fluid-mining" or self.Domain == "hand-mining"
+            return self.Domain == "mining" or self.Domain == "fluid_mining" or self.Domain == "hand_mining"
         end,
     },
 

@@ -30,7 +30,8 @@ local Class = class:new(
     "Database", nil, {
     Player = { get = function(self) return self.Parent.Player end },
     Global = { get = function(self) return self.Parent.Global end },
-    BackLinks = { get = function(self) return global.Game end },
+    Game = { get = function(self) return global.Game end },
+    BackLinks = {},
     Proxies = {
         get = function(self)
             if not global.Database then global.Database = {} end
@@ -145,13 +146,13 @@ function Class:GetProxyFromPrototype(prototype)
         return self:GetEntity(nil, prototype)
     elseif objectType == "LuaRecipePrototype" then
         return self:GetRecipe(nil, prototype)
-    elseif objectType == "burning" or objectType == "fluid-burning" then
+    elseif objectType == "burning" or objectType == "fluid_burning" then
         return self:GetBurningRecipe(nil, prototype)
     elseif objectType == "boiling" then
         return self:GetBoilingRecipe(nil, prototype)
-    elseif objectType == "mining" or objectType == "hand-mining" or objectType == "fluid-mining" then
+    elseif objectType == "mining" or objectType == "hand_mining" or objectType == "fluid_mining" then
         return self:GetMiningRecipe(nil, prototype)
-    elseif objectType == "rocket-launch" then
+    elseif objectType == "rocket_launch" then
         return self:GetRocketLaunchRecipe(nil, prototype)
     else
         dassert(false)
@@ -271,7 +272,7 @@ function Class:ScanEntity(prototype)
     -- if prototype.type == "assembling-machine" or prototype.type == "furnace" then __DebugAdapter.breakpoint() end
 
     if prototype.fluid_energy_source_prototype then
-        self:AddWorkerForCategory("fluid-burning.fluid", prototype)
+        self:AddWorkerForCategory("fluid_burning.fluid", prototype)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
@@ -285,7 +286,7 @@ function Class:ScanEntity(prototype)
     for categoryName, _ in pairs(prototype.resource_categories or {}) do
         self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
         if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("fluid-mining" .. "." .. categoryName, prototype)
+            self:AddWorkerForCategory("fluid_mining" .. "." .. categoryName, prototype)
         end
     end
 
@@ -312,7 +313,7 @@ function Class:ScanEntity(prototype)
     end
 
     if prototype.type == "rocket-silo" then
-        self:AddWorkerForCategory("rocket-launch.rocket-launch", prototype)
+        self:AddWorkerForCategory("rocket_launch.rocket_launch", prototype)
     end
 
     if prototype.type == "lab" then
@@ -328,11 +329,11 @@ function Class:ScanEntity(prototype)
             or Array:new(prototype.mineable_properties.products)--
             :Any(function(product) return product.type == "fluid" end) --
 
-        local domain = not prototype.resource_category and "hand-mining" --
-            or isFluidMining and "fluid-mining" --
+        local domain = not prototype.resource_category and "hand_mining" --
+            or isFluidMining and "fluid_mining" --
             or "mining"
 
-        local categoryName = not prototype.resource_category and "steel-axe" --
+        local categoryName = not prototype.resource_category and "steel_axe" --
             or prototype.resource_category
 
         local ingredients = { { type = "resource", amount = 1, name = prototype.name } }
@@ -366,7 +367,7 @@ function Class:ScanEntity(prototype)
     end
 end
 
-function Class:CreateHandMiningCategory() self:GetCategory("hand-mining.steel-axe") end
+function Class:CreateHandMiningCategory() self:GetCategory("hand_mining.steel-axe") end
 
 function Class:ScanTechnology(prototype)
     for _, value in pairs(prototype.effects or {}) do
@@ -413,7 +414,7 @@ function Class:ScanFuel(prototype, domain, category, isFluid)
 end
 
 function Class:ScanFluid(prototype)
-    self:ScanFuel(prototype, "fluid-burning", "fluid", true)
+    self:ScanFuel(prototype, "fluid_burning", "fluid", true)
 end
 
 function Class:ScanItem(prototype)
@@ -432,9 +433,9 @@ function Class:ScanItem(prototype)
     if #prototype.rocket_launch_products > 0 then
         self:AddRecipe(
             Helper.CreatePrototypeProxy {
-                type = "rocket-launch",
+                type = "rocket_launch",
                 Prototype = prototype,
-                category = "rocket-launch",
+                category = "rocket_launch",
                 sprite_type = "item",
                 hidden = true,
                 ingredients = { { type = "item", amount = prototype.default_request_amount, name = prototype.name } },

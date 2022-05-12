@@ -123,12 +123,12 @@ Class.system.Properties = {
             return self.Categories--
                 :Where(
                     function(category)
-                    return category.Domain == "burning" or category.Domain == "fluid-burning"
+                    return category.Domain == "burning" or category.Domain == "fluid_burning"
                 end
                 )--
                 :ToArray(
                     function(category)
-                    local name = category.Domain == "fluid-burning" and "fluid" or category.SubName
+                    local name = category.Domain == "fluid_burning" and "fluid" or category.SubName
                     return self.Database:GetFuelCategory(name)
                 end
                 )
@@ -138,7 +138,6 @@ Class.system.Properties = {
     UsefulLinks = { get = function(self) return Array:new { self.FuelCategories, self.Modules, } end, },
 
     Categories = {
-        cache = true,
         get = function(self)
             local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
                 :Where(
@@ -261,9 +260,9 @@ Class.system.Properties = {
 function Class:SortAll() end
 
 function Class:GetSpeedFactor(category)
-    if category.Domain == "rocket-launch" then
+    if category.Domain == "rocket_launch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
-    elseif category.Domain == "burning" or category.Domain == "fluid-burning" then
+    elseif category.Domain == "burning" or category.Domain == "fluid_burning" then
         return self.MaximalEnergyConsumption
     elseif category.Domain == "boiling" then
         return 1

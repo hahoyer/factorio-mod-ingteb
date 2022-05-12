@@ -168,13 +168,19 @@ local Result = {
                 prerequisites = { IsList = true },
                 research_unit_ingredients = {},
             },
+        },
+        RecipeDomains = {
+            boiling = { Undefined = true },
+            burning = { Undefined = true },
+            crafting = { BackLinkType = "recipe_category" },
+            fluid_burning = { Undefined = true },
+            fluid_mining = { Undefined = true },
+            mining = { Undefined = true },
+            researching = { Undefined = true },
+            rocket_launch = { Undefined = true },
+            steel_axe = { Undefined = true },
         }
     },
-    Category = {
-        Domains = {
-            crafting = { BackLinkType = "recipe_category" }
-        }
-     }
 }
 
 
