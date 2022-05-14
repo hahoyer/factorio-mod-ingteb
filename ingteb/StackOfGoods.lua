@@ -1,9 +1,9 @@
 require "core.debugSupport"
 local Constants = require("Constants")
 local Common = require "ingteb.Common"
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local Number = require "core.Number"
 
@@ -143,7 +143,7 @@ local Class = class:new(
 
     AdditionalHelp = {
         get = function(self)
-            local result = self.Goods.AdditionalHelp 
+            local result = self.Goods.AdditionalHelp
             result:AppendMany(self.AdditionalAmountsHelp)
             result:AppendMany(self.CustomAdditionalHelp)
             return result

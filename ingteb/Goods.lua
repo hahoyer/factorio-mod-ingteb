@@ -1,7 +1,7 @@
 local Constants = require("Constants")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
@@ -24,10 +24,6 @@ end
 local Class = class:new("Goods", Common)
 
 Class.system.Properties = {
-    Recipes = {
-        get = function(self) return self.Entity and self.Entity.Recipes or Dictionary:new {} end,
-    },
-
     AllUsedBy = {
         cache = true,
         get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,

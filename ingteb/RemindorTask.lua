@@ -1,9 +1,9 @@
 local gui = require "__flib__.gui"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local UI = require("core.UI")
 local class = require("core.class")
 local RequiredThings = require("ingteb.RequiredThings")

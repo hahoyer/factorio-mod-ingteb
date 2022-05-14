@@ -1,7 +1,7 @@
 local Constants = require "Constants"
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Goods = require("ingteb.Goods")
 local class = require("core.class")
 
@@ -10,6 +10,9 @@ local Item = class:new("Item", Goods)
 Item.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
     BackLinkType = { get = function(self) return "item" end },
+
+    Recipes = { get = function(self) return self.Entity and self.Entity.Recipes or Dictionary:new {} end, },
+
     Entity = {
         cache = true,
         get = function(self)

@@ -4,9 +4,9 @@ local Number = require("core.Number")
 local Constants = require("Constants")
 local Configurations = require("Configurations").Database
 local Helper = require "ingteb.Helper"
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local TimeSpan = require("core.TimeSpan")
 local StackOfGoods = require("ingteb.StackOfGoods")
@@ -18,7 +18,6 @@ local Proxy = {
     FuelCategory = require("ingteb.FuelCategory"),
     Fluid = require("ingteb.Fluid"),
     Item = require("ingteb.Item"),
-    Resource = require "ingteb.Resource",
     Recipe = require("ingteb.Recipe"),
     RecipeCommon = require "ingteb.RecipeCommon",
     Technology = require("ingteb.Technology"),
@@ -184,8 +183,6 @@ function Class:GetItem(name, prototype) return self:GetProxy("Item", name, proto
 
 function Class:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 
-function Class:GetResource(name, prototype) return self:GetProxy("Resource", name, prototype) end
-
 function Class:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 
 function Class:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
@@ -241,6 +238,70 @@ function Class:GetBonusFromEffect(target)
 
     local name = type .. "/" .. tostring(target.mining)
     return self:GetProxy("Bonus", name, prototype)
+end
+
+function Class:GetRecipeFromPrimary(domain, recipePrimary)
+    local function getMiningRecipe(recipePrimary)
+        local prototype = recipePrimary.Prototype
+        dassert(prototype.mineable_properties)
+        dassert(prototype.mineable_properties.minable)
+        dassert(prototype.mineable_properties.products)
+        dassert(not prototype.items_to_place_this)
+        dassert(domain == "mining" or domain == "fluid_mining" or domain == "hand_mining")
+
+        local isFluidMining = prototype.mineable_properties.required_fluid --
+            or Array:new(prototype.mineable_properties.products)--
+            :Any(function(product) return product.type == "fluid" end) --
+
+        if not prototype.resource_category then dassert(domain == "hand_mining") --
+        elseif isFluidMining then dassert(domain == "fluid_mining") --  --
+        else dassert(domain == "mining")
+        end
+
+        local categoryName = not prototype.resource_category and "steel_axe" --
+            or prototype.resource_category
+
+        local ingredients = { { type = "resource", amount = 1, name = prototype.name } }
+        local configuration = prototype.mineable_properties
+        if configuration.required_fluid then
+            table.insert(
+                ingredients, {
+                type = "fluid",
+                name = configuration.required_fluid,
+                amount = configuration.fluid_amount,
+            }
+            )
+        end
+
+        return self:GetMiningRecipe(nil, Helper.CreatePrototypeProxy
+            {
+                type = domain,
+                Prototype = prototype,
+                sprite_type = "entity",
+                hidden = true,
+                products = configuration.products,
+                ingredients = ingredients,
+                energy = configuration.mining_time,
+                category = categoryName,
+            }
+        )
+    end
+
+    local function unknown() dassert(false) end
+
+    local get = {
+        boiling = unknown,
+        burning = unknown,
+        crafting = unknown,
+        fluid_burning = unknown,
+        fluid_mining = getMiningRecipe,
+        mining = getMiningRecipe,
+        researching = unknown,
+        rocket_launch = unknown,
+        hand_mining = getMiningRecipe,
+    }
+
+    return get[domain](recipePrimary)
 end
 
 ---@param prototype table LuaEntityPrototype
@@ -472,7 +533,7 @@ function Class:GetStackOfGoods(target)
     local goods--
     = target.type == "item" and self:GetItem(target.name) --
         or target.type == "fluid" and self:GetFluid(target.name) --
-        or target.type == "resource" and self:GetResource(target.name) --
+        or target.type == "resource" and self:GetEntity(target.name) --
     dassert(goods)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end

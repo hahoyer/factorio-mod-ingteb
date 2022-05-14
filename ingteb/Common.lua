@@ -2,22 +2,22 @@ local gui = require "__flib__.gui"
 local localisation = require "__flib__.dictionary"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local UI = require("core.UI")
 
 local gameKeyFromObjectName = {
-    ["LuaRecipeCategoryPrototype"] = "recipe_category_prototypes",
-    ["LuaEntityPrototype"] = "entity_prototypes",
-    ["LuaFuelCategoryPrototype"] = "fuel_category_prototypes",
-    ["LuaResourceCategoryPrototype"] = "resource_category_prototypes",
-    ["LuaTechnologyPrototype"] = "technology_prototypes",
-    ["LuaRecipePrototype"] = "recipe_prototypes",
-    ["LuaItemPrototype"] = "item_prototypes",
-    ["LuaFluidPrototype"] = "fluid_prototypes",
-    ["LuaModuleCategoryPrototype"] = "module_category_prototypes",
+    LuaRecipeCategoryPrototype = "recipe_category_prototypes",
+    LuaEntityPrototype = "entity_prototypes",
+    LuaFuelCategoryPrototype = "fuel_category_prototypes",
+    LuaResourceCategoryPrototype = "resource_category_prototypes",
+    LuaTechnologyPrototype = "technology_prototypes",
+    LuaRecipePrototype = "recipe_prototypes",
+    LuaItemPrototype = "item_prototypes",
+    LuaFluidPrototype = "fluid_prototypes",
+    LuaModuleCategoryPrototype = "module_category_prototypes",
 }
 
 local Class = class:new(
@@ -232,9 +232,10 @@ function Class:GetBackLinkArray(propertyName, typeName)
     dassert(typeName, "typeName can be " .. next(variants) .. ".")
     local proxies = variants[typeName]
     if not proxies then return Array:new() end
-    return Dictionary
+    local xreturn = Dictionary
         :new(proxies)
         :ToArray(function(_, name) return self.Database:GetFromBackLink { Type = typeName, Name = name } end)
+    return xreturn
 end
 
 function Class:Clone() return self.Database:GetProxyFromCommonKey(self.CommonKey) end

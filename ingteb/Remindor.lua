@@ -2,10 +2,10 @@ local mod_gui = require("mod-gui")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
+
 local RemindorTask = require("ingteb.RemindorTask")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local Task = require("ingteb.RemindorTask")
 local Settings = require("ingteb.RemindorSettings")

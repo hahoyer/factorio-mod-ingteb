@@ -1,8 +1,8 @@
 local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local UI = require("core.UI")
 
@@ -40,12 +40,12 @@ Class.system.Properties = {
             dassert(lastPlayer == nil or lastPlayer == UI.Player)
         end,
     },
-    Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
+    Global = { get = function(self) return global.Players[UI.PlayerIndex] end },
 }
 
-Class.EventDefinesByIndex = Dictionary:new(defines.events) --
-:ToDictionary(function(value, key) return {Key = value, Value = key} end) --
-:ToArray()
+Class.EventDefinesByIndex = Dictionary:new(defines.events)--
+    :ToDictionary(function(value, key) return { Key = value, Value = key } end)--
+    :ToArray()
 
 function Class:Execute(eventId, eventName)
     return function(...)
@@ -77,10 +77,10 @@ local function FormatData(data)
 end
 
 function Class:Enter(eventName, eventId, identifier)
-    local data = {eventName, eventId, identifier}
+    local data = { eventName, eventId, identifier }
     -- dlog(">>>EnterEvent " .. FormatData(data))
     local oldIndent = nil -- AddIndent()
-    self.Active = {data, self.Active, oldIndent}
+    self.Active = { data, self.Active, oldIndent }
 end
 
 function Class:Leave()
@@ -99,13 +99,13 @@ function Class:SetHandler(eventId, handler, identifier)
 
     local eventName = --
     type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or --
-    eventId == 0 and "on_tick" or --
-    eventId
+        eventId == 0 and "on_tick" or --
+        eventId
 
     local handlers = Class.Handlers[eventName]
     dassert(
         not handlers or identifier ~= "default",
-            "handler for event " .. eventName .. " already registered. Use identifier"
+        "handler for event " .. eventName .. " already registered. Use identifier"
     )
 
     if not handlers then
@@ -123,10 +123,9 @@ function Class:SetHandler(eventId, handler, identifier)
 
     dassert(not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
-    handlers[identifier] = {Instance = self, Handler = handler}
+    handlers[identifier] = { Instance = self, Handler = handler }
 
     Class:RemoveIfEmpty(handlers, eventId)
 end
 
 return Class
-

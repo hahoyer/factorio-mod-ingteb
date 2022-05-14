@@ -1,6 +1,5 @@
-local Table = require "core.Table"
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 
 local Result = {
     Presentator = {
@@ -170,15 +169,41 @@ local Result = {
             },
         },
         RecipeDomains = {
-            boiling = { Undefined = true },
-            burning = { Undefined = true },
-            crafting = { BackLinkType = "recipe_category" },
-            fluid_burning = { Undefined = true },
-            fluid_mining = { Undefined = true },
-            mining = { Undefined = true },
-            researching = { Undefined = true },
-            rocket_launch = { Undefined = true },
-            steel_axe = { Undefined = true },
+            boiling = {
+                CategoryByType = "boiler"
+            },
+            burning = {
+                Workers = "burner_prototype"
+            },
+            crafting = {
+                Workers = "crafting_categories",
+                Recipes = "category",
+                BackLinkType = "recipe_category",
+                ProxyClassName = "Recipe"
+            },
+            fluid_burning = {
+                Workers = "fluid_energy_source_prototype"
+            },
+            fluid_mining = {
+                Workers = "resource_categories",
+                WorkerCondition = "HasFluidHandling",
+                Recipes = "resource_category",
+                RecipePrimary = "entity",
+                RecipeCondition = "RequiresFluidHandling",
+                ProxyClassName = "MiningRecipe",
+                BackLinkType = "resource_category"
+            },
+            mining = {
+                Workers = "resource_categories",
+                Recipes = "resource_category",
+                RecipePrimary = "entity",
+                RecipeCondition = "RequiresNoFluidHandling",
+                ProxyClassName = "MiningRecipe",
+                BackLinkType = "resource_category"
+            },
+            researching = { CategoryByType = "lab" },
+            rocket_launch = { CategoryByType = "rocket-silo" },
+            hand_mining = { CategoryByType = "character" },
         }
     },
 }

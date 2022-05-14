@@ -3,9 +3,9 @@ local mod_gui = require("mod-gui")
 local event = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 
 local Helper = {}
 
@@ -95,7 +95,7 @@ local function EnsureMaxParameters(target, count)
 end
 
 local function StripArray(target)
-    if target.object_name == "Array" then 
+    if target.object_name == "Array" then
         return target:Strip()
     else
         return target
@@ -130,67 +130,67 @@ function Helper.CreateFrameWithContent(moduleName, frame, content, caption, opti
     local buttons = options.buttons or {}
     local result = gui.build(
         frame, {
-            {
-                type = "frame",
-                direction = "vertical",
-                name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
-                ref = { "Main" },
-                actions = {
-                    on_location_changed = {
-                        module = moduleName,
-                        subModule = options.subModule,
-                        action = "Moved",
-                    },
-                    on_closed = {
-                        module = moduleName,
-                        subModule = options.subModule,
-                        action = "Closed",
-                    },
+        {
+            type = "frame",
+            direction = "vertical",
+            name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
+            ref = { "Main" },
+            actions = {
+                on_location_changed = {
+                    module = moduleName,
+                    subModule = options.subModule,
+                    action = "Moved",
                 },
-                children = {
-                    {
-                        type = "flow",
-                        name = "Header",
-                        direction = "horizontal",
-                        children = {
-                            {
-                                type = "label",
-                                name = "Title",
-                                caption = caption,
-                                style = "frame_title",
-                            },
-                            {
-                                type = "empty-widget",
-                                name = "DragHandle",
-                                style = "flib_titlebar_drag_handle",
-                                ref = { "DragBar" },
-                            },
-                            {
-                                type = "flow",
-                                name = "Buttons",
-                                direction = "horizontal",
-                                children = buttons,
-                            },
-                            {
-                                type = "sprite-button",
-                                name = "CloseButtom",
-                                sprite = "close_white",
-                                tooltip = { "gui.close" },
-                                actions = {
-                                    on_click = {
-                                        module = moduleName,
-                                        subModule = options.subModule,
-                                        action = "Closed",
-                                    },
-                                },
-                                style = "frame_action_button",
-                            },
-                        },
-                    },
-                    content,
+                on_closed = {
+                    module = moduleName,
+                    subModule = options.subModule,
+                    action = "Closed",
                 },
             },
-        }
+            children = {
+                {
+                    type = "flow",
+                    name = "Header",
+                    direction = "horizontal",
+                    children = {
+                        {
+                            type = "label",
+                            name = "Title",
+                            caption = caption,
+                            style = "frame_title",
+                        },
+                        {
+                            type = "empty-widget",
+                            name = "DragHandle",
+                            style = "flib_titlebar_drag_handle",
+                            ref = { "DragBar" },
+                        },
+                        {
+                            type = "flow",
+                            name = "Buttons",
+                            direction = "horizontal",
+                            children = buttons,
+                        },
+                        {
+                            type = "sprite-button",
+                            name = "CloseButtom",
+                            sprite = "close_white",
+                            tooltip = { "gui.close" },
+                            actions = {
+                                on_click = {
+                                    module = moduleName,
+                                    subModule = options.subModule,
+                                    action = "Closed",
+                                },
+                            },
+                            style = "frame_action_button",
+                        },
+                    },
+                },
+                content,
+            },
+        },
+    }
     )
 
     if not frame.parent and frame.name == "screen" then result.DragBar.drag_target = result.Main end
@@ -202,7 +202,7 @@ end
 ---@param self table ingteb-module
 ---@param content table flib.GuiBuildStructure
 ---@param caption any LocalisedString
----@param options table 
+---@param options table
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
@@ -257,7 +257,7 @@ end
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateLeftSideFrameWithContent(self, content, caption,--[[optioal]] options)
+function Helper.CreateLeftSideFrameWithContent(self, content, caption, --[[optioal]] options)
     if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
@@ -273,7 +273,7 @@ end
 ---@param tail table Array of LocalizedText
 ---@return any LocalisedString
 function Helper.ConcatLocalisedText(top, tail)
-    local lines = Array:new{}
+    local lines = Array:new {}
     local function append(line)
         if line then
             lines:Append("\n")
@@ -285,7 +285,7 @@ function Helper.ConcatLocalisedText(top, tail)
     local result = top
     if lines:Any() then
         lines:InsertAt(1, "")
-        result = {"", top, lines}
+        result = { "", top, lines }
     end
     return Helper.ScrutinizeLocalisationString(result)
 end
@@ -333,9 +333,9 @@ function Helper.CalculateHeaterRecipe(prototype)
     = fluidBoxes--
         :Where(--
             function(box)
-                return box.filter
-                    and (box.production_type == "input" or box.production_type == "input-output")
-            end
+            return box.filter
+                and (box.production_type == "input" or box.production_type == "input-output")
+        end
         )--
         :Top(false, false)--
         .filter
@@ -350,7 +350,7 @@ function Helper.CalculateHeaterRecipe(prototype)
         * outBox.heat_capacity
 
     local amount = 60 * prototype.max_energy_usage / (inEnergy + outEnergy)
-    if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then 
+    if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then
         amount = amount / prototype.burner_prototype.effectivity
     end
 
@@ -361,7 +361,7 @@ function Helper.CalculateHeaterRecipe(prototype)
         ingredients = { { type = "fluid", amount = amount, name = inBox.name } },
         products = { { type = "fluid", amount = amount, name = outBox.name } },
         category = prototype.name,
-        
+
     }
 end
 
@@ -379,8 +379,8 @@ function Helper.IsValidBoiler(prototype)
     = fluidBoxes--
         :Where(
             function(box)
-                return box.production_type == "input" or box.production_type == "input-output"
-            end
+            return box.production_type == "input" or box.production_type == "input-output"
+        end
         ) --
     local outBoxes = fluidBoxes--
         :Where(function(box) return box.production_type == "output" end) --
@@ -420,6 +420,5 @@ function Helper.IsValidBoiler(prototype)
 
     return result
 end
-
 
 return Helper

@@ -1,10 +1,11 @@
 local Constants = require("Constants")
+local Configurations = require("Configurations").Database
 local Number = require "core.Number"
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
+
 local RequiredThings = require("ingteb.RequiredThings")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
@@ -13,7 +14,10 @@ local Class = class:new("Entity", Common)
 Class.system.Properties = {
     SpriteType = { get = function(self) return "entity" end },
     BackLinkType = { get = function(self) return "entity" end },
-    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.entity" end },
+    TypeStringForLocalisation = { get = function(self)
+        local type = self.IsResource and "resoure" or "entity"
+        return "ingteb-type-name." .. type
+    end },
     UsedBy = {
         cache = true,
         get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
@@ -57,10 +61,6 @@ Class.system.Properties = {
         end,
     },
 
-    -- ClickTarget = {
-    --    get = function(self) return self.Item and self.Item.ClickTarget or self.CommonKey end,
-    -- },
-
     Item = {
         cache = true,
         get = function(self)
@@ -71,7 +71,18 @@ Class.system.Properties = {
         end,
     },
 
-    IsResource = { get = function(self) return false end },
+    IsResource = { get = function(self) return self.Prototype.type == "resoure" end },
+    HasFluidHandling = { get = function(self) return #self.Prototype.fluidbox_prototypes > 0 end },
+
+    RequiresFluidHandling = { get = function(self)
+        local prototype = self.Prototype
+        return prototype.mineable_properties.required_fluid --
+            or Array:new(prototype.mineable_properties.products)--
+            :Any(function(product) return product.type == "fluid" end) --
+
+    end },
+
+    RequiresNoFluidHandling = { get = function(self) return not self.RequiresFluidHandling end },
 
     -- not used at the moment
     EnergySourceProperties = {
@@ -120,7 +131,7 @@ Class.system.Properties = {
     FuelCategories = {
         cache = true,
         get = function(self)
-            return self.Categories--
+            return self.Workers--
                 :Where(
                     function(category)
                     return category.Domain == "burning" or category.Domain == "fluid_burning"
@@ -139,17 +150,15 @@ Class.system.Properties = {
 
     Categories = {
         get = function(self)
-            local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
-                :Where(
-                    function(workers)
-                    return workers and workers:Any(
-                        function(_, name) return name == self.Prototype.name end
-                    )
-                end
-                )--
-                :Select(function(_, categoryName) return self.Database:GetCategory(categoryName) end)
-            return xreturn
-        end,
+            if not self.Prototype.is_building then return Dictionary:new() end
+            return Dictionary:new(Configurations.RecipeDomains)
+                :ToArray(function(_, domainName)
+                    return Array:new(self:GetCategoryNames(domainName))
+                        :Select(function(categoryName)
+                            return self.Database:GetCategory(domainName .. "." .. categoryName)
+                        end)
+                end):ConcatMany()
+        end
     },
 
     AllRecipes = {
@@ -259,6 +268,95 @@ Class.system.Properties = {
 
 function Class:SortAll() end
 
+function Class:CreateStack(amounts)
+    dassert(self.IsResource)
+    return self.Database:CreateStackFromGoods(self, amounts)
+end
+
+function Class:GetCategoryNames(domainName)
+    local prototype = self.Prototype
+    local setup = Configurations.RecipeDomains[domainName]
+    if setup.Workers then
+        if prototype[setup.Workers] then
+            return Dictionary:new(prototype[setup.Workers])
+                :Where(function(value) return value end)
+                :ToArray(function(_, name) return name end)
+        else
+            return
+        end
+    elseif setup.CategoryByType then
+        if setup.CategoryByType == prototype.name then
+            dassert(false)
+        else
+            return Array:new {}
+        end
+    else
+        dassert(false)
+    end
+
+    dassert(false)
+    if prototype.fluid_energy_source_prototype then
+        self:AddWorkerForCategory("fluid_burning.fluid", prototype)
+    end
+
+    for category, _ in pairs(prototype.crafting_categories or {}) do
+        self:AddWorkerForCategory("crafting." .. category, prototype)
+        if prototype.fixed_recipe then
+            dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
+            self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
+        end
+    end
+
+    for categoryName, _ in pairs(prototype.resource_categories or {}) do
+        self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
+        if #prototype.fluidbox_prototypes > 0 then
+            self:AddWorkerForCategory("fluid_mining" .. "." .. categoryName, prototype)
+        end
+    end
+
+    if prototype.burner_prototype then
+        if prototype.burner_prototype.fuel_inventory_size > 0 then
+            for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
+                EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
+                    prototype.name
+                )
+                self:AddWorkerForCategory("burning." .. category, prototype)
+            end
+        else
+            log {
+                "mod-issue.burner-without-fuel-inventory",
+                prototype.localised_name,
+                prototype.type .. "." .. prototype.name,
+            }
+        end
+    end
+
+    if prototype.type == "boiler" and Helper.IsValidBoiler(prototype) then
+        self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
+        self:AddRecipe(Helper.CalculateHeaterRecipe(prototype))
+    end
+
+    if prototype.type == "rocket-silo" then
+        self:AddWorkerForCategory("rocket_launch.rocket_launch", prototype)
+    end
+
+    if prototype.type == "lab" then
+        self:AddWorkerForCategory("researching." .. prototype.name, prototype)
+    end
+
+    dassert(false)
+    local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
+        :Where(
+            function(workers)
+            return workers and workers:Any(
+                function(_, name) return name == self.Prototype.name end
+            )
+        end
+        )--
+        :Select(function(_, categoryName) return self.Database:GetCategory(categoryName) end)
+    return xreturn
+end
+
 function Class:GetSpeedFactor(category)
     if category.Domain == "rocket_launch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
@@ -298,7 +396,8 @@ function Class:new(name, prototype, database)
     local prototype = self.Prototype
 
     dassert(self.Prototype.object_name == "LuaEntityPrototype")
-    dassert(self.Prototype.type ~= "resource")
+    dassert(self.Prototype.type ~= "resource" or
+        Configurations.ResourceTypes[self.Prototype.type])
 
     self.HelpTextWhenUsedAsProduct = { "", self.RichTextName .. " ", self.Prototype.localised_name }
 

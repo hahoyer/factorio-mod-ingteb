@@ -1,27 +1,27 @@
 local Constants = require "Constants"
 local class = require "core.class"
-local Table = require "core.Table"
-local Array = Table.Array
+
+local Array = require "core.Array"
 local sonaxaton = require "core.Sonaxaton"
 
 local Class = class:new(
     "ResearchQueue", nil, {
-        Force = {get = function(self) return self.Parent.Player.force end},
-        Current = {
-            get = function(self)
-                if sonaxaton.IsValid() then
-                    return Array:new(sonaxaton.GetQueue(self.Force))
-                end
-                return Array --
-                :new(self.Force.research_queue) --
+    Force = { get = function(self) return self.Parent.Player.force end },
+    Current = {
+        get = function(self)
+            if sonaxaton.IsValid() then
+                return Array:new(sonaxaton.GetQueue(self.Force))
+            end
+            return Array--
+                :new(self.Force.research_queue)--
                 :Select(function(technology) return technology.name end)
-            end,
-        },
-    }
+        end,
+    },
+}
 )
 
 function Class:new(parent)
-    local result = self:adopt{Parent = parent}
+    local result = self:adopt { Parent = parent }
     return result
 end
 
@@ -38,14 +38,14 @@ function Class:SonaxatonCheck()
         player.print {
             "",
             "[color=yellow]",
-            {"ingteb-utility.research-not-available", {"mod-name.sonaxaton-research-queue"}},
+            { "ingteb-utility.research-not-available", { "mod-name.sonaxaton-research-queue" } },
             "[/color]",
         }
         player.print {
             "ingteb-utility.remark-style",
             {
                 "ingteb-utility.research-not-available-alternative",
-                {"mod-name.sonaxaton-research-queue"},
+                { "mod-name.sonaxaton-research-queue" },
                 {
                     "",
                     "[font=default-large-bold][color=blue]",
@@ -67,7 +67,7 @@ function Class:AddResearch(name, setting)
     end
 
     if #self.Force.research_queue == 0 --
-    or self.Force.research_queue_enabled and setting ~= "1" then
+        or self.Force.research_queue_enabled and setting ~= "1" then
         return self.Force.add_research(name)
     end
 

@@ -1,7 +1,7 @@
 local Constants = require("Constants")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
@@ -15,9 +15,9 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return Table:new(self.BackLinks.category.item) --
-            :ToArray(function(_,name) return self.Database:GetItem(name) end)
-            
+            return Table:new(self.BackLinks.category.item)--
+                :ToArray(function(_, name) return self.Database:GetItem(name) end)
+
         end,
     },
 
@@ -26,18 +26,18 @@ Class.system.Properties = {
         get = function(self)
             local result = Dictionary:new()
 
-            local items = self.Items --
-            :Select(
-                function(item)
+            local items = self.Items--
+                :Select(
+                    function(item)
                     item.ModuleTargets:Select(
                         function(value, entity)
-                            if result[entity] ~= false then
-                                result[entity] = value
-                            end
+                        if result[entity] ~= false then
+                            result[entity] = value
                         end
+                    end
                     )
                 end
-            )
+                )
 
             return result:ToArray(function(value, entity) return entity end)
         end,
@@ -63,7 +63,7 @@ Class.system.Properties = {
 
     UsefulLinks = {
         cache = true,
-        get = function(self) return Array:new{self.Items, self.Entities} end,
+        get = function(self) return Array:new { self.Items, self.Entities } end,
     },
 
 }
@@ -84,4 +84,3 @@ function Class:new(name, prototype, database)
 end
 
 return Class
-

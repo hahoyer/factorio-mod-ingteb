@@ -1,8 +1,8 @@
 local Constants = require("Constants")
 local Helper = require "ingteb.Helper"
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
@@ -12,8 +12,8 @@ FuelCategory.system.Properties = {
     Fuels = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.ItemsForFuelCategory[self.Name] --
-            :Select(function(fuel) return self.Database:Get(fuel) end)
+            return self.Database.BackLinks.ItemsForFuelCategory[self.Name]--
+                :Select(function(fuel) return self.Database:Get(fuel) end)
         end,
     },
     SpriteType = { get = function(self) return "fuel-category" end },
@@ -41,8 +41,8 @@ FuelCategory.system.Properties = {
     Burners = {
         cache = true,
         get = function(self)
-            local result = Array:new(self.Database.BackLinks.EntitiesForBurnersFuel[self.Name]) --
-            :Select(function(workerName) return self.Database:GetEntity(workerName) end)
+            local result = Array:new(self.Database.BackLinks.EntitiesForBurnersFuel[self.Name])--
+                :Select(function(workerName) return self.Database:GetEntity(workerName) end)
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
         end,
@@ -50,7 +50,7 @@ FuelCategory.system.Properties = {
 
     UsefulLinks = {
         cache = true,
-        get = function(self) return Array:new{self.Fuels, self.Burners} end,
+        get = function(self) return Array:new { self.Fuels, self.Burners } end,
     },
 
 }
@@ -59,7 +59,7 @@ function FuelCategory:new(name, prototype, database)
     dassert(name or prototype)
 
     if name == "fluid" and not prototype then
-        prototype = Helper.CreatePrototypeProxy{
+        prototype = Helper.CreatePrototypeProxy {
             type = "fuel-category",
             name = name,
         }
@@ -78,4 +78,3 @@ function FuelCategory:new(name, prototype, database)
 end
 
 return FuelCategory
-

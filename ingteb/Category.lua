@@ -1,9 +1,9 @@
 local Constants = require("Constants")
 local Configurations = require("Configurations").Database
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
@@ -31,20 +31,18 @@ local function GetPrototype(domain, subName)
 end
 
 Class.system.Properties = {
-    BackLinkType = { get = function(self) return Configurations.RecipeDomains[self.Domain].BackLinkType end },
+    Configuration = { get = function(self) return Configurations.RecipeDomains[self.Domain] end },
+    BackLinkType = { get = function(self) return self.Configuration.BackLinkType end },
     BackLinkName = { get = function(self) return self.SubName end },
-    OriginalWorkers = {
-        get = function(self)
-            return Dictionary
-                :new((self.BackLinks.crafting_categories or {}).entity or {})
-                :ToArray(function(_, name) return self.Database:GetEntity(name) end)
-        end,
+    OriginalWorkers = { get = function(self)
+        local result = self:GetBackLinkArray(self.Configuration.Workers, "entity")
+        if self.Configuration.WorkerCondition then
+            result = result:Where(function(worker) return worker[self.Configuration.WorkerCondition] end)
+        end
+        return result
+    end,
     },
-
-    HelperHeaderText = {
-        get = function(self) return Array:new { "ingteb-utility.workers-for-recipes" } end,
-    },
-
+    HelperHeaderText = { get = function(self) return Array:new { "ingteb-utility.workers-for-recipes" } end, },
     AdditionalHelp = {
         get = function(self)
             local result = Array:new {}
@@ -115,28 +113,22 @@ Class.system.Properties = {
     AllRecipes = {
         cache = true,
         get = function(self)
-            local recipeList = self:GetBackLinkArray("category", "recipe")
-            local result = recipeList--
-                :ToArray(
-                    function(recipe)
-                    if self.IsCraftingDomain then
-                        if recipe.hidden and not self.HasAutomaticRecipes then return end
-                        return self.Database:GetRecipe(nil, recipe)
-                    elseif self.IsMiningDomain then
-                        return self.Database:GetMiningRecipe(nil, recipe)
-                    elseif self.Domain == "boiling" then
-                        return self.Database:GetBoilingRecipe(nil, recipe)
-                    elseif self.Domain == "burning" or self.Domain == "fluid_burning" then
-                        return self.Database:GetBurningRecipe(nil, recipe)
-                    elseif self.Domain == "rocket_launch" then
-                        return self.Database:GetRocketLaunchRecipe(nil, recipe)
-                    else
-                        dassert()
-                    end
-                end
-                )--
-                :Where(function(recipe) return recipe end) --
 
+            local setup = self.Configuration
+            local recipePrimaryList = self:GetBackLinkArray(setup.Recipes, setup.RecipePrimary or "recipe")
+            if setup.RecipeCondition then
+                recipePrimaryList = recipePrimaryList
+                    :Where(function(recipePrimary) return recipePrimary[setup.RecipeCondition] end)
+            end
+
+            local result = recipePrimaryList
+                :ToDictionary(
+                    function(recipePrimary)
+                    return {
+                        Key = recipePrimary.Prototype.name,
+                        Value = self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
+                    }
+                end)
             return result
         end,
     },

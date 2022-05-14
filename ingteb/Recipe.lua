@@ -1,8 +1,8 @@
 local Constants = require("Constants")
-local Table = require("core.Table")
+
 local RequiredThings = require("ingteb.RequiredThings")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require "ingteb.RecipeCommon"
 local class = require("core.class")
 local Recipe = class:new("Recipe", Common)

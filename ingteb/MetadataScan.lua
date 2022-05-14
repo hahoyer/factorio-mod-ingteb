@@ -4,9 +4,9 @@ local UnusedMetaData = require "ingteb.UnusedMetaData"
 local CoreHelper = require "core.Helper"
 local Constants = require "Constants"
 local Configurations = require("Configurations").Database
-local Table = require "core.Table"
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require "core.class"
 
 local Class = class:new("MetadataScan", nil, {})

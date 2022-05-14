@@ -2,9 +2,9 @@ local events = require("__flib__.event")
 local gui = require "__flib__.gui"
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local History = require("ingteb.History")
 local class = require("core.class")
 local core = {

@@ -1,21 +1,21 @@
 local Constants = require("Constants")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 
 local Class = class:new(
     "ChangeWatcher", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Database end},
-    }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    Database = { get = function(self) return self.Parent.Database end },
+}
 )
 
 function Class:new(parent)
-    return self:adopt{ --
+    return self:adopt { --
         Parent = parent,
-        Data = Dictionary:new{},
+        Data = Dictionary:new {},
     }
 end
 
@@ -30,7 +30,7 @@ end
 
 function Class:CollectForGuiClick(caller, target)
     local group = self.Data[caller]
-    group.UpdatedElements:Append{Target = target}
+    group.UpdatedElements:Append { Target = target }
     return #group.UpdatedElements
 end
 
@@ -38,14 +38,14 @@ function Class:RegisterDynamicElements(caller, guiElements)
     local group = self.Data[caller]
     if guiElements then
         group.UpdatedElements:Select(
-            function(element, index) 
-                local guiElement = guiElements[index] 
-                if element.GuiElement == nil then
+            function(element, index)
+            local guiElement = guiElements[index]
+            if element.GuiElement == nil then
                 element.GuiElement = guiElement
-                else
-                    dassert(guiElement == nil or element.GuiElement == guiElement)
-                end
+            else
+                dassert(guiElement == nil or element.GuiElement == guiElement)
             end
+        end
         )
     end
 end
@@ -53,9 +53,9 @@ end
 function Class:OnChanged()
     self.Data:Select(
         function(group)
-            group.OutdatedLists:Append(group.UpdatedElements)
-            group.UpdatedElements = Array:new{}
-        end
+        group.OutdatedLists:Append(group.UpdatedElements)
+        group.UpdatedElements = Array:new {}
+    end
     )
 end
 

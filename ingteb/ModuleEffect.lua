@@ -1,9 +1,9 @@
 local Constants = require("Constants")
 local Helper = require "ingteb.Helper"
 local Number = require("core.Number")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 

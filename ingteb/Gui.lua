@@ -1,34 +1,34 @@
 local mod_gui = require("mod-gui")
 local gui = require("__flib__.gui-beta")
 local Constants = require("Constants")
-local Table = require("core.Table")
+
 local class = require("core.class")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 
 local Class = class:new(
     "Gui", nil, {
-        Player = {get = function(self) return self.Parent.Player end},
-        Global = {get = function(self) return self.Parent.Global end},
-        Database = {get = function(self) return self.Parent.Database end},
-    }
+    Player = { get = function(self) return self.Parent.Player end },
+    Global = { get = function(self) return self.Parent.Global end },
+    Database = { get = function(self) return self.Parent.Database end },
+}
 )
 
-function Class:new(parent) return self:adopt{Parent = parent} end
+function Class:new(parent) return self:adopt { Parent = parent } end
 
 function Class:EnsureMainButton()
     local frame = mod_gui.get_button_flow(self.Player)
     if frame.ingteb then return end
     gui.build(
         frame, {
-            {
-                type = "sprite-button",
-                name = "ingteb",
-                sprite = "ingteb",
-                tooltip = {"ingteb-utility.ingteb-button-description"},
-                actions = {on_click = {module = self.class.name, action = "Click"}},
-            },
-        }
+        {
+            type = "sprite-button",
+            name = "ingteb",
+            sprite = "ingteb",
+            tooltip = { "ingteb-utility.ingteb-button-description" },
+            actions = { on_click = { module = self.class.name, action = "Click" } },
+        },
+    }
     )
 end
 
@@ -60,7 +60,7 @@ function Class:FindOpenedTargets()
             local prototype = cursor.prototype
             local entity = self.Database:GetEntity(nil, prototype)
 
-            local result = Dictionary:new{}
+            local result = Dictionary:new {}
 
             if prototype.mineable_properties then
                 for index = 1, #prototype.mineable_properties.products do
@@ -85,8 +85,8 @@ function Class:FindOpenedTargets()
             end
 
             if cursor.type == "rocket-silo" or --
-            cursor.type == "assembling-machine" or --
-            cursor.type == "furnace" --
+                cursor.type == "assembling-machine" or --
+                cursor.type == "furnace" --
             then self:GetRecipeData(cursor.get_recipe(), result) end
 
             for index = 1, Dictionary:new(defines.inventory):Count() do
@@ -104,11 +104,11 @@ function Class:FindOpenedTargets()
                 function(_, key) return self.Database:GetProxyFromCommonKey(key) end
             )
         end
-        local message --
-        = "not implemented: defines.gui_type." .. Dictionary: --
-        new(defines.gui_type): --
-        Where(function(value) return value == t end): --
-        ToArray(function(_, key) return key end).Top()
+        local message--
+        = "not implemented: defines.gui_type." .. Dictionary:--
+            new(defines.gui_type):--
+            Where(function(value) return value == t end):--
+            ToArray(function(_, key) return key end).Top()
 
         log(message)
         dassert()
@@ -124,9 +124,9 @@ function Class:FindTargets(selected)
         local result = self.Database:GetFromSelection(selected)
         if result then
             if result.class.name ~= "Entity" then
-                return {result}
+                return { result }
             else
-                return {result.Item}
+                return { result.Item }
             end
         end
     end

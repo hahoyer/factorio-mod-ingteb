@@ -3,9 +3,9 @@ local Constants = require("Constants")
 local Configurations = require "Configurations"
 local Helper = require("ingteb.Helper")
 local RemindorSettings = require "ingteb.RemindorSettings"
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
+
+local Array = require "core.Array"
+local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local UI = require("core.UI")
 
