@@ -9,14 +9,15 @@ local class = require("core.class")
 local FuelCategory = class:new("FuelCategory", Common)
 
 FuelCategory.system.Properties = {
+    SpriteType = { get = function(self) return "fuel-category" end },
+    BackLinkType = { get = function(self) return "fuel_category" end },
     Fuels = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.ItemsForFuelCategory[self.Name]--
-                :Select(function(fuel) return self.Database:Get(fuel) end)
+            return self.GetBackLinkArry("fuel_category", "item")--
+                :Select(function(_,fuel) return self.Database:Get(game.item_prototypes[fuel]) end)
         end,
     },
-    SpriteType = { get = function(self) return "fuel-category" end },
     SpriteName = {
         cache = true,
         get = function(self)
