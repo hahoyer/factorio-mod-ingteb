@@ -7,11 +7,23 @@ local Configurations = require("Configurations").Database
 
 local Array = require "core.Array"
 local Dictionary = require "core.Dictionary"
+local Table = require "core.Table"
 local class = require "core.class"
 
 local Class = class:new("MetadataScan", nil, {})
 
 function Class:new(parent) return self:adopt { Parent = parent } end
+
+local function SortByKey(target)
+    if type(target) ~= "table" then return target end
+    local d = Table:new(target)
+    if getmetatable(d) == Array then return target end
+    local keys = d:ToArray(function(_, key) return key end)
+    table.sort(keys)
+    return keys:ToDictionary(function(key)
+        return { Key = key, Value = SortByKey(target[key]) }
+    end)
+end
 
 function Class:Scan()
     global.Game = {}
@@ -23,6 +35,7 @@ function Class:Scan()
             self:ScanPrototype(type, prototype)
         end
     end
+    if (__DebugAdapter and __DebugAdapter.instrument) then global.Game = SortByKey(global.Game) end
     --dassert(false)
 end
 
