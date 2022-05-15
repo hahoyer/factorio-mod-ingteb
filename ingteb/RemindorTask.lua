@@ -12,7 +12,7 @@ local RemindorSettings = require "ingteb.RemindorSettings"
 
 local Class = class:new(
     "Task", nil, {
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Player = { get = function(self) return self.Parent.Player end },
     Database = { get = function(self) return self.Parent.Database end },
     LocalSettings = { get = function(self) return self.Settings end },
@@ -141,7 +141,7 @@ end
 function Class:CheckAutoCrafting()
     if self.Worker.Name ~= "character" then return end
     if self.Recipe.class.name ~= "Recipe" then return end
-    local player = game.players[self.Global.Index]
+    local player = self.Player
     if player.controller_type ~= defines.controllers.character then return end
     if player.crafting_queue_size > 0 then return end
 

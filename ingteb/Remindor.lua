@@ -14,7 +14,7 @@ local Spritor = require "ingteb.Spritor"
 local Class = class:new(
     "Remindor", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Database = { get = function(self) return self.Parent.Database end },
     ChangeWatcher = { get = function(self) return self.Parent.Modules.ChangeWatcher end },
     AutoResearch = { get = function(self) return self.ParentData.Settings.AutoResearch end },
@@ -63,8 +63,8 @@ function Class:new(parent)
 end
 
 function Class:CopyTasksToGlobal()
-    self.Global.Remindor = {}
-    self.Global.Remindor.Tasks = self.Tasks:Select(function(task) return task.Memento end)
+    self.PlayerGlobal.Remindor = {}
+    self.PlayerGlobal.Remindor.Tasks = self.Tasks:Select(function(task) return task.Memento end)
 end
 
 function Class.SerializeForMigration(tasks)
@@ -79,14 +79,14 @@ function Class:IsValidTask(task)
 end
 
 function Class:CreateTasksFromGlobal()
-    if not self.Global.Remindor then
-        self.Global.Remindor = {}
+    if not self.PlayerGlobal.Remindor then
+        self.PlayerGlobal.Remindor = {}
         self.Tasks = Array:new()
         return
     end
 
-    local tasks = self.Global.Remindor.Tasks or {}
-    self.Global.Remindor.Tasks = Array:new()
+    local tasks = self.PlayerGlobal.Remindor.Tasks or {}
+    self.PlayerGlobal.Remindor.Tasks = Array:new()
     for _, task in ipairs(tasks) do
         if self:IsValidTask(task) then
             self.Tasks:Append(Task:new(task, self))
@@ -94,7 +94,7 @@ function Class:CreateTasksFromGlobal()
     end
 end
 
-function Class:RestoreFromSave(parent)
+function Class:OnLoaded(parent)
     self.Parent = parent
     self:CreateTasksFromGlobal()
     self:Refresh()

@@ -22,7 +22,7 @@ end
 local Class = class:new(
     "Selector", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     MainGui = {
         get = function(self)
             return self.Player.gui.screen[Constants.ModName .. "." .. self.class.name]
@@ -181,7 +181,7 @@ function Class:GetTargetsGui()
 
 end
 
-function Class:RestoreFromSave(parent)
+function Class:OnLoaded(parent)
     self.Parent = parent
     self:Close()
 end

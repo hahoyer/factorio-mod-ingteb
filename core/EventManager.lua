@@ -39,7 +39,7 @@ Class.system.Properties = {
             dassert(lastPlayer == nil or lastPlayer == UI.Player)
         end,
     },
-    Global = { get = function(self) return global.Players[UI.PlayerIndex] end },
+    PlayerGlobal = { get = function(self) return global.Players[UI.PlayerIndex] end },
 }
 
 Class.EventDefinesByIndex = Dictionary:new(defines.events)--

@@ -1,3 +1,4 @@
+local migration = require "__flib__.migration"
 local MetaDataScan = require "ingteb.MetaDataScan"
 local CoreHelper = require "core.Helper"
 local Number = require("core.Number")
@@ -28,7 +29,7 @@ local Proxy = {
 local Class = class:new(
     "Database", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Game = { get = function(self) return global.Game end },
     BackLinks = {},
     Proxies = {
@@ -104,23 +105,8 @@ function Class:GetItemsPerTickText(amounts, ticks)
 end
 
 function Class:Ensure()
+    dassert(self.IsInitialized)
     if self.IsInitialized then return self end
-    self.Order = {
-        Recipe = 1,
-        RecipeCommon = 2,
-        BurningRecipe = 3,
-        FuelRecipe = 3.5,
-        Technology = 4,
-        Entity = 5,
-        Bonus = 6,
-        Item = 7,
-        Fluid = 8,
-        FuelCategory = 9,
-        ModuleCategory = 10,
-        ModuleEffect = 11,
-        StackOfGoods = 12,
-    }
-
     local proxies = self.Proxies
     while next(proxies) do proxies[next(proxies)] = nil end
 
@@ -624,21 +610,10 @@ function Class:BeginMulipleQueueResearch(target, setting)
     return result
 end
 
-function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
-
-function Class:OnResearchQueueChanged(event)
-    Dictionary:new(event.research)
-        :Select(function(_, name)
-            self:GetTechnology(name):Refresh()
-        end)
-end
-
 function Class:RefreshTechnology(target)
     dassert(target.object_name == "LuaTechnology")
     self:GetTechnology(target.name):Refresh()
 end
-
-function Class:Print(text) self.Player.print { "", "[ingteb]", text } end
 
 function Class:GetCountInInventory(goods)
     if goods.class == Proxy.Item then
@@ -717,12 +692,49 @@ function Class:GetCreatedByRecipes(prototype)
 end
 
 function Class:GetTranslation(type, name, tag)
-    local dictionary = self.Global.Localisation[tag]
+    local dictionary = self.PlayerGlobal.Localisation[tag]
     if not dictionary then return end
     local result = dictionary[type .. "." .. name]
     return result
 end
 
 function Class:GetFilteredProxy(prototype) return MetaDataScan:GetFilteredProxy(prototype) end
+
+function Class:Scan()
+    MetaDataScan:Scan()
+end
+
+function Class:Print(text) self.Player.print { "", "[ingteb]", text } end
+
+-- Event handler
+
+function Class:OnInitialise()
+    self:Scan()
+end
+
+function Class:OnConfigurationChanged(event)
+    if migration.on_config_changed(event, {}) then
+        self:Scan()
+    end
+end
+
+function Class:OnMigration()
+    self:Scan()
+end
+
+function Class:OnLoaded()
+    if (__DebugAdapter and __DebugAdapter.instrument) then
+        self:Scan()
+    end
+end
+
+function Class:OnResearchChanged(event) self:RefreshTechnology(event.research) end
+
+function Class:OnResearchQueueChanged(event)
+    Dictionary:new(event.research)
+        :Select(function(_, name)
+            self:GetTechnology(name):Refresh()
+        end)
+end
 
 return Class

@@ -17,7 +17,7 @@ local Spritor = require "ingteb.Spritor"
 local Class = class:new(
     "Presentator", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Database = { get = function(self) return self.Parent.Database end },
     ChangeWatcher = { get = function(self) return self.Parent.Modules.ChangeWatcher end },
     MainGui = {
@@ -26,9 +26,9 @@ local Class = class:new(
         end,
     },
     Filter = { get = function(self)
-        if not self.Global.Presentator then self.Global.Presentator = {} end
-        if not self.Global.Presentator.Filter then self.Global.Presentator.Filter = {} end
-        return self.Global.Presentator.Filter
+        if not self.PlayerGlobal.Presentator then self.PlayerGlobal.Presentator = {} end
+        if not self.PlayerGlobal.Presentator.Filter then self.PlayerGlobal.Presentator.Filter = {} end
+        return self.PlayerGlobal.Presentator.Filter
     end }
 })
 
@@ -690,14 +690,14 @@ function Class:Close()
     if self.MainGui then
         self.MainGui.destroy()
         self.Spritor:Close()
-        self.Global.Links.Presentator = {}
+        self.PlayerGlobal.Links.Presentator = {}
     end
 end
 
 function Class:Open(target)
-    if not target then target = self.Database:GetProxyFromCommonKey(self.Global.History.Current) end
+    if not target then target = self.Database:GetProxyFromCommonKey(self.PlayerGlobal.History.Current) end
     log("opening Target = " .. target.CommonKey .. "...")
-    self.Global.Links.Presentator = {}
+    self.PlayerGlobal.Links.Presentator = {}
     self.Spritor:StartCollecting()
     local guiData = self:GetGui(target)
     -- log("guiData= " .. serpent.block(guiData))
@@ -874,7 +874,7 @@ end
 function Class:OnGuiEvent(event)
     local message = gui.read_action(event)
     if message.action == "Closed" then
-        if self.Global.IsPopup then
+        if self.PlayerGlobal.IsPopup then
             self.MainGui.ignored_by_interaction = true
         else
             self:Close()
@@ -890,7 +890,7 @@ function Class:OnGuiEvent(event)
     end
 end
 
-function Class:RestoreFromSave(parent)
+function Class:OnLoaded(parent)
     self.Parent = parent
     local current = self.MainGui
     if current then

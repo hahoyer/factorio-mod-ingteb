@@ -19,7 +19,6 @@ local Remindor = require("ingteb.Remindor")
 local SelectRemindor = require("ingteb.SelectRemindor")
 local ResearchQueue = require("ingteb.ResearchQueue")
 local LocalisationInformation = require("ingteb.LocalisationInformation")
-local MetadataScan = require("ingteb.MetadataScan")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
@@ -77,22 +76,22 @@ end
 
 function Class:OnPresentatorForeClick(event)
     self.Player = event.player_index
-    self.Global.History:Fore()
+    self.PlayerGlobal.History:Fore()
     self:PresentCurrentTargetFromHistory()
 end
 
 function Class:OnPresentatorBackClick(event)
     self.Player = event.player_index
-    self.Global.History:Back()
+    self.PlayerGlobal.History:Back()
     self:PresentCurrentTargetFromHistory()
 end
 
 function Class:PresentTarget(target, requestor)
     if self.CurrentFloating then self.CurrentFloating:Close() end
     if requestor == "Presentator" then
-        self.Global.History:AdvanceWith(target.CommonKey)
+        self.PlayerGlobal.History:AdvanceWith(target.CommonKey)
     elseif requestor == "Selector" or requestor == "Remindor" then
-        self.Global.History:ResetTo(target.CommonKey)
+        self.PlayerGlobal.History:ResetTo(target.CommonKey)
     else
         dassert()
     end
@@ -163,18 +162,18 @@ end
 function Class:OnForeClicked(event)
     self.Player = event.player_index
     if self.CurrentFloating and self.CurrentFloating.class == Presentator then
-        if self.Global.History.IsForePossible then self:OnPresentatorForeClick(event) end
+        if self.PlayerGlobal.History.IsForePossible then self:OnPresentatorForeClick(event) end
     else
-        if self.Global.History.Current then self:OnSelectorForeOrBackClick(event) end
+        if self.PlayerGlobal.History.Current then self:OnSelectorForeOrBackClick(event) end
     end
 end
 
 function Class:OnBackClicked(event)
     self.Player = event.player_index
     if self.CurrentFloating and self.CurrentFloating.class == Presentator then
-        if self.Global.History.IsBackPossible then self:OnPresentatorBackClick(event) end
+        if self.PlayerGlobal.History.IsBackPossible then self:OnPresentatorBackClick(event) end
     else
-        if self.Global.History.Current then self:OnSelectorForeOrBackClick(event) end
+        if self.PlayerGlobal.History.Current then self:OnSelectorForeOrBackClick(event) end
     end
 end
 
@@ -186,7 +185,7 @@ function Class:OnTickInitial(event)
     for _, player in pairs(game.players) do
         self.Player = player
         self:EnsureMainButton()
-        if event.tick > 0 then self:RestoreFromSave() end
+        if event.tick > 0 then self:OnLoaded() end
     end
     return false
 end
@@ -218,7 +217,7 @@ end
 function Class:OnPlayerLeft(event)
     self.Modules.LocalisationInformation:OnPlayerLeft(event)
     self.Player = event.player_index
-    self.Global.Players[event.player_index] = nil
+    self.PlayerGlobal.Players[event.player_index] = nil
 end
 
 function Class:OnStringTranslated(event)
@@ -245,7 +244,6 @@ end
 
 function Class:OnSettingsChanged(event)
     self.Player = event.player_index
-    self:RestoreFromSave()
     self.Modules.Selector:OnSettingsChanged(event)
     self.Modules.Presentator:OnSettingsChanged(event)
     self.Modules.SelectRemindor:OnSettingsChanged(event)
@@ -256,7 +254,7 @@ end
 
 function Class:OnInitialise()
     self.Modules.LocalisationInformation:OnInitialise()
-    self.Modules.MetadataScan:OnInitialise()
+    self.Modules.Database:OnInitialise()
     self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
     global.Players = {}
@@ -271,18 +269,19 @@ function Class:OnConfigurationChanged(event)
     self:InitialiseOnResearchQueueChanged()
     EnsureDebugSupport()
     self.Modules.LocalisationInformation:OnConfigurationChanged(event)
-    self.Modules.MetadataScan:OnConfigurationChanged(event)
+    self.Modules.Database:OnConfigurationChanged(event)
 end
 
-function Class:RestoreFromSave()
+---This eventhandler is triggered one tick after load for each player by on_tick
+function Class:OnLoaded()
+    dassert(not self.RestoreFromSaveDone)
     if self.RestoreFromSaveDone then return end
     self.RestoreFromSaveDone = true
-    self.Global.Index = self.Player.index
-    self.Modules.MetadataScan:RestoreFromSave(self)
-    self.Modules.Selector:RestoreFromSave(self)
-    self.Modules.Presentator:RestoreFromSave(self)
-    self.Modules.SelectRemindor:RestoreFromSave(self)
-    self.Modules.Remindor:RestoreFromSave(self)
+    self.Modules.Database:OnLoaded(self)
+    self.Modules.Selector:OnLoaded(self)
+    self.Modules.Presentator:OnLoaded(self)
+    self.Modules.SelectRemindor:OnLoaded(self)
+    self.Modules.Remindor:OnLoaded(self)
 end
 
 function Class:OnGuiClick(event)
@@ -347,7 +346,6 @@ function Class:new()
         SelectRemindor = SelectRemindor:new(self),
         ResearchQueue = ResearchQueue:new(self),
         LocalisationInformation = LocalisationInformation:new(self),
-        MetadataScan = MetadataScan:new(self),
     }
 
     self.MainInventoryChangedWatcherTick = {}
@@ -377,7 +375,7 @@ function Class:new()
         if event.element and event.element.get_mod() ~= script.mod_name then return end
         local message = gui.read_action(event)
         if event.name == defines.events.on_gui_location_changed then
-            self.Global.Location[message.module] = event.element.location
+            self.PlayerGlobal.Location[message.module] = event.element.location
         elseif message then
             if message.module then
                 self.Modules[message.module]:OnGuiEvent(event)

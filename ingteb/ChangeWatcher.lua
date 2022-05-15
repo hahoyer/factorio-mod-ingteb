@@ -7,7 +7,7 @@ local class = require("core.class")
 local Class = class:new(
     "ChangeWatcher", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Database = { get = function(self) return self.Parent.Database end },
 }
 )

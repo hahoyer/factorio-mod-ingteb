@@ -12,9 +12,9 @@ local UI = require("core.UI")
 local Class = class:new(
     "SelectRemindor", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Database = { get = function(self) return self.Parent.Database end },
-    LocalSettings = { get = function(self) return self.Global.SelectRemindor.Settings end },
+    LocalSettings = { get = function(self) return self.PlayerGlobal.SelectRemindor.Settings end },
     DefaultSettings = { get = function(self) return self.Parent.Modules.Remindor end },
     IsRelevantSettings = {
         get = function(self)
@@ -35,7 +35,7 @@ local Class = class:new(
                 Recipe = self.Recipe.CommonKey,
                 CommonKey = self.Target.CommonKey .. ":" .. self.Worker.Name .. ":"
                     .. self.Recipe.Name,
-                Settings = self.Global.SelectRemindor.Settings,
+                Settings = self.PlayerGlobal.SelectRemindor.Settings,
             }
         end,
     },
@@ -60,13 +60,13 @@ function Class:Reopen()
 end
 
 function Class:EnsureGlobals()
-    if not self.Global.SelectRemindor then self.Global.SelectRemindor = {} end
-    if not self.Global.SelectRemindor.Settings then self.Global.SelectRemindor.Settings = {} end
+    if not self.PlayerGlobal.SelectRemindor then self.PlayerGlobal.SelectRemindor = {} end
+    if not self.PlayerGlobal.SelectRemindor.Settings then self.PlayerGlobal.SelectRemindor.Settings = {} end
 end
 
 function Class:Open(action, location)
     if action then self:Setup(action) end
-    if location then self.Global.Location.SelectRemindor = location end
+    if location then self.PlayerGlobal.Location.SelectRemindor = location end
     self:EnsureGlobals()
     self:CreateGui()
 end
@@ -124,7 +124,7 @@ function Class:Clear()
     self.Workers = nil
 end
 
-function Class:RestoreFromSave(parent)
+function Class:OnLoaded(parent)
     self.Parent = parent
     self:Close()
 end

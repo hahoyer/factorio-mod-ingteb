@@ -12,8 +12,6 @@ local class = require "core.class"
 
 local Class = class:new("MetadataScan", nil, {})
 
-function Class:new(parent) return self:adopt { Parent = parent } end
-
 local function SortByKey(target)
     if type(target) ~= "table" then return target end
     local d = Table:new(target)
@@ -36,7 +34,6 @@ function Class:Scan()
         end
     end
     if (__DebugAdapter and __DebugAdapter.instrument) then global.Game = SortByKey(global.Game) end
-    --dassert(false)
 end
 
 function Class:GetBackProxyAny(targetType, targetName, prototype)
@@ -194,24 +191,6 @@ function Class:GetTechnologyEffect(key, value, path, proxy)
                 or dassert(false)
             self:SetBackLink(targetType, value, path, proxy, key)
         end)
-end
-
-function Class:OnInitialise()
-    self:Scan()
-end
-
-function Class:OnConfigurationChanged(event)
-    if migration.on_config_changed(event, {}) then
-        self:Scan()
-    end
-end
-
-function Class:OnMigration()
-    self:Scan()
-end
-
-function Class:RestoreFromSave()
-    self:Scan()
 end
 
 return Class

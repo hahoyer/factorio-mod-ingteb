@@ -11,7 +11,7 @@ local UI = require("core.UI")
 local Class = class:new(
     "RemindorSettings", nil, {
     Player = { get = function(self) return self.Parent.Player end },
-    Global = { get = function(self) return self.Parent.Global end },
+    PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Database = { get = function(self) return self.Parent.Database end },
     Local = { get = function(self) return self.Parent.LocalSettings end },
     Default = { get = function(self) return self.Parent.DefaultSettings end },

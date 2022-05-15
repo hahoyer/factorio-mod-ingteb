@@ -210,7 +210,7 @@ function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
     if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
-    local global = self.Global
+    local global = self.PlayerGlobal
 
     local result = Helper.CreateFrameWithContent(
         moduleName, player.gui.screen, content, caption, options
@@ -241,10 +241,10 @@ function Helper.CreatePopupFrameWithContent(self, content, caption, options)
     if parentScreen and parentScreen.valid and parentScreen.object_name == "LuaGuiElement" then
         self.ParentScreen = parentScreen
     end
-    local isPopup = self.Global.IsPopup
-    self.Global.IsPopup = true
+    local isPopup = self.PlayerGlobal.IsPopup
+    self.PlayerGlobal.IsPopup = true
     local result = Helper.CreateFloatingFrameWithContent(self, content, caption, options)
-    self.Global.IsPopup = isPopup
+    self.PlayerGlobal.IsPopup = isPopup
     return result
 end
 
