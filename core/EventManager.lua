@@ -1,7 +1,6 @@
 local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 
-local Array = require "core.Array"
 local Dictionary = require "core.Dictionary"
 local class = require("core.class")
 local UI = require("core.UI")

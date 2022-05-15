@@ -4,7 +4,9 @@ local Dictionary = require "core.Dictionary"
 local Table = {}
 
 function Table.new(self, target)
-    if #target == 0 and next(target) then
+    if getmetatable(target) == Array or getmetatable(target) == Dictionary then
+        return target
+    elseif #target == 0 and next(target) then
         return Dictionary:new(target)
     elseif not next(target, #target > 0 and #target or nil) then
         return Array:new(target)

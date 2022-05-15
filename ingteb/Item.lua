@@ -38,7 +38,7 @@ Item.system.Properties = {
     ResearchingTechnologies = {
         cache = true,
         get = function(self)
-            local list = Table:new((self.BackLinks.research_unit_ingredients or {}).technology or {})
+            local list = Dictionary:new((self.BackLinks.research_unit_ingredients or {}).technology or {})
                 :ToArray(function(_, name) return self.Database:GetTechnology(name) end)
             if list:Any() then return list end
         end,

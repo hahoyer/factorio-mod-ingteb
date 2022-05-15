@@ -1,26 +1,10 @@
-local Dictionary = {}
-
-
-function Dictionary:Clone(predicate)
-    local result = Dictionary:new {}
-    for key, value in pairs(self) do
-        if not predicate or predicate(value, key) then result[key] = value end
-    end
-    return result
-end
+local TableNew = require "core.TableNew"
+local Dictionary = TableNew.Dictionary
+local Array = TableNew.Array
 
 function Dictionary:Where(predicate) return self:Clone(predicate) end
 
 function Dictionary:Except(other) return self:Where(function(_, key) return not other[key] end) end
-
-function Dictionary:new(target)
-    if not target then target = {} end
-    self.object_name = "Dictionary"
-    if getmetatable(target) == "private" then target = Dictionary.Clone(target) end
-    setmetatable(target, self)
-    self.__index = self
-    return target
-end
 
 function Dictionary:Select(transformation)
     local result = Dictionary:new {}
@@ -104,13 +88,6 @@ function Dictionary:ToGroup(getPair)
     return result
 end
 
-function Dictionary:ToArray(getItem)
-    local result = Array:new {}
-    if not getItem then getItem = function(value) return value end end
-    for key, value in pairs(self) do result:Append(getItem(value, key)) end
-    return result
-end
-
 --- Get the first element
 ---@param allowEmpty boolean optional default: true
 ---@param allowMultiple boolean optional default: true
@@ -151,6 +128,19 @@ function Dictionary:Concat(other, combine)
     return result
 end
 
+function Dictionary:AppendMany(values, combine)
+    for key, value in pairs(values) do
+        self[key] = self[key] and combine and combine(self[key], value, key) or value
+    end
+end
+
+function Dictionary:ToArray(getItem)
+    local result = Array:new {}
+    if not getItem then getItem = function(value) return value end end
+    for key, value in pairs(self) do result:Append(getItem(value, key)) end
+    return result
+end
+
 function Dictionary:AppendForKey(key, target)
     if key then
         local list = self[key]
@@ -159,10 +149,4 @@ function Dictionary:AppendForKey(key, target)
     end
 end
 
-function Dictionary:AppendMany(values, combine)
-    for key, value in pairs(values) do
-        self[key] = self[key] and combine and combine(self[key], value, key) or value
-    end
-end
-
-return Dicionary
+return Dictionary

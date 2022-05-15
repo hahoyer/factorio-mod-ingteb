@@ -1,13 +1,6 @@
-local Array = {}
-
-function Array:Clone(predicate)
-    local result = Array:new {}
-    for index = 1, #self do
-        local value = self[index]
-        if not predicate or predicate(value, index) then result:Append(value) end
-    end
-    return result
-end
+local TableNew = require "core.TableNew"
+local Dictionary = TableNew.Dictionary
+local Array = TableNew.Array
 
 function Array:Where(predicate) return self:Clone(predicate) end
 
@@ -35,28 +28,6 @@ function Array:UnionMany()
     local result = self[1]
     for index = 2, #self do result = result:Union(self[index]) end
     return result
-end
-
-function Array:new(target)
-    if not target then target = {} end
-    self.object_name = "Array"
-    if getmetatable(target) == "private" then target = Array.Clone(target) end
-    setmetatable(target, self)
-    self.__index = self
-    target:EnsureLength()
-    return target
-end
-
-function Array:__len() return self.Length end
-
-function Array:EnsureLength()
-    local index = next(self)
-    local result = 0
-    while index do
-        if type(index) == "number" and index > result then result = index end
-        index = next(self, index)
-    end
-    self.Length = result
 end
 
 function Array:FromNumber(number)
@@ -180,38 +151,6 @@ function Array:GetShortest()
     return self[index]
 end
 
-function Array:ToDictionary(getPair)
-    local result = Dictionary:new {}
-    for index = 1, #self do
-        local value = self[index]
-        if getPair then
-            local pair = getPair(value, index)
-            result[pair.Key] = pair.Value
-        else
-            result[index] = value
-        end
-    end
-    return result
-end
-
-function Array:ToGroup(getPair)
-    local result = Dictionary:new {}
-    for index = 1, #self do
-        local value = self[index]
-        if getPair then
-            local pair = getPair(value, index)
-            local current = result[pair.Key] or Array:new {}
-            current:Append(pair.Value)
-            result[pair.Key] = current
-        else
-            local current = result[index] or Array:new {}
-            current:Append(value)
-            result[index] = current
-        end
-    end
-    return result
-end
-
 function Array:ToArray(getItem)
     local result = Array:new {}
     if not getItem then getItem = function(value) return value end end
@@ -321,12 +260,6 @@ function Array:Remove(index)
     return result
 end
 
-function Array:Append(value)
-    self.Length = #self + 1
-    self[#self] = value
-    return value
-end
-
 function Array:AppendMany(values)
     local offset = #self
     self.Length = #self + #values
@@ -336,6 +269,38 @@ end
 function Array:InsertAt(position, value)
     self.Length = #self + 1
     return table.insert(self, position, value)
+end
+
+function Array:ToDictionary(getPair)
+    local result = Dictionary:new {}
+    for index = 1, #self do
+        local value = self[index]
+        if getPair then
+            local pair = getPair(value, index)
+            result[pair.Key] = pair.Value
+        else
+            result[index] = value
+        end
+    end
+    return result
+end
+
+function Array:ToGroup(getPair)
+    local result = Dictionary:new {}
+    for index = 1, #self do
+        local value = self[index]
+        if getPair then
+            local pair = getPair(value, index)
+            local current = result[pair.Key] or Array:new {}
+            current:Append(pair.Value)
+            result[pair.Key] = current
+        else
+            local current = result[index] or Array:new {}
+            current:Append(value)
+            result[index] = current
+        end
+    end
+    return result
 end
 
 return Array
