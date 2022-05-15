@@ -71,7 +71,7 @@ Class.system.Properties = {
         end,
     },
 
-    IsResource = { get = function(self) return self.Prototype.type == "resoure" end },
+    IsResource = { get = function(self) return self.Prototype.type == "resource" end },
     HasFluidHandling = { get = function(self) return #self.Prototype.fluidbox_prototypes > 0 end },
 
     RequiresFluidHandling = { get = function(self)
@@ -131,7 +131,7 @@ Class.system.Properties = {
     FuelCategories = {
         cache = true,
         get = function(self)
-            return self.Workers--
+            return self.Categories--
                 :Where(
                     function(category)
                     return category.Domain == "burning" or category.Domain == "fluid_burning"
@@ -151,30 +151,36 @@ Class.system.Properties = {
     Categories = {
         get = function(self)
             if not self.Prototype.is_building then return Dictionary:new() end
-            return Dictionary:new(Configurations.RecipeDomains)
+            local xreturn = Dictionary
+                :new(Configurations.RecipeDomains)
                 :ToArray(function(_, domainName)
                     return Array:new(self:GetCategoryNames(domainName))
                         :Select(function(categoryName)
                             return self.Database:GetCategory(domainName .. "." .. categoryName)
                         end)
-                end):ConcatMany()
+                end)
+                :ConcatMany()
+                :ToDictionary(function(category) return { Key = category.Name, Value = category } end)
+            return xreturn
         end
     },
 
     AllRecipes = {
         cache = true,
         get = function(self)
-            return self.Categories--
+            local xreturn = self.Categories--
                 :Select(function(category) return category.AllRecipes end)--
                 :Where(function(recipes) return recipes:Any() end) --
+            return xreturn
         end,
     },
     PossibleRecipes = {
         cache = true,
         get = function(self)
-            return self.Categories--
+            local xreturn = self.Categories--
                 :Select(function(category) return category.PossibleRecipes end)--
                 :Where(function(recipes) return recipes:Any() and recipes[1].Category.Workers:Any() end)
+            return xreturn
         end,
     },
     Recipes = {

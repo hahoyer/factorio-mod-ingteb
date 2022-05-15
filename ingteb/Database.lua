@@ -96,7 +96,7 @@ local Class = class:new(
 function Class:new(parent) return self:adopt { Parent = parent } end
 
 function Class:GetItemsPerTickText(amounts, ticks)
-    if not ticks then return "" end
+    if not amounts or not ticks then return "" end
     local amount = amounts.value or (amounts.max + amounts.min) / 2
     return " ("
         .. Number:new(self.ProductionTimeUnit:getTicks() * amount / ticks).Format3Digits
@@ -261,7 +261,7 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
         local categoryName = not prototype.resource_category and "steel_axe" --
             or prototype.resource_category
 
-        local ingredients = { { type = "resource", amount = 1, name = prototype.name } }
+        local ingredients = { { type = "resource", name = prototype.name } }
         local configuration = prototype.mineable_properties
         if configuration.required_fluid then
             table.insert(
@@ -530,6 +530,7 @@ function Class:GetStackOfGoods(target)
         temperature = target.temperature,
         catalyst_amount = target.catalyst_amount,
     }
+    if not next(amounts) then amounts = nil end
     local goods--
     = target.type == "item" and self:GetItem(target.name) --
         or target.type == "fluid" and self:GetFluid(target.name) --
@@ -702,7 +703,7 @@ function Class:GetRecipesGroupByCategory(target)
 end
 
 function Class:GetBackLinkFromPrototype(prototype)
-    return self.BackLinks[CoreHelper.GetObjectType(prototype)][prototype.name]
+    return self.Game[CoreHelper.GetObjectType(prototype)][prototype.name]
 end
 
 function Class:GetUsedByRecipes(prototype)
