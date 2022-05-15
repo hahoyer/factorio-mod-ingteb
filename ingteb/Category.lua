@@ -122,12 +122,9 @@ Class.system.Properties = {
             end
 
             local result = recipePrimaryList
-                :ToDictionary(
+                :Select(
                     function(recipePrimary)
-                    return {
-                        Key = recipePrimary.Prototype.name,
-                        Value = self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
-                    }
+                    return self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
                 end)
             return result
         end,
