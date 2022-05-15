@@ -112,6 +112,21 @@ local Result = {
     },
 
     Database = {
+        Order = {
+            Recipe = 1,
+            RecipeCommon = 2,
+            BurningRecipe = 3,
+            FuelRecipe = 3.5,
+            Technology = 4,
+            Entity = 5,
+            Bonus = 6,
+            Item = 7,
+            Fluid = 8,
+            FuelCategory = 9,
+            ModuleCategory = 10,
+            ModuleEffect = 11,
+            StackOfGoods = 12,
+        },
         ResourceTypes = {
             resource = true,
             tree = true,
