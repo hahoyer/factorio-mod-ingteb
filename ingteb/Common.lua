@@ -1,6 +1,7 @@
 local gui = require "__flib__.gui"
 local localisation = require "__flib__.dictionary"
 local Constants = require("Constants")
+local Configurations = require("Configurations").Database
 local Helper = require("ingteb.Helper")
 
 local Array = require "core.Array"
@@ -52,7 +53,7 @@ local Class = class:new(
 
     TypeOrder = {
         cache = true,
-        get = function(self) return self.Database.Order[self.class.name] end,
+        get = function(self) return Configurations.Order[self.class.name] end,
     },
 
     LocalisedName = {
