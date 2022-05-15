@@ -15,7 +15,7 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return Table:new(self.BackLinks.category.item)--
+            return Dictionary:new(self.BackLinks.category.item)--
                 :ToArray(function(_, name) return self.Database:GetItem(name) end)
 
         end,
