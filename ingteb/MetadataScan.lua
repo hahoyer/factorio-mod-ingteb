@@ -32,8 +32,7 @@ function Class:Scan()
 
     for _, type in pairs { "entity", "fluid", "item", "recipe", "technology" } do
         local key = type .. "_prototypes"
-        for name, prototype in pairs(game[key]) do
-            dassert(name == prototype.name)
+        for _, prototype in pairs(game[key]) do
             self:ScanPrototype(type, prototype)
         end
     end
@@ -94,16 +93,18 @@ function Class:ScanPrototype(targetType, prototype)
 
     local proxy = self:GetBackProxyRoot(targetType, prototype.name, prototype)
 
-    return Dictionary
+    Dictionary
         :new(Configurations.BackLinkMetaData[prototype.object_name])
         :Select(function(options, propertyName) self:ScanValue(proxy, prototype, propertyName, options) end)
-end
 
-function Class:ScanValue(proxy, prototype, property, options)
+
+    end
+
+function Class:ScanValue(proxy, prototype, property, setup)
     dassert(type(proxy) == "table")
     dassert(type(prototype.object_name) == "string")
     dassert(type(property) == "string")
-    dassert(type(options) == "table")
+    dassert(type(setup) == "table")
 
     local function GetPathAndValue(prototype, property, options)
         local value = prototype[property]
@@ -127,20 +128,21 @@ function Class:ScanValue(proxy, prototype, property, options)
         end
     end
 
-    local path, value = GetPathAndValue(prototype, property, options)
+    local path, value = GetPathAndValue(prototype, property, setup)
     if not value then return end
 
+    ConditionalBreak(setup.Break, proxy.Type ..".".. proxy.Name..".".. property)
     local valueType = CoreHelper.GetObjectType(value)
     if valueType then
         self:SetBackLink(valueType, value.name or value, property, proxy)
     elseif IsList(value) then
-        self:ScanList(value, options, path, proxy)
-    elseif type(value) == "table" and options.IsList then
-        self:ScanNamedList(value, options, path, proxy)
+        self:ScanList(value, setup, path, proxy)
+    elseif type(value) == "table" and setup.IsList then
+        self:ScanNamedList(value, setup, path, proxy)
     elseif type(value) == "table" then
-        self:ScanElement(nil, value, options, path, proxy)
+        self:ScanElement(nil, value, setup, path, proxy)
     elseif type(value) == "string" then
-        self:SetBackLink(options.Type or property, value, path, proxy)
+        self:SetBackLink(setup.Type or property, value, path, proxy)
     else
         dassert(false)
     end

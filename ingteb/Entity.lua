@@ -19,12 +19,12 @@ Class.system.Properties = {
         return "ingteb-type-name." .. type
     end },
     UsedBy = {
-        cache = true,
+        --cache = true,
         get = function(self) return self.Database:GetUsedByRecipes(self.Prototype) end,
     },
 
     CreatedBy = {
-        cache = true,
+        --cache = true,
         get = function(self) return self.Database:GetCreatedByRecipes(self.Prototype) end,
     },
 

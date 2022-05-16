@@ -162,8 +162,8 @@ local Result = {
             LuaItemPrototype = {
                 group = {},
                 subgroup = {},
-                burnt_result = {},
-                fuel_category = {},
+                burnt_result = {Break = true},
+                fuel_category = {Break = false, Type = "fuel_category"},
                 place_result = {},
                 rocket_launch_products = {},
                 module_effects = { Type = "module_effect", IsList = true },
