@@ -75,8 +75,8 @@ function Class:OnStringTranslated(event)
                 global.Players[index].Localisation = language_data.dictionaries
                 return index
             end)
+        log("localisation initialize complete.")
     end
-    log("localisation initialize complete.")
     return result
 end
 
