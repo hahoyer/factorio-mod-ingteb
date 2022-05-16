@@ -254,7 +254,7 @@ function Class:GetTaskIndex(key)
 end
 
 function Class:OnSettingsChanged()
-    self.cache[Class.name].ParentData.IsValid = false
+    self.system.Cache[Class.name].ParentData.IsValid = false
     self:Refresh()
 end
 

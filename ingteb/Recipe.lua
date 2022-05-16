@@ -252,7 +252,7 @@ function Recipe:IsBefore(other)
     return aOrder < bOrder
 end
 
-function Recipe:Refresh() self.cache.Recipe.OrderValue.IsValid = false end
+function Recipe:Refresh() self.system.Cache.Recipe.OrderValue.IsValid = false end
 
 function Recipe:SortAll() end
 
