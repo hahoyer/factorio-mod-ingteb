@@ -695,7 +695,11 @@ function Class:Close()
 end
 
 function Class:Open(target)
-    if not target then target = self.Database:GetProxyFromCommonKey(self.PlayerGlobal.History.Current) end
+    dassert(not target)
+    if target then log("Warning: obsolete function used (target = " .. target.CommonKey .. ")...") end
+    local targetKey  = self.PlayerGlobal.History.Current
+    log("opening Targetkey = " .. targetKey .. "...")
+    local target = self.Database:GetProxyFromCommonKey(self.PlayerGlobal.History.Current)
     log("opening Target = " .. target.CommonKey .. "...")
     self.PlayerGlobal.Links.Presentator = {}
     self.Spritor:StartCollecting()
