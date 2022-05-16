@@ -24,6 +24,10 @@ local function SortByKey(target)
 end
 
 function Class:Scan()
+    if self.IsValid then return end
+    self.IsValid = true
+    log("Scanning metadata ...")
+
     global.Game = {}
 
     for _, type in pairs { "entity", "fluid", "item", "recipe", "technology" } do
@@ -34,6 +38,8 @@ function Class:Scan()
         end
     end
     if (__DebugAdapter and __DebugAdapter.instrument) then global.Game = SortByKey(global.Game) end
+
+    log("Scanning metadata complete.")
 end
 
 function Class:GetBackProxyAny(targetType, targetName, prototype)
