@@ -183,12 +183,23 @@ local Result = {
                 research_unit_ingredients = {},
             },
         },
+
+        ---
+        -- Properties:
+        --    Workers: property-path for workers to get the categories they accept
+        --    BackLinkType: game-type of categories of this domain
+        --    ProxyClassName: internal class name for categories of this domain
+        --    RecipePrimary: game-type to obtain the recipes for that category
+        --    RecipeRecipeCondition: function-name to filter the RecipePrimary for this category. Should be defined at ProxyClassName
+        --    Recipes: for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to
+        --
         RecipeDomains = {
             boiling = {
                 CategoryByType = "boiler"
             },
             burning = {
-                Workers = "burner_prototype"
+                Workers = {"burner_prototype","fuel_categories"},
+                BackLinkType = "fuel_category",
             },
             crafting = {
                 Workers = "crafting_categories",

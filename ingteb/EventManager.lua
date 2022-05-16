@@ -34,13 +34,7 @@ local Class = class:new(
             end
         end,
     },
-    Database = {
-        get = function(self)
-            local result = self.Modules.Database
-            result:Ensure()
-            return result
-        end,
-    },
+    Database = { get = function(self) return self.Modules.Database end, },
     LocalisationInformation = {
         get = function(self)
             local result = self.Modules.LocalisationInformation
@@ -148,7 +142,6 @@ function Class:OnResearchCancelled(event)
 end
 
 function Class:OnResearchQueueChanged(event)
-    if not self.Modules.Database.IsInitialized then return end
     self.Database:OnResearchQueueChanged(event)
 
     for index in pairs(event.force.players) do

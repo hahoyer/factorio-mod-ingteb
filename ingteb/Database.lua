@@ -104,24 +104,13 @@ function Class:GetItemsPerTickText(amounts, ticks)
         .. "[img=items-per-timeunit]" .. ")"
 end
 
-function Class:Ensure()
-    dassert(self.IsInitialized)
-    if self.IsInitialized then return self end
-    local proxies = self.Proxies
-    while next(proxies) do proxies[next(proxies)] = nil end
-
-    return self
-end
-
 function Class:GetProxyFromCommonKey(targetKey)
-    self:Ensure()
     local _, _, className, prototypeName = targetKey:find("^(.-)%.(.*)$")
     local result = self:GetProxy(className, prototypeName)
     return result
 end
 
 function Class:GetProxyFromPrototype(prototype)
-    self:Ensure()
     local objectType = prototype.object_name or prototype.type
     if objectType == "LuaFluidPrototype" then
         return self:GetFluid(nil, prototype)
@@ -278,7 +267,7 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
     local get = {
         boiling = unknown,
         burning = unknown,
-        crafting = unknown,
+        crafting = function(recipePrimary) return recipePrimary end,
         fluid_burning = unknown,
         fluid_mining = getMiningRecipe,
         mining = getMiningRecipe,
@@ -287,7 +276,8 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
         hand_mining = getMiningRecipe,
     }
 
-    return get[domain](recipePrimary)
+    local xreturn = get[domain](recipePrimary)
+    return xreturn
 end
 
 ---@param prototype table LuaEntityPrototype
@@ -550,7 +540,6 @@ function Class:Get(target)
         name = target.Name
         prototype = target.Prototype
     end
-    self:Ensure()
     dassert(className)
     dassert(name or prototype)
     return self:GetProxy(className, name, prototype)
@@ -564,6 +553,7 @@ function Class:GetClassName(target)
     if target.Type == "item" then return "Item"
     elseif target.Type == "entity" then return "Entity"
     elseif target.Type == "technology" then return "Technology"
+    elseif target.Type == "recipe" then return "Recipe"
     else
         dassert()
     end
@@ -597,7 +587,6 @@ function Class:GetFromSelection(target)
     else
         dassert()
     end
-    self:Ensure()
     dassert(className)
     dassert(name or prototype)
     return self:GetProxy(className, name, prototype)
@@ -701,6 +690,8 @@ end
 function Class:GetFilteredProxy(prototype) return MetaDataScan:GetFilteredProxy(prototype) end
 
 function Class:Scan()
+    local proxies = self.Proxies
+    while next(proxies) do proxies[next(proxies)] = nil end
     MetaDataScan:Scan()
 end
 
@@ -723,6 +714,9 @@ function Class:OnMigration()
 end
 
 function Class:OnLoaded()
+    local proxies = self.Proxies
+    while next(proxies) do proxies[next(proxies)] = nil end
+
     if (__DebugAdapter and __DebugAdapter.instrument) then
         self:Scan()
     end

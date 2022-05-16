@@ -279,16 +279,31 @@ function Class:CreateStack(amounts)
     return self.Database:CreateStackFromGoods(self, amounts)
 end
 
+function Class:GetNestedProperty(prototype, path)
+    local result = prototype
+    if not result then return end
+    if type(path)=="table" then
+        for _, value in ipairs(path) do
+            result = self:GetNestedProperty(result, value)
+            if not result then return end
+        end
+        return result
+    else
+        return result[path]
+    end
+end
+
 function Class:GetCategoryNames(domainName)
     local prototype = self.Prototype
     local setup = Configurations.RecipeDomains[domainName]
     if setup.Workers then
-        if prototype[setup.Workers] then
-            return Dictionary:new(prototype[setup.Workers])
+        local property = self:GetNestedProperty(prototype,setup.Workers)
+        if property then
+            return Dictionary:new(property)
                 :Where(function(value) return value end)
                 :ToArray(function(_, name) return name end)
         else
-            return
+            return {}
         end
     elseif setup.CategoryByType then
         if setup.CategoryByType == prototype.name then
