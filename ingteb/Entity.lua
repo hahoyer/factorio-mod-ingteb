@@ -15,7 +15,7 @@ Class.system.Properties = {
     SpriteType = { get = function(self) return "entity" end },
     BackLinkType = { get = function(self) return "entity" end },
     TypeStringForLocalisation = { get = function(self)
-        local type = self.IsResource and "resoure" or "entity"
+        local type = self.IsResource and "resource" or "entity"
         return "ingteb-type-name." .. type
     end },
     UsedBy = {
