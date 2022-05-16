@@ -32,13 +32,6 @@ local Class = class:new(
     PlayerGlobal = { get = function(self) return self.Parent.PlayerGlobal end },
     Game = { get = function(self) return global.Game end },
     BackLinks = {},
-    Proxies = {
-        get = function(self)
-            if not global.Database then global.Database = {} end
-            if not global.Database.Proxies then global.Database.Proxies = {} end
-            return global.Database.Proxies
-        end,
-    },
     ProductionTimeUnit = {
         get = function(self)
             local rawValue = settings.get_player_settings(self.Player)["ingteb_production-timeunit"]
@@ -94,7 +87,7 @@ local Class = class:new(
 }
 )
 
-function Class:new(parent) return self:adopt { Parent = parent } end
+function Class:new(parent) return self:adopt { Parent = parent, Proxies = {} } end
 
 function Class:GetItemsPerTickText(amounts, ticks)
     if not amounts or not ticks then return "" end
@@ -690,8 +683,6 @@ end
 function Class:GetFilteredProxy(prototype) return MetaDataScan:GetFilteredProxy(prototype) end
 
 function Class:Scan()
-    local proxies = self.Proxies
-    while next(proxies) do proxies[next(proxies)] = nil end
     MetaDataScan:Scan()
 end
 
@@ -714,9 +705,6 @@ function Class:OnMigration()
 end
 
 function Class:OnLoaded()
-    local proxies = self.Proxies
-    while next(proxies) do proxies[next(proxies)] = nil end
-
     if (__DebugAdapter and __DebugAdapter.instrument) then
         self:Scan()
     end
