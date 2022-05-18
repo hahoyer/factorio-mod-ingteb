@@ -97,7 +97,7 @@ Recipe.system.Properties = {
     Category = {
         cache = true,
         get = function(self)
-            return self.Database:GetCategory("crafting." .. self.Prototype.category)
+            return self.Database:GetCategory("recipe_category." .. self.Prototype.category)
         end,
     },
 

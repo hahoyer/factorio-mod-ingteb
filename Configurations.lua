@@ -162,8 +162,8 @@ local Result = {
             LuaItemPrototype = {
                 group = {},
                 subgroup = {},
-                burnt_result = {Break = true},
-                fuel_category = {Break = false, Type = "fuel_category"},
+                burnt_result = { Break = false },
+                fuel_category = { Break = true, Type = "fuel_category" },
                 place_result = {},
                 rocket_launch_products = {},
                 module_effects = { Type = "module_effect", IsList = true },
@@ -184,28 +184,34 @@ local Result = {
             },
         },
 
-        ---
-        -- Properties:
-        --    Workers: property-path for workers to get the categories they accept
-        --    BackLinkType: game-type of categories of this domain
-        --    ProxyClassName: internal class name for categories of this domain
-        --    RecipePrimary: game-type to obtain the recipes for that category
-        --    RecipeRecipeCondition: function-name to filter the RecipePrimary for this category. Should be defined at ProxyClassName
-        --    Recipes: for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to
-        --
+        RecipeDomainsDocumentation = {
+            Properties = {
+                Workers = "property-path for workers to get the categories they accept",
+                BackLinkType = "game-type of categories of this domain",
+                ProxyClassName = "internal class name for categories of this domain",
+                RecipePrimary = "game-type to obtain the recipes for that category",
+                RecipeRecipeCondition = "function-name to filter the RecipePrimary for this category. Should be defined at ProxyClassName",
+                Recipes = "for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to",
+                Ingredients = "property name of backlink. Get recipe where this is ingedient.",
+                Products = "property name of backlink. Get recipe where this is product.",
+            }
+        },
+
         RecipeDomains = {
             boiling = {
                 CategoryByType = "boiler"
             },
-            burning = {
-                Workers = {"burner_prototype","fuel_categories"},
+            fuel_category = {
+                Workers = { "burner_prototype", "fuel_categories" },
                 BackLinkType = "fuel_category",
             },
-            crafting = {
+            recipe_category = {
                 Workers = "crafting_categories",
                 Recipes = "category",
                 BackLinkType = "recipe_category",
-                ProxyClassName = "Recipe"
+                ProxyClassName = "Recipe",
+                Ingredients = "ingredients",
+                Products = "products"
             },
             fluid_burning = {
                 Workers = "fluid_energy_source_prototype"

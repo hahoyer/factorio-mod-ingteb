@@ -134,7 +134,7 @@ Class.system.Properties = {
             return self.Categories--
                 :Where(
                     function(category)
-                    return category.Domain == "burning" or category.Domain == "fluid_burning"
+                    return category.Domain == "fuel_category" or category.Domain == "fluid_burning"
                 end
                 )--
                 :ToArray(
@@ -282,7 +282,7 @@ end
 function Class:GetNestedProperty(prototype, path)
     local result = prototype
     if not result then return end
-    if type(path)=="table" then
+    if type(path) == "table" then
         for _, value in ipairs(path) do
             result = self:GetNestedProperty(result, value)
             if not result then return end
@@ -297,7 +297,7 @@ function Class:GetCategoryNames(domainName)
     local prototype = self.Prototype
     local setup = Configurations.RecipeDomains[domainName]
     if setup.Workers then
-        local property = self:GetNestedProperty(prototype,setup.Workers)
+        local property = self:GetNestedProperty(prototype, setup.Workers)
         if property then
             return Dictionary:new(property)
                 :Where(function(value) return value end)
@@ -321,7 +321,7 @@ function Class:GetCategoryNames(domainName)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("crafting." .. category, prototype)
+        self:AddWorkerForCategory("recipe_category." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
@@ -341,7 +341,7 @@ function Class:GetCategoryNames(domainName)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("burning." .. category, prototype)
+                self:AddWorkerForCategory("fuel_category." .. category, prototype)
             end
         else
             log {
@@ -381,7 +381,7 @@ end
 function Class:GetSpeedFactor(category)
     if category.Domain == "rocket_launch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
-    elseif category.Domain == "burning" or category.Domain == "fluid_burning" then
+    elseif category.Domain == "fuel_category" or category.Domain == "fluid_burning" then
         return self.MaximalEnergyConsumption
     elseif category.Domain == "boiling" then
         return 1

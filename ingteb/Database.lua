@@ -113,7 +113,7 @@ function Class:GetProxyFromPrototype(prototype)
         return self:GetEntity(nil, prototype)
     elseif objectType == "LuaRecipePrototype" then
         return self:GetRecipe(nil, prototype)
-    elseif objectType == "burning" or objectType == "fluid_burning" then
+    elseif objectType == "fuel_category" or objectType == "fluid_burning" then
         return self:GetBurningRecipe(nil, prototype)
     elseif objectType == "boiling" then
         return self:GetBoilingRecipe(nil, prototype)
@@ -260,7 +260,7 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
     local get = {
         boiling = unknown,
         burning = unknown,
-        crafting = function(recipePrimary) return recipePrimary end,
+        recipe_category = function(recipePrimary) return recipePrimary end,
         fluid_burning = unknown,
         fluid_mining = getMiningRecipe,
         mining = getMiningRecipe,
@@ -275,7 +275,7 @@ end
 
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipe(prototype)
-    local type = prototype.object_name == "LuaRecipePrototype" and "crafting" or prototype.type
+    local type = prototype.object_name == "LuaRecipePrototype" and "recipe_category" or prototype.type
 
     dassert(type)
     dassert(prototype.name)
@@ -306,7 +306,7 @@ function Class:ScanEntity(prototype)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("crafting." .. category, prototype)
+        self:AddWorkerForCategory("recipe_category." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
@@ -326,7 +326,7 @@ function Class:ScanEntity(prototype)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("burning." .. category, prototype)
+                self:AddWorkerForCategory("fuel_category." .. category, prototype)
             end
         else
             log {
@@ -448,7 +448,7 @@ function Class:ScanFluid(prototype)
 end
 
 function Class:ScanItem(prototype)
-    self:ScanFuel(prototype, "burning", prototype.fuel_category)
+    self:ScanFuel(prototype, "fuel_category", prototype.fuel_category)
 
     if prototype.burnt_result and not prototype.fuel_category then
         log {
@@ -623,7 +623,7 @@ end
 ---@param target table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
-        local recipeCandidates = target.CreatedBy["crafting.crafting"]
+        local recipeCandidates = target.CreatedBy["recipe_category.crafting"]
         local result = 0
         local recipe
         if recipeCandidates then
@@ -648,15 +648,28 @@ function Class:GetCraftableCount(target)
     end
 end
 
-function Class:GetRecipesGroupByCategory(target)
-    if not target or not target.recipe then return Dictionary:new() end
-    return Dictionary:new(target.recipe)
-        :ToGroup(
-            function(_, recipeName)
-            local proxy = self:GetRecipe(recipeName)
-            return { Key = proxy.Category.Name, Value = proxy }
-        end
-        )
+function Class:GetRecipesGroupByCategory(prototype, direction)
+    dassert(direction == "Ingredients" or direction == "Products")
+    local backLink = self:GetBackLinkFromPrototype(prototype)
+    local result = Dictionary:new(Configurations.RecipeDomains)
+        :Select(function(value, key)
+
+            if key == "recipe_category" then
+                local target = backLink[value[direction]]
+                if not target or not target.recipe then return Dictionary:new() end
+                return Dictionary:new(target.recipe)
+                    :ToGroup(
+                        function(_, recipeName)
+                        local proxy = self:GetRecipe(recipeName)
+                        return { Key = proxy.Category.Name, Value = proxy }
+                    end
+                    )
+            elseif key == "fuel_category" then
+                dassert()
+            end
+
+        end)
+    return result
 end
 
 function Class:GetBackLinkFromPrototype(prototype)
@@ -664,12 +677,12 @@ function Class:GetBackLinkFromPrototype(prototype)
 end
 
 function Class:GetUsedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).ingredients)
+    local xreturn = self:GetRecipesGroupByCategory(prototype, "Ingredients")
     return xreturn
 end
 
 function Class:GetCreatedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(self:GetBackLinkFromPrototype(prototype).products)
+    local xreturn = self:GetRecipesGroupByCategory(prototype, "Products")
     return xreturn
 end
 
