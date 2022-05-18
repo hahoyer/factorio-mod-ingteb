@@ -128,63 +128,69 @@ function Class:ScanValue(proxy, prototype, property, setup)
         end
     end
 
+    local function ScanElement(key, value, options, path, proxy)
+        if options.GetValue then
+            return self[options.GetValue](self, key, value, path, proxy)
+        end
+
+        if value == nil then return end
+        local targetType = options.Type
+        if type(value) == "boolean" then
+            dassert(options.Type, "Boolean property requires Type in options: " .. serpent.block(options))
+        else
+            targetType = (CoreHelper.GetObjectType(value) or value.type)
+                or targetType
+                or value.name
+                or value
+        end
+
+        dassert(type(targetType) == "string")
+        local targetName =
+        type(key) == "string" and key
+            or options.GetName and options.GetName(value)
+            or value.name or value
+        dassert(type(targetName) == "string")
+
+        local index = type(key) == "number" and key
+        self:SetBackLink(targetType, targetName, path, proxy, index)
+    end
+
+    local function ScanList(value, options, path, proxy)
+        for index, value in ipairs(value) do
+            ScanElement(index, value, options, path, proxy)
+        end
+    end
+
+    local function ScanNamedList(value, options, path, proxy)
+        for name, value in pairs(value) do
+            ScanElement(name, value, options, path, proxy)
+        end
+    end
+
     local path, value = GetPathAndValue(prototype, property, setup)
     if not value then return end
 
     ConditionalBreak(setup.Break, proxy.Type ..".".. proxy.Name..".".. property)
     local valueType = CoreHelper.GetObjectType(value)
+    local valueName
     if valueType then
-        self:SetBackLink(valueType, value.name or value, property, proxy)
+        valueName = value.name or value
     elseif IsList(value) then
-        self:ScanList(value, setup, path, proxy)
+        ScanList(value, setup, path, proxy)
     elseif type(value) == "table" and setup.IsList then
-        self:ScanNamedList(value, setup, path, proxy)
+        ScanNamedList(value, setup, path, proxy)
     elseif type(value) == "table" then
-        self:ScanElement(nil, value, setup, path, proxy)
+        ScanElement(nil, value, setup, path, proxy)
     elseif type(value) == "string" then
-        self:SetBackLink(setup.Type or property, value, path, proxy)
+        valueType = setup.Type or property
+        valueName = value
     else
         dassert(false)
     end
-end
 
-function Class:ScanList(value, options, path, proxy)
-    for index, value in ipairs(value) do
-        self:ScanElement(index, value, options, path, proxy)
+    if valueType then
+        self:SetBackLink(valueType, valueName, property, proxy)
     end
-end
-
-function Class:ScanNamedList(value, options, path, proxy)
-    for name, value in pairs(value) do
-        self:ScanElement(name, value, options, path, proxy)
-    end
-end
-
-function Class:ScanElement(key, value, options, path, proxy)
-    if options.GetValue then
-        return self[options.GetValue](self, key, value, path, proxy)
-    end
-
-    if value == nil then return end
-    local targetType = options.Type
-    if type(value) == "boolean" then
-        dassert(options.Type, "Boolean property requires Type in options: " .. serpent.block(options))
-    else
-        targetType = (CoreHelper.GetObjectType(value) or value.type)
-            or targetType
-            or value.name
-            or value
-    end
-
-    dassert(type(targetType) == "string")
-    local targetName =
-    type(key) == "string" and key
-        or options.GetName and options.GetName(value)
-        or value.name or value
-    dassert(type(targetName) == "string")
-
-    local index = type(key) == "number" and key
-    self:SetBackLink(targetType, targetName, path, proxy, index)
 end
 
 function Class:GetTechnologyEffect(key, value, path, proxy)
