@@ -27,9 +27,8 @@ Class.system.Properties = {
         end,
     },
     Category = {
-        cache = true,
         get = function(self)
-            return self.Database:GetCategory(self.Prototype.type .. "." .. self.Prototype.category)
+            return self.Database:GetCategory(self.Domain .. "." .. self.Prototype.category)
         end
     },
 
@@ -83,12 +82,14 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    dassert(not name)
+    dassert(prototype)
+    local expectedName = prototype.name
+    dassert(not name or name == expectedName)
     dassert(prototype)
     dassert(database)
 
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
-    self.Name = prototype.name
+    self.Name = expectedName
 
     self.IsRecipe = true
 

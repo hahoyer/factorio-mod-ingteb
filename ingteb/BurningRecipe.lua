@@ -13,13 +13,10 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
-    dassert(not name)
-    dassert(prototype)
-    dassert(database)
 
-    local self = self:adopt(self.system.BaseClass:new(nil, prototype, database))
-    self.IsFluid = prototype.object_name == "LuaFluidPrototype"
-
+    local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
+    self.IsFluid = prototype.object_name_prototype == "LuaFluidPrototype"
+    self.Domain = "fuel_category"
 
     return self
 end

@@ -7,38 +7,38 @@ local Constants = require("Constants")
 local Array = require "core.Array"
 local Dictionary = require "core.Dictionary"
 
-local Helper = {}
+local Class = {}
 
 ---@param guiElement table LuaGuiElement
 ---@return table GuiLocation
-function Helper.GetLocation(guiElement)
+function Class.GetLocation(guiElement)
     if not guiElement then
         return
     elseif guiElement.location then
         return guiElement.location
     else
-        return Helper.GetLocation(guiElement.parent)
+        return Class.GetLocation(guiElement.parent)
     end
 end
 
-function Helper.GetActualType(type)
+function Class.GetActualType(type)
     if type == "item" or type == "fluid" or type == "technology" or type == "entity" or type
         == "recipe" then return type end
     if type == "tool" then return "technology" end
     return "entity"
 end
 
-function Helper.FormatSpriteName(target)
-    if target.name then return Helper.GetActualType(target.type) .. "." .. target.name end
+function Class.FormatSpriteName(target)
+    if target.name then return Class.GetActualType(target.type) .. "." .. target.name end
 end
 
-function Helper.FormatRichText(target)
-    return "[" .. Helper.GetActualType(target) .. "=" .. target.name .. "]"
+function Class.FormatRichText(target)
+    return "[" .. Class.GetActualType(target) .. "=" .. target.name .. "]"
 end
 
-function Helper.HasForce(type) return type == "technology" or type == "recipe" end
+function Class.HasForce(type) return type == "technology" or type == "recipe" end
 
-function Helper.ShowFrame(player, name, create)
+function Class.ShowFrame(player, name, create)
     local frame = player.gui.screen
     local main = frame[name]
     if main then
@@ -61,7 +61,7 @@ function Helper.ShowFrame(player, name, create)
     return main
 end
 
-function Helper.DeepEqual(a, b)
+function Class.DeepEqual(a, b)
     if not a then return not b end
     if not b then return false end
     if type(a) ~= type(b) then return false end
@@ -71,7 +71,7 @@ function Helper.DeepEqual(a, b)
 
     for key, value in pairs(a) do
         keyCache[key] = true
-        if not Helper.DeepEqual(value, b[key]) then return false end
+        if not Class.DeepEqual(value, b[key]) then return false end
     end
 
     for key, _ in pairs(b) do if not keyCache[key] then return false end end
@@ -102,13 +102,13 @@ local function StripArray(target)
     end
 end
 
-function Helper.ScrutinizeLocalisationString(target)
+function Class.ScrutinizeLocalisationString(target)
     if type(target) ~= "table" then return target end
-    for index = 2, #target do target[index] = Helper.ScrutinizeLocalisationString(target[index]) end
+    for index = 2, #target do target[index] = Class.ScrutinizeLocalisationString(target[index]) end
     return StripArray(EnsureMaxParameters(target, 20))
 end
 
-function Helper.SpriteStyleFromCode(code)
+function Class.SpriteStyleFromCode(code)
     return code == "active" and "ingteb-light-button" --
         or code == "not-researched" and "red_slot_button" --
         or code == "researching" and "yellow_slot_button" --
@@ -125,7 +125,7 @@ end
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFrameWithContent(moduleName, frame, content, caption, options)
+function Class.CreateFrameWithContent(moduleName, frame, content, caption, options)
     if not options then options = {} end
     local buttons = options.buttons or {}
     local result = gui.build(
@@ -206,13 +206,13 @@ end
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateFloatingFrameWithContent(self, content, caption, options)
+function Class.CreateFloatingFrameWithContent(self, content, caption, options)
     if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
     local global = self.PlayerGlobal
 
-    local result = Helper.CreateFrameWithContent(
+    local result = Class.CreateFrameWithContent(
         moduleName, player.gui.screen, content, caption, options
     )
     player.opened = result.Main
@@ -236,14 +236,14 @@ end
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreatePopupFrameWithContent(self, content, caption, options)
+function Class.CreatePopupFrameWithContent(self, content, caption, options)
     local parentScreen = self.Player.opened
     if parentScreen and parentScreen.valid and parentScreen.object_name == "LuaGuiElement" then
         self.ParentScreen = parentScreen
     end
     local isPopup = self.PlayerGlobal.IsPopup
     self.PlayerGlobal.IsPopup = true
-    local result = Helper.CreateFloatingFrameWithContent(self, content, caption, options)
+    local result = Class.CreateFloatingFrameWithContent(self, content, caption, options)
     self.PlayerGlobal.IsPopup = isPopup
     return result
 end
@@ -257,11 +257,11 @@ end
 --- buttons table[] flib.GuiBuildStructure
 --- subModule string name of the subModule for location and actions
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
-function Helper.CreateLeftSideFrameWithContent(self, content, caption, --[[optioal]] options)
+function Class.CreateLeftSideFrameWithContent(self, content, caption, --[[optioal]] options)
     if not options then options = {} end
     local moduleName = self.class.name
     local player = self.Player
-    local result = Helper.CreateFrameWithContent(
+    local result = Class.CreateFrameWithContent(
         moduleName, mod_gui.get_frame_flow(player), content, caption, options
     )
     return result
@@ -272,7 +272,7 @@ end
 ---@param top any LocalizedText that will be the head or then only result if there are no lines
 ---@param tail table Array of LocalizedText
 ---@return any LocalisedString
-function Helper.ConcatLocalisedText(top, tail)
+function Class.ConcatLocalisedText(top, tail)
     local lines = Array:new {}
     local function append(line)
         if line then
@@ -287,10 +287,10 @@ function Helper.ConcatLocalisedText(top, tail)
         lines:InsertAt(1, "")
         result = { "", top, lines }
     end
-    return Helper.ScrutinizeLocalisationString(result)
+    return Class.ScrutinizeLocalisationString(result)
 end
 
-function Helper.CreatePrototypeProxy(target)
+function Class.CreatePrototypeProxy(target)
     local result = {}
     for key, value in pairs(target) do
         if key ~= "Prototype" and key ~= "Also" then
@@ -327,7 +327,7 @@ function Helper.CreatePrototypeProxy(target)
     return result
 end
 
-function Helper.CalculateHeaterRecipe(prototype)
+function Class.CalculateHeaterRecipe(prototype)
     local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
     local inBox--
     = fluidBoxes--
@@ -354,7 +354,7 @@ function Helper.CalculateHeaterRecipe(prototype)
         amount = amount / prototype.burner_prototype.effectivity
     end
 
-    return Helper.CreatePrototypeProxy { type = "boiling",
+    return Class.CreatePrototypeProxy { type = "boiling",
         Prototype = prototype,
         sprite_type = "entity",
         hidden = true,
@@ -365,7 +365,7 @@ function Helper.CalculateHeaterRecipe(prototype)
     }
 end
 
-function Helper.IsValidBoiler(prototype)
+function Class.IsValidBoiler(prototype)
     local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
     if not fluidBoxes then
         log {
@@ -421,4 +421,30 @@ function Helper.IsValidBoiler(prototype)
     return result
 end
 
-return Helper
+function Class.GetNestedProperty(prototype, path)
+    local result = prototype
+    if not result then return end
+    if type(path) == "table" then
+        for _, value in ipairs(path) do
+            result = Class.GetNestedProperty(result, value)
+            if not result then return end
+        end
+        return result
+    else
+        return result[path]
+    end
+end
+
+function Class.GetNestedPath(path)
+    if type(path) == "table" then
+        return Array
+            :new(path)
+            :Select(function(item) return Class.GetNestedPath(item) end)
+            :Stringify(".")
+    else
+        dassert(type(path) == "string")
+        return path
+    end
+end
+
+return Class

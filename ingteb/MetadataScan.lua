@@ -4,6 +4,7 @@ local UnusedMetaData = require "ingteb.UnusedMetaData"
 local CoreHelper = require "core.Helper"
 local Constants = require "Constants"
 local Configurations = require("Configurations").Database
+local Helper = require "ingteb.Helper"
 
 local Array = require "core.Array"
 local Dictionary = require "core.Dictionary"
@@ -13,7 +14,10 @@ local class = require "core.class"
 local Class = class:new("MetadataScan", nil, {})
 
 local function SortByKey(target)
-    if type(target) ~= "table" then return target end
+    if type(target) ~= "table"
+        or target.DebugPrototype
+        or target.Prototype
+        or target.Proxy then return target end
     local d = Table:new(target)
     if getmetatable(d) == Array then return target end
     local keys = d:ToArray(function(_, key) return key end)
@@ -36,13 +40,13 @@ function Class:Scan()
             self:ScanPrototype(type, prototype)
         end
     end
-    if (__DebugAdapter and __DebugAdapter.instrument) then global.Game = SortByKey(global.Game) end
+    if (IsDebugMode) then global.Game = SortByKey(global.Game) end
 
     log("Scanning metadata complete.")
 end
 
-function Class:GetBackProxyAny(targetType, targetName, prototype)
-    dassert(not (targetType == "category" and targetName ~= "slogistics"))
+function Class:GetBackProxyAny(targetType, targetName, prototype, debugPrototype)
+    dassert(targetType ~= "item-description.nuclear-fuel")
     dassert(type(targetType) == "string")
     dassert(type(targetName) == "string")
     local result = CoreHelper.EnsureKeys(global.Game, { targetType, targetName })
@@ -53,6 +57,11 @@ function Class:GetBackProxyAny(targetType, targetName, prototype)
     else
         result.Prototype = prototype
     end
+    if result.DebugPrototype then
+        dassert(not debugPrototype or result.DebugPrototype == debugPrototype)
+    else
+        result.DebugPrototype = debugPrototype
+    end
 
     return result
 end
@@ -61,50 +70,106 @@ function Class:GetBackProxy(targetType, targetName)
     return self:GetBackProxyAny(targetType, targetName)
 end
 
-function Class:GetBackProxyRoot(targetType, targetName, prototype)
-    dassert(prototype)
-    return self:GetBackProxyAny(targetType, targetName, prototype)
+function Class:GetBackProxyRoot(targetType, targetName, prototype, debugPrototype)
+    dassert(prototype or not IsDebugMode or debugPrototype)
+    return self:GetBackProxyAny(targetType, targetName, prototype, debugPrototype)
 end
 
 function Class:GetFilteredProxy(prototype)
+    if not prototype.object_name then return prototype end
     return Dictionary:new(MetaData[prototype.object_name])
         :Select(function(_, name) return prototype[name] end)
+end
+
+function Class:InsertBackLink(targetType, targetName, propertyName, proxy, index)
+    local other = self:GetBackProxy(targetType, targetName)
+    local backLinks = CoreHelper.EnsureKeys(other, { propertyName, proxy.Type, proxy.Name })
+    CoreHelper.EnsureKey(backLinks, "Proxy", proxy)
+    if index then
+        CoreHelper.EnsureKey(backLinks, "Indexes")[index] = true
+    end
+end
+
+function Class:ScanForCategory(targetType, targetName, propertyName, proxy)
+    local domainSetup = Configurations.RecipeDomains[targetType]
+    if not domainSetup or not domainSetup.BackLinkTypeRecipe then return end
+    if domainSetup.RecipeInitiatingProperty ~= propertyName then return end
+    local backLinks = global.Game[domainSetup.BackLinkTypeRecipe]
+    if backLinks and backLinks[proxy.Name] then return end
+
+    local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
+    local setup = {
+        fuel_category = {
+            Ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name } } ,
+            GetProducts = function()
+                local output = prototype.burnt_result
+                return output and { { type = output.type, amount = 1, name = output.name } } or {}
+            end,
+            Also = { "fuel_category", "fuel_value" } ,
+            SpriteType = "item",
+        }
+    }
+
+    local setup = setup[targetType]
+    dassert(setup)
+
+    local recipe =
+    Helper.CreatePrototypeProxy {
+        type = domainSetup.BackLinkTypeRecipe,
+        Prototype = prototype,
+        Also = setup.Also,
+        category = targetName,
+        hidden = true,
+        sprite_type = proxy.Type,
+        ingredients = setup.Ingredients,
+        products = setup.GetProducts(), }
+    Class:ScanPrototype(domainSetup.BackLinkTypeRecipe, recipe)
 end
 
 function Class:SetBackLink(targetType, targetName, propertyName, proxy, index)
     dassert(type(proxy.Type) == "string")
     dassert(type(proxy.Type) == "string")
     dassert(type(proxy.Name) == "string")
-    local other = self:GetBackProxy(targetType, targetName)
-    local backLinks = CoreHelper.EnsureKeys(other, { propertyName, proxy.Type, proxy.Name })
-    local backLink = { Index = index, Proxy = proxy }
-    table.insert(backLinks, backLink)
+    self:InsertBackLink(targetType, targetName, propertyName, proxy, index)
+    self:ScanForCategory(targetType, targetName, propertyName, proxy)
 end
 
 function Class:ScanPrototype(targetType, prototype)
-    if (__DebugAdapter and __DebugAdapter.instrument) then
-        prototype = self:GetFilteredProxy(prototype)
+    dassert(type(targetType) == "string")
+    local debugPrototype
+    if prototype.object_name then
+        dassert(type(prototype.object_name) == "string")
 
-        local unKnown = Dictionary:new(UnusedMetaData[prototype.object_name])
-            :Select(function(_, name) return prototype[name] end)
+        if IsDebugMode then
+            debugPrototype = { Game = prototype, Filtered = self:GetFilteredProxy(prototype) }
 
-        dassert(not unKnown:Any())
+            local unKnown = Dictionary:new(UnusedMetaData[prototype.object_name])
+                :Select(function(_, name) return prototype[name] end)
+
+            dassert(not unKnown:Any())
+        end
+    else
+        dassert(not prototype.object_name)
+        dassert(type(prototype.object_name_prototype) == "string")
     end
 
-    local proxy = self:GetBackProxyRoot(targetType, prototype.name, prototype)
+    local proxy = self:GetBackProxyRoot(targetType, prototype.name, not prototype.object_name and prototype or nil, debugPrototype)
 
+    dassert(Configurations.BackLinkMetaData[targetType], "Missing Configurations.BackLinkMetaData for " .. targetType)
+    local setup = Configurations.BackLinkMetaData[targetType]
     Dictionary
-        :new(Configurations.BackLinkMetaData[prototype.object_name])
-        :Select(function(options, propertyName) self:ScanValue(proxy, prototype, propertyName, options) end)
-
-
-    end
+        :new(prototype.object_name and setup or prototype)
+        :Select(function(_, propertyName) self:ScanValue(proxy, prototype, propertyName, setup[propertyName]) end)
+end
 
 function Class:ScanValue(proxy, prototype, property, setup)
+    if setup == false then return end
+    setup = setup == nil and {} or setup
     dassert(type(proxy) == "table")
-    dassert(type(prototype.object_name) == "string")
+    dassert(type(prototype.object_name or prototype.object_name_prototype) == "string")
     dassert(type(property) == "string")
     dassert(type(setup) == "table")
+    dassert(prototype.object_name or prototype == proxy.Prototype)
 
     local function GetPathAndValue(prototype, property, options)
         local value = prototype[property]
@@ -170,27 +235,32 @@ function Class:ScanValue(proxy, prototype, property, setup)
     local path, value = GetPathAndValue(prototype, property, setup)
     if not value then return end
 
-    ConditionalBreak(setup.Break, proxy.Type ..".".. proxy.Name..".".. property)
-    local valueType = CoreHelper.GetObjectType(value)
+    ConditionalBreak(setup.Break, proxy.Type .. "." .. proxy.Name .. "." .. property)
+    local valueType
     local valueName
-    if valueType then
-        valueName = value.name or value
-    elseif IsList(value) then
-        ScanList(value, setup, path, proxy)
-    elseif type(value) == "table" and setup.IsList then
-        ScanNamedList(value, setup, path, proxy)
-    elseif type(value) == "table" then
-        ScanElement(nil, value, setup, path, proxy)
-    elseif type(value) == "string" then
+    if type(value) == "string" then
         valueType = setup.Type or property
         valueName = value
-    else
-        dassert(false)
+    elseif type(value) ~= "table" then
+        return
+    elseif value.object_name then
+        valueType = value.object_name and CoreHelper.GetObjectType(value) or nil
+        valueName = value.name
+    elseif value.object_name_prototype then
+        valueType = setup.Type or prototype.type
+        valueName = value.name
     end
 
     if valueType then
         self:SetBackLink(valueType, valueName, property, proxy)
+    elseif IsList(value) then
+        ScanList(value, setup, path, proxy)
+    elseif setup.IsList then
+        ScanNamedList(value, setup, path, proxy)
+    else
+        ScanElement(nil, value, setup, path, proxy)
     end
+
 end
 
 function Class:GetTechnologyEffect(key, value, path, proxy)

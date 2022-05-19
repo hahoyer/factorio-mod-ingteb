@@ -228,7 +228,7 @@ function Class:IsBefore(other)
 end
 
 function Class:GetBackLinkArray(propertyName, typeName)
-    local variants = self.BackLinks[propertyName]
+    local variants = self.BackLinks[Helper.GetNestedPath(propertyName)]
     if not variants then return Array:new() end
     dassert(typeName, "typeName can be " .. next(variants) .. ".")
     local proxies = variants[typeName]

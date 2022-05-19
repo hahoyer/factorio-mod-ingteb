@@ -134,7 +134,7 @@ local Result = {
             ["simple-entity"] = true,
         },
         BackLinkMetaData = {
-            LuaEntityPrototype = {
+            entity = {
                 group = {},
                 subgroup = {},
                 type = { Type = "entityType" },
@@ -155,21 +155,21 @@ local Result = {
                 resource_category = {},
                 attack_parameters = { Properties = { "ammo_categories" }, Type = "ammo_category" },
             },
-            LuaFluidPrototype = {
+            fluid = {
                 group = {},
                 subgroup = {},
             },
-            LuaItemPrototype = {
+            item = {
                 group = {},
                 subgroup = {},
                 burnt_result = { Break = false },
-                fuel_category = { Break = true, Type = "fuel_category" },
+                fuel_category = { Break = false, Type = "fuel_category" },
                 place_result = {},
                 rocket_launch_products = {},
                 module_effects = { Type = "module_effect", IsList = true },
                 category = { Type = "module_category" },
             },
-            LuaRecipePrototype = {
+            recipe = {
                 category = { Type = "recipe_category" },
                 group = {},
                 ingredients = {},
@@ -177,7 +177,12 @@ local Result = {
                 products = {},
                 subgroup = {},
             },
-            LuaTechnologyPrototype = {
+            fuel_recipe = {
+                fuel_category = { Type = "fuel_category" },
+                localised_name = false,
+                localised_description = false,
+            },
+            technology = {
                 effects = { GetValue = "GetTechnologyEffect" },
                 prerequisites = { IsList = true },
                 research_unit_ingredients = {},
@@ -187,13 +192,11 @@ local Result = {
         RecipeDomainsDocumentation = {
             Properties = {
                 Workers = "property-path for workers to get the categories they accept",
-                BackLinkType = "game-type of categories of this domain",
+                BackLinkTypeRecipe = "game-type of recipes of that category",
                 ProxyClassName = "internal class name for categories of this domain",
                 RecipePrimary = "game-type to obtain the recipes for that category",
                 RecipeRecipeCondition = "function-name to filter the RecipePrimary for this category. Should be defined at ProxyClassName",
                 Recipes = "for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to",
-                Ingredients = "property name of backlink. Get recipe where this is ingedient.",
-                Products = "property name of backlink. Get recipe where this is product.",
             }
         },
 
@@ -204,14 +207,16 @@ local Result = {
             fuel_category = {
                 Workers = { "burner_prototype", "fuel_categories" },
                 BackLinkType = "fuel_category",
+                RecipeInitiatingProperty = "fuel_category",
+                BackLinkTypeRecipe = "fuel_recipe",
+                ProxyClassName = "BurningRecipe",
             },
             recipe_category = {
                 Workers = "crafting_categories",
                 Recipes = "category",
                 BackLinkType = "recipe_category",
                 ProxyClassName = "Recipe",
-                Ingredients = "ingredients",
-                Products = "products"
+                BackLinkTypeRecipe = "recipe"
             },
             fluid_burning = {
                 Workers = "fluid_energy_source_prototype"

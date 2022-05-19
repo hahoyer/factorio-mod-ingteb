@@ -1,5 +1,5 @@
-local result = {}
-function result.SnakeCaseToCamelCase(target, isLower)
+local Class = {}
+function Class.SnakeCaseToCamelCase(target, isLower)
 
   if not isLower then target = "_" .. target end
   return target:gsub("_(.)", target.upper)
@@ -9,7 +9,8 @@ end
 ---@param key string
 ---@param value any
 ---@return table
-function result.EnsureKey(data, key, value)
+function Class.EnsureKey(data, key, value)
+  dassert(key)
   local result = data[key]
   if not result then
     result = value or {}
@@ -21,7 +22,7 @@ end
 ---@param target table
 ---@param keys string[]
 ---@return table
-function result.EnsureKeys(target, keys)
+function Class.EnsureKeys(target, keys)
   for _, key in ipairs(keys) do
     local element = target[key]
     if not element then
@@ -33,7 +34,7 @@ function result.EnsureKeys(target, keys)
   return target
 end
 
-function result.GetObjectType(prototype)
+function Class.GetObjectType(prototype)
   local objectName = prototype.object_name
   if not objectName then return end
   return objectName == "LuaFluidPrototype" and "fluid"
@@ -46,4 +47,5 @@ function result.GetObjectType(prototype)
       or dassert(false)
 end
 
-return result
+
+return Class

@@ -94,13 +94,6 @@ Recipe.system.Properties = {
         end,
     },
 
-    Category = {
-        cache = true,
-        get = function(self)
-            return self.Database:GetCategory("recipe_category." .. self.Prototype.category)
-        end,
-    },
-
     HandCrafter = {
         get = function(self)
             return self.Category.Workers:Where(
@@ -265,6 +258,7 @@ function Recipe:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
+    self.Domain = "recipe_category"
     self.IsRefreshRequired = { Research = true, MainInventory = true }
 
     return self

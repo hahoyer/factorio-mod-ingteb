@@ -32,13 +32,21 @@ end
 
 Class.system.Properties = {
     Configuration = { get = function(self) return Configurations.RecipeDomains[self.Domain] end },
-    BackLinkType = { get = function(self) return self.Configuration.BackLinkType end },
+    BackLinkType = { get = function(self) return self.Domain end },
     BackLinkName = { get = function(self) return self.SubName end },
-    OriginalWorkers = { get = function(self)
+    Workers = {
+        cache = true,
+        get = function(self)
+            local result = self.AllWorkers
+            if self.Configuration.WorkerCondition then
+                result = result:Where(function(worker) return worker[self.Configuration.WorkerCondition] end)
+            end
+            result:Sort(function(a, b) return a:IsBefore(b) end)
+            return result
+        end,
+    },
+    AllWorkers = { get = function(self)
         local result = self:GetBackLinkArray(self.Configuration.Workers, "entity")
-        if self.Configuration.WorkerCondition then
-            result = result:Where(function(worker) return worker[self.Configuration.WorkerCondition] end)
-        end
         return result
     end,
     },
@@ -146,7 +154,7 @@ Class.system.Properties = {
         get = function(self) --
             dassert(self.IsSealed)
             if self.Domain == "boiling" or self.Domain == "rocket_launch" or self.Domain == "fuel_category" or self.Domain == "fluid_burning" then
-                local workers = self.OriginalWorkers
+                local workers = self.Workers
                 if workers:Any() then
                     return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
                 else
@@ -177,9 +185,6 @@ function Class:SealUp()
 end
 
 function Class:SortAll()
-    local result = self.OriginalWorkers
-    result:Sort(function(a, b) return a:IsBefore(b) end)
-    self.Workers = result
 end
 
 function Class:AssertValid() end

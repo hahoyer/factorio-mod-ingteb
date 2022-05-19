@@ -167,12 +167,12 @@ end
 
 function Class:GetMiningRecipe(name, prototype) --
     dassert(not name)
-    return self:GetProxy("RecipeCommon", name, prototype)
+    return self:GetProxy("MiningRecipe", name, prototype)
 end
 
 function Class:GetBoilingRecipe(name, prototype) --
     dassert(not name)
-    return self:GetProxy("RecipeCommon", name, prototype)
+    return self:GetProxy("BoilingRecipe", name, prototype)
 end
 
 function Class:GetBurningRecipe(name, prototype) --
@@ -182,7 +182,7 @@ end
 
 function Class:GetRocketLaunchRecipe(name, prototype) --
     dassert(not name)
-    return self:GetProxy("RecipeCommon", name, prototype)
+    return self:GetProxy("RocketLaunchRecipe", name, prototype)
 end
 
 function Class:GetFuelCategory(name, prototype) --
@@ -649,24 +649,28 @@ function Class:GetCraftableCount(target)
 end
 
 function Class:GetRecipesGroupByCategory(prototype, direction)
-    dassert(direction == "Ingredients" or direction == "Products")
+    dassert(direction == "ingredients" or direction == "products")
     local backLink = self:GetBackLinkFromPrototype(prototype)
-    local result = Dictionary:new(Configurations.RecipeDomains)
-        :Select(function(value, key)
+    local result = Dictionary:new()
 
-            if key == "recipe_category" then
-                local target = backLink[value[direction]]
-                if not target or not target.recipe then return Dictionary:new() end
-                return Dictionary:new(target.recipe)
-                    :ToGroup(
-                        function(_, recipeName)
-                        local proxy = self:GetRecipe(recipeName)
-                        return { Key = proxy.Category.Name, Value = proxy }
+    Dictionary:new(Configurations.RecipeDomains)
+        :Select(function(setup, key)
+            if key == "recipe_category" or key == "fuel_category" then
+                local target = backLink[direction]
+                if target then
+                    local backLinkRecipes = target[setup.BackLinkTypeRecipe]
+                    if backLinkRecipes then
+                        return Dictionary:new(backLinkRecipes)
+                            :Select(function(recipeData, recipeName)
+                                local prototype = recipeData.Proxy.Prototype
+                                local proxy = self:GetProxy(setup.ProxyClassName, recipeName, prototype)
+                                CoreHelper.EnsureKey(result, proxy.Category.Name, Array:new())
+                                    :Append(proxy)
+                            end)
                     end
-                    )
-            elseif key == "fuel_category" then
-                dassert()
+                end
             end
+            return Dictionary:new()
 
         end)
     return result
@@ -677,12 +681,12 @@ function Class:GetBackLinkFromPrototype(prototype)
 end
 
 function Class:GetUsedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(prototype, "Ingredients")
+    local xreturn = self:GetRecipesGroupByCategory(prototype, "ingredients")
     return xreturn
 end
 
 function Class:GetCreatedByRecipes(prototype)
-    local xreturn = self:GetRecipesGroupByCategory(prototype, "Products")
+    local xreturn = self:GetRecipesGroupByCategory(prototype, "products")
     return xreturn
 end
 

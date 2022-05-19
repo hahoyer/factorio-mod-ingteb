@@ -30,7 +30,9 @@ function ExecuteWithLog(targetFunction, tag, formatResult)
     return result
 end
 
-if (__DebugAdapter and __DebugAdapter.instrument) then
+IsDebugMode = __DebugAdapter and __DebugAdapter.instrument 
+
+if IsDebugMode then
     function dlog(text) ilog(text) end
 else
     function dlog(text) end
@@ -42,10 +44,11 @@ function ConditionalBreak(condition, data)
     end
 end
 
-if (__DebugAdapter and __DebugAdapter.instrument) then
+if IsDebugMode then
     dassert = assert
 else
     dassert = function(condition, ...) return condition end
 end
 
 function EnsureDebugSupport() EnsureIndent() end
+
