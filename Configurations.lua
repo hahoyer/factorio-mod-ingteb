@@ -213,7 +213,7 @@ local Result = {
                 ProxyClassName = "BurningRecipe",
                 Recipes = "fuel_recipes",
             },
-            recipe_category = {
+            crafting = {
                 Workers = "crafting_categories",
                 Recipes = "category",
                 BackLinkType = "recipe_category",

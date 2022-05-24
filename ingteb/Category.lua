@@ -10,7 +10,7 @@ local class = require("core.class")
 local Class = class:new("Category", Common)
 
 local function GetPrototype(domain, subName)
-    if domain == "recipe_category" then
+    if domain == "crafting" then
         return game.recipe_category_prototypes[subName]
     elseif subName == "steel-axe" then
         return game.technology_prototypes["steel-axe"]
@@ -54,10 +54,10 @@ Class.system.Properties = {
     AdditionalHelp = {
         get = function(self)
             local result = Array:new {}
-            if self.Name == "recipe_category.crafting" then return result end
+            if self.Name == "crafting.crafting" then return result end
 
             local name = self.LocalisedName
-            if self.Domain ~= "recipe_category" then
+            if self.Domain ~= "crafting" then
                 name = {
                     "",
                     "[font=default-small]",
@@ -132,8 +132,8 @@ Class.system.Properties = {
             local result = recipePrimaryList
                 :Select(
                     function(recipePrimary)
-                    return self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
-                end)
+                        return self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
+                    end)
             return result
         end,
     },
@@ -174,7 +174,7 @@ Class.system.Properties = {
         end,
     },
 
-    IsCraftingDomain = { get = function(self) return self.Domain == "recipe_category" end, },
+    IsCraftingDomain = { get = function(self) return self.Domain == "crafting" end, },
 }
 
 function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end

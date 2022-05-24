@@ -260,7 +260,7 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
     local get = {
         boiling = unknown,
         burning = unknown,
-        recipe_category = function(recipePrimary) return recipePrimary end,
+        crafting = function(recipePrimary) return recipePrimary end,
         fluid_burning = unknown,
         fluid_mining = getMiningRecipe,
         mining = getMiningRecipe,
@@ -275,7 +275,7 @@ end
 
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipe(prototype)
-    local type = prototype.object_name == "LuaRecipePrototype" and "recipe_category" or prototype.type
+    local type = prototype.object_name == "LuaRecipePrototype" and "crafting" or prototype.type
 
     dassert(type)
     dassert(prototype.name)
@@ -306,7 +306,7 @@ function Class:ScanEntity(prototype)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("recipe_category." .. category, prototype)
+        self:AddWorkerForCategory("crafting." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
@@ -623,19 +623,19 @@ end
 ---@param target table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
-        local recipeCandidates = target.CreatedBy["recipe_category.crafting"]
+        local recipeCandidates = target.CreatedBy["crafting.crafting"]
         local result = 0
         local recipe
         if recipeCandidates then
             recipeCandidates--
                 :Select(
                     function(recipeCandidate)
-                    local count = self:GetCraftableCount(recipeCandidate)
-                    if result < count then
-                        result = count
-                        recipe = recipeCandidate
+                        local count = self:GetCraftableCount(recipeCandidate)
+                        if result < count then
+                            result = count
+                            recipe = recipeCandidate
+                        end
                     end
-                end
                 ) --
         end
         return result, recipe
@@ -655,7 +655,7 @@ function Class:GetRecipesGroupByCategory(prototype, direction)
 
     Dictionary:new(Configurations.RecipeDomains)
         :Select(function(setup, key)
-            if key == "recipe_category" or key == "burning" then
+            if key == "crafting" or key == "burning" then
                 local target = backLink[direction]
                 if target then
                     local backLinkRecipes = target[setup.BackLinkTypeRecipe]

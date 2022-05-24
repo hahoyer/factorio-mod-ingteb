@@ -227,13 +227,13 @@ function Recipe:GetWorkerCraftingQueue()
     if self.HandCrafter then return Array:new {} end
     local worker = self.Category.Workers:Select(
         function(worker)
-        if worker.Item then
-            local result = self.CreatedBy--
-                :ToArray(function(recipes) return recipes end)--
-                :ConcatMany()
-            dassert()
+            if worker.Item then
+                local result = self.CreatedBy--
+                    :ToArray(function(recipes) return recipes end)--
+                    :ConcatMany()
+                dassert()
+            end
         end
-    end
     )
     dassert()
 end
@@ -258,7 +258,7 @@ function Recipe:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
-    self.Domain = "recipe_category"
+    self.Domain = "crafting"
     self.IsRefreshRequired = { Research = true, MainInventory = true }
 
     return self

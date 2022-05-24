@@ -317,7 +317,7 @@ function Class:GetCategoryNames(domainName)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("recipe_category." .. category, prototype)
+        self:AddWorkerForCategory("crafting." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])

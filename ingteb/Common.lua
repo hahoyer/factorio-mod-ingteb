@@ -296,9 +296,9 @@ function Class:AssertValid()
         end
         dassert(type(self.RelativeDuration) == "number")
         if self.class.name == "Recipe" then
-            dassert(self.Category.Domain == "recipe_category")
+            dassert(self.Category.Domain == "crafting")
         else
-            dassert(self.Category.Domain ~= "recipe_category")
+            dassert(self.Category.Domain ~= "crafting")
         end
     end
 
