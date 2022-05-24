@@ -206,6 +206,7 @@ local Result = {
             },
             fuel_category = {
                 Workers = { "burner_prototype", "fuel_categories" },
+                WorkerCondition = "HasEnergyConsumption",
                 BackLinkType = "fuel_category",
                 RecipeInitiatingProperty = "fuel_category",
                 BackLinkTypeRecipe = "fuel_recipe",

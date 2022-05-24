@@ -73,6 +73,12 @@ Class.system.Properties = {
     IsResource = { get = function(self) return self.Prototype.type == "resource" end },
     HasFluidHandling = { get = function(self) return #self.Prototype.fluidbox_prototypes > 0 end },
 
+    HasEnergyConsumption = { get = function(self)
+        local prototype = self.Prototype
+        return prototype.burner_prototype.fuel_inventory_size > 0
+            and prototype.max_energy_usage and prototype.max_energy_usage > 0
+    end },
+
     RequiresFluidHandling = { get = function(self)
         local prototype = self.Prototype
         return prototype.mineable_properties.required_fluid --
@@ -102,12 +108,13 @@ Class.system.Properties = {
         get = function(self)
             local prototype = self.Prototype
             local usage = prototype.max_energy_usage
-            if not usage then return end
+            if not usage or usage == 0 then return end
 
             local result = usage * 60
             if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then
                 result = result / prototype.burner_prototype.effectivity
             end
+            dassert(result ~= 0)
             return result
         end,
     },
@@ -130,17 +137,21 @@ Class.system.Properties = {
     FuelCategories = {
         cache = true,
         get = function(self)
+            local prototype = self.Prototype
+            local usage = prototype.max_energy_usage
+            if not usage or usage == 0 then return end
+
             return self.Categories--
                 :Where(
                     function(category)
-                    return category.Domain == "fuel_category" or category.Domain == "fluid_burning"
-                end
+                        return category.Domain == "fuel_category" or category.Domain == "fluid_burning"
+                    end
                 )--
                 :ToArray(
                     function(category)
-                    local name = category.Domain == "fluid_burning" and "fluid" or category.SubName
-                    return self.Database:GetFuelCategory(name)
-                end
+                        local name = category.Domain == "fluid_burning" and "fluid" or category.SubName
+                        return self.Database:GetFuelCategory(name)
+                    end
                 )
         end,
     },
@@ -354,10 +365,10 @@ function Class:GetCategoryNames(domainName)
     local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
         :Where(
             function(workers)
-            return workers and workers:Any(
-                function(_, name) return name == self.Prototype.name end
-            )
-        end
+                return workers and workers:Any(
+                    function(_, name) return name == self.Prototype.name end
+                )
+            end
         )--
         :Select(function(_, categoryName) return self.Database:GetCategory(categoryName) end)
     return xreturn
