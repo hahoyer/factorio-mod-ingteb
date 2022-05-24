@@ -145,12 +145,12 @@ local Class = class:new(
             result:AppendMany(
                 self.Input:Select(
                     function(stack)
-                    return {
-                        "",
-                        stack.HelpTextWhenUsedAsProduct,
-                        self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
-                    }
-                end
+                        return {
+                            "",
+                            stack.HelpTextWhenUsedAsProduct,
+                            self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
+                        }
+                    end
                 )
             )
 
@@ -187,12 +187,12 @@ local Class = class:new(
             result:AppendMany(
                 self.Output:Select(
                     function(stack)
-                    return {
-                        "",
-                        stack.HelpTextWhenUsedAsProduct,
-                        self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
-                    }
-                end
+                        return {
+                            "",
+                            stack.HelpTextWhenUsedAsProduct,
+                            self.Database:GetItemsPerTickText(stack.Amounts, self.RelativeDuration),
+                        }
+                    end
                 )
             )
 
@@ -250,13 +250,13 @@ function Class:GetSpecialFunctions(site)
     self.SpecialFunctions--
         :Select(
             function(specialFunction)
-            if --
-            (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --
-                and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
-                local key = specialFunction.UICode
-                if (not lines[key]) then lines[key] = specialFunction end
-            end --
-        end
+                if --
+                (not specialFunction.IsRestricedTo or specialFunction.IsRestricedTo[site]) --
+                    and (not specialFunction.IsAvailable or specialFunction.IsAvailable(self)) then
+                    local key = specialFunction.UICode
+                    if (not lines[key]) then lines[key] = specialFunction end
+                end --
+            end
         )
     return lines:ToArray()
 end
@@ -266,11 +266,11 @@ function Class:GetFunctionalHelp(site)
         :Where(function(specialFunction) return specialFunction.HelpTextTag end)--
         :Select(
             function(specialFunction)
-            local text = specialFunction.HelpTextItems or {}
-            table.insert(text, 1, specialFunction.HelpTextTag)
-            local xreturn = UI.GetHelpTextForButtons(text, specialFunction.UICode)
-            return xreturn
-        end
+                local text = specialFunction.HelpTextItems or {}
+                table.insert(text, 1, specialFunction.HelpTextTag)
+                local xreturn = UI.GetHelpTextForButtons(text, specialFunction.UICode)
+                return xreturn
+            end
         )--
         :ToArray()
 end

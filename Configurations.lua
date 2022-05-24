@@ -210,6 +210,7 @@ local Result = {
                 RecipeInitiatingProperty = "fuel_category",
                 BackLinkTypeRecipe = "fuel_recipe",
                 ProxyClassName = "BurningRecipe",
+                Recipes = "fuel_recipes",
             },
             recipe_category = {
                 Workers = "crafting_categories",
