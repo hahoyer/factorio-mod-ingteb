@@ -113,7 +113,7 @@ function Class:GetProxyFromPrototype(prototype)
         return self:GetEntity(nil, prototype)
     elseif objectType == "LuaRecipePrototype" then
         return self:GetRecipe(nil, prototype)
-    elseif objectType == "fuel_category" or objectType == "fluid_burning" then
+    elseif objectType == "burning" or objectType == "fluid_burning" then
         return self:GetBurningRecipe(nil, prototype)
     elseif objectType == "boiling" then
         return self:GetBoilingRecipe(nil, prototype)
@@ -326,7 +326,7 @@ function Class:ScanEntity(prototype)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("fuel_category." .. category, prototype)
+                self:AddWorkerForCategory("burning." .. category, prototype)
             end
         else
             log {
@@ -448,7 +448,7 @@ function Class:ScanFluid(prototype)
 end
 
 function Class:ScanItem(prototype)
-    self:ScanFuel(prototype, "fuel_category", prototype.fuel_category)
+    self:ScanFuel(prototype, "burning", prototype.fuel_category)
 
     if prototype.burnt_result and not prototype.fuel_category then
         log {
@@ -655,7 +655,7 @@ function Class:GetRecipesGroupByCategory(prototype, direction)
 
     Dictionary:new(Configurations.RecipeDomains)
         :Select(function(setup, key)
-            if key == "recipe_category" or key == "fuel_category" then
+            if key == "recipe_category" or key == "burning" then
                 local target = backLink[direction]
                 if target then
                     local backLinkRecipes = target[setup.BackLinkTypeRecipe]

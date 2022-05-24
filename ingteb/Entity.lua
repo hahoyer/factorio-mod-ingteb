@@ -144,7 +144,7 @@ Class.system.Properties = {
             return self.Categories--
                 :Where(
                     function(category)
-                        return category.Domain == "fuel_category" or category.Domain == "fluid_burning"
+                        return category.Domain == "burning" or category.Domain == "fluid_burning"
                     end
                 )--
                 :ToArray(
@@ -337,7 +337,7 @@ function Class:GetCategoryNames(domainName)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("fuel_category." .. category, prototype)
+                self:AddWorkerForCategory("burning." .. category, prototype)
             end
         else
             log {
@@ -377,7 +377,7 @@ end
 function Class:GetSpeedFactor(category)
     if category.Domain == "rocket_launch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
-    elseif category.Domain == "fuel_category" or category.Domain == "fluid_burning" then
+    elseif category.Domain == "burning" or category.Domain == "fluid_burning" then
         return self.MaximalEnergyConsumption
     elseif category.Domain == "boiling" then
         return 1

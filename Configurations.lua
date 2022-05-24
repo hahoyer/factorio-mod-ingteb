@@ -204,7 +204,7 @@ local Result = {
             boiling = {
                 CategoryByType = "boiler"
             },
-            fuel_category = {
+            burning = {
                 Workers = { "burner_prototype", "fuel_categories" },
                 WorkerCondition = "HasEnergyConsumption",
                 BackLinkType = "fuel_category",

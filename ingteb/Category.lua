@@ -20,7 +20,7 @@ local function GetPrototype(domain, subName)
         return game.entity_prototypes[subName]
     elseif domain == "rocket_launch" then
         return game.entity_prototypes["rocket-silo-rocket"]
-    elseif domain == "fuel_category" then
+    elseif domain == "burning" then
         return game.fuel_category_prototypes[subName]
     elseif domain == "fluid_burning" then
         dassert(subName == "fluid")
@@ -32,7 +32,7 @@ end
 
 Class.system.Properties = {
     Configuration = { get = function(self) return Configurations.RecipeDomains[self.Domain] end },
-    BackLinkType = { get = function(self) return self.Domain end },
+    BackLinkType = { get = function(self) return self.Configuration.BackLinkType end },
     BackLinkName = { get = function(self) return self.SubName end },
     Workers = {
         cache = true,
@@ -103,7 +103,7 @@ Class.system.Properties = {
     LineSprite = {
         cache = true,
         get = function(self)
-            if self.Domain == "fuel_category" or self.Domain == "fluid_burning" then
+            if self.Domain == "burning" or self.Domain == "fluid_burning" then
                 return "utility/slot_icon_fuel_black"
             else
                 return "utility/change_recipe"
@@ -153,7 +153,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            if self.Domain == "boiling" or self.Domain == "rocket_launch" or self.Domain == "fuel_category" or self.Domain == "fluid_burning" then
+            if self.Domain == "boiling" or self.Domain == "rocket_launch" or self.Domain == "burning" or self.Domain == "fluid_burning" then
                 local workers = self.Workers
                 if workers:Any() then
                     return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()

@@ -99,7 +99,7 @@ function Class:ScanForCategory(targetType, targetName, propertyName, proxy)
 
     local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
     local setup = {
-        fuel_category = {
+        burning = {
             Ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name } } ,
             GetProducts = function()
                 local output = prototype.burnt_result

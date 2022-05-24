@@ -32,7 +32,7 @@ FuelCategory.system.Properties = {
             log {
                 "mod-issue.fuel-category-empty",
                 prototype.localised_name,
-                "fuel_category." .. prototype.name,
+                "burning." .. prototype.name,
             }
             return "utility/missing_icon"
 
