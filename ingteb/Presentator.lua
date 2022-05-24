@@ -51,6 +51,7 @@ local function GetContentPanel(headerSprites, tooltip, data)
     local result = {
         type = "frame",
         direction = "vertical",
+        style_mods = { padding = 0 },
         children = Array:new {
             {
                 type = "flow",
@@ -67,7 +68,6 @@ local function GetContentPanel(headerSprites, tooltip, data)
                     },
                 },
             },
-            { type = "line", direction = "horizontal" },
         }:Concat(data),
     }
     return result
@@ -161,33 +161,33 @@ function Class:GetWorkersPanel(category, columnCount)
     local position = 0
     workers:Select(
         function(worker)
-        if position == 0 then
-            workersPanelData:Append {
-                type = "sprite",
-                sprite = category.LineSprite,
-                tooltip = category:GetHelperText("Presentator"),
-                actions = {
-                    on_click = {
-                        module = self.class.name,
-                        action = "Click",
-                        key = category.CommonKey,
+            if position == 0 then
+                workersPanelData:Append {
+                    type = "sprite",
+                    sprite = category.LineSprite,
+                    tooltip = category:GetHelperText("Presentator"),
+                    actions = {
+                        on_click = {
+                            module = self.class.name,
+                            action = "Click",
+                            key = category.CommonKey,
+                        },
                     },
-                },
-            }
-        end
-        if lines == 1 and position == 0 then
-            workersPanelData:AppendMany(self.Spritor:GetTiles(dummyColumnsLeft))
-            position = position + dummyColumnsLeft
-        end
+                }
+            end
+            if lines == 1 and position == 0 then
+                workersPanelData:AppendMany(self.Spritor:GetTiles(dummyColumnsLeft))
+                position = position + dummyColumnsLeft
+            end
 
-        workersPanelData:Append(self:GetRespondingSpriteButton(worker, nil, category))
+            workersPanelData:Append(self:GetRespondingSpriteButton(worker, nil, category))
 
-        position = position + 1
-        if position >= columnCount then
-            position = 0
-            lines = lines - 1
+            position = position + 1
+            if position >= columnCount then
+                position = 0
+                lines = lines - 1
+            end
         end
-    end
     )
 
     return {
@@ -230,20 +230,20 @@ function Class:GetTechnologyEffectsData(target)
         direction = "vertical",
         children = effects:Select(
             function(effekt)
-            if effekt.class == Recipe then
-                return self:GetRecipeLine(effekt, inCount, outCount)
-            else
-                return {
-                    type = "flow",
-                    direction = "horizontal",
-                    children = {
-                        self:GetRespondingSpriteButton(target),
-                        { type = "label", caption = "[img=go_to_arrow]" },
-                        self:GetRespondingSpriteButton(effekt),
-                    },
-                }
+                if effekt.class == Recipe then
+                    return self:GetRecipeLine(effekt, inCount, outCount)
+                else
+                    return {
+                        type = "flow",
+                        direction = "horizontal",
+                        children = {
+                            self:GetRespondingSpriteButton(target),
+                            { type = "label", caption = "[img=go_to_arrow]" },
+                            self:GetRespondingSpriteButton(effekt),
+                        },
+                    }
+                end
             end
-        end
         ),
     }
 
@@ -257,42 +257,42 @@ function Class:GetTechnologyEffectsPanel(target)
             target.RichTextName .. "[img=effects]", --
             { "gui-technology-preview.effects" }, --
             {
-            {
-                type = "flow",
-                name = "GetTechnologyEffectsPanel " .. self:GetNextId(),
-                direction = "horizontal",
-                children = {
-                    {
-                        type = "sprite",
-                        sprite = "utility/change_recipe",
-                        tooltip = { "ingteb-utility.technology-research-ingredients" },
-                    },
-                    {
-                        type = "flow",
-                        name = "GetTechnologyEffectsPanel inner " .. self:GetNextId(),
-                        direction = "horizontal",
-                        style = "ingteb-flow-centered",
-                        children = target.Ingredients:Select(
-                            function(stack)
-                            return self:GetSpriteButton(
-                                stack.Goods:CreateStack {
-                                    value = stack.Amounts.value
-                                        * target.Prototype.research_unit_count,
-                                }
-                            )
-                        end
-                        ):Concat {
-                            self:GetSpriteButton {
-                                SpriteName = "utility/clock",
-                                NumberOnSprite = target.RelativeDuration,
+                {
+                    type = "flow",
+                    name = "GetTechnologyEffectsPanel " .. self:GetNextId(),
+                    direction = "horizontal",
+                    children = {
+                        {
+                            type = "sprite",
+                            sprite = "utility/change_recipe",
+                            tooltip = { "ingteb-utility.technology-research-ingredients" },
+                        },
+                        {
+                            type = "flow",
+                            name = "GetTechnologyEffectsPanel inner " .. self:GetNextId(),
+                            direction = "horizontal",
+                            style = "ingteb-flow-centered",
+                            children = target.Ingredients:Select(
+                                function(stack)
+                                    return self:GetSpriteButton(
+                                        stack.Goods:CreateStack {
+                                            value = stack.Amounts.value
+                                                * target.Prototype.research_unit_count,
+                                        }
+                                    )
+                                end
+                            ):Concat {
+                                self:GetSpriteButton {
+                                    SpriteName = "utility/clock",
+                                    NumberOnSprite = target.RelativeDuration,
+                                },
                             },
                         },
                     },
                 },
-            },
-            { type = "line", direction = "horizontal" },
-            self:GetTechnologyEffectsData(target),
-        }
+                { type = "line", direction = "horizontal" },
+                self:GetTechnologyEffectsData(target),
+            }
         ),
     }
 
@@ -354,9 +354,9 @@ function Class:GetGroupPanelContent(value, inCount, outCount)
         name = "GetGroupPanelContent " .. self:GetNextId(),
         tabs = subGroups:Select(
             function(value)
-            local recipeLines = self:GetSubGroupPanelContent(value, inCount, outCount)
-            return (self:GetSubGroupTabPanel(value, recipeLines))
-        end
+                local recipeLines = self:GetSubGroupPanelContent(value, inCount, outCount)
+                return (self:GetSubGroupTabPanel(value, recipeLines))
+            end
         ),
     }
 
@@ -385,8 +385,8 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
             name = "GetCraftigGroupData " .. self:GetNextId(),
             children = target:Select(
                 function(recipe)
-                return (self:GetRecipeLine(recipe, inCount, outCount))
-            end
+                    return (self:GetRecipeLine(recipe, inCount, outCount))
+                end
             ),
         }
     end
@@ -400,9 +400,9 @@ function Class:GetCraftigGroupData(target, inCount, outCount)
         type = "tabbed-pane",
         tabs = groups:Select(
             function(value)
-            local content = self:GetGroupPanelContent(value, inCount, outCount)
-            return self:GetGroupTabPanel(value, content)
-        end
+                local content = self:GetGroupPanelContent(value, inCount, outCount)
+                return self:GetGroupTabPanel(value, content)
+            end
         ),
     }
 
@@ -416,15 +416,15 @@ function Class:GetCraftingGroupPanel(target, category, inCount, outCount)
     local craftingGroupData = self:GetCraftigGroupData(target, inCount, outCount)
     if workersPanel and craftingGroupData then
         local result = {
-            type = "flow",
+            type = "frame",
             name = "GetCraftingGroupPanel " .. self:GetNextId(),
             direction = "vertical",
             children = {
                 workersPanel,
                 { type = "line", direction = "horizontal" },
                 craftingGroupData,
-                { type = "line", direction = "horizontal" },
             },
+            style_mods = { left_padding = 0, right_padding = 0, top_padding = 0, bottom_padding = 0 }
         }
         return result
     end
@@ -445,32 +445,32 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     local target = target
         :Select(
             function(recipes)
-            return recipes:Where(function(recipe) return self:PerformFilterCheck("Recipe", recipe)
+                return recipes:Where(function(recipe) return self:PerformFilterCheck("Recipe", recipe)
+                end)
             end)
-        end)
         :Where(function(recipes) return recipes:Any() end)
 
     if not target:Any() then return {} end
 
     local inCount = target:Select(
         function(group)
-        return group:Select(function(recipe) return recipe.Input:Count() end):Maximum()
-    end
+            return group:Select(function(recipe) return recipe.Input:Count() end):Maximum()
+        end
     ):Maximum()
 
     local outCount = target:Select(
         function(group)
-        return group:Select(function(recipe) return recipe.Output:Count() end):Maximum()
-    end
+            return group:Select(function(recipe) return recipe.Output:Count() end):Maximum()
+        end
     ):Maximum()
 
     return {
         GetContentPanel(
             headerSprites, tooltip, target:Select(
                 function(recipes, category)
-                dassert(type(category) == "string")
-                return self:GetCraftingGroupPanel(recipes, category, inCount, outCount)
-            end
+                    dassert(type(category) == "string")
+                    return self:GetCraftingGroupPanel(recipes, category, inCount, outCount)
+                end
             )--
             :ToArray()
         ),
@@ -492,8 +492,8 @@ function Class:GetUsefulLinksPanel(target)
     local children = target--
         :Select(
             function(group)
-            return self:GetLinePart(group, nil, nil, { "ingteb-utility.properties" })
-        end
+                return self:GetLinePart(group, nil, nil, { "ingteb-utility.properties" })
+            end
         )
     if #children == 1 then return children end
     return {
@@ -518,10 +518,10 @@ function Class:GetRecipePanel(target)
                 { "", target.RichTextName },
                 { "ingteb-utility.recipe-information" },
                 {
-                workersPanel,
-                { type = "line", direction = "horizontal" },
-                recipeLine,
-            }
+                    workersPanel,
+                    { type = "line", direction = "horizontal" },
+                    recipeLine,
+                }
             ),
         }
     end
@@ -534,16 +534,16 @@ local function Extend(items, nextItems)
         local isRepeatRequired
         items:Select(
             function(item)
-            nextItems(item):Select(
-                function(item)
-                if not itemsSoFar:Contains(item) then
-                    newItems:Append(item)
-                    itemsSoFar:Append(item)
-                    isRepeatRequired = true
-                end
+                nextItems(item):Select(
+                    function(item)
+                        if not itemsSoFar:Contains(item) then
+                            newItems:Append(item)
+                            itemsSoFar:Append(item)
+                            isRepeatRequired = true
+                        end
+                    end
+                )
             end
-            )
-        end
         )
         items = newItems
     until not isRepeatRequired
@@ -556,55 +556,55 @@ function Class:GetTechnologyList(target)
 
     local result = target:ToGroup(
         function(value)
-        local key = value.Ingredients--
-            :Select(function(stack) return stack.CommonKey end)--
-            :Stringify(",")
-        return { Key = key, Value = value }
-    end
+            local key = value.Ingredients--
+                :Select(function(stack) return stack.CommonKey end)--
+                :Stringify(",")
+            return { Key = key, Value = value }
+        end
     )--
         :ToArray():Select(
             function(values)
-            local frame = {
-                type = "flow",
-                name = "GetTechnologyList " .. self:GetNextId(),
-                direction = "horizontal",
-                children = self.Spritor:GetTiles(ingredientsCount - values[1].Ingredients:Count())--
-                    :Concat(
-                        values[1].Ingredients:Select(
-                            function(stack)
-                            return self:GetRespondingSpriteButton(stack)
-                        end
-                        )
-                    )--
-                    :Concat {
-                        { type = "label", caption = "[img=go_to_arrow]" },
-                        {
-                            type = "table",
-                            column_count = 2,
-                            children = values:Select(
-                                function(target)
-                                return {
-                                    type = "frame",
-                                    direction = "horizontal",
-                                    children = {
-                                        self:GetRespondingSpriteButton(target),
-                                        self:GetSpriteButton {
-                                            SpriteName = "item/lab",
-                                            NumberOnSprite = target.Amount,
-                                        },
-                                        self:GetSpriteButton {
-                                            SpriteName = "utility/clock",
-                                            NumberOnSprite = target.RelativeDuration,
-                                        },
-                                    },
-                                }
-                            end
-                            ),
+                local frame = {
+                    type = "flow",
+                    name = "GetTechnologyList " .. self:GetNextId(),
+                    direction = "horizontal",
+                    children = self.Spritor:GetTiles(ingredientsCount - values[1].Ingredients:Count())--
+                        :Concat(
+                            values[1].Ingredients:Select(
+                                function(stack)
+                                    return self:GetRespondingSpriteButton(stack)
+                                end
+                            )
+                        )--
+                        :Concat {
+                            { type = "label", caption = "[img=go_to_arrow]" },
+                            {
+                                type = "table",
+                                column_count = 2,
+                                children = values:Select(
+                                    function(target)
+                                        return {
+                                            type = "frame",
+                                            direction = "horizontal",
+                                            children = {
+                                                self:GetRespondingSpriteButton(target),
+                                                self:GetSpriteButton {
+                                                    SpriteName = "item/lab",
+                                                    NumberOnSprite = target.Amount,
+                                                },
+                                                self:GetSpriteButton {
+                                                    SpriteName = "utility/clock",
+                                                    NumberOnSprite = target.RelativeDuration,
+                                                },
+                                            },
+                                        }
+                                    end
+                                ),
+                            },
                         },
-                    },
-            }
-            return frame
-        end
+                }
+                return frame
+            end
         )
     return result
 end
@@ -662,23 +662,23 @@ function Class:CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 
         tabOrder:Select(
             function(tabIndex, order)
-            if order > maximalColumCount then
-                frame.caption --
-                = {
-                    "",
-                    frame.caption, --
-                    " >>> [" .. mainFrame.children[tabIndex].headerFlow.headerSprites.caption
-                        .. "]",
-                }
-                mainFrame.children[tabIndex].visible = false
-            else
-                mainFrame.children[tabIndex].headerFlow.add {
-                    type = "sprite-button",
-                    sprite = "hide-this-column",
-                    name = order,
-                }
+                if order > maximalColumCount then
+                    frame.caption --
+                    = {
+                        "",
+                        frame.caption, --
+                        " >>> [" .. mainFrame.children[tabIndex].headerFlow.headerSprites.caption
+                            .. "]",
+                    }
+                    mainFrame.children[tabIndex].visible = false
+                else
+                    mainFrame.children[tabIndex].headerFlow.add {
+                        type = "sprite-button",
+                        sprite = "hide-this-column",
+                        name = order,
+                    }
+                end
             end
-        end
         )
         global.Links.Presentator[frame.index] = target.ClickTarget
 
@@ -697,7 +697,7 @@ end
 function Class:Open(target)
     dassert(not target)
     if target then log("Warning: obsolete function used (target = " .. target.CommonKey .. ")...") end
-    local targetKey  = self.PlayerGlobal.History.Current
+    local targetKey = self.PlayerGlobal.History.Current
     log("opening Targetkey = " .. targetKey .. "...")
     local target = self.Database:GetProxyFromCommonKey(self.PlayerGlobal.History.Current)
     log("opening Target = " .. target.CommonKey .. "...")

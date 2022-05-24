@@ -135,6 +135,7 @@ function Class.CreateFrameWithContent(moduleName, frame, content, caption, optio
             direction = "vertical",
             name = Constants.ModName .. "." .. moduleName .. (options.subModule or ""),
             ref = { "Main" },
+            style_mods = { padding = 0 },
             actions = {
                 on_location_changed = {
                     module = moduleName,
