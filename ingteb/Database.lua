@@ -504,7 +504,7 @@ function Class:GetStackOfGoods(target)
     local goods--
     = target.type == "item" and self:GetItem(target.name) --
         or target.type == "fluid" and self:GetFluid(target.name) --
-        or target.type == "resource" and self:GetEntity(target.name) --
+        or target.type == "entity" and self:GetEntity(target.name) --
     dassert(goods)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end

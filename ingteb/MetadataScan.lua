@@ -136,7 +136,7 @@ function Class:ScanForCategory(domainName, domainSetup, targetName, propertyName
             }
         end,
         FluidMining = function()
-            local result = { { type = "resource", amount = 1, name = proxy.Name }, }
+            local result = { { type = proxy.Type, amount = 1, name = proxy.Name }, }
             local configuration = prototype.mineable_properties
             if (configuration.required_fluid) then
                 table.insert(result, { type = "fluid", name = configuration.required_fluid, amount = configuration.fluid_amount, })
@@ -152,7 +152,7 @@ function Class:ScanForCategory(domainName, domainSetup, targetName, propertyName
             local configuration = prototype.mineable_properties
             dassert(not configuration.required_fluid)
             return {
-                Ingredients = { { type = "resource", amount = 1, name = proxy.Name }, },
+                Ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name }, },
                 Products = configuration.products,
                 Energy = configuration.mining_time,
             }
