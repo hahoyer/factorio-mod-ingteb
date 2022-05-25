@@ -334,9 +334,9 @@ function Class.CalculateHeaterRecipe(prototype)
     = fluidBoxes--
         :Where(--
             function(box)
-            return box.filter
-                and (box.production_type == "input" or box.production_type == "input-output")
-        end
+                return box.filter
+                    and (box.production_type == "input" or box.production_type == "input-output")
+            end
         )--
         :Top(false, false)--
         .filter
@@ -355,7 +355,7 @@ function Class.CalculateHeaterRecipe(prototype)
         amount = amount / prototype.burner_prototype.effectivity
     end
 
-    return Class.CreatePrototypeProxy { type = "boiling",
+    return Class.CreatePrototypeProxy { type = "Boiling",
         Prototype = prototype,
         sprite_type = "entity",
         hidden = true,
@@ -380,8 +380,8 @@ function Class.IsValidBoiler(prototype)
     = fluidBoxes--
         :Where(
             function(box)
-            return box.production_type == "input" or box.production_type == "input-output"
-        end
+                return box.production_type == "input" or box.production_type == "input-output"
+            end
         ) --
     local outBoxes = fluidBoxes--
         :Where(function(box) return box.production_type == "output" end) --

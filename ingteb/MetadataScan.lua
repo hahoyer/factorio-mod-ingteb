@@ -99,8 +99,6 @@ end
 function Class:RequiresFluidHandling(proxy)
     local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
     return prototype.mineable_properties.required_fluid
-        or Array:new(prototype.mineable_properties.products)
-        :Any(function(product) return product.type == "fluid" end)
 end
 
 function Class:RequiresNoFluidHandling(proxy) return not self:RequiresFluidHandling(proxy) end
@@ -214,7 +212,7 @@ function Class:ScanPrototype(targetType, prototype)
     dassert(Configurations.BackLinkMetaData[targetType], "Missing Configurations.BackLinkMetaData for " .. targetType)
     local setup = Configurations.BackLinkMetaData[targetType]
     Dictionary
-        :new(prototype.object_name and setup or prototype)
+        :new(setup)
         :Select(function(_, propertyName) self:ScanValue(proxy, prototype, propertyName, setup[propertyName]) end)
 end
 
