@@ -177,21 +177,33 @@ local Result = {
                 products = {},
                 subgroup = {},
             },
-            fuel_recipe = {
-                fuel_category = { Type = "fuel_category" },
-                localised_name = false,
-                localised_description = false,
-            },
             technology = {
                 effects = { GetValue = "GetTechnologyEffect" },
                 prerequisites = { IsList = true },
                 research_unit_ingredients = {},
+            },
+            FuelRecipe = {
+                type = false,
+                fuel_category = { Type = "fuel_category" },
+                localised_name = false,
+                localised_description = false,
+            },
+            MiningRecipe = {
+                type = false,
+                localised_name = false,
+                localised_description = false,
+            },
+            FluidMiningRecipe = {
+                type = false,
+                localised_name = false,
+                localised_description = false,
             },
         },
 
         RecipeDomainsDocumentation = {
             Properties = {
                 Workers = "property-path for workers to get the categories they accept",
+                WorkerCondition = "function-name to filter the Workers for this category. Should be defined at worker-entity",
                 BackLinkTypeRecipe = "game-type of recipes of that category",
                 ProxyClassName = "internal class name for categories of this domain",
                 RecipePrimary = "game-type to obtain the recipes for that category",
@@ -201,19 +213,19 @@ local Result = {
         },
 
         RecipeDomains = {
-            boiling = {
+            Boiling = {
                 CategoryByType = "boiler"
             },
-            burning = {
+            Burning = {
                 Workers = { "burner_prototype", "fuel_categories" },
                 WorkerCondition = "HasEnergyConsumption",
                 BackLinkType = "fuel_category",
                 RecipeInitiatingProperty = "fuel_category",
-                BackLinkTypeRecipe = "fuel_recipe",
+                BackLinkTypeRecipe = "FuelRecipe",
                 ProxyClassName = "BurningRecipe",
                 Recipes = "fuel_recipes",
             },
-            crafting = {
+            Crafting = {
                 Workers = "crafting_categories",
                 Recipes = "category",
                 BackLinkType = "recipe_category",
@@ -223,21 +235,27 @@ local Result = {
             fluid_burning = {
                 Workers = "fluid_energy_source_prototype"
             },
-            fluid_mining = {
+            FluidMining = {
+                Condition = "RequiresFluidHandling",
                 Workers = "resource_categories",
                 WorkerCondition = "HasFluidHandling",
                 Recipes = "resource_category",
                 RecipePrimary = "entity",
                 RecipeCondition = "RequiresFluidHandling",
-                ProxyClassName = "MiningRecipe",
-                BackLinkType = "resource_category"
+                ProxyClassName = "FluidMiningRecipe",
+                BackLinkType = "resource_category",
+                RecipeInitiatingProperty = "resource_category",
+                BackLinkTypeRecipe = "FluidMiningRecipe",
             },
-            mining = {
+            Mining = {
+                Condition = "RequiresNoFluidHandling",
                 Workers = "resource_categories",
                 Recipes = "resource_category",
                 RecipePrimary = "entity",
                 RecipeCondition = "RequiresNoFluidHandling",
                 ProxyClassName = "MiningRecipe",
+                RecipeInitiatingProperty = "resource_category",
+                BackLinkTypeRecipe = "MiningRecipe",
                 BackLinkType = "resource_category"
             },
             researching = { CategoryByType = "lab" },

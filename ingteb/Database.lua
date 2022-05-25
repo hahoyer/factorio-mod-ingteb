@@ -20,7 +20,8 @@ local Proxy = {
     Fluid = require("ingteb.Fluid"),
     Item = require("ingteb.Item"),
     Recipe = require("ingteb.Recipe"),
-    RecipeCommon = require "ingteb.RecipeCommon",
+    MiningRecipe = require "ingteb.MiningRecipe",
+    FluidMiningRecipe = require "ingteb.FluidMiningRecipe",
     Technology = require("ingteb.Technology"),
     ModuleCategory = require("ingteb.ModuleCategory"),
     ModuleEffect = require("ingteb.ModuleEffect"),
@@ -113,11 +114,11 @@ function Class:GetProxyFromPrototype(prototype)
         return self:GetEntity(nil, prototype)
     elseif objectType == "LuaRecipePrototype" then
         return self:GetRecipe(nil, prototype)
-    elseif objectType == "burning" or objectType == "fluid_burning" then
+    elseif objectType == "Burning" or objectType == "fluid_burning" then
         return self:GetBurningRecipe(nil, prototype)
-    elseif objectType == "boiling" then
+    elseif objectType == "Boiling" then
         return self:GetBoilingRecipe(nil, prototype)
-    elseif objectType == "mining" or objectType == "hand_mining" or objectType == "fluid_mining" then
+    elseif objectType == "Mining" or objectType == "hand_mining" or objectType == "FluidMining" then
         return self:GetMiningRecipe(nil, prototype)
     elseif objectType == "rocket_launch" then
         return self:GetRocketLaunchRecipe(nil, prototype)
@@ -215,15 +216,15 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
         dassert(prototype.mineable_properties.minable)
         dassert(prototype.mineable_properties.products)
         dassert(not prototype.items_to_place_this)
-        dassert(domain == "mining" or domain == "fluid_mining" or domain == "hand_mining")
+        dassert(domain == "Mining" or domain == "FluidMining" or domain == "hand_mining")
 
         local isFluidMining = prototype.mineable_properties.required_fluid --
             or Array:new(prototype.mineable_properties.products)--
             :Any(function(product) return product.type == "fluid" end) --
 
         if not prototype.resource_category then dassert(domain == "hand_mining") --
-        elseif isFluidMining then dassert(domain == "fluid_mining") --  --
-        else dassert(domain == "mining")
+        elseif isFluidMining then dassert(domain == "FluidMining") --  --
+        else dassert(domain == "Mining")
         end
 
         local categoryName = not prototype.resource_category and "steel_axe" --
@@ -258,12 +259,12 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
     local function unknown() dassert(false) end
 
     local get = {
-        boiling = unknown,
-        burning = unknown,
-        crafting = function(recipePrimary) return recipePrimary end,
+        Boiling = unknown,
+        Burning = unknown,
+        Crafting = function(recipePrimary) return recipePrimary end,
         fluid_burning = unknown,
-        fluid_mining = getMiningRecipe,
-        mining = getMiningRecipe,
+        FluidMining = getMiningRecipe,
+        Mining = getMiningRecipe,
         researching = unknown,
         rocket_launch = unknown,
         hand_mining = getMiningRecipe,
@@ -275,7 +276,7 @@ end
 
 ---@param prototype table LuaEntityPrototype
 function Class:AddRecipe(prototype)
-    local type = prototype.object_name == "LuaRecipePrototype" and "crafting" or prototype.type
+    local type = prototype.object_name == "LuaRecipePrototype" and "Crafting" or prototype.type
 
     dassert(type)
     dassert(prototype.name)
@@ -306,7 +307,7 @@ function Class:ScanEntity(prototype)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("crafting." .. category, prototype)
+        self:AddWorkerForCategory("Crafting." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
@@ -314,9 +315,9 @@ function Class:ScanEntity(prototype)
     end
 
     for categoryName, _ in pairs(prototype.resource_categories or {}) do
-        self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
+        self:AddWorkerForCategory("Mining" .. "." .. categoryName, prototype)
         if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("fluid_mining" .. "." .. categoryName, prototype)
+            self:AddWorkerForCategory("FluidMining" .. "." .. categoryName, prototype)
         end
     end
 
@@ -326,7 +327,7 @@ function Class:ScanEntity(prototype)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("burning." .. category, prototype)
+                self:AddWorkerForCategory("Burning." .. category, prototype)
             end
         else
             log {
@@ -338,7 +339,7 @@ function Class:ScanEntity(prototype)
     end
 
     if prototype.type == "boiler" and Helper.IsValidBoiler(prototype) then
-        self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
+        self:AddWorkerForCategory("Boiling." .. prototype.name, prototype)
         self:AddRecipe(Helper.CalculateHeaterRecipe(prototype))
     end
 
@@ -360,8 +361,8 @@ function Class:ScanEntity(prototype)
             :Any(function(product) return product.type == "fluid" end) --
 
         local domain = not prototype.resource_category and "hand_mining" --
-            or isFluidMining and "fluid_mining" --
-            or "mining"
+            or isFluidMining and "FluidMining" --
+            or "Mining"
 
         local categoryName = not prototype.resource_category and "steel_axe" --
             or prototype.resource_category
@@ -448,7 +449,7 @@ function Class:ScanFluid(prototype)
 end
 
 function Class:ScanItem(prototype)
-    self:ScanFuel(prototype, "burning", prototype.fuel_category)
+    self:ScanFuel(prototype, "Burning", prototype.fuel_category)
 
     if prototype.burnt_result and not prototype.fuel_category then
         log {
@@ -567,10 +568,7 @@ function Class:GetFromSelection(target)
     if target.base_type == "item" then
         className = "Item"
     elseif target.base_type == "entity" then
-        if Configurations.ResourceTypes[target.derived_type]
-        then className = "Resource"
-        else className = "Entity"
-        end
+        className = "Entity"
     elseif target.base_type == "recipe" then
         className = "Recipe"
     elseif target.base_type == "technology" then
@@ -623,7 +621,7 @@ end
 ---@param target table
 function Class:GetCraftableCount(target)
     if target.class == Proxy.Item then
-        local recipeCandidates = target.CreatedBy["crafting.crafting"]
+        local recipeCandidates = target.CreatedBy["Crafting.crafting"]
         local result = 0
         local recipe
         if recipeCandidates then
@@ -655,18 +653,19 @@ function Class:GetRecipesGroupByCategory(prototype, direction)
 
     Dictionary:new(Configurations.RecipeDomains)
         :Select(function(setup, key)
-            if key == "crafting" or key == "burning" then
+            if key == "Crafting" or key == "Burning" or key == "Mining" or key == "FluidMining" then
                 local target = backLink[direction]
                 if target then
                     local backLinkRecipes = target[setup.BackLinkTypeRecipe]
                     if backLinkRecipes then
-                        return Dictionary:new(backLinkRecipes)
+                        local xreturn = Dictionary:new(backLinkRecipes)
                             :Select(function(recipeData, recipeName)
                                 local prototype = recipeData.Proxy.Prototype
                                 local proxy = self:GetProxy(setup.ProxyClassName, recipeName, prototype)
                                 CoreHelper.EnsureKey(result, proxy.Category.Name, Array:new())
                                     :Append(proxy)
                             end)
+                        return xreturn
                     end
                 end
             end

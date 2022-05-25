@@ -70,7 +70,7 @@ Class.system.Properties = {
         end,
     },
 
-    IsResource = { get = function(self) return self.Prototype.type == "resource" end },
+    IsResource = { get = function(self) return Configurations.ResourceTypes[self.Prototype.type] end },
     HasFluidHandling = { get = function(self) return #self.Prototype.fluidbox_prototypes > 0 end },
 
     HasEnergyConsumption = { get = function(self)
@@ -144,7 +144,7 @@ Class.system.Properties = {
             return self.Categories--
                 :Where(
                     function(category)
-                        return category.Domain == "burning" or category.Domain == "fluid_burning"
+                        return category.Domain == "Burning" or category.Domain == "fluid_burning"
                     end
                 )--
                 :ToArray(
@@ -317,7 +317,7 @@ function Class:GetCategoryNames(domainName)
     end
 
     for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("crafting." .. category, prototype)
+        self:AddWorkerForCategory("Crafting." .. category, prototype)
         if prototype.fixed_recipe then
             dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
@@ -325,9 +325,9 @@ function Class:GetCategoryNames(domainName)
     end
 
     for categoryName, _ in pairs(prototype.resource_categories or {}) do
-        self:AddWorkerForCategory("mining" .. "." .. categoryName, prototype)
+        self:AddWorkerForCategory("Mining" .. "." .. categoryName, prototype)
         if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("fluid_mining" .. "." .. categoryName, prototype)
+            self:AddWorkerForCategory("FluidMining" .. "." .. categoryName, prototype)
         end
     end
 
@@ -337,7 +337,7 @@ function Class:GetCategoryNames(domainName)
                 EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
                     prototype.name
                 )
-                self:AddWorkerForCategory("burning." .. category, prototype)
+                self:AddWorkerForCategory("Burning." .. category, prototype)
             end
         else
             log {
@@ -349,7 +349,7 @@ function Class:GetCategoryNames(domainName)
     end
 
     if prototype.type == "boiler" and Helper.IsValidBoiler(prototype) then
-        self:AddWorkerForCategory("boiling." .. prototype.name, prototype)
+        self:AddWorkerForCategory("Boiling." .. prototype.name, prototype)
         self:AddRecipe(Helper.CalculateHeaterRecipe(prototype))
     end
 
@@ -377,9 +377,9 @@ end
 function Class:GetSpeedFactor(category)
     if category.Domain == "rocket_launch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
-    elseif category.Domain == "burning" or category.Domain == "fluid_burning" then
+    elseif category.Domain == "Burning" or category.Domain == "fluid_burning" then
         return self.MaximalEnergyConsumption
-    elseif category.Domain == "boiling" then
+    elseif category.Domain == "Boiling" then
         return 1
     elseif category.IsCraftingDomain then
         if self.Prototype.type == "character" then

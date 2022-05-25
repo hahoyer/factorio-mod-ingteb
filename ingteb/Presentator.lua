@@ -435,11 +435,8 @@ function Class:GetCraftingGroupsPanel(target, headerSprites, tooltip)
     local sampleCategory = target:Top()
     dassert(type(sampleCategory.Key) == "string")
     local sampleClient = sampleCategory.Value[1]
-    dassert(
-        sampleClient.class == Recipe --
-        or sampleClient.class == RecipeCommon --
-        or sampleClient.class == BurningRecipe --
-        or sampleClient.class == Technology--
+    dassert(RecipeCommon:IsBaseClassOf(sampleClient)
+        or Technology:IsBaseClassOf(sampleClient)
     )
 
     local target = target

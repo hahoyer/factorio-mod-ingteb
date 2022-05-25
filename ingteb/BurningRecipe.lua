@@ -16,7 +16,7 @@ function Class:new(name, prototype, database)
 
     local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
     self.IsFluid = prototype.object_name_prototype == "LuaFluidPrototype"
-    self.Domain = "burning"
+    self.Domain = "Burning"
 
     return self
 end

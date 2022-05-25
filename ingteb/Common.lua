@@ -296,14 +296,14 @@ function Class:AssertValid()
         end
         dassert(type(self.RelativeDuration) == "number")
         if self.class.name == "Recipe" then
-            dassert(self.Category.Domain == "crafting")
+            dassert(self.Category.Domain == "Crafting")
         else
-            dassert(self.Category.Domain ~= "crafting")
+            dassert(self.Category.Domain ~= "Crafting")
         end
     end
 
     local category = self.Category
-    if false and category and category.Domain == "burning" then
+    if false and category and category.Domain == "Burning" then
         local prototype = self.Prototype
         dlog(self.Name)
         local indent = AddIndent()

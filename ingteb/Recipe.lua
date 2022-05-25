@@ -258,7 +258,7 @@ function Recipe:new(name, prototype, database)
 
     dassert(self.Prototype.object_name == "LuaRecipePrototype")
 
-    self.Domain = "crafting"
+    self.Domain = "Crafting"
     self.IsRefreshRequired = { Research = true, MainInventory = true }
 
     return self

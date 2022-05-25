@@ -14,8 +14,8 @@ FuelCategory.system.Properties = {
     Fuels = {
         cache = true,
         get = function(self)
-            return self.GetBackLinkArry("fuel_category", "item")--
-                :Select(function(_,fuel) return self.Database:Get(game.item_prototypes[fuel]) end)
+            return self:GetBackLinkArry("fuel_category", "item")--
+                :Select(function(_, fuel) return self.Database:Get(game.item_prototypes[fuel]) end)
         end,
     },
     SpriteName = {
@@ -32,7 +32,7 @@ FuelCategory.system.Properties = {
             log {
                 "mod-issue.fuel-category-empty",
                 prototype.localised_name,
-                "burning." .. prototype.name,
+                "Burning." .. prototype.name,
             }
             return "utility/missing_icon"
 

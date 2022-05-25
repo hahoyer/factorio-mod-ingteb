@@ -10,17 +10,17 @@ local class = require("core.class")
 local Class = class:new("Category", Common)
 
 local function GetPrototype(domain, subName)
-    if domain == "crafting" then
+    if domain == "Crafting" then
         return game.recipe_category_prototypes[subName]
     elseif subName == "steel-axe" then
         return game.technology_prototypes["steel-axe"]
-    elseif domain == "mining" or domain == "fluid_mining" then
+    elseif domain == "Mining" or domain == "FluidMining" then
         return game.resource_category_prototypes[subName]
-    elseif domain == "boiling" or domain == "researching" then
+    elseif domain == "Boiling" or domain == "researching" then
         return game.entity_prototypes[subName]
     elseif domain == "rocket_launch" then
         return game.entity_prototypes["rocket-silo-rocket"]
-    elseif domain == "burning" then
+    elseif domain == "Burning" then
         return game.fuel_category_prototypes[subName]
     elseif domain == "fluid_burning" then
         dassert(subName == "fluid")
@@ -54,10 +54,10 @@ Class.system.Properties = {
     AdditionalHelp = {
         get = function(self)
             local result = Array:new {}
-            if self.Name == "crafting.crafting" then return result end
+            if self.Name == "Crafting.crafting" then return result end
 
             local name = self.LocalisedName
-            if self.Domain ~= "crafting" then
+            if self.Domain ~= "Crafting" then
                 name = {
                     "",
                     "[font=default-small]",
@@ -103,7 +103,7 @@ Class.system.Properties = {
     LineSprite = {
         cache = true,
         get = function(self)
-            if self.Domain == "burning" or self.Domain == "fluid_burning" then
+            if self.Domain == "Burning" or self.Domain == "fluid_burning" then
                 return "utility/slot_icon_fuel_black"
             else
                 return "utility/change_recipe"
@@ -153,7 +153,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            if self.Domain == "boiling" or self.Domain == "rocket_launch" or self.Domain == "burning" or self.Domain == "fluid_burning" then
+            if self.Domain == "Boiling" or self.Domain == "rocket_launch" or self.Domain == "Burning" or self.Domain == "fluid_burning" then
                 local workers = self.Workers
                 if workers:Any() then
                     return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
@@ -170,11 +170,11 @@ Class.system.Properties = {
 
     IsMiningDomain = {
         get = function(self) --
-            return self.Domain == "mining" or self.Domain == "fluid_mining" or self.Domain == "hand_mining"
+            return self.Domain == "Mining" or self.Domain == "FluidMining" or self.Domain == "hand_mining"
         end,
     },
 
-    IsCraftingDomain = { get = function(self) return self.Domain == "crafting" end, },
+    IsCraftingDomain = { get = function(self) return self.Domain == "Crafting" end, },
 }
 
 function Class:GetReactorBurningTime(fuelValue) return fuelValue / self.ReactorEnergyUsage / 60 end
