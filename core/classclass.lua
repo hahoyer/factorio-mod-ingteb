@@ -22,8 +22,8 @@ local function GetField(self, key, classInstance)
     if property then
         local result = GetProperty(self, key, classInstance, property)
         if __DebugAdapter then
-            if not rawget(self, "system") then self.system= {} end
-            if not rawget(self.system, "LastValue") then self.system.LastValue= {} end
+            if not rawget(self, "system") then self.system = {} end
+            if not rawget(self.system, "LastValue") then self.system.LastValue = {} end
             if not self.system.LastValue[key] then self.system.LastValue[key] = {} end
             self.system.LastValue[key][classInstance.name] = result or "nil"
         end
@@ -150,6 +150,15 @@ function class:new(name, --[[optional]] base, --[[optional]] properties)
         end,
     }
     )
+
+    function classInstance:IsBaseClassOf(target)
+        local targetClass = target.class
+        repeat
+            if targetClass == self then return true end
+            targetClass = targetClass.system.BaseClass
+        until not targetClass
+
+    end
 
     classInstance.getCache = function(self, instance, targetClass)
         if instance.cache then
