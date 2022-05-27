@@ -12,7 +12,7 @@ local Class = class:new(
     "Technology", Common, {
     TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.technology" end },
     SpriteType = { get = function(self) return "technology" end },
-    BackLinkType = { get = function(self) return "technology" end },
+    GameType = { get = function(self) return "technology" end },
     Amount = {
         cache = true,
         get = function(self) --
@@ -33,10 +33,10 @@ local Class = class:new(
             return Array:new(self.Prototype.research_unit_ingredients)--
                 :Select(
                     function(tag, index)
-                    local result = self.Database:GetStackOfGoods(tag)
-                    result.Source = { Technology = self, IngredientIndex = index }
-                    return result
-                end
+                        local result = self.Database:GetStackOfGoods(tag)
+                        result.Source = { Technology = self, IngredientIndex = index }
+                        return result
+                    end
                 ) --
         end,
 
@@ -59,8 +59,8 @@ local Class = class:new(
             result:AppendMany(
                 ingredients:Select(
                     function(stack)
-                    return { "", stack.HelpTextWhenUsedAsProduct }
-                end
+                        return { "", stack.HelpTextWhenUsedAsProduct }
+                    end
                 )
             )
             result:Append {
@@ -144,8 +144,8 @@ local Class = class:new(
         get = function(self)
             return not self.IsResearchedOrResearching and self.Prerequisites:All(
                 function(technology)
-                return technology.IsResearchedOrResearching
-            end
+                    return technology.IsResearchedOrResearching
+                end
             )
         end,
     },
@@ -156,8 +156,8 @@ local Class = class:new(
                 :ToArray()--
                 :Select(
                     function(technology)
-                    return self.Database:GetTechnology(nil, technology)
-                end
+                        return self.Database:GetTechnology(nil, technology)
+                    end
                 )
         end,
     },
@@ -166,8 +166,8 @@ local Class = class:new(
         get = function(self)
             return not self.IsResearched and self.Prerequisites:All(
                 function(technology)
-                return technology.IsResearched
-            end
+                    return technology.IsResearched
+                end
             )
         end,
     },
@@ -214,8 +214,8 @@ local Class = class:new(
             return self.NotResearchedPrerequisitesRaw--
                 :ToArray(
                     function(_, technologyName)
-                    return self.Database:GetTechnology(technologyName)
-                end
+                        return self.Database:GetTechnology(technologyName)
+                    end
                 )
         end,
     },
@@ -294,11 +294,11 @@ local Class = class:new(
             return Dictionary:new(self.Prototype.effects)--
                 :Select(
                     function(effect)
-                    if effect.type == "unlock-recipe" then
-                        return self.Database:GetRecipe(effect.recipe)
+                        if effect.type == "unlock-recipe" then
+                            return self.Database:GetRecipe(effect.recipe)
+                        end
+                        return self.Database:GetBonusFromEffect(effect)
                     end
-                    return self.Database:GetBonusFromEffect(effect)
-                end
                 )
         end,
     },
@@ -348,13 +348,13 @@ function Class:BeginMulipleQueueResearch(setting)
 
     queued:Select(
         function(technology)
-        self.Database:Print {
-            "ingteb-utility.added-to-research-queue",
-            technology.Prototype.localised_name,
-        }
+            self.Database:Print {
+                "ingteb-utility.added-to-research-queue",
+                technology.Prototype.localised_name,
+            }
 
-        technology:Refresh()
-    end
+            technology:Refresh()
+        end
     )
     if not queued:Any() then return { message, self.Prototype.localised_name } end
 end

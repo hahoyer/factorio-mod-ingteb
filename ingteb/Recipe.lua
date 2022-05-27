@@ -9,7 +9,7 @@ local Recipe = class:new("Recipe", Common)
 
 Recipe.system.Properties = {
     SpriteType = { get = function(self) return "recipe" end },
-    BackLinkType = { get = function(self) return "recipe" end },
+    GameType = { get = function(self) return "recipe" end },
     TypeStringForLocalisation = { get = function(self) return "description.recipe" end },
 
     Technologies = {

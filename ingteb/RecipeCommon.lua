@@ -77,8 +77,6 @@ Class.system.Properties = {
                 ) --
         end,
     },
-
-
 }
 
 function Class:new(name, prototype, database)

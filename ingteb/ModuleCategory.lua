@@ -11,7 +11,7 @@ local Class = class:new("ModuleCategory", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    BackLinkType = { get = function(self) return "module_category" end },
+    GameType = { get = function(self) return "module_category" end },
     Items = {
         cache = true,
         get = function(self)
@@ -29,14 +29,14 @@ Class.system.Properties = {
             local items = self.Items--
                 :Select(
                     function(item)
-                    item.ModuleTargets:Select(
-                        function(value, entity)
-                        if result[entity] ~= false then
-                            result[entity] = value
-                        end
+                        item.ModuleTargets:Select(
+                            function(value, entity)
+                                if result[entity] ~= false then
+                                    result[entity] = value
+                                end
+                            end
+                        )
                     end
-                    )
-                end
                 )
 
             return result:ToArray(function(value, entity) return entity end)

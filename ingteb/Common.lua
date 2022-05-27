@@ -29,8 +29,8 @@ local Class = class:new(
     Group = { cache = true, get = function(self) return self.Prototype.group end },
     SubGroup = { cache = true, get = function(self) return self.Prototype.subgroup end },
     BackLinkName = { get = function(self) return self.Name end },
-    BackLinkType = {},
-    BackLinks = { get = function(self) return self.Database.Game[self.BackLinkType][self.BackLinkName] end, },
+    GameType = {},
+    BackLinks = { get = function(self) return self.Database.Game[self.GameType][self.BackLinkName] end, },
     NoPrototype = {
         cache = true,
         get = function(self)

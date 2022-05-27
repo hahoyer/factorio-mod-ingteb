@@ -9,7 +9,7 @@ local Item = class:new("Item", Goods)
 
 Item.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    BackLinkType = { get = function(self) return "item" end },
+    GameType = { get = function(self) return "item" end },
 
     Recipes = { get = function(self) return self.Entity and self.Entity.Recipes or Dictionary:new {} end, },
 

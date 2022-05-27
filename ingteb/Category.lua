@@ -9,44 +9,23 @@ local class = require("core.class")
 
 local Class = class:new("Category", Common)
 
-local function GetPrototype(domain, subName)
-    if domain == "Crafting" then
-        return game.recipe_category_prototypes[subName]
-    elseif subName == "steel-axe" then
-        return game.technology_prototypes["steel-axe"]
-    elseif domain == "Mining" or domain == "FluidMining" then
-        return game.resource_category_prototypes[subName]
-    elseif domain == "Boiling" or domain == "researching" then
-        return game.entity_prototypes[subName]
-    elseif domain == "rocket_launch" then
-        return game.entity_prototypes["rocket-silo-rocket"]
-    elseif domain == "Burning" then
-        return game.fuel_category_prototypes[subName]
-    elseif domain == "fluid_burning" then
-        dassert(subName == "fluid")
-        return Helper.CreatePrototypeProxy { type = "fluid_burning", name = "fluid_burning" }
-    else
-        dassert()
-    end
-end
-
 Class.system.Properties = {
     Configuration = { get = function(self) return Configurations.RecipeDomains[self.Domain] end },
-    BackLinkType = { get = function(self) return self.Configuration.BackLinkType end },
+    GameType = { get = function(self) return self.Configuration.GameType end },
     BackLinkName = { get = function(self) return self.SubName end },
     Workers = {
         cache = true,
         get = function(self)
             local result = self.AllWorkers
-            if self.Configuration.WorkerCondition then
-                result = result:Where(function(worker) return worker[self.Configuration.WorkerCondition] end)
+            if self.Configuration.Worker.Condition then
+                result = result:Where(function(worker) return worker[self.Configuration.Worker.Condition] end)
             end
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
         end,
     },
     AllWorkers = { get = function(self)
-        local result = self:GetBackLinkArray(self.Configuration.Workers, "entity")
+        local result = self:GetBackLinkArray(self.Configuration.Worker.BackLinkName, "entity")
         return result
     end,
     },
@@ -123,10 +102,10 @@ Class.system.Properties = {
         get = function(self)
 
             local setup = self.Configuration
-            local recipePrimaryList = self:GetBackLinkArray(setup.Recipes, setup.RecipePrimary or "recipe")
-            if setup.RecipeCondition then
+            local recipePrimaryList = self:GetBackLinkArray(setup.BackLinkName, setup.Recipe.Primary)
+            if setup.Recipe.Condition then
                 recipePrimaryList = recipePrimaryList
-                    :Where(function(recipePrimary) return recipePrimary[setup.RecipeCondition] end)
+                    :Where(function(recipePrimary) return recipePrimary[setup.Recipe.Condition] end)
             end
 
             local result = recipePrimaryList
@@ -191,15 +170,12 @@ function Class:AssertValid() end
 
 function Class:new(name, prototype, database)
     dassert(name)
-    dassert(not prototype or not prototype.object_name)
-
+    dassert(not prototype)
     local _, _, domain, subName = name:find("^(.-)%.(.*)$")
-
-    local self = self:adopt(
-        self.system.BaseClass:new(
-            prototype or GetPrototype(domain, subName), database
-        )
-    )
+    local configuration = Configurations.RecipeDomains[domain]
+    local proxy = database.Game[configuration.GameType][subName]
+    local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
 
     self.Domain = domain
     self.SubName = subName

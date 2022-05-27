@@ -11,7 +11,7 @@ local Class = class:new("ModuleEffect", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "item" end },
-    BackLinkType = { get = function(self) return "module_effect" end },
+    GameType = { get = function(self) return "module_effect" end },
     Items = { get = function(self) return self:GetBackLinkArray("module_effects", "item") end, },
     Entities = { get = function(self) return self:GetBackLinkArray("allowed_effects", "entity") end, },
 

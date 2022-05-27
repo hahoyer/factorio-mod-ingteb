@@ -227,10 +227,10 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
         else dassert(domain == "Mining")
         end
 
-        local categoryName = not prototype.resource_category and "steel_axe" --
+        local categoryName = not prototype.resource_category and "Resource" --
             or prototype.resource_category
 
-        local ingredients = { { type = "resource", name = prototype.name } }
+        local ingredients = { { type = "entity", name = prototype.name } }
         local configuration = prototype.mineable_properties
         if configuration.required_fluid then
             table.insert(
@@ -364,7 +364,7 @@ function Class:ScanEntity(prototype)
             or isFluidMining and "FluidMining" --
             or "Mining"
 
-        local categoryName = not prototype.resource_category and "steel_axe" --
+        local categoryName = not prototype.resource_category and "Resource" --
             or prototype.resource_category
 
         local ingredients = { { type = "resource", amount = 1, name = prototype.name } }
@@ -426,8 +426,8 @@ function Class:ScanFuel(prototype, domain, category, isFluid)
         local category = category or "~"
         EnsureKey(self.BackLinks.ItemsForFuelCategory, category, Array:new()):Append(prototype)
         local output = not isFluid and prototype.burnt_result
-        local also = { "fuel_value" }
-        if not isFluid then table.insert(also, "fuel_category") end
+        local add = { fuel_value = true }
+        if not isFluid then table.insert(add, "fuel_category") end
         local type = isFluid and "fluid" or "item"
         self:AddRecipe(
             Helper.CreatePrototypeProxy { --
@@ -436,7 +436,7 @@ function Class:ScanFuel(prototype, domain, category, isFluid)
                 hidden = true,
                 category = category,
                 sprite_type = type,
-                Also = also,
+                Add = add,
                 ingredients = { { type = type, amount = 1, name = prototype.name } },
                 products = output and { { type = output.type, amount = 1, name = output.name } } or {},
 
@@ -649,28 +649,23 @@ end
 function Class:GetRecipesGroupByCategory(prototype, direction)
     dassert(direction == "ingredients" or direction == "products")
     local backLink = self:GetBackLinkFromPrototype(prototype)
-    local result = Dictionary:new()
+    local target = self:GetBackLinkFromPrototype(prototype)[direction]
+    if not target then return Dictionary:new() end
 
+    local result = Dictionary:new()
     Dictionary:new(Configurations.RecipeDomains)
         :Select(function(setup, key)
-            if key == "Crafting" or key == "Burning" or key == "Mining" or key == "FluidMining" then
-                local target = backLink[direction]
-                if target then
-                    local backLinkRecipes = target[setup.BackLinkTypeRecipe]
-                    if backLinkRecipes then
-                        local xreturn = Dictionary:new(backLinkRecipes)
-                            :Select(function(recipeData, recipeName)
-                                local prototype = recipeData.Proxy.Prototype
-                                local proxy = self:GetProxy(setup.ProxyClassName, recipeName, prototype)
-                                CoreHelper.EnsureKey(result, proxy.Category.Name, Array:new())
-                                    :Append(proxy)
-                            end)
-                        return xreturn
-                    end
-                end
+            local backLinkRecipes = target[setup.Recipe.GameType]
+            if backLinkRecipes then
+                local xreturn = Dictionary:new(backLinkRecipes)
+                    :Select(function(recipeData, recipeName)
+                        local prototype = recipeData.Proxy.Prototype
+                        local proxy = self:GetProxy(setup.Recipe.ClassName, recipeName, prototype)
+                        CoreHelper.EnsureKey(result, proxy.Category.Name, Array:new())
+                            :Append(proxy)
+                    end)
+                return xreturn
             end
-            return Dictionary:new()
-
         end)
     return result
 end

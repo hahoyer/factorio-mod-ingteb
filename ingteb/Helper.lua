@@ -294,7 +294,7 @@ end
 function Class.CreatePrototypeProxy(target)
     local result = {}
     for key, value in pairs(target) do
-        if key ~= "Prototype" and key ~= "Also" then
+        if key ~= "Prototype" and key ~= "Add" then
             result[key] = value
         end
     end
@@ -310,12 +310,15 @@ function Class.CreatePrototypeProxy(target)
 
         local also = { "name", "localised_name", "localised_description", "group", "subgroup", "order" }
         for _, key in ipairs(also) do
-            if not result[key] then result[key] = prototype[key] end
+            if not (result[key] or target.Add and target.Add[key] == false)
+            then
+                result[key] = prototype[key]
+            end
         end
 
-        if target.Also then
-            for _, key in ipairs(target.Also) do
-                result[key] = prototype[key]
+        if target.Add then
+            for key, value in pairs(target.Add) do
+                if value then result[key] = prototype[key] end
             end
         end
     end

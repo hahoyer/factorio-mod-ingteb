@@ -12,7 +12,7 @@ local Class = class:new("Entity", Common)
 
 Class.system.Properties = {
     SpriteType = { get = function(self) return "entity" end },
-    BackLinkType = { get = function(self) return "entity" end },
+    GameType = { get = function(self) return "entity" end },
     TypeStringForLocalisation = { get = function(self)
         local type = self.IsResource and "resource" or "entity"
         return "ingteb-type-name." .. type
@@ -75,7 +75,7 @@ Class.system.Properties = {
 
     HasEnergyConsumption = { get = function(self)
         local prototype = self.Prototype
-        return prototype.burner_prototype.fuel_inventory_size > 0
+        return prototype.burner_prototype and prototype.burner_prototype.fuel_inventory_size > 0
             and prototype.max_energy_usage and prototype.max_energy_usage > 0
     end },
 
@@ -160,18 +160,22 @@ Class.system.Properties = {
 
     Categories = {
         get = function(self)
-            if not self.Prototype.is_building then return Dictionary:new() end
-            local xreturn = Dictionary
-                :new(Configurations.RecipeDomains)
-                :ToArray(function(_, domainName)
-                    return Array:new(self:GetCategoryNames(domainName))
-                        :Select(function(categoryName)
-                            return self.Database:GetCategory(domainName .. "." .. categoryName)
-                        end)
-                end)
-                :ConcatMany()
-                :ToDictionary(function(category) return { Key = category.Name, Value = category } end)
-            return xreturn
+            local prototype = self.Prototype
+            if prototype.is_building or prototype.type == "character" then
+                local xreturn = Dictionary
+                    :new(Configurations.RecipeDomains)
+                    :ToArray(function(_, domainName)
+                        return Array:new(self:GetCategoryNames(domainName))
+                            :Select(function(categoryName)
+                                return self.Database:GetCategory(domainName .. "." .. categoryName)
+                            end)
+                    end)
+                    :ConcatMany()
+                    :ToDictionary(function(category) return { Key = category.Name, Value = category } end)
+                return xreturn
+            else
+                return Dictionary:new()
+            end
         end
     },
 
@@ -292,23 +296,28 @@ end
 function Class:GetCategoryNames(domainName)
     local prototype = self.Prototype
     local setup = Configurations.RecipeDomains[domainName]
-    if setup.Workers then
-        local property = Helper.GetNestedProperty(prototype, setup.Workers)
-        if property then
-            return Dictionary:new(property)
-                :Where(function(value) return value end)
-                :ToArray(function(_, name) return name end)
+    local subDomains
+    if setup.Worker.Condition and not self[setup.Worker.Condition] then return {}
+    elseif setup.Worker.BackLinkName then
+        subDomains = Helper.GetNestedProperty(prototype, setup.Worker.BackLinkName)
+        if not subDomains then
+            return {}
+        end
+    elseif setup.Worker.EntityType then
+        if setup.Worker.EntityType == prototype.type then
+            subDomains = setup.Categories or {}
         else
             return {}
         end
-    elseif setup.CategoryByType then
-        if setup.CategoryByType == prototype.name then
-            dassert(false)
-        else
-            return Array:new {}
-        end
     else
         dassert(false)
+    end
+
+    dassert(subDomains)
+    if true then
+        return Dictionary:new(subDomains)
+            :Where(function(value) return value end)
+            :ToArray(function(_, name) return name end)
     end
 
     dassert(false)

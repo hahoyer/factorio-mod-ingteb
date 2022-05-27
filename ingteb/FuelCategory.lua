@@ -10,7 +10,7 @@ local FuelCategory = class:new("FuelCategory", Common)
 
 FuelCategory.system.Properties = {
     SpriteType = { get = function(self) return "fuel-category" end },
-    BackLinkType = { get = function(self) return "fuel_category" end },
+    GameType = { get = function(self) return "fuel_category" end },
     Fuels = {
         cache = true,
         get = function(self)
