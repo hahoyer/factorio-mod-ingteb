@@ -11,13 +11,7 @@ local FuelCategory = class:new("FuelCategory", Common)
 FuelCategory.system.Properties = {
     SpriteType = { get = function(self) return "fuel-category" end },
     GameType = { get = function(self) return "fuel_category" end },
-    Fuels = {
-        cache = true,
-        get = function(self)
-            return self:GetBackLinkArry("fuel_category", "item")--
-                :Select(function(_, fuel) return self.Database:Get(game.item_prototypes[fuel]) end)
-        end,
-    },
+    Fuels = { get = function(self) return self:GetBackLinkArray("fuel_category", "item") end, },
     SpriteName = {
         cache = true,
         get = function(self)

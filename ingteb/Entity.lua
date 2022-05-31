@@ -298,12 +298,14 @@ function Class:GetCategoryNames(domainName)
     return Dictionary:new(global.Game[setup.GameType])
         :Where(function(category)
             local setup = setup.Worker
-            local path = Helper.GetNestedPath(setup.BackLinkPath)
-            local array = Dictionary:new(category[path].entity)
-            return array:Any(function(entity)
-                return entity.Proxy.Name == self.Name
-                    and (not setup.Condition or self[setup.Condition])
-            end)
+            local categoryData = category[Helper.GetNestedPath(setup.BackLinkPath)]
+            if not categoryData then return Array:new() end
+            return Dictionary
+                :new(categoryData.entity)
+                :Any(function(entity)
+                    return entity.Proxy.Name == self.Name
+                        and (not setup.Condition or self[setup.Condition])
+                end)
         end)
         :ToArray(function(_, name) return name end)
 end

@@ -289,7 +289,7 @@ local Result = {
                 },
                 Recipe = {
                     GameType = "HandMiningRecipe",
-                    BackLinkNamePrimary = "RecipeForcategory",
+                    BackLinkNamePrimary = "RecipeForCategory",
                     Primary = "entity",
                     Categories = {
                         Resource = {
@@ -298,10 +298,27 @@ local Result = {
                     },
                 },
                 GameType = "HandMiningCategory",
-                Categories = { Resource = true },
-                Prototype = { Type = "technology", Name = "steel-axe" }
-            },
+                Categories = { Resource = { Prototype = { Type = "technology", Name = "steel-axe" } } },
 
+            },
+            FluidBurning = {
+                Worker = {
+                    BackLinkPath = "fluid_energy_source_prototype",
+                    Condition = "HasEnergyConsumption",
+                },
+                Recipe = {
+                    GameType = "FluidBurningRecipe",
+                    BackLinkNamePrimary = "RecipeForCategory",
+                    Primary = "fluid",
+                    Categories = {
+                        fluid = {
+                            Condition = "IsBurnable",
+                        },
+                    },
+                },
+                GameType = "FluidFuelCategory",
+                Categories = { fluid = { Prototype = { Type = "fluid", Name = "crude-oil" }, } },
+            },
             Burning = {
                 Worker = {
                     BackLinkPath = { "burner_prototype", "fuel_categories" },
@@ -331,17 +348,10 @@ local Result = {
                     },
                 },
                 GameType = "BoilingCategory",
-                Categories = { steam = true },
-                Prototype = { Type = "fluid", Name = "steam" },
-            },
-            fluid_burning = {
-                Worker = {
-                    BackLinkPath = "fluid_energy_source_prototype"
+                Categories = { steam = {
+                    Prototype = { Type = "fluid", Name = "steam" }
+                }
                 },
-                Recipe = {
-                    GameType = "FluidBurningRecipe",
-                },
-                GameType = "?",
             },
             Researching = {
                 Worker = {

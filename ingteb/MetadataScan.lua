@@ -136,12 +136,19 @@ function Class:ScanRecipeDomain(name, setup)
 end
 
 function Class:SetupDomainCategory(setup, categoryName)
+    local function GetPrototype()
+        local prototypeSetup = setup.Categories[categoryName].Prototype
+        if prototypeSetup then
+            return game[prototypeSetup.Type .. "_prototypes"][prototypeSetup.Name]
+        end
+    end
+
     return self:GetBackProxy(setup.GameType, categoryName, function()
         return Helper.CreatePrototypeProxy
         {
             type = setup.GameType,
             name = categoryName,
-            Prototype = game[setup.Prototype.Type .. "_prototypes"][setup.Prototype.Name],
+            Prototype = GetPrototype(),
             hidden = true,
             Add = { group = false, subgroup = false, },
         }
@@ -153,7 +160,7 @@ function Class:SetupDomain(name, setup)
     Dictionary:new(setup.Categories)
         :Where(function(value) return value end)
         :Select(function(_, categoryName)
-            dassert(self:GetBackProxy(setup.GameType, categoryName, false))
+            self:SetupDomainCategory(setup, categoryName)
         end)
 
     return global.Game[setup.GameType]
@@ -168,7 +175,11 @@ end
 
 function Class:SetupRecipesForCategory(category, name, domainName, setup)
     local setup = setup.Recipe
-    local primaries = Dictionary:new(category[setup.BackLinkNamePrimary][setup.Primary])
+    local primaries = category[setup.BackLinkNamePrimary]
+    local primaries = primaries and primaries[setup.Primary]
+    if not primaries or not next(primaries) then return end
+
+    local primaries = Dictionary:new(primaries)
     local primaries = setup.Condition == nil and primaries
         or primaries:Where(function(primary) return self[setup.Condition](self, primary.Proxy) end)
 
@@ -330,6 +341,10 @@ function Class:CreatePrototype(domainName, domainSetup, category, proxy)
     }
 
     return recipe
+end
+
+function Class:IsBurnable(prototype)
+    return prototype.fuel_value and prototype.fuel_value > 0
 end
 
 function Class:IsValidBoiler(prototype) return Helper.IsValidBoiler(prototype) end
