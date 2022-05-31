@@ -34,12 +34,13 @@ function Class:Scan()
 
     global.Game = {}
 
-    for _, type in pairs { "entity", "fluid", "item", "recipe", "technology" } do
-        local key = type .. "_prototypes"
-        for _, prototype in pairs(game[key]) do
-            self:ScanPrototype(type, prototype)
-        end
-    end
+    Array:new { "entity", "fluid", "item", "recipe", "technology" }
+        :Select(function(type)
+            Dictionary:new(game[type .. "_prototypes"])
+                :Select(function(prototype)
+                    self:ScanPrototype(type, prototype)
+                end)
+        end)
 
     Dictionary
         :new(Configurations.RecipeDomains)
@@ -101,9 +102,15 @@ function Class:GetFilteredProxy(prototype)
         :Select(function(_, name) return prototype[name] end)
 end
 
-function Class:InsertBackLink(targetType, targetName, propertyName, proxy, index)
+function Class:InsertBackLink(targetType, targetName, propertyPath, proxy, index)
+    dassert(type(targetType) == "string")
+    dassert(type(targetName) == "string")
+    dassert(type(proxy.Type) == "string")
+    dassert(type(proxy.Name) == "string")
+    dassert(index == nil or type(index) == "number")
+
     local other = self:GetBackProxy(targetType, targetName)
-    local backLinks = CoreHelper.EnsureKeys(other, { propertyName, proxy.Type, proxy.Name })
+    local backLinks = CoreHelper.EnsureKeys(other, { propertyPath, proxy.Type, proxy.Name })
     CoreHelper.EnsureKey(backLinks, "Proxy", proxy)
     if index then
         CoreHelper.EnsureKey(backLinks, "Indexes")[index] = true
@@ -128,20 +135,25 @@ function Class:ScanRecipeDomain(name, setup)
     end
 end
 
+function Class:SetupDomainCategory(setup, categoryName)
+    return self:GetBackProxy(setup.GameType, categoryName, function()
+        return Helper.CreatePrototypeProxy
+        {
+            type = setup.GameType,
+            name = categoryName,
+            Prototype = game[setup.Prototype.Type .. "_prototypes"][setup.Prototype.Name],
+            hidden = true,
+            Add = { group = false, subgroup = false, },
+        }
+    end
+    )
+end
+
 function Class:SetupDomain(name, setup)
-    Dictionary:new(self.Categories)
+    Dictionary:new(setup.Categories)
         :Where(function(value) return value end)
         :Select(function(_, categoryName)
-            self:GetBackProxyRoot(setup.GameType, categoryName,
-                Helper.CreatePrototypeProxy
-                {
-                    type = setup.GameType,
-                    name = categoryName,
-                    Prototype = game.technology_prototypes["steel-axe"],
-                    hidden = true,
-                    Add = { group = false, subgroup = false, },
-                }
-            )
+            dassert(self:GetBackProxy(setup.GameType, categoryName, false))
         end)
 
     return global.Game[setup.GameType]
@@ -156,10 +168,10 @@ end
 
 function Class:SetupRecipesForCategory(category, name, domainName, setup)
     local setup = setup.Recipe
-    local primaries = Dictionary:new(category[setup.BackLinkName][setup.Primary])
-    if setup.Condition then
-        primaries = primaries:Where(function(primary) return self[setup.Condition](self, primary.Proxy) end)
-    end
+    local primaries = Dictionary:new(category[setup.BackLinkNamePrimary][setup.Primary])
+    local primaries = setup.Condition == nil and primaries
+        or primaries:Where(function(primary) return self[setup.Condition](self, primary.Proxy) end)
+
     primaries:Select(function(primary)
         local recipe = self:CreatePrototype(domainName, setup, name, primary.Proxy)
         Class:ScanPrototype(setup.GameType, recipe)
@@ -234,14 +246,14 @@ function Class:CreatePrototype(domainName, domainSetup, category, proxy)
             }
         end,
         FluidMining = function()
-            local result = { { type = proxy.Type, amount = 1, name = proxy.Name }, }
+            local ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name }, }
             local configuration = prototype.mineable_properties
             if (configuration.required_fluid) then
-                table.insert(result, { type = "fluid", name = configuration.required_fluid, amount = configuration.fluid_amount, })
+                table.insert(ingredients, { type = "fluid", name = configuration.required_fluid, amount = configuration.fluid_amount, })
             end
 
             return {
-                Ingredients = result,
+                Ingredients = ingredients,
                 Products = configuration.products,
                 Energy = configuration.mining_time,
             }
@@ -253,6 +265,48 @@ function Class:CreatePrototype(domainName, domainSetup, category, proxy)
                 Ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name }, },
                 Products = configuration.products,
                 Energy = configuration.mining_time,
+            }
+        end,
+        HandMining = function()
+            local configuration = prototype.mineable_properties
+            dassert(not configuration.required_fluid)
+            return {
+                Ingredients = { { type = proxy.Type, amount = 1, name = proxy.Name }, },
+                Products = configuration.products,
+                Energy = configuration.mining_time,
+            }
+        end,
+        Boiling = function()
+            local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+            local inBox--
+            = fluidBoxes--
+                :Where(--
+                    function(box)
+                        return box.filter
+                            and (box.production_type == "input" or box.production_type == "input-output")
+                    end
+                )--
+                :Top(false, false)--
+                .filter
+
+            local outBox = fluidBoxes--
+                :Where(function(box) return box.filter and box.production_type == "output" end)--
+                :Top(false, false)--
+                .filter
+
+            local inEnergy = (outBox.default_temperature - inBox.default_temperature) * inBox.heat_capacity
+            local outEnergy = (prototype.target_temperature - outBox.default_temperature)
+                * outBox.heat_capacity
+
+            local amount = 60 * prototype.max_energy_usage / (inEnergy + outEnergy)
+            if prototype.burner_prototype and prototype.burner_prototype.effectivity and prototype.burner_prototype.effectivity ~= 1 then
+                amount = amount / prototype.burner_prototype.effectivity
+            end
+
+            return {
+                Ingredients = { { type = "fluid", amount = amount, name = inBox.name } },
+                Products = { { type = "fluid", amount = amount, name = outBox.name } },
+                Endergy = 1,
             }
         end,
     }
@@ -278,40 +332,47 @@ function Class:CreatePrototype(domainName, domainSetup, category, proxy)
     return recipe
 end
 
-function Class:SetBackLink(targetType, targetName, propertyName, proxy, index)
-    dassert(type(proxy.Type) == "string")
-    dassert(type(proxy.Type) == "string")
-    dassert(type(proxy.Name) == "string")
-    self:InsertBackLink(targetType, targetName, propertyName, proxy, index)
-end
+function Class:IsValidBoiler(prototype) return Helper.IsValidBoiler(prototype) end
 
-function Class:IsHandMineable(proxy, prototype)
-    local prototype = prototype or proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
-    return prototype.mineable_properties
-        and not prototype.mineable_properties.required_fluid
-        and not prototype.is_building
+function Class:IsHandMineable(prototype)
+    local properties = prototype.mineable_properties
+    return not prototype.resource_category
+        and (not prototype.is_building or prototype.autoplace_specification)
+        and properties
+        and properties.minable
+        and not properties.required_fluid
+        and not Array:new(properties.products):Any(function(product) return product.type == "fluid" end)
         and Configurations.ResourceTypes[prototype.type]
 end
 
-function Class:InstallHandMinining(proxy)
-    if proxy.Type ~= "entity" then return end
-    local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
-    local propertyName
-    if prototype.type == "character" then propertyName = "categories"
-    elseif self:IsHandMineable(nil, prototype) then propertyName = "category"
-    else return end
+function Class:ScanRecipeDomainForPrototype(prototype, proxy, domainSetup)
+    local workerSetup = domainSetup.Worker
+    if workerSetup and workerSetup.EntityType
+        and proxy.Type == "entity"
+        and workerSetup.EntityType == prototype.type
+    then
+        Dictionary:new(domainSetup.Categories)
+            :Where(function(value) return value end)
+            :Select(function(_, categoryName)
+                local categoryProxy = self:SetupDomainCategory(domainSetup, categoryName)
+                self:InsertBackLink(categoryProxy.Type, categoryProxy.Name, workerSetup.BackLinkPath, proxy)
+            end)
+    end
 
-    local categoryProxy = self:GetBackProxy("HandMiningCategory", "Resource",
-        function()
-            return Helper.CreatePrototypeProxy
-            {
-                type = "HandMiningCategory",
-                Prototype = game.technology_prototypes["steel-axe"],
-                hidden = true,
-                Add = { group = false, subgroup = false, },
-            }
-        end)
-    self:SetBackLink(categoryProxy.Type, categoryProxy.Name, propertyName, proxy)
+    local recipeSetup = domainSetup.Recipe
+    if recipeSetup and recipeSetup.Primary == proxy.Type
+    then
+        Dictionary:new(recipeSetup.Categories)
+            :Select(function(setup, categoryName)
+                if proxy.Type == "entity" and setup.EntityType and setup.EntityType ~= prototype.type
+                    or setup.Condition and not self[setup.Condition](self, prototype)
+                then
+                    return
+                end
+                local categoryProxy = self:SetupDomainCategory(domainSetup, categoryName)
+                self:InsertBackLink(categoryProxy.Type, categoryProxy.Name, recipeSetup.BackLinkNamePrimary, proxy)
+            end)
+    end
 end
 
 function Class:ScanPrototype(targetType, prototype)
@@ -339,7 +400,15 @@ function Class:ScanPrototype(targetType, prototype)
     local setup = Configurations.BackLinkMetaData[targetType]
     Dictionary
         :new(setup)
-        :Select(function(_, propertyName) self:ScanValue(proxy, prototype, propertyName, setup[propertyName]) end)
+        :Select(function(_, propertyName)
+            self:ScanValue(proxy, prototype, propertyName, setup[propertyName])
+        end)
+
+    Dictionary
+        :new(Configurations.RecipeDomains)
+        :Select(function(domainSetup)
+            self:ScanRecipeDomainForPrototype(prototype, proxy, domainSetup)
+        end)
 end
 
 function Class:ScanValue(proxy, prototype, property, setup)
@@ -396,8 +465,8 @@ function Class:ScanValue(proxy, prototype, property, setup)
             or value.name or value
         dassert(type(targetName) == "string")
 
-        local index = type(key) == "number" and key
-        self:SetBackLink(targetType, targetName, path, proxy, index)
+        local index = type(key) == "number" and key or nil
+        self:InsertBackLink(targetType, targetName, path, proxy, index)
     end
 
     local function ScanList(value, options, path, proxy)
@@ -432,7 +501,7 @@ function Class:ScanValue(proxy, prototype, property, setup)
     end
 
     if valueType then
-        self:SetBackLink(valueType, valueName, property, proxy)
+        self:InsertBackLink(valueType, valueName, property, proxy)
     elseif IsList(value) then
         ScanList(value, setup, path, proxy)
     elseif setup.IsList then
@@ -444,7 +513,7 @@ end
 
 function Class:GetTechnologyEffect(key, value, path, proxy)
     local targetType = value.type
-    self:SetBackLink("effect", targetType, path, proxy, key)
+    self:InsertBackLink("effect", targetType, path, proxy, key)
     Dictionary
         :new(value)
         :Select(function(value, name)
@@ -452,7 +521,7 @@ function Class:GetTechnologyEffect(key, value, path, proxy)
             local targetType = (name == "ammo_category" or name == "recipe") and name
                 or name == "turret_id" and "entity"
                 or dassert(false)
-            self:SetBackLink(targetType, value, path, proxy, key)
+            self:InsertBackLink(targetType, value, path, proxy, key)
         end)
 end
 

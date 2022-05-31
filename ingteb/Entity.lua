@@ -294,93 +294,18 @@ function Class:CreateStack(amounts)
 end
 
 function Class:GetCategoryNames(domainName)
-    local prototype = self.Prototype
     local setup = Configurations.RecipeDomains[domainName]
-    local subDomains
-    if setup.Worker.Condition and not self[setup.Worker.Condition] then return {}
-    elseif setup.Worker.BackLinkName then
-        subDomains = Helper.GetNestedProperty(prototype, setup.Worker.BackLinkName)
-        if not subDomains then
-            return {}
-        end
-    elseif setup.Worker.EntityType then
-        if setup.Worker.EntityType == prototype.type then
-            subDomains = setup.Categories or {}
-        else
-            return {}
-        end
-    else
-        dassert(false)
-    end
-
-    dassert(subDomains)
-    if true then
-        return Dictionary:new(subDomains)
-            :Where(function(value) return value end)
-            :ToArray(function(_, name) return name end)
-    end
-
-    dassert(false)
-    if prototype.fluid_energy_source_prototype then
-        self:AddWorkerForCategory("fluid_burning.fluid", prototype)
-    end
-
-    for category, _ in pairs(prototype.crafting_categories or {}) do
-        self:AddWorkerForCategory("Crafting." .. category, prototype)
-        if prototype.fixed_recipe then
-            dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
-            self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
-        end
-    end
-
-    for categoryName, _ in pairs(prototype.resource_categories or {}) do
-        self:AddWorkerForCategory("Mining" .. "." .. categoryName, prototype)
-        if #prototype.fluidbox_prototypes > 0 then
-            self:AddWorkerForCategory("FluidMining" .. "." .. categoryName, prototype)
-        end
-    end
-
-    if prototype.burner_prototype then
-        if prototype.burner_prototype.fuel_inventory_size > 0 then
-            for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
-                EnsureKey(self.BackLinks.EntitiesForBurnersFuel, category, Array:new()):Append(
-                    prototype.name
-                )
-                self:AddWorkerForCategory("Burning." .. category, prototype)
-            end
-        else
-            log {
-                "mod-issue.burner-without-fuel-inventory",
-                prototype.localised_name,
-                prototype.type .. "." .. prototype.name,
-            }
-        end
-    end
-
-    if prototype.type == "boiler" and Helper.IsValidBoiler(prototype) then
-        self:AddWorkerForCategory("Boiling." .. prototype.name, prototype)
-        self:AddRecipe(Helper.CalculateHeaterRecipe(prototype))
-    end
-
-    if prototype.type == "rocket-silo" then
-        self:AddWorkerForCategory("rocket_launch.rocket_launch", prototype)
-    end
-
-    if prototype.type == "lab" then
-        self:AddWorkerForCategory("researching." .. prototype.name, prototype)
-    end
-
-    dassert(false)
-    local xreturn = Dictionary:new(self.Database.BackLinks.WorkersForCategory)--
-        :Where(
-            function(workers)
-                return workers and workers:Any(
-                    function(_, name) return name == self.Prototype.name end
-                )
-            end
-        )--
-        :Select(function(_, categoryName) return self.Database:GetCategory(categoryName) end)
-    return xreturn
+    return Dictionary:new(global.Game[setup.GameType])
+        :Where(function(category)
+            local setup = setup.Worker
+            local path = Helper.GetNestedPath(setup.BackLinkPath)
+            local array = Dictionary:new(category[path].entity)
+            return array:Any(function(entity)
+                return entity.Proxy.Name == self.Name
+                    and (not setup.Condition or self[setup.Condition])
+            end)
+        end)
+        :ToArray(function(_, name) return name end)
 end
 
 function Class:GetSpeedFactor(category)

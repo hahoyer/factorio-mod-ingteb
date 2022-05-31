@@ -25,7 +25,7 @@ Class.system.Properties = {
         end,
     },
     AllWorkers = { get = function(self)
-        local result = self:GetBackLinkArray(self.Configuration.Worker.BackLinkName, "entity")
+        local result = self:GetBackLinkArray(self.Configuration.Worker.BackLinkPath, "entity")
         return result
     end,
     },
@@ -100,20 +100,7 @@ Class.system.Properties = {
     AllRecipes = {
         cache = true,
         get = function(self)
-
-            local setup = self.Configuration
-            local recipePrimaryList = self:GetBackLinkArray(setup.BackLinkName, setup.Recipe.Primary)
-            if setup.Recipe.Condition then
-                recipePrimaryList = recipePrimaryList
-                    :Where(function(recipePrimary) return recipePrimary[setup.Recipe.Condition] end)
-            end
-
-            local result = recipePrimaryList
-                :Select(
-                    function(recipePrimary)
-                        return self.Database:GetRecipeFromPrimary(self.Domain, recipePrimary)
-                    end)
-            return result
+            return self:GetBackLinkArray("category", self.Configuration.Recipe.GameType)
         end,
     },
 
@@ -149,7 +136,7 @@ Class.system.Properties = {
 
     IsMiningDomain = {
         get = function(self) --
-            return self.Domain == "Mining" or self.Domain == "FluidMining" or self.Domain == "hand_mining"
+            return self.Domain == "Mining" or self.Domain == "FluidMining" or self.Domain == "HandMining"
         end,
     },
 

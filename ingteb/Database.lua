@@ -21,6 +21,7 @@ local Proxy = {
     Item = require("ingteb.Item"),
     Recipe = require("ingteb.Recipe"),
     MiningRecipe = require "ingteb.MiningRecipe",
+    HandMiningRecipe = require "ingteb.HandMiningRecipe",
     FluidMiningRecipe = require "ingteb.FluidMiningRecipe",
     Technology = require("ingteb.Technology"),
     ModuleCategory = require("ingteb.ModuleCategory"),
@@ -88,7 +89,30 @@ local Class = class:new(
 }
 )
 
-function Class:new(parent) return self:adopt { Parent = parent, Proxies = {} } end
+function Class:new(parent)
+    local self = self:adopt
+    {
+        Parent = parent,
+        Proxies = {},
+        ClassNameFromGameType = {
+            item = "Item",
+            entity = "Entity",
+            technology = "Technology",
+            recipe = "Recipe",
+        }
+    }
+
+    Dictionary:new(Configurations.RecipeDomains)
+        :Select(function(setup)
+            if self.ClassNameFromGameType[setup.Recipe.GameType] then
+                dassert(self.ClassNameFromGameType[setup.Recipe.GameType] == setup.Recipe.ClassName)
+            elseif setup.Recipe.ClassName then
+                self.ClassNameFromGameType[setup.Recipe.GameType] = setup.Recipe.ClassName
+            end
+        end)
+
+    return self
+end
 
 function Class:GetItemsPerTickText(amounts, ticks)
     if not amounts or not ticks then return "" end
@@ -209,7 +233,7 @@ function Class:GetBonusFromEffect(target)
     return self:GetProxy("Bonus", name, prototype)
 end
 
-function Class:GetRecipeFromPrimary(domain, recipePrimary)
+function Class:GetRecipeFromPrototype(domain, recipe)
     local function getMiningRecipe(recipePrimary)
         local prototype = recipePrimary.Prototype
         dassert(prototype.mineable_properties)
@@ -270,7 +294,7 @@ function Class:GetRecipeFromPrimary(domain, recipePrimary)
         hand_mining = getMiningRecipe,
     }
 
-    local xreturn = get[domain](recipePrimary)
+    local xreturn = get[domain](recipe)
     return xreturn
 end
 
@@ -539,23 +563,9 @@ function Class:Get(target)
     return self:GetProxy(className, name, prototype)
 end
 
-function Class:GetPrototype(target)
-    return target.Proxy and target.Proxy.Prototype
-end
-
-function Class:GetClassName(target)
-    if target.Type == "item" then return "Item"
-    elseif target.Type == "entity" then return "Entity"
-    elseif target.Type == "technology" then return "Technology"
-    elseif target.Type == "recipe" then return "Recipe"
-    else
-        dassert()
-    end
-end
-
 function Class:GetFromBackLink(target)
-    local className = self:GetClassName(target)
-    local prototype = self:GetPrototype(target)
+    local className = self.ClassNameFromGameType[target.Type] or target.Type
+    local prototype = target.Prototype
     dassert(type(className) == "string")
     dassert(not target.Name or type(target.Name) == "string")
     dassert(target.Name or prototype)
@@ -655,12 +665,13 @@ function Class:GetRecipesGroupByCategory(prototype, direction)
     local result = Dictionary:new()
     Dictionary:new(Configurations.RecipeDomains)
         :Select(function(setup, key)
-            local backLinkRecipes = target[setup.Recipe.GameType]
+            local setup = setup.Recipe
+            local backLinkRecipes = target[setup.GameType]
             if backLinkRecipes then
                 local xreturn = Dictionary:new(backLinkRecipes)
                     :Select(function(recipeData, recipeName)
                         local prototype = recipeData.Proxy.Prototype
-                        local proxy = self:GetProxy(setup.Recipe.ClassName, recipeName, prototype)
+                        local proxy = self:GetProxy(setup.ClassName or setup.GameType, recipeName, prototype)
                         CoreHelper.EnsureKey(result, proxy.Category.Name, Array:new())
                             :Append(proxy)
                     end)

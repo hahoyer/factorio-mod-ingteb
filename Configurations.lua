@@ -210,21 +210,35 @@ local Result = {
                 group = {},
                 subgroup = {},
             },
+            HandMiningRecipe = {
+                category = { Type = "HandMiningCategory" },
+                ingredients = {},
+                products = {},
+                group = {},
+                subgroup = {},
+            },
+            BoilingRecipe = {
+                category = { Type = "BoilingCategory" },
+                ingredients = {},
+                products = {},
+                group = {},
+                subgroup = {},
+            },
         },
 
         RecipeDomainsDocumentation = {
             Properties = {
                 Worker = {
                     Condition = "function-name to filter the Worker.Categories for this category. Should be defined at worker-entity",
+                    EntityType = "this selects the entity type that serves as worker.",
                     BackLinkName = "property-path for workers to get the categories they accept",
-                    EntityType = "in case BackLinkName are not defined this selects the entity type that serves as worker.",
                 },
                 Recipe = {
                     GameType = "game-type of recipes of that category",
-                    ClassName = "internal class name for recipes of categories of this domain",
+                    ClassName = "Internal class name for recipes of categories of this domain. If not set GameType is used.",
                     Primary = "game-type to obtain the recipes for that category",
                     Condition = "function-name to filter the Primary for this category. Should be defined at ClassName",
-                    BackLinkName = "for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to",
+                    BackLinkNamePrimary = "for recipe-primaries (recipes, resources, fuel-entities and so on) to get the categoy they belong to",
                 },
                 GameType = "game-type of that category",
             }
@@ -233,10 +247,10 @@ local Result = {
         RecipeDomains = {
             Crafting = {
                 Worker = {
-                    BackLinkName = "crafting_categories",
+                    BackLinkPath = "crafting_categories",
                 },
                 Recipe = {
-                    BackLinkName = "category",
+                    BackLinkNamePrimary = "category",
                     Primary = "recipe",
                     ClassName = "Recipe",
                     GameType = "recipe"
@@ -245,27 +259,25 @@ local Result = {
             },
             FluidMining = {
                 Worker = {
-                    BackLinkName = "resource_categories",
+                    BackLinkPath = "resource_categories",
                     Condition = "HasFluidHandling",
                 },
                 Recipe = {
-                    BackLinkName = "resource_category",
+                    BackLinkNamePrimary = "resource_category",
                     Primary = "entity",
                     Condition = "RequiresFluidHandling",
-                    ClassName = "FluidMiningRecipe",
                     GameType = "FluidMiningRecipe",
                 },
                 GameType = "resource_category",
             },
             Mining = {
                 Worker = {
-                    BackLinkName = "resource_categories",
+                    BackLinkPath = "resource_categories",
                 },
                 Recipe = {
-                    BackLinkName = "resource_category",
+                    BackLinkNamePrimary = "resource_category",
                     Primary = "entity",
                     Condition = "RequiresNoFluidHandling",
-                    ClassName = "MiningRecipe",
                     GameType = "MiningRecipe",
                 },
                 GameType = "resource_category",
@@ -273,45 +285,61 @@ local Result = {
             HandMining = {
                 Worker = {
                     EntityType = "character",
+                    BackLinkPath = "WorkerForCategories",
                 },
                 Recipe = {
                     GameType = "HandMiningRecipe",
-                    ClassName = "HandMiningRecipe",
-                    BackLinkName = "category",
+                    BackLinkNamePrimary = "RecipeForcategory",
                     Primary = "entity",
-                    Condition = "IsHandMineable",
+                    Categories = {
+                        Resource = {
+                            Condition = "IsHandMineable",
+                        },
+                    },
                 },
                 GameType = "HandMiningCategory",
-                Categories = { ["Resource"] = true },
+                Categories = { Resource = true },
+                Prototype = { Type = "technology", Name = "steel-axe" }
             },
 
-            Boiling = {
-                Worker = {
-                    EntityType = "boiler",
-                },
-                GameType = "BoilingCategory",
-                Categories = { steam = true },
-                Recipe = {
-                    GameType = "BoilingRecipe",
-                },
-            },
             Burning = {
                 Worker = {
-                    BackLinkName = { "burner_prototype", "fuel_categories" },
+                    BackLinkPath = { "burner_prototype", "fuel_categories" },
                     Condition = "HasEnergyConsumption",
                 },
                 Recipe = {
                     GameType = "FuelRecipe",
-                    ClassName = "BurningRecipe",
-                    BackLinkName = "fuel_recipes",
+                    BackLinkNamePrimary = "fuel_category",
+                    Primary = "item",
                 },
                 GameType = "fuel_category",
             },
-            fluid_burning = {
+            Boiling = {
                 Worker = {
-                    BackLinkName = "fluid_energy_source_prototype"
+                    EntityType = "boiler",
+                    BackLinkPath = "WorkerForBoiling",
                 },
                 Recipe = {
+                    GameType = "BoilingRecipe",
+                    BackLinkNamePrimary = "RecipeForBoiling",
+                    Primary = "entity",
+                    Categories = {
+                        steam = {
+                            EntityType = "boiler",
+                            Condition = "IsValidBoiler",
+                        },
+                    },
+                },
+                GameType = "BoilingCategory",
+                Categories = { steam = true },
+                Prototype = { Type = "fluid", Name = "steam" },
+            },
+            fluid_burning = {
+                Worker = {
+                    BackLinkPath = "fluid_energy_source_prototype"
+                },
+                Recipe = {
+                    GameType = "FluidBurningRecipe",
                 },
                 GameType = "?",
             },
@@ -320,7 +348,7 @@ local Result = {
                     EntityType = "lab",
                 },
                 Recipe = {
-                    GameType = "?",
+                    GameType = "Research",
                 },
             },
             RocketLaunch = {
@@ -328,7 +356,16 @@ local Result = {
                     EntityType = "rocket-silo",
                 },
                 Recipe = {
-                    GameType = "?",
+                    GameType = "RocketLaunchRecipe",
+                },
+            },
+            WaterMining = {
+                Worker = {
+                    EntityType = "offshore-pump",
+                    BackLinkPath = "WorkerForWaterMining",
+                },
+                Recipe = {
+                    GameType = "WaterMiningRecipe",
                 },
             },
         }

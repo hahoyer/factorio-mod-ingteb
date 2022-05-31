@@ -235,7 +235,7 @@ function Class:GetBackLinkArray(propertyName, typeName)
     if not proxies then return Array:new() end
     local xreturn = Dictionary
         :new(proxies)
-        :ToArray(function(_, name) return self.Database:GetFromBackLink { Type = typeName, Name = name } end)
+        :ToArray(function(value) return self.Database:GetFromBackLink(value.Proxy) end)
     return xreturn
 end
 

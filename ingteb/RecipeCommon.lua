@@ -80,11 +80,10 @@ Class.system.Properties = {
 }
 
 function Class:new(name, prototype, database)
+    dassert(database)
     dassert(prototype)
     local expectedName = prototype.name
     dassert(not name or name == expectedName)
-    dassert(prototype)
-    dassert(database)
 
     local self = self:adopt(self.system.BaseClass:new(prototype, database))
     self.Name = expectedName
