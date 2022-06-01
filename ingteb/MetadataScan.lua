@@ -347,8 +347,6 @@ function Class:IsBurnable(prototype)
     return prototype.fuel_value and prototype.fuel_value > 0
 end
 
-function Class:IsValidBoiler(prototype) return Helper.IsValidBoiler(prototype) end
-
 function Class:IsHandMineable(prototype)
     local properties = prototype.mineable_properties
     return not prototype.resource_category
@@ -390,14 +388,13 @@ function Class:ScanRecipeDomainForPrototype(prototype, proxy, domainSetup)
     end
 end
 
-function Class:ScanPrototype(targetType, prototype)
-    dassert(type(targetType) == "string")
-    local debugPrototype
+function Class:DebugSetup(prototype)
+    local result
     if prototype.object_name then
         dassert(type(prototype.object_name) == "string")
 
         if IsDebugMode then
-            debugPrototype = { Game = prototype, Filtered = self:GetFilteredProxy(prototype) }
+            result = { Game = prototype, Filtered = self:GetFilteredProxy(prototype) }
 
             local unKnown = Dictionary:new(UnusedMetaData[prototype.object_name])
                 :Select(function(_, name) return prototype[name] end)
@@ -408,9 +405,10 @@ function Class:ScanPrototype(targetType, prototype)
         dassert(not prototype.object_name)
         dassert(type(prototype.object_name_prototype) == "string")
     end
+    return result
+end
 
-    local proxy = self:GetBackProxyRoot(targetType, prototype.name, not prototype.object_name and prototype or nil, debugPrototype)
-
+function Class:ScanValues(targetType, prototype, proxy)
     dassert(Configurations.BackLinkMetaData[targetType], "Missing Configurations.BackLinkMetaData for " .. targetType)
     local setup = Configurations.BackLinkMetaData[targetType]
     Dictionary
@@ -418,7 +416,127 @@ function Class:ScanPrototype(targetType, prototype)
         :Select(function(_, propertyName)
             self:ScanValue(proxy, prototype, propertyName, setup[propertyName])
         end)
+end
 
+function Class:CheckBurner(prototype)
+    if prototype.object_name == "LuaEntityPrototype"
+        and prototype.burner_prototype
+        and prototype.burner_prototype.fuel_inventory_size
+        and prototype.burner_prototype.fuel_inventory_size <= 0
+    then
+        log {
+            "mod-issue.burner-without-fuel-inventory",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+    end
+end
+
+function Class:CheckBoiler(prototype)
+    if prototype.object_name ~= "LuaEntityPrototype" or prototype.type ~= "boiler" then
+        return
+    end
+
+    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+    if not fluidBoxes then
+        log {
+            "mod-issue.boiler-without-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+    local inBoxes--
+    = fluidBoxes--
+        :Where(
+            function(box)
+                return box.production_type == "input" or box.production_type == "input-output"
+            end
+        ) --
+    local outBoxes = fluidBoxes--
+        :Where(function(box) return box.production_type == "output" end) --
+
+    if not inBoxes or inBoxes:Count() ~= 1 then
+        log {
+            "mod-issue.boiler-no-unique-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    elseif not inBoxes[1].filter then
+        log {
+            "mod-issue.boiler-generic-input-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+
+    if not outBoxes or outBoxes:Count() ~= 1 then
+        log {
+            "mod-issue.boiler-no-unique-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    elseif not outBoxes[1].filter then
+        log {
+            "mod-issue.boiler-generic-output-fluidbox",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+        }
+        return
+    end
+
+    return true
+end
+
+function Class:CheckBurnedResult(prototype)
+    if prototype.object_name ~= "LuaItemPrototype" then
+        return
+    end
+
+    if prototype.burnt_result and not prototype.fuel_category then
+        log {
+            "mod-issue.burnt-result-without-fuel-category",
+            prototype.localised_name,
+            prototype.type .. "." .. prototype.name,
+            prototype.burnt_result.localised_name,
+            prototype.burnt_result.type .. "." .. prototype.burnt_result.name,
+        }
+    end
+
+end
+
+function Class:CheckValues(targetType, prototype)
+    self:CheckBurner(prototype)
+    dassert(self:CheckBoiler(prototype) == self:IsValidBoiler(prototype))
+    self:CheckBurnedResult(prototype)
+end
+
+function Class:IsValidBoiler(prototype)
+    if prototype.object_name ~= "LuaEntityPrototype" or prototype.type ~= "boiler" then
+        return
+    end
+
+    local fluidBoxes = Array:new(prototype.fluidbox_prototypes)
+    if not fluidBoxes then return end
+    local inBoxes = fluidBoxes
+        :Where(
+            function(box)
+                return box.production_type == "input" or box.production_type == "input-output"
+            end
+        ) --
+    if not inBoxes or inBoxes:Count() ~= 1 or not inBoxes[1].filter then return end
+
+    local outBoxes = fluidBoxes
+        :Where(function(box) return box.production_type == "output" end) --
+    if not outBoxes or outBoxes:Count() ~= 1 or not outBoxes[1].filter then return end
+
+    return true
+end
+
+function Class:ScanRecipeDomainsForPrototype(prototype, proxy)
     Dictionary
         :new(Configurations.RecipeDomains)
         :Select(function(domainSetup)
@@ -426,28 +544,30 @@ function Class:ScanPrototype(targetType, prototype)
         end)
 end
 
+function Class:ScanPrototype(targetType, prototype)
+    dassert(type(targetType) == "string")
+    dassert(type(prototype.object_name or prototype.object_name_prototype) == "string")
+
+    self:CheckValues(targetType, prototype)
+
+    local prototypeToStore = prototype
+    if prototype.object_name then prototypeToStore = nil end -- Only ingteb-created prototypes have to be stored
+
+    local proxy = self:GetBackProxyRoot(targetType, prototype.name, prototypeToStore, self:DebugSetup(prototype))
+
+    self:ScanValues(targetType, prototype, proxy)
+    self:ScanRecipeDomainsForPrototype(prototype, proxy)
+end
+
 function Class:ScanValue(proxy, prototype, property, setup)
-    if setup == false then return end
-    local setup = setup == nil and {} or setup
     dassert(type(proxy) == "table")
     dassert(type(prototype.object_name or prototype.object_name_prototype) == "string")
     dassert(type(property) == "string")
-    dassert(type(setup) == "table")
+    dassert(not setup or type(setup) == "table")
     dassert(prototype.object_name or prototype == proxy.Prototype)
 
-    local function GetPathAndValue(prototype, property, options)
-        local value = prototype[property]
-        if not value then return end
-        local path = property
-        if options.Properties then
-            for _, property in ipairs(options.Properties) do
-                path = path .. "." .. property
-                value = value[property]
-                if not value then return end
-            end
-        end
-        return path, value
-    end
+    if setup == false then return end
+    local setup = setup == nil and {} or setup
 
     local function IsList(target)
         if type(target) ~= "table" or #target == 0 and next(target) then
@@ -496,24 +616,25 @@ function Class:ScanValue(proxy, prototype, property, setup)
         end
     end
 
-    local path, value = GetPathAndValue(prototype, property, setup)
+    local value = Helper.GetNestedProperty(prototype, { property, setup.Properties })
     if not value then return end
 
+    local path = Helper.GetNestedPath { property, setup.Properties }
+
     ConditionalBreak(setup.Break, proxy.Type .. "." .. proxy.Name .. "." .. property)
+
+    local valueName = type(value) == "table" and value.name or value
+
     local valueType
-    local valueName
     if type(value) == "string" then
         valueType = setup.Type or property
-        valueName = value
-    elseif type(value) ~= "table" then
-        return
-    elseif value.object_name then
-        valueType = value.object_name and CoreHelper.GetObjectType(value) or nil
-        valueName = value.name
-    elseif value.object_name_prototype then
-        valueType = setup.Type or prototype.type
-        valueName = value.name
-    end
+    elseif type(value) == "table" then
+        if value.object_name then
+            valueType = CoreHelper.GetObjectType(value)
+        elseif value.object_name_prototype then
+            valueType = setup.Type or prototype.type
+        end
+    else return end
 
     if valueType then
         self:InsertBackLink(valueType, valueName, property, proxy)

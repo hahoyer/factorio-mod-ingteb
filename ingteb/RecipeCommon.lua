@@ -6,9 +6,9 @@ local Dictionary = require "core.Dictionary"
 local Common = require("ingteb.Common")
 local class = require("core.class")
 
-local Class = class:new("RecipeCommon", Common)
+local Common = class:new("RecipeCommon", Common)
 
-Class.system.Properties = {
+Common.system.Properties = {
     Workers = {
         get = function(self)
             local result = self.Category.Workers
@@ -79,7 +79,7 @@ Class.system.Properties = {
     },
 }
 
-function Class:new(name, prototype, database)
+function Common:new(name, prototype, database)
     dassert(database)
     dassert(prototype)
     local expectedName = prototype.name
@@ -100,4 +100,90 @@ function Class:new(name, prototype, database)
     return self
 end
 
-return Class
+--------
+local Class = class:new("BurningRecipe", Common)
+
+Class.system.Properties = {
+    Duration = { get = function(self) return self.Prototype.fuel_value end },
+}
+
+function Class:new(name, prototype, database)
+
+    local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
+    self.IsFluid = prototype.object_name_prototype == "LuaFluidPrototype"
+    self.Domain = "Burning"
+
+    return self
+end
+
+Common.BurningRecipe = Class
+
+--------
+local Class = class:new("FluidMiningRecipe", Common)
+
+function Class:new(name, prototype, database)
+    local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
+    self.Domain = "FluidMining"
+    return self
+end
+
+Common.FluidMiningRecipe = Class
+
+--------
+local Class = class:new("FuelRecipe", Common)
+
+Class.system.Properties = {
+    TypeStringForLocalisation = { get = function(self) return "ingteb-type-name.fuelProcessing-recipe" end },
+}
+
+local function GetCategoryAndRegister(self, domain, category)
+    local result = self.Database:GetCategory(domain .. "." .. category)
+    return result
+end
+
+Class.system.Properties = {}
+
+function Class:new(name, prototype, database)
+    local self = self:adopt(self.system.BaseClass:new(prototype, database))
+    self.Name = name
+    self.Category = GetCategoryAndRegister(self, "fuelProcessing", name)
+
+    local input = self.Database:GetStackOfGoods { type = prototype.type, amount = 1, name = name }
+    input.Source = { Recipe = self, ProductIndex = 1 }
+    input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
+    self.Input = Array:new { input }
+
+    local output = self.Database:GetStackOfGoods { type = "fluid", amount = 60, name = "steam" }
+    output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
+    output.Source = { Recipe = self, IngredientIndex = 1 }
+    self.Output = Array:new { output }
+
+    return self
+end
+
+Common.FuelRecipe = Class
+
+--------
+local Class = class:new("HandMiningRecipe", Common)
+
+function Class:new(name, prototype, database)
+    local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
+    self.Domain = "HandMining"
+    return self
+end
+
+Common.HandMiningRecipe = Class
+
+--------
+local Class = class:new("MiningRecipe", Common)
+
+function Class:new(name, prototype, database)
+    local self = self:adopt(self.system.BaseClass:new(name, prototype, database))
+    self.Domain = "Mining"
+    return self
+end
+
+Common.MiningRecipe = Class
+
+--------
+return Common

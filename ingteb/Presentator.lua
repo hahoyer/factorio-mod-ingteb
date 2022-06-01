@@ -11,7 +11,6 @@ local Technology = require("ingteb.Technology")
 local Bonus = require("ingteb.Bonus")
 local Entity = require("ingteb.Entity")
 local RecipeCommon = require "ingteb.RecipeCommon"
-local BurningRecipe = require "ingteb.BurningRecipe"
 local Spritor = require "ingteb.Spritor"
 
 local Class = class:new(

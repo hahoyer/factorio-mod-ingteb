@@ -26,7 +26,7 @@ FuelCategory.system.Properties = {
             log {
                 "mod-issue.fuel-category-empty",
                 prototype.localised_name,
-                "Burning." .. prototype.name,
+                "FuelCategory." .. prototype.name,
             }
             return "utility/missing_icon"
 
@@ -35,7 +35,9 @@ FuelCategory.system.Properties = {
 
     Burners = {
         get = function(self)
-            local result = self:GetBackLinkArray("burner_prototype.fuel_categories", "entity")
+            local result = self
+                :GetBackLinkArray("burner_prototype.fuel_categories", "entity")
+                :Where(function(burner) return burner.IsValidBurner end)
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
         end,

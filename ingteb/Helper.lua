@@ -427,8 +427,9 @@ end
 
 function Class.GetNestedProperty(prototype, path)
     local result = prototype
-    if not result then return end
-    if type(path) == "table" then
+    if not result then return
+    elseif not path then return prototype
+    elseif type(path) == "table" then
         for _, value in ipairs(path) do
             result = Class.GetNestedProperty(result, value)
             if not result then return end
@@ -440,10 +441,12 @@ function Class.GetNestedProperty(prototype, path)
 end
 
 function Class.GetNestedPath(path)
-    if type(path) == "table" then
+    if not path then return 
+    elseif type(path) == "table" then
         return Array
             :new(path)
             :Select(function(item) return Class.GetNestedPath(item) end)
+            :Where(function(value) return value end)
             :Stringify(".")
     else
         dassert(type(path) == "string")

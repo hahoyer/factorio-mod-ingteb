@@ -134,6 +134,13 @@ Class.system.Properties = {
         end,
     },
 
+    IsValidBurner = {
+        get = function(self)
+            local prototype = self.Prototype
+            return prototype.burner_prototype and prototype.burner_prototype.fuel_inventory_size and prototype.burner_prototype.fuel_inventory_size > 0
+        end,
+    },
+
     FuelCategories = {
         cache = true,
         get = function(self)
