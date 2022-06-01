@@ -34,19 +34,14 @@ FuelCategory.system.Properties = {
     },
 
     Burners = {
-        cache = true,
         get = function(self)
-            local result = Array:new(self.Database.BackLinks.EntitiesForBurnersFuel[self.Name])--
-                :Select(function(workerName) return self.Database:GetEntity(workerName) end)
+            local result = self:GetBackLinkArray("burner_prototype.fuel_categories", "entity")
             result:Sort(function(a, b) return a:IsBefore(b) end)
             return result
         end,
     },
 
-    UsefulLinks = {
-        cache = true,
-        get = function(self) return Array:new { self.Fuels, self.Burners } end,
-    },
+    UsefulLinks = { get = function(self) return Array:new { self.Fuels, self.Burners } end, },
 
 }
 
