@@ -119,7 +119,7 @@ Class.system.Properties = {
         cache = true,
         get = function(self) --
             dassert(self.IsSealed)
-            if self.Domain == "Boiling" or self.Domain == "rocket_launch" or self.Domain == "Burning" or self.Domain == "fluid_burning" then
+            if self.Domain == "Boiling" or self.Domain == "RocketLaunch" or self.Domain == "Burning" or self.Domain == "FluidBurning" then
                 local workers = self.Workers
                 if workers:Any() then
                     return workers:Select(function(worker) return worker:GetSpeedFactor(self) end):Minimum()
@@ -129,7 +129,7 @@ Class.system.Properties = {
             elseif self.IsCraftingDomain or self.IsMiningDomain then
                 return 1
             else
-                dassert(false, "domain = " .. self.Domain)
+                dassert(false, "unknown domain: " .. self.Domain)
             end
         end,
     },

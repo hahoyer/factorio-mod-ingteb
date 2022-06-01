@@ -318,9 +318,9 @@ function Class:GetCategoryNames(domainName)
 end
 
 function Class:GetSpeedFactor(category)
-    if category.Domain == "rocket_launch" then
+    if category.Domain == "RocketLaunch" then
         return 1.0 / (self.Prototype.rocket_rising_delay + self.Prototype.launch_wait_time)
-    elseif category.Domain == "Burning" or category.Domain == "fluid_burning" then
+    elseif category.Domain == "Burning" or category.Domain == "FluidBurning" then
         return self.MaximalEnergyConsumption
     elseif category.Domain == "Boiling" then
         return 1

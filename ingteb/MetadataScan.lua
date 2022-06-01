@@ -184,7 +184,7 @@ function Class:SetupRecipesForCategory(category, name, domainName, setup)
         or primaries:Where(function(primary) return self[setup.Condition](self, primary.Proxy) end)
 
     primaries:Select(function(primary)
-        local recipe = self:CreatePrototype(domainName, setup, name, primary.Proxy)
+        local recipe = self:CreateRecipe(domainName, setup, name, primary.Proxy)
         Class:ScanPrototype(setup.GameType, recipe)
     end)
 end
@@ -245,8 +245,8 @@ function Class:ScanForCategory(domainName, domainSetup, proxy)
     Class:ScanPrototype(domainSetup.GameType, recipe)
 end
 
-function Class:CreatePrototype(domainName, domainSetup, category, proxy)
-    local prototype = game[proxy.Type .. "_prototypes"][proxy.Name]
+function Class:CreateRecipe(domainName, domainSetup, category, proxy)
+    local prototype = proxy.Prototype or game[proxy.Type .. "_prototypes"][proxy.Name]
     local proxySetup = {
         Burning = function()
             local output = prototype.burnt_result
@@ -318,6 +318,12 @@ function Class:CreatePrototype(domainName, domainSetup, category, proxy)
                 Ingredients = { { type = "fluid", amount = amount, name = inBox.name } },
                 Products = { { type = "fluid", amount = amount, name = outBox.name } },
                 Endergy = 1,
+            }
+        end,
+        RocketLaunch = function()
+            return {
+                Ingredients = { { type = proxy.Type, amount = prototype.default_request_amount, name = proxy.Name }, },
+                Products = prototype.rocket_launch_products,
             }
         end,
     }
@@ -534,6 +540,13 @@ function Class:IsValidBoiler(prototype)
     if not outBoxes or outBoxes:Count() ~= 1 or not outBoxes[1].filter then return end
 
     return true
+end
+
+function Class:HasRocketLaunchProducts(prototype)
+    local xreturn = prototype.object_name == "LuaItemPrototype"
+        and prototype.rocket_launch_products
+        and #prototype.rocket_launch_products > 0
+    return xreturn
 end
 
 function Class:ScanRecipeDomainsForPrototype(prototype, proxy)

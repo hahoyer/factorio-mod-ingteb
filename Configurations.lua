@@ -116,7 +116,6 @@ local Result = {
             Recipe = 1,
             RecipeCommon = 2,
             BurningRecipe = 3,
-            FuelRecipe = 3.5,
             Technology = 4,
             Entity = 5,
             Bonus = 6,
@@ -182,13 +181,6 @@ local Result = {
                 prerequisites = { IsList = true },
                 research_unit_ingredients = {},
             },
-            FuelRecipe = {
-                ingredients = {},
-                products = {},
-                fuel_category = { Type = "fuel_category" },
-                group = {},
-                subgroup = {},
-            },
             MiningRecipe = {
                 category = { Type = "resource_category" },
                 ingredients = {},
@@ -221,6 +213,27 @@ local Result = {
                 category = { Type = "BoilingCategory" },
                 ingredients = {},
                 products = {},
+                group = {},
+                subgroup = {},
+            },
+            RocketLaunchRecipe = {
+                category = { Type = "RocketLaunchCategory" },
+                ingredients = {},
+                products = {},
+                group = {},
+                subgroup = {},
+            },
+            BurningRecipe = {
+                ingredients = {},
+                products = {},
+                fuel_category = { Type = "fuel_category" },
+                group = {},
+                subgroup = {},
+            },
+            FluidBurningRecipe = {
+                ingredients = {},
+                products = {},
+                fuel_category = { Type = "fuel_category" },
                 group = {},
                 subgroup = {},
             },
@@ -325,7 +338,7 @@ local Result = {
                     Condition = "HasEnergyConsumption",
                 },
                 Recipe = {
-                    GameType = "FuelRecipe",
+                    GameType = "BurningRecipe",
                     BackLinkNamePrimary = "fuel_category",
                     Primary = "item",
                 },
@@ -348,9 +361,32 @@ local Result = {
                     },
                 },
                 GameType = "BoilingCategory",
-                Categories = { steam = {
-                    Prototype = { Type = "fluid", Name = "steam" }
-                }
+                Categories = {
+                    steam = {
+                        Prototype = { Type = "fluid", Name = "steam" }
+                    }
+                },
+            },
+            RocketLaunch = {
+                Worker = {
+                    EntityType = "rocket-silo",
+                    BackLinkPath = "WorkerForRocketLaunch",
+                },
+                Recipe = {
+                    GameType = "RocketLaunchRecipe",
+                    BackLinkNamePrimary = "rocket_launch_products",
+                    Primary = "item",
+                    Categories = {
+                        RocketLaunch = {
+                            Condition = "HasRocketLaunchProducts"
+                        },
+                    },
+                },
+                GameType = "RocketLaunchCategory",
+                Categories = {
+                    RocketLaunch = {
+                        Prototype = { Type = "entity", Name = "rocket-silo-rocket" }
+                    }
                 },
             },
             Researching = {
@@ -359,14 +395,6 @@ local Result = {
                 },
                 Recipe = {
                     GameType = "Research",
-                },
-            },
-            RocketLaunch = {
-                Worker = {
-                    EntityType = "rocket-silo",
-                },
-                Recipe = {
-                    GameType = "RocketLaunchRecipe",
                 },
             },
             WaterMining = {
