@@ -914,4 +914,8 @@ function Class:OnResearchChanged()
     self:Refresh()
 end
 
+function Class:OnSettingsChanged()
+    self:Refresh()
+end
+
 return Class

@@ -19,7 +19,8 @@ function Class:CreateDictionaries()
     local descriptions = localisation.new("Descriptions")
     log("localisation initialize ...")
 
-    for _, type in pairs { "entity", "fluid", "item", "recipe", "recipe_category", "technology", "fuel_category", "resource_category" } do
+    for _, type in pairs { "entity", "fluid", "item", "recipe", "recipe_category", "technology", "fuel_category",
+        "resource_category" } do
         local key = type .. "_prototypes"
         for name, prototype in pairs(game[key]) do
             names:add(key .. "." .. name, prototype.localised_name)
@@ -28,10 +29,22 @@ function Class:CreateDictionaries()
     end
 end
 
-function Class:OnInitialise()
+function Class:Initialise()
     localisation.init()
     global.Localisation = {}
     self:CreateDictionaries()
+
+    if game and game.players then
+        for _, player in pairs(game.players) do
+            if player.connected then
+                localisation.translate(player)
+            end
+        end
+    end
+end
+
+function Class:OnInitialise()
+    self:Initialise()
 end
 
 function Class:OnLoad()
@@ -40,15 +53,12 @@ end
 
 function Class:OnConfigurationChanged(event)
     if migration.on_config_changed(event, {}) then
-        localisation.init()
-        self:CreateDictionaries()
-
-        for _, player in pairs(game.players) do
-            if player.connected then
-                localisation.translate(player)
-            end
-        end
+        self:Initialise()
     end
+end
+
+function Class:OnSettingsChanged(event)
+    self:Initialise()
 end
 
 function Class:OnPlayerCreated(event)
@@ -73,7 +83,7 @@ function Class:OnStringTranslated(event)
     local language_data = localisation.process_translation(event)
     local result = Array:new()
     if language_data then
-        result =  Array:new(language_data.players)
+        result = Array:new(language_data.players)
             :Select(function(index)
                 global.Players[index].Localisation = language_data.dictionaries
                 return index

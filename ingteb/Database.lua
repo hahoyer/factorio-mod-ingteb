@@ -738,4 +738,8 @@ function Class:GetTranslation(type, name, tag)
     return result
 end
 
+function Class:OnSettingsChanged(event)
+    self.IsInitialized = nil
+end
+
 return Class
