@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.6.0
-Date: 2022-05-10
+Date: 2022-06-01
   Changes:
     - Meta data scanner
 ---------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ Date: 2022-04-02
   Bugfixes:
     - fixing multiple lines of the same recipe
     - fixing multiple icons for the same worker
-    - mitigating Large recipe columns are jerky during handcrafts or research completion 
+    - mitigating Large recipe columns are jerky during handcrafts or research completion
   Changes:
     - Yellow backgroung for recipes that are currently in research queue
 ---------------------------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ Date: 2022-03-26
 Version: 0.3.29
 Date: 2022-03-23
   Changes:
-    - Special treatment for zombie recipes 
+    - Special treatment for zombie recipes
     - Better treatment for hidden recipes. Present them only when used as fixed-recipe somewhere.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.28
@@ -160,7 +160,7 @@ Date: 2021-03-26
 Version: 0.3.19
 Date: 2021-03-23
   Bugfixes:
-    - fixing help only works for entities 
+    - fixing help only works for entities
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.18
 Date: 2021-03-23
@@ -212,7 +212,7 @@ Date: 2021-01-20
   Changes:
     - localisation improved: text styles
     - providing better information on technology effets panel
-    - [tech] using __debugline 
+    - [tech] using __debugline
   Bugfixes:
     - fixing crash clicking on lab in technology panel header
     - fixing crash "Too many parameters for localised string: 22 > 20 (limit). in property tree at ROOT.tooltip[2]"
@@ -261,7 +261,7 @@ Date: 2021-01-17
 Version: 0.3.4
 Date: 2021-01-17
   Changes:
-    - Remindertask: show requestet amount as tooltip 
+    - Remindertask: show requestet amount as tooltip
     - [tech] event handling allows more than one registration for any event
     - [tech] localisation service from flib implemented
     - Descriptions provided if available
@@ -274,7 +274,7 @@ Date: 2021-01-17
 Version: 0.3.3
 Date: 2021-01-15
   Changes:
-    - Remindor frame management 
+    - Remindor frame management
     - Remindor settings and automatic things
     - localisations
     - Close buttons for any gui (suggested by Ting_amm)
@@ -298,11 +298,11 @@ Date: 2020-12-21
     - Miningrecipe must not not requirements
   Changes:
     - "Remindor" - create tasks to remind you to do things
-    - Remindor: smart presentation of technologies and ingredients 
+    - Remindor: smart presentation of technologies and ingredients
     - Stack of goods show range and probability as tooltip
     - Remindor: some horizontal lines
   Refactor:
-    - [tech] sorting feature 
+    - [tech] sorting feature
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2020-12-12
@@ -342,7 +342,7 @@ Date: 2020-12-08
   Changes:
     - help on technologies improved
     - Alignment in technology panels
-    - Correct data for inifinite technologies 
+    - Correct data for inifinite technologies
     - Prerequisite reseaches
     - Array:Clone whithout predicate was missing
     - Array:Stringify introduced
@@ -560,7 +560,7 @@ Date: 2020-11-11
 Version: 0.2.0
 Date: 2020-11-11
   Features:
-    - explicit selector 
+    - explicit selector
   Changes:
     - event protocol
 ---------------------------------------------------------------------------------------------------
