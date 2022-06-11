@@ -162,9 +162,9 @@ function Class:ScanBackLinks()
     log("database backLinks : ensure category-entries ...")
     backLinks.CategoryNames:Select(
         function(value, categoryName)
-        EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
-        EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
-    end
+            EnsureKey(backLinks.RecipesForCategory, categoryName, Dictionary:new {})
+            EnsureKey(backLinks.WorkersForCategory, categoryName, Dictionary:new {})
+        end
     )
 
     log("database scan backLinks complete.")
@@ -201,8 +201,8 @@ function Class:Ensure()
     log("database initialize categories and recipes ...")
     self.BackLinks.CategoryNames:Select(
         function(_, categoryName)
-        local recipes = self:GetCategory(categoryName).AllRecipes
-    end
+            local recipes = self:GetCategory(categoryName).AllRecipes
+        end
     )
 
     log("database initialize cleanup ...")
@@ -680,12 +680,12 @@ function Class:GetCraftableCount(target)
             recipeCandidates--
                 :Select(
                     function(recipeCandidate)
-                    local count = self:GetCraftableCount(recipeCandidate)
-                    if result < count then
-                        result = count
-                        recipe = recipeCandidate
+                        local count = self:GetCraftableCount(recipeCandidate)
+                        if result < count then
+                            result = count
+                            recipe = recipeCandidate
+                        end
                     end
-                end
                 ) --
         end
         return result, recipe
@@ -711,9 +711,9 @@ function Class:GetRecipesGroupByCategory(target, prototype)
     if recipes then
         local xreturn = recipes:ToGroup(
             function(recipe)
-            local proxy = self:GetProxyFromPrototype(recipe)
-            return { Key = proxy.Category.Name, Value = proxy }
-        end
+                local proxy = self:GetProxyFromPrototype(recipe)
+                return { Key = proxy.Category.Name, Value = proxy }
+            end
         )
 
         return xreturn
