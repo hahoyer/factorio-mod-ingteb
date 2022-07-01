@@ -14,7 +14,7 @@ Class.system.Properties = {
     Items = {
         cache = true,
         get = function(self)
-            return self.Database.BackLinks.ItemsForModuleCategory[self.Name] --
+            return (self.Database.BackLinks.ItemsForModuleCategory[self.Name] or Array:new()) --
             :Select(function(target) return self.Database:Get(target) end)
         end,
     },
