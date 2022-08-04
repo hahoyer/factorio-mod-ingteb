@@ -367,11 +367,30 @@ function Class:ScanEntity(prototype)
         self:AddWorkerForCategory("fluid-burning.fluid", prototype)
     end
 
+    local fixedRecipe = prototype.fixed_recipe and game.recipe_prototypes[prototype.fixed_recipe]
+
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting." .. category, prototype)
-        if prototype.fixed_recipe then
-            dassert(category == game.recipe_prototypes[prototype.fixed_recipe].category)
+        if fixedRecipe and category ~= fixedRecipe.category then
+            log {
+                "mod-issue.extra_category_when_using_fixed_recipe",
+                prototype.localised_name,
+                prototype.type .. "." .. prototype.name,
+                category, prototype.fixed_recipe, fixedRecipe.category
+            }
+        end
+    end
+
+    if prototype.fixed_recipe then
+        if fixedRecipe and prototype.crafting_categories[fixedRecipe.category] then
             self:AddRecipe(game.recipe_prototypes[prototype.fixed_recipe])
+        else
+            log {
+                "mod-issue.missing_category_when_using_fixed_recipe",
+                prototype.localised_name,
+                prototype.type .. "." .. prototype.name,
+                fixedRecipe.category, prototype.fixed_recipe
+            }
         end
     end
 
@@ -482,11 +501,21 @@ function Class:ScanTechnology(prototype)
 
 end
 
+function GetTypeForInvolvedGoods(prototype)
+    if prototype.type == "fluid" then
+        return prototype.type
+    else
+        return "item"
+    end
+end
+
 function Class:ScanFuel(prototype, domain, category, isFluid)
     if prototype.fuel_value and prototype.fuel_value > 0 then
         local category = category or "~"
         EnsureKey(self.BackLinks.ItemsForFuelCategory, category, Array:new()):Append(prototype)
+
         local output = not isFluid and prototype.burnt_result
+
         local also = { "fuel_value" }
         if not isFluid then table.insert(also, "fuel_category") end
         local type = isFluid and "fluid" or "item"
@@ -499,7 +528,8 @@ function Class:ScanFuel(prototype, domain, category, isFluid)
                 sprite_type = type,
                 Also = also,
                 ingredients = { { type = type, amount = 1, name = prototype.name } },
-                products = output and { { type = output.type, amount = 1, name = output.name } } or {},
+                products = output and { { type = GetTypeForInvolvedGoods(output), amount = 1, name = output.name } } or
+                    {},
 
             })
     end
