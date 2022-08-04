@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.8
+Date: 2022-08-04
+  Changes:
+    - [admin] don't append version number to toplevel folder of package (done by hacking justarandomgeek.factoriomod-debug-1.1.22)
+---------------------------------------------------------------------------------------------------
 Version: 0.5.7
 Date: 2022-08-04
   Bugfixes:
