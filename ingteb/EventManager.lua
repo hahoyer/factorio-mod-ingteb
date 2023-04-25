@@ -243,6 +243,7 @@ function Class:OnInitialisePlayer()
 end
 
 function Class:OnSettingsChanged(event)
+    if not event.player_index then return end
     self.Player = event.player_index
     self:RestoreFromSave()
     self.Modules.Selector:OnSettingsChanged(event)
