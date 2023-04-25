@@ -1,4 +1,4 @@
--- Generated 2022-05-11T14:15:15.4184986+02:00 by FactorioApi 22.1.0.0 
+-- Generated 2023-03-18T17:26:59.9634180+01:00 by FactorioApi 22.1.0.0 
 -- see https://github.com/hahoyer/factorio/tree/master/src/FApi
 return 
 {
@@ -27,6 +27,7 @@ return
             fast_replaceable_group = true,
             mineable_properties = true,
             allowed_effects = true,
+            ammo_category = true,
             attack_parameters = true,
             base_productivity = true,
             burner_prototype = true,
@@ -37,6 +38,9 @@ return
             effectivity = true,
             electric_energy_source_prototype = true,
             energy_usage = true,
+            active_energy_usage = true,
+            idle_energy_usage = true,
+            lamp_energy_usage = true,
             fixed_recipe = true,
             flags = true,
             fluid = true,
