@@ -103,6 +103,8 @@ function Class:SetHandler(eventId, handler, identifier)
     eventId
 
     local handlers = Class.Handlers[eventName]
+    if handlers and  handlers[identifier] and handlers[identifier].Handler == handler then return end
+    
     dassert(
         not handlers or identifier ~= "default",
             "handler for event " .. eventName .. " already registered. Use identifier"
@@ -120,8 +122,6 @@ function Class:SetHandler(eventId, handler, identifier)
             events.register(eventId, watchedEvent)
         end
     end
-
-    dassert(not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
     handlers[identifier] = {Instance = self, Handler = handler}
 

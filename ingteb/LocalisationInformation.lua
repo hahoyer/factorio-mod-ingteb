@@ -89,7 +89,6 @@ function Class:OnStringTranslated(event)
                 return index
             end)
     end
-    log("localisation initialize complete.")
     return result
 end
 
